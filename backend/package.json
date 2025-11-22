@@ -2,7 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "type": "module",
-  "packageManager": "bun",
+  "packageManager": "bun@1.3.2",
   "scripts": {
     "build": "cd ../frontend && bun install && VITE_APP_BASE_PATH=/cne-app npx vite build --outDir=../backend/frontend/dist"
   },
