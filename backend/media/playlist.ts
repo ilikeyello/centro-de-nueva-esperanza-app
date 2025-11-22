@@ -24,13 +24,21 @@ export const save = api<UpdatePlaylistRequest, void>(
       throw APIError.invalidArgument("URL must be a YouTube playlist link");
     }
 
-    // Convert regular playlist URL to embed format for iframe compatibility
+    // Extract playlist ID and session ID and convert to embed format
     let embedUrl = url;
     if (url.includes("youtube.com/playlist")) {
-      const urlParams = new URLSearchParams(url.split('?')[1] || '');
-      const listId = urlParams.get('list');
-      if (listId) {
-        embedUrl = `https://www.youtube.com/embed/videoseries?list=${listId}`;
+      const listMatch = url.match(/[?&]list=([^&]+)/);
+      const siMatch = url.match(/[?&]si=([^&]+)/);
+      
+      if (listMatch) {
+        const playlistId = listMatch[1];
+        const sessionId = siMatch ? siMatch[1] : '';
+        
+        // Create embed URL matching YouTube's exact format
+        embedUrl = `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
+        if (sessionId) {
+          embedUrl += `&si=${sessionId}`;
+        }
       }
     }
 

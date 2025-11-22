@@ -33,22 +33,28 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     
     if (!url) return url;
     
-    // If already in embed format, ensure it has required parameters
+    // If already in embed format, return as-is
     if (url.includes('youtube.com/embed/videoseries')) {
-      // Add required parameters for YouTube embed
-      const separator = url.includes('?') ? '&' : '?';
-      const result = `${url}${separator}enablejsapi=1&origin=${window.location.origin}&widgetid=1`;
-      console.log('Already embed URL, result:', result);
-      return result;
+      console.log('Already embed URL, returning:', url);
+      return url;
     }
     
-    // Extract playlist ID from regular YouTube playlist URL
-    const match = url.match(/[?&]list=([^&]+)/);
-    if (match) {
-      const playlistId = match[1];
-      const result = `https://www.youtube.com/embed/videoseries?list=${playlistId}&enablejsapi=1&origin=${window.location.origin}&widgetid=1`;
-      console.log('Converted to embed URL, result:', result);
-      return result;
+    // Extract playlist ID and session ID from regular YouTube playlist URL
+    const listMatch = url.match(/[?&]list=([^&]+)/);
+    const siMatch = url.match(/[?&]si=([^&]+)/);
+    
+    if (listMatch) {
+      const playlistId = listMatch[1];
+      const sessionId = siMatch ? siMatch[1] : '';
+      
+      // Create embed URL matching YouTube's exact format
+      let embedUrl = `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
+      if (sessionId) {
+        embedUrl += `&si=${sessionId}`;
+      }
+      
+      console.log('Converted to embed URL, result:', embedUrl);
+      return embedUrl;
     }
     
     console.log('No playlist ID found, returning original:', url);
