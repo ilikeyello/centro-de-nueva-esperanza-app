@@ -138,11 +138,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const setPlaylistUrl = (url: string) => {
     const trimmed = url.trim();
-    const value = trimmed.length > 0 ? trimmed : defaultPlaylistUrl;
-    setPlaylistUrlState(value);
+    // Allow empty URLs - don't fallback to default
+    setPlaylistUrlState(trimmed);
     try {
       if (typeof window !== "undefined") {
-        window.localStorage.setItem("cne_music_playlist_url", value);
+        window.localStorage.setItem("cne_music_playlist_url", trimmed);
       }
     } catch {
       // ignore storage errors
