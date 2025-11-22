@@ -1,18 +1,17 @@
 import { api } from "encore.dev/api";
-import { config } from "encore.dev/config";
-import { log } from "encore.dev/log";
+import log from "encore.dev/log";
 
 // Simple in-memory storage for the playlist URL
 // In production, you might want to use a database
 let playlistUrl: string | null = null;
 
+const ADMIN_PASSCODE = "78598";
+
 export const save = api(
   { method: "POST", path: "/playlist", auth: false },
   async ({ passcode, url }: { passcode: string; url: string }) => {
-    // Verify passcode (you should use a more secure method in production)
-    const expectedPasscode = config("ADMIN_PASSCODE") || "cneadmin2024";
-    
-    if (passcode !== expectedPasscode) {
+    // Verify passcode
+    if (passcode !== ADMIN_PASSCODE) {
       log.error("Invalid passcode provided for playlist save");
       throw new Error("Invalid passcode");
     }
