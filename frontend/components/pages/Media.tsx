@@ -200,13 +200,20 @@ export function Media({ onStartMusic }: MediaProps) {
   const getEmbedUrl = (url: string) => {
     try {
       const u = new URL(url);
-      if (u.hostname.includes("youtu.be")) {
-        const id = u.pathname.replace("/", "");
-        return `https://www.youtube.com/embed/${id}`;
+      if (u.hostname.includes('youtu.be')) {
+        const id = u.pathname.replace('/', '');
+        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
       }
-      if (u.searchParams.get("v")) {
-        const id = u.searchParams.get("v");
-        return `https://www.youtube.com/embed/${id}`;
+      if (u.searchParams.get('v')) {
+        const id = u.searchParams.get('v');
+        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+      }
+      if (u.pathname.includes('/live/')) {
+        const id = u.pathname.split('/live/')[1]?.split('?')[0];
+        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+      }
+      if (u.pathname.includes('/embed/')) {
+        return url; // Already in embed format
       }
       return url;
     } catch {
@@ -514,7 +521,7 @@ export function Media({ onStartMusic }: MediaProps) {
               )}
               <iframe
                 id="cne-livestream-player"
-                src={livestreamUrl}
+                src={getEmbedUrl(livestreamUrl)}
                 title={t("CNE Live Stream", "Transmisión en Vivo de CNE")}
                 className="h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
