@@ -24,7 +24,17 @@ export const save = api<UpdatePlaylistRequest, void>(
       throw APIError.invalidArgument("URL must be a YouTube playlist link");
     }
 
-    playlistUrl = url;
+    // Convert regular playlist URL to embed format for iframe compatibility
+    let embedUrl = url;
+    if (url.includes("youtube.com/playlist")) {
+      const urlParams = new URLSearchParams(url.split('?')[1] || '');
+      const listId = urlParams.get('list');
+      if (listId) {
+        embedUrl = `https://www.youtube.com/embed/videoseries?list=${listId}`;
+      }
+    }
+
+    playlistUrl = embedUrl;
   }
 );
 
