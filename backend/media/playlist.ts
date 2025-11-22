@@ -8,7 +8,7 @@ let playlistUrl: string | null = null;
 const ADMIN_PASSCODE = "78598";
 
 export const save = api(
-  { method: "POST", path: "/playlist", auth: false },
+  { expose: true, method: "POST", path: "/playlist", auth: false },
   async ({ passcode, url }: { passcode: string; url: string }) => {
     // Verify passcode
     if (passcode !== ADMIN_PASSCODE) {
@@ -33,7 +33,7 @@ export const save = api(
 );
 
 export const get = api(
-  { method: "GET", path: "/playlist", auth: false },
+  { expose: true, method: "GET", path: "/playlist", auth: false },
   async () => {
     return { url: playlistUrl };
   }
