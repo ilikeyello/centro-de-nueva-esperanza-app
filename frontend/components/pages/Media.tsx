@@ -273,35 +273,52 @@ export function Media({ onStartMusic }: MediaProps) {
 
   // YouTube API and livestream detection
   useEffect(() => {
-    if (!livestreamUrl) return;
+    if (!livestreamUrl) {
+      console.log('No livestream URL provided');
+      return;
+    }
+
+    console.log('Initializing YouTube livestream detection for:', livestreamUrl);
 
     // Load YouTube IFrame API if not already loaded
     if (!window.YT) {
+      console.log('Loading YouTube IFrame API...');
       const tag = document.createElement('script');
       tag.src = 'https://www.youtube.com/iframe_api';
       const firstScriptTag = document.getElementsByTagName('script')[0];
       firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    } else {
+      console.log('YouTube API already loaded');
     }
 
     // Set up API ready callback
     window.onYouTubeIframeAPIReady = () => {
+      console.log('YouTube IFrame API ready');
       youtubeAPIReady = true;
       initializeLivestreamDetection();
     };
 
     // If API already ready, initialize immediately
     if (window.YT && window.YT.Player) {
+      console.log('YouTube API already available, initializing immediately');
       youtubeAPIReady = true;
       initializeLivestreamDetection();
     }
 
     function initializeLivestreamDetection() {
-      if (!livestreamUrl || youtubePlayerRef.current) return;
+      if (!livestreamUrl || youtubePlayerRef.current) {
+        console.log('Livestream detection already initialized or no URL');
+        return;
+      }
+
+      console.log('Initializing livestream detection...');
 
       // Extract video ID from URL
       let videoId = '';
       try {
         const url = new URL(livestreamUrl);
+        console.log('Parsing URL:', url);
+        
         if (url.hostname.includes('youtu.be')) {
           videoId = url.pathname.replace('/', '');
         } else if (url.searchParams.get('v')) {
@@ -309,43 +326,69 @@ export function Media({ onStartMusic }: MediaProps) {
         } else if (url.pathname.includes('/embed/')) {
           videoId = url.pathname.split('/embed/')[1]?.split('?')[0] || '';
         }
-      } catch {
+        
+        console.log('Extracted video ID:', videoId);
+      } catch (error) {
+        console.error('Error extracting video ID:', error);
         return;
       }
 
-      if (!videoId) return;
+      if (!videoId) {
+        console.error('No video ID found in URL');
+        return;
+      }
 
       // Create YouTube player for detection
+      console.log('Creating YouTube player for video ID:', videoId);
       youtubePlayerRef.current = new window.YT.Player('youtube-livestream-detector', {
         videoId: videoId,
         events: {
           onReady: (event: any) => {
+            console.log('YouTube player ready for livestream detection');
             // Start checking if stream is live
             checkLivestreamStatus();
-            liveCheckInterval = setInterval(checkLivestreamStatus, 30000); // Check every 30 seconds
+            liveCheckInterval = setInterval(checkLivestreamStatus, 10000); // Check every 10 seconds for testing
           },
           onError: (error: any) => {
             console.error('YouTube player error:', error);
             setIsActuallyLive(false);
+          },
+          onStateChange: (event: any) => {
+            console.log('YouTube player state changed:', event.data);
+            // Check status when state changes
+            setTimeout(checkLivestreamStatus, 1000);
           }
         }
       });
     }
 
     function checkLivestreamStatus() {
-      if (!youtubePlayerRef.current) return;
+      if (!youtubePlayerRef.current) {
+        console.log('YouTube player not ready for livestream check');
+        return;
+      }
 
       try {
         const player = youtubePlayerRef.current;
+        const playerState = player.getPlayerState();
         const playerInfo = player.getVideoData();
         
-        // Check if stream is live
-        if (playerInfo && playerInfo.isLive) {
-          setIsActuallyLive(true);
-        } else {
-          setIsActuallyLive(false);
-        }
+        console.log('Livestream check:', {
+          playerState,
+          playerInfo,
+          videoData: playerInfo?.videoData,
+          isLive: playerInfo?.isLive
+        });
+        
+        // Check if stream is live using multiple methods
+        const isLive = playerInfo?.isLive === true || 
+                      playerState === window.YT.PlayerState.BUFFERING ||
+                      (playerInfo && playerInfo.title && playerInfo.title.toLowerCase().includes('live'));
+        
+        console.log('Setting isActuallyLive to:', isLive);
+        setIsActuallyLive(isLive);
       } catch (error) {
+        console.error('Error checking livestream status:', error);
         // If we can't get video data, assume not live
         setIsActuallyLive(false);
       }
