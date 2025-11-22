@@ -77,48 +77,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   });
 
   const [livestreamUrl, setLivestreamUrlState] = useState<string>(() => {
-    if (typeof window === "undefined") return defaultLivestreamUrl;
+    if (typeof window === "undefined") return "";
     try {
       const stored = window.localStorage.getItem("cne_livestream_url");
-      if (stored && stored.trim().length > 0) {
-        return normalizeLivestreamUrl(stored, defaultLivestreamUrl);
-      }
-      return defaultLivestreamUrl;
+      return stored || "";
     } catch {
-      return defaultLivestreamUrl;
+      return "";
     }
   });
-
-  // Load livestream URL from backend on mount
-  useEffect(() => {
-    const loadLivestreamUrl = async () => {
-      try {
-        const base = import.meta.env.DEV
-          ? "http://127.0.0.1:4000"
-          : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/livestream`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.url) {
-            const normalizedUrl = normalizeLivestreamUrl(data.url, defaultLivestreamUrl);
-            setLivestreamUrlState(normalizedUrl);
-            // Also update localStorage for fallback
-            try {
-              if (typeof window !== "undefined") {
-                window.localStorage.setItem("cne_livestream_url", normalizedUrl);
-              }
-            } catch {
-              // ignore storage errors
-            }
-          }
-        }
-      } catch {
-        // Ignore errors, fall back to localStorage/default
-      }
-    };
-
-    loadLivestreamUrl();
-  }, []);
 
   // Load playlist URL from backend on mount (only once)
   useEffect(() => {
@@ -180,11 +146,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   const setLivestreamUrl = (url: string) => {
-    const value = normalizeLivestreamUrl(url, defaultLivestreamUrl);
-    setLivestreamUrlState(value);
+    const trimmed = url.trim();
+    // Allow empty URLs - don't fallback to default
+    setLivestreamUrlState(trimmed);
     try {
       if (typeof window !== "undefined") {
-        window.localStorage.setItem("cne_livestream_url", value);
+        window.localStorage.setItem("cne_livestream_url", trimmed);
       }
     } catch {
       // ignore storage errors
