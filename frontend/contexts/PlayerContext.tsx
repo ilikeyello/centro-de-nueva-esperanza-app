@@ -86,6 +86,36 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  // Load livestream URL from backend on mount (only once)
+  useEffect(() => {
+    const loadLivestreamUrl = async () => {
+      try {
+        const base = import.meta.env.DEV
+          ? "http://127.0.0.1:4000"
+          : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/livestream`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            setLivestreamUrlState(data.url);
+            // Also update localStorage for fallback
+            try {
+              if (typeof window !== "undefined") {
+                window.localStorage.setItem("cne_livestream_url", data.url);
+              }
+            } catch {
+              // ignore storage errors
+            }
+          }
+        }
+      } catch {
+        // Ignore errors, fall back to localStorage/default
+      }
+    };
+
+    loadLivestreamUrl();
+  }, []);
+
   // Load playlist URL from backend on mount (only once)
   useEffect(() => {
     const loadPlaylistUrl = async () => {
