@@ -29,22 +29,29 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   // Convert YouTube playlist URL to embed format for iframe
   const getEmbedUrl = (url: string | null) => {
+    console.log('Original URL:', url);
+    
     if (!url) return url;
     
     // If already in embed format, ensure it has required parameters
     if (url.includes('youtube.com/embed/videoseries')) {
       // Add required parameters for YouTube embed
       const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}enablejsapi=1&origin=${window.location.origin}&widgetid=1`;
+      const result = `${url}${separator}enablejsapi=1&origin=${window.location.origin}&widgetid=1`;
+      console.log('Already embed URL, result:', result);
+      return result;
     }
     
     // Extract playlist ID from regular YouTube playlist URL
     const match = url.match(/[?&]list=([^&]+)/);
     if (match) {
       const playlistId = match[1];
-      return `https://www.youtube.com/embed/videoseries?list=${playlistId}&enablejsapi=1&origin=${window.location.origin}&widgetid=1`;
+      const result = `https://www.youtube.com/embed/videoseries?list=${playlistId}&enablejsapi=1&origin=${window.location.origin}&widgetid=1`;
+      console.log('Converted to embed URL, result:', result);
+      return result;
     }
     
+    console.log('No playlist ID found, returning original:', url);
     return url;
   };
 
