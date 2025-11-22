@@ -17,25 +17,37 @@ export const save = api<UpdatePlaylistRequest, void>(
       throw APIError.permissionDenied("invalid passcode");
     }
 
-    // First try to update if the column exists
+    const url = req.url.trim();
+    if (!url.includes("youtube.com/embed/videoseries")) {
+      throw APIError.invalidArgument("URL must be a YouTube playlist embed link");
+    }
+
+    // Try to update/insert playlist URL
     try {
+      // First try to update existing record
       await db.exec`
-        UPDATE church_info 
-        SET playlist_url = ${req.url.trim()}
+        UPDATE playlist_config 
+        SET url = ${url}, updated_at = NOW()
         WHERE id = 1
       `;
     } catch (error: any) {
-      // If the column doesn't exist, add it first
-      if (error.message && error.message.includes('playlist_url')) {
+      // If table doesn't exist, create it
+      if (error.message && (error.message.includes('playlist_config') || error.message.includes('relation'))) {
         await db.exec`
-          ALTER TABLE church_info 
-          ADD COLUMN playlist_url TEXT
+          CREATE TABLE IF NOT EXISTS playlist_config (
+            id INTEGER PRIMARY KEY DEFAULT 1,
+            url TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+          )
         `;
-        // Now try the update again
+        // Insert the first record
         await db.exec`
-          UPDATE church_info 
-          SET playlist_url = ${req.url.trim()}
-          WHERE id = 1
+          INSERT INTO playlist_config (id, url)
+          VALUES (1, ${url})
+          ON CONFLICT (id) DO UPDATE SET
+            url = excluded.url,
+            updated_at = NOW()
         `;
       } else {
         throw error;
@@ -49,15 +61,12 @@ export const get = api<void, GetPlaylistResponse>(
   async () => {
     try {
       const result = await db.queryRow<{ url: string | null }>`
-        SELECT playlist_url as url
-        FROM church_info
-        WHERE id = 1
+        SELECT url FROM playlist_config WHERE id = 1
       `;
-      
       return { url: result?.url || null };
     } catch (error: any) {
-      // If the column doesn't exist, return null
-      if (error.message && error.message.includes('playlist_url')) {
+      // If table doesn't exist, return null
+      if (error.message && (error.message.includes('playlist_config') || error.message.includes('relation'))) {
         return { url: null };
       }
       throw error;
