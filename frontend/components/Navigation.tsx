@@ -31,16 +31,18 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const getEmbedUrl = (url: string | null) => {
     if (!url) return url;
     
-    // If already in embed format, return as-is
+    // If already in embed format, ensure it has required parameters
     if (url.includes('youtube.com/embed/videoseries')) {
-      return url;
+      // Add required parameters for YouTube embed
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}enablejsapi=1&origin=${window.location.origin}&widgetid=1`;
     }
     
     // Extract playlist ID from regular YouTube playlist URL
     const match = url.match(/[?&]list=([^&]+)/);
     if (match) {
       const playlistId = match[1];
-      return `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
+      return `https://www.youtube.com/embed/videoseries?list=${playlistId}&enablejsapi=1&origin=${window.location.origin}&widgetid=1`;
     }
     
     return url;
