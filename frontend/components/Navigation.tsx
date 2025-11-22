@@ -27,6 +27,27 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     closePlayer: closeYouTubePlayer,
   } = usePlayer();
 
+  // Convert YouTube playlist URL to embed format for iframe
+  const getEmbedUrl = (url: string | null) => {
+    if (!url) return url;
+    
+    // If already in embed format, return as-is
+    if (url.includes('youtube.com/embed/videoseries')) {
+      return url;
+    }
+    
+    // Extract playlist ID from regular YouTube playlist URL
+    const match = url.match(/[?&]list=([^&]+)/);
+    if (match) {
+      const playlistId = match[1];
+      return `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
+    }
+    
+    return url;
+  };
+
+  const embedUrl = getEmbedUrl(youtubeTrackUrl);
+
   const [desktopPlayerPosition, setDesktopPlayerPosition] = useState({ top: 160, right: 16 });
   const [dragState, setDragState] = useState<{
     startX: number;
@@ -128,7 +149,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   )}
                 >
                   <iframe
-                    src={youtubeTrackUrl}
+                    src={embedUrl || ''}
                     title="YouTube player"
                     className="h-full w-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -220,7 +241,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               )}
             >
               <iframe
-                src={youtubeTrackUrl}
+                src={embedUrl || ''}
                 title="YouTube player"
                 className="h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
