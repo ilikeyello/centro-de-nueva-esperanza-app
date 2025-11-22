@@ -74,6 +74,7 @@ export function Media({ onStartMusic }: MediaProps) {
   const { playTrack, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
+  const [manualLiveOverride, setManualLiveOverride] = useState(false);
   const playerRef = useRef<any | null>(null);
   const youtubePlayerRef = useRef<any | null>(null);
 
@@ -243,12 +244,13 @@ export function Media({ onStartMusic }: MediaProps) {
 
   // Show countdown only when we're before the *next* livestream AND
   // not currently within the previous service's live window AND
-  // the stream is not actually live.
+  // the stream is not actually live (unless manually overridden).
   const showCountdown =
     millisecondsUntilStream > 0 && 
     now >= previousLivestreamEnd && 
     !isStreamPlaying && 
-    !isActuallyLive;
+    !isActuallyLive && 
+    !manualLiveOverride;
 
   const countdownLabel = formatCountdown(Math.max(millisecondsUntilStream, 0));
   const nextServiceFormatted = useMemo(() => {
@@ -379,20 +381,50 @@ export function Media({ onStartMusic }: MediaProps) {
         const player = youtubePlayerRef.current;
         const playerState = player.getPlayerState();
         const playerInfo = player.getVideoData();
+        const videoData = player.getVideoData?.();
         
         console.log('Livestream check:', {
           playerState,
           playerInfo,
-          videoData: playerInfo?.videoData,
-          isLive: playerInfo?.isLive
+          videoData,
+          isLive: playerInfo?.isLive,
+          duration: player.getDuration?.(),
+          currentTime: player.getCurrentTime?.()
         });
         
-        // Check if stream is live using multiple methods
-        const isLive = playerInfo?.isLive === true || 
-                      playerState === window.YT.PlayerState.BUFFERING ||
-                      (playerInfo && playerInfo.title && playerInfo.title.toLowerCase().includes('live'));
+        // Multiple methods to detect if stream is live
+        let isLive = false;
         
-        console.log('Setting isActuallyLive to:', isLive);
+        // Method 1: YouTube's isLive property (often unreliable)
+        if (playerInfo?.isLive === true) {
+          isLive = true;
+        }
+        
+        // Method 2: Check if duration is infinite or very long (livestreams have no fixed duration)
+        const duration = player.getDuration?.();
+        if (duration === 0 || isNaN(duration) || duration > 7200) { // 2+ hours or 0 indicates livestream
+          isLive = true;
+        }
+        
+        // Method 3: Check player state (BUFFERING state often indicates live stream)
+        const YT = window.YT;
+        if (YT && YT.PlayerState && playerState === YT.PlayerState.BUFFERING) {
+          isLive = true;
+        }
+        
+        // Method 4: Check if video title contains "LIVE" or "live"
+        if (playerInfo && playerInfo.title && 
+            (playerInfo.title.toLowerCase().includes('live') || 
+             playerInfo.title.toLowerCase().includes('en vivo'))) {
+          isLive = true;
+        }
+        
+        // Method 5: Check if video has ended but keeps trying to play (live behavior)
+        if (playerState === YT?.PlayerState.ENDED && duration === 0) {
+          isLive = true;
+        }
+        
+        console.log('Setting isActuallyLive to:', isLive, '(detection methods used)');
         setIsActuallyLive(isLive);
       } catch (error) {
         console.error('Error checking livestream status:', error);
@@ -465,6 +497,17 @@ export function Media({ onStartMusic }: MediaProps) {
                   <Music className="h-4 w-4" />
                   {t("Listen to Music", "Escuchar Música")}
                 </a>
+              </Button>
+              {/* Debug button for testing livestream detection */}
+              <Button
+                variant="outline"
+                className="border-yellow-600 bg-yellow-900/20 text-yellow-400 hover:bg-yellow-900/30"
+                onClick={() => {
+                  setManualLiveOverride(!manualLiveOverride);
+                  console.log('Manual live override:', !manualLiveOverride);
+                }}
+              >
+                {manualLiveOverride ? '🔴 Live (Manual)' : '⚫ Test Live'}
               </Button>
               <Button
                 variant="outline"
