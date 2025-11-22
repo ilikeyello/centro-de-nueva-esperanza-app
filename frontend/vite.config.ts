@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename)
 const basePath = process.env.VITE_APP_BASE_PATH ?? '/'
 
 export default defineConfig({
-  base: basePath,
+  base: './',
   resolve: {
     alias: {
       '@': path.resolve(__dirname),

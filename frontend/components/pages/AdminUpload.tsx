@@ -51,6 +51,67 @@ export function AdminUpload() {
     loadSermons();
   }, []);
 
+  const handleSavePlaylist = async () => {
+    setPlaylistStatus(null);
+
+    if (!playlistUrl.trim()) {
+      setPlaylistStatus(
+        t(
+          "Enter a playlist URL before saving.",
+          "Ingresa una URL de lista de reproducción antes de guardar."
+        )
+      );
+      return;
+    }
+    if (!uploadPasscode) {
+      setPlaylistStatus(
+        t(
+          "Enter the upload passcode before saving.",
+          "Ingresa el código de carga antes de guardar."
+        )
+      );
+      return;
+    }
+
+    try {
+      const base = import.meta.env.DEV
+        ? "http://127.0.0.1:4000"
+        : "https://prod-cne-sh82.encr.app";
+      const res = await fetch(`${base}/playlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          passcode: uploadPasscode,
+          url: playlistUrl.trim(),
+        }),
+      });
+
+      if (!res.ok) {
+        setPlaylistStatus(
+          t(
+            "Failed to save playlist URL. Check the passcode and URL.",
+            "No se pudo guardar la URL de la lista de reproducción. Verifica el código y la URL."
+          )
+        );
+        return;
+      }
+
+      setPlaylistStatus(
+        t(
+          "Playlist URL saved successfully.",
+          "URL de la lista de reproducción guardada correctamente."
+        )
+      );
+    } catch {
+      setPlaylistStatus(
+        t(
+          "An unexpected error occurred while saving the playlist URL.",
+          "Ocurrió un error inesperado al guardar la URL de la lista de reproducción."
+        )
+      );
+    }
+  };
+
   const handleSaveLivestream = async () => {
     setLivestreamStatus(null);
 
@@ -172,6 +233,13 @@ export function AdminUpload() {
             placeholder="https://www.youtube.com/embed/videoseries?..."
           />
           <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              className="bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700"
+              onClick={handleSavePlaylist}
+            >
+              {t("Save Playlist", "Guardar Lista de Reproducción")}
+            </Button>
             <Button
               type="button"
               className="bg-neutral-800 px-3 py-1 text-[0.7rem] hover:bg-neutral-700"

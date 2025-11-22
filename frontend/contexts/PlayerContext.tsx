@@ -120,6 +120,36 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     loadLivestreamUrl();
   }, []);
 
+  // Load playlist URL from backend on mount
+  useEffect(() => {
+    const loadPlaylistUrl = async () => {
+      try {
+        const base = import.meta.env.DEV
+          ? "http://127.0.0.1:4000"
+          : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/playlist`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            setPlaylistUrlState(data.url);
+            // Also update localStorage for fallback
+            try {
+              if (typeof window !== "undefined") {
+                window.localStorage.setItem("cne_music_playlist_url", data.url);
+              }
+            } catch {
+              // ignore storage errors
+            }
+          }
+        }
+      } catch {
+        // Ignore errors, fall back to localStorage/default
+      }
+    };
+
+    loadPlaylistUrl();
+  }, []);
+
   const playTrack = (url: string) => {
     setCurrentTrack(url);
     setIsPlaying(true);
