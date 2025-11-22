@@ -230,7 +230,7 @@ export function AdminUpload() {
             value={playlistUrl}
             onChange={(e) => setPlaylistUrl(e.target.value)}
             className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            placeholder="https://www.youtube.com/embed/videoseries?..."
+            placeholder="https://youtube.com/playlist?list=..."
           />
           <div className="flex flex-wrap gap-2">
             <Button
@@ -239,17 +239,6 @@ export function AdminUpload() {
               onClick={handleSavePlaylist}
             >
               {t("Save Playlist", "Guardar Lista de Reproducción")}
-            </Button>
-            <Button
-              type="button"
-              className="bg-neutral-800 px-3 py-1 text-[0.7rem] hover:bg-neutral-700"
-              onClick={() =>
-                setPlaylistUrl(
-                  "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW"
-                )
-              }
-            >
-              {t("Default CNE Playlist", "Lista predeterminada de CNE")}
             </Button>
           </div>
           {playlistStatus && (

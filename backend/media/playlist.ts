@@ -18,8 +18,8 @@ export const save = api<UpdatePlaylistRequest, void>(
     }
 
     const url = req.url.trim();
-    if (!url.includes("youtube.com/embed/videoseries")) {
-      throw APIError.invalidArgument("URL must be a YouTube playlist embed link");
+    if (!url.includes("youtube.com/playlist") && !url.includes("youtube.com/embed/videoseries")) {
+      throw APIError.invalidArgument("URL must be a YouTube playlist link");
     }
 
     // Try to update/insert playlist URL
