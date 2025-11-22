@@ -1,40 +1,66 @@
-import { api } from "encore.dev/api";
-import log from "encore.dev/log";
+import { api, APIError } from "encore.dev/api";
+import db from "../db";
 
-// Simple in-memory storage for the playlist URL
-// In production, you might want to use a database
-let playlistUrl: string | null = null;
+interface UpdatePlaylistRequest {
+  passcode: string;
+  url: string;
+}
 
-const ADMIN_PASSCODE = "78598";
+interface GetPlaylistResponse {
+  url: string | null;
+}
 
-export const save = api(
-  { expose: true, method: "POST", path: "/playlist", auth: false },
-  async ({ passcode, url }: { passcode: string; url: string }) => {
-    // Verify passcode
-    if (passcode !== ADMIN_PASSCODE) {
-      log.error("Invalid passcode provided for playlist save");
-      throw new Error("Invalid passcode");
+export const save = api<UpdatePlaylistRequest, void>(
+  { expose: true, method: "POST", path: "/playlist" },
+  async (req) => {
+    if (req.passcode !== "78598") {
+      throw APIError.permissionDenied("invalid passcode");
     }
 
-    if (!url || url.trim().length === 0) {
-      throw new Error("URL is required");
+    // First try to update if the column exists
+    try {
+      await db.exec`
+        UPDATE church_info 
+        SET playlist_url = ${req.url.trim()}
+        WHERE id = 1
+      `;
+    } catch (error: any) {
+      // If the column doesn't exist, add it first
+      if (error.message && error.message.includes('playlist_url')) {
+        await db.exec`
+          ALTER TABLE church_info 
+          ADD COLUMN playlist_url TEXT
+        `;
+        // Now try the update again
+        await db.exec`
+          UPDATE church_info 
+          SET playlist_url = ${req.url.trim()}
+          WHERE id = 1
+        `;
+      } else {
+        throw error;
+      }
     }
-
-    // Validate YouTube playlist URL
-    if (!url.includes("youtube.com/embed/videoseries")) {
-      throw new Error("Invalid YouTube playlist URL format");
-    }
-
-    playlistUrl = url.trim();
-    log.info("Playlist URL updated successfully");
-    
-    return { success: true, url: playlistUrl };
   }
 );
 
-export const get = api(
-  { expose: true, method: "GET", path: "/playlist", auth: false },
+export const get = api<void, GetPlaylistResponse>(
+  { expose: true, method: "GET", path: "/playlist" },
   async () => {
-    return { url: playlistUrl };
+    try {
+      const result = await db.queryRow<{ url: string | null }>`
+        SELECT playlist_url as url
+        FROM church_info
+        WHERE id = 1
+      `;
+      
+      return { url: result?.url || null };
+    } catch (error: any) {
+      // If the column doesn't exist, return null
+      if (error.message && error.message.includes('playlist_url')) {
+        return { url: null };
+      }
+      throw error;
+    }
   }
 );
