@@ -11,6 +11,17 @@ const LIVESTREAM_MINUTE = 30;
 // Approximate service length including a small grace window for late starts
 const LIVESTREAM_DURATION_MINUTES = 120;
 
+// YouTube livestream detection
+let youtubeAPIReady = false;
+let liveCheckInterval: NodeJS.Timeout | null = null;
+
+declare global {
+  interface Window {
+    onYouTubeIframeAPIReady: () => void;
+    YT: any;
+  }
+}
+
 function getNextLivestream(reference: Date) {
   const next = new Date(reference);
   next.setSeconds(0, 0);
@@ -62,7 +73,9 @@ export function Media({ onStartMusic }: MediaProps) {
   const [loadingSermons, setLoadingSermons] = useState(false);
   const { playTrack, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
+  const [isActuallyLive, setIsActuallyLive] = useState(false);
   const playerRef = useRef<any | null>(null);
+  const youtubePlayerRef = useRef<any | null>(null);
 
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploadPasscode, setUploadPasscode] = useState("");
@@ -222,9 +235,13 @@ export function Media({ onStartMusic }: MediaProps) {
     now >= previousLivestreamStart && now <= previousLivestreamEnd;
 
   // Show countdown only when we're before the *next* livestream AND
-  // not currently within the previous service's live window.
+  // not currently within the previous service's live window AND
+  // the stream is not actually live.
   const showCountdown =
-    millisecondsUntilStream > 0 && now >= previousLivestreamEnd && !isStreamPlaying;
+    millisecondsUntilStream > 0 && 
+    now >= previousLivestreamEnd && 
+    !isStreamPlaying && 
+    !isActuallyLive;
 
   const countdownLabel = formatCountdown(Math.max(millisecondsUntilStream, 0));
   const nextServiceFormatted = useMemo(() => {
@@ -253,6 +270,116 @@ export function Media({ onStartMusic }: MediaProps) {
       // Autoplay may be blocked by the browser; user can still start manually.
     }
   }, [isInCurrentLivestreamWindow, showCountdown, isStreamPlaying]);
+
+  // YouTube API and livestream detection
+  useEffect(() => {
+    if (!livestreamUrl) return;
+
+    // Load YouTube IFrame API if not already loaded
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+
+    // Set up API ready callback
+    window.onYouTubeIframeAPIReady = () => {
+      youtubeAPIReady = true;
+      initializeLivestreamDetection();
+    };
+
+    // If API already ready, initialize immediately
+    if (window.YT && window.YT.Player) {
+      youtubeAPIReady = true;
+      initializeLivestreamDetection();
+    }
+
+    function initializeLivestreamDetection() {
+      if (!livestreamUrl || youtubePlayerRef.current) return;
+
+      // Extract video ID from URL
+      let videoId = '';
+      try {
+        const url = new URL(livestreamUrl);
+        if (url.hostname.includes('youtu.be')) {
+          videoId = url.pathname.replace('/', '');
+        } else if (url.searchParams.get('v')) {
+          videoId = url.searchParams.get('v') || '';
+        } else if (url.pathname.includes('/embed/')) {
+          videoId = url.pathname.split('/embed/')[1]?.split('?')[0] || '';
+        }
+      } catch {
+        return;
+      }
+
+      if (!videoId) return;
+
+      // Create YouTube player for detection
+      youtubePlayerRef.current = new window.YT.Player('youtube-livestream-detector', {
+        videoId: videoId,
+        events: {
+          onReady: (event: any) => {
+            // Start checking if stream is live
+            checkLivestreamStatus();
+            liveCheckInterval = setInterval(checkLivestreamStatus, 30000); // Check every 30 seconds
+          },
+          onError: (error: any) => {
+            console.error('YouTube player error:', error);
+            setIsActuallyLive(false);
+          }
+        }
+      });
+    }
+
+    function checkLivestreamStatus() {
+      if (!youtubePlayerRef.current) return;
+
+      try {
+        const player = youtubePlayerRef.current;
+        const playerInfo = player.getVideoData();
+        
+        // Check if stream is live
+        if (playerInfo && playerInfo.isLive) {
+          setIsActuallyLive(true);
+        } else {
+          setIsActuallyLive(false);
+        }
+      } catch (error) {
+        // If we can't get video data, assume not live
+        setIsActuallyLive(false);
+      }
+    }
+
+    return () => {
+      if (liveCheckInterval) {
+        clearInterval(liveCheckInterval);
+        liveCheckInterval = null;
+      }
+      if (youtubePlayerRef.current) {
+        youtubePlayerRef.current.destroy();
+        youtubePlayerRef.current = null;
+      }
+    };
+  }, [livestreamUrl]);
+
+  // Create hidden div for YouTube player detection
+  useEffect(() => {
+    if (!livestreamUrl) return;
+
+    // Create hidden div for YouTube player
+    const detectorDiv = document.createElement('div');
+    detectorDiv.id = 'youtube-livestream-detector';
+    detectorDiv.style.display = 'none';
+    document.body.appendChild(detectorDiv);
+
+    return () => {
+      const existingDiv = document.getElementById('youtube-livestream-detector');
+      if (existingDiv) {
+        existingDiv.remove();
+      }
+    };
+  }, [livestreamUrl]);
 
   return (
     <div className="container mx-auto space-y-10 px-4 py-8">
