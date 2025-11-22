@@ -29,13 +29,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   // Convert YouTube playlist URL to embed format for iframe
   const getEmbedUrl = (url: string | null) => {
-    console.log('Original URL:', url);
-    
     if (!url) return url;
     
     // If already in embed format, return as-is
     if (url.includes('youtube.com/embed/videoseries')) {
-      console.log('Already embed URL, returning:', url);
       return url;
     }
     
@@ -53,11 +50,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         embedUrl += `&si=${sessionId}`;
       }
       
-      console.log('Converted to embed URL, result:', embedUrl);
       return embedUrl;
     }
     
-    console.log('No playlist ID found, returning original:', url);
     return url;
   };
 

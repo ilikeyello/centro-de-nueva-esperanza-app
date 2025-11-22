@@ -115,15 +115,7 @@ export function AdminUpload() {
   const handleSaveLivestream = async () => {
     setLivestreamStatus(null);
 
-    if (!livestreamUrl.trim()) {
-      setLivestreamStatus(
-        t(
-          "Enter a livestream URL before saving.",
-          "Ingresa una URL de transmisión en vivo antes de guardar."
-        )
-      );
-      return;
-    }
+    // Allow empty URLs (erasing) - don't require validation
     if (!uploadPasscode) {
       setLivestreamStatus(
         t(
@@ -263,7 +255,7 @@ export function AdminUpload() {
             value={livestreamUrl}
             onChange={(e) => setLivestreamUrl(e.target.value)}
             className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            placeholder="https://www.youtube.com/watch?v=..."
+            placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
           />
           <div className="flex flex-wrap gap-2">
             <Button
