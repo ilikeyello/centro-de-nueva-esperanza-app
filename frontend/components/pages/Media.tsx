@@ -305,6 +305,15 @@ export function Media({ onStartMusic }: MediaProps) {
     !isActuallyLive && 
     !manualLiveOverride;
 
+  // Show "Starting Soon" when countdown is done but stream isn't live yet
+  const showStartingSoon =
+    millisecondsUntilStream <= 0 && 
+    now >= previousLivestreamEnd && 
+    !isStreamPlaying && 
+    !isActuallyLive && 
+    !manualLiveOverride &&
+    livestreamUrl; // Only show if there's a livestream URL
+
   const countdownLabel = formatCountdown(Math.max(millisecondsUntilStream, 0));
   const nextServiceFormatted = useMemo(() => {
     return nextLivestream.toLocaleString(language === "en" ? "en-US" : "es-MX", {
@@ -655,6 +664,35 @@ export function Media({ onStartMusic }: MediaProps) {
                       {t(
                         "Stay on this page and the stream will start automatically.",
                         "Permanece en esta página y la transmisión comenzará automáticamente."
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {showStartingSoon && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-950/90 px-6 text-center">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-3 w-3 animate-pulse rounded-full bg-red-500"></div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400">
+                        {t("Starting Soon", "Comenzando Pronto")}
+                      </p>
+                      <div className="h-3 w-3 animate-pulse rounded-full bg-red-500"></div>
+                    </div>
+                    <p className="text-xl font-semibold text-white sm:text-2xl">
+                      {t("The stream will begin any moment", "La transmisión comenzará en cualquier momento")}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-red-400"></div>
+                      <p className="text-sm text-neutral-300">
+                        {t("Please wait while we connect", "Por favor espera mientras nos conectamos")}
+                      </p>
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-red-400"></div>
+                    </div>
+                    <p className="text-xs text-neutral-500">
+                      {t(
+                        "The service is scheduled to start now. Stay on this page!",
+                        "El servicio está programado para comenzar ahora. ¡Permanece en esta página!"
                       )}
                     </p>
                   </div>
