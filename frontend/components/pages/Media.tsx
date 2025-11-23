@@ -207,7 +207,7 @@ export function Media({ onStartMusic }: MediaProps) {
       // Handle YouTube live channel embed URLs
       if (u.pathname.includes('/embed/live_stream') && u.searchParams.get('channel')) {
         const channelId = u.searchParams.get('channel');
-        const result = `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1`;
+        const result = `https://www.youtube.com/embed/live_stream?channel=${channelId}`;
         console.log('getEmbedUrl output (channel live):', result);
         return result;
       }
@@ -226,8 +226,8 @@ export function Media({ onStartMusic }: MediaProps) {
         if (channelId) {
           // Try multiple channel live stream formats
           const formats = [
-            `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1`,
-            `https://www.youtube.com/embed/${channelId}?live=1&enablejsapi=1`,
+            `https://www.youtube.com/embed/live_stream?channel=${channelId}`,
+            `https://www.youtube.com/embed/${channelId}?live=1`,
             `https://www.youtube.com/embed/live_stream?channel=${channelId}`
           ];
           
