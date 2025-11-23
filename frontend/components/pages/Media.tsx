@@ -199,38 +199,78 @@ export function Media({ onStartMusic }: MediaProps) {
   const effectiveSelectedSermon = selectedSermon ?? devSampleSermon;
 
   const getEmbedUrl = (url: string) => {
+    console.log('getEmbedUrl input:', url);
+    
     try {
       const u = new URL(url);
       
       // Handle YouTube live channel embed URLs
       if (u.pathname.includes('/embed/live_stream') && u.searchParams.get('channel')) {
         const channelId = u.searchParams.get('channel');
-        return `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1`;
+        const result = `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1`;
+        console.log('getEmbedUrl output (channel live):', result);
+        return result;
+      }
+      
+      // Handle YouTube channel URLs (convert to live stream embed)
+      if (u.pathname.includes('/channel/') || u.pathname.includes('/c/') || u.pathname.includes('/@')) {
+        let channelId = '';
+        if (u.pathname.includes('/channel/')) {
+          channelId = u.pathname.split('/channel/')[1]?.split('?')[0] || '';
+        } else if (u.pathname.includes('/c/')) {
+          channelId = u.pathname.split('/c/')[1]?.split('?')[0] || '';
+        } else if (u.pathname.includes('/@')) {
+          channelId = u.pathname.split('/@')[1]?.split('?')[0] || '';
+        }
+        
+        if (channelId) {
+          // Try multiple channel live stream formats
+          const formats = [
+            `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1`,
+            `https://www.youtube.com/embed/${channelId}?live=1&enablejsapi=1`,
+            `https://www.youtube.com/embed/live_stream?channel=${channelId}`
+          ];
+          
+          console.log('getEmbedUrl output (channel live formats):', formats[0]);
+          return formats[0]; // Use the first format
+        }
       }
       
       // Handle regular YouTube URLs
       if (u.hostname.includes('youtu.be')) {
         const id = u.pathname.replace('/', '');
-        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        console.log('getEmbedUrl output (youtu.be):', result);
+        return result;
       }
       if (u.searchParams.get('v')) {
         const id = u.searchParams.get('v');
-        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        console.log('getEmbedUrl output (watch):', result);
+        return result;
       }
       if (u.pathname.includes('/live/')) {
         const id = u.pathname.split('/live/')[1]?.split('?')[0];
-        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        console.log('getEmbedUrl output (live):', result);
+        return result;
       }
       if (u.pathname.includes('/embed/')) {
         // Already in embed format, just add enablejsapi if missing
         if (u.searchParams.has('enablejsapi')) {
+          console.log('getEmbedUrl output (already embed):', url);
           return url;
         }
         u.searchParams.set('enablejsapi', '1');
-        return u.toString();
+        const result = u.toString();
+        console.log('getEmbedUrl output (embed with enablejsapi):', result);
+        return result;
       }
+      
+      console.log('getEmbedUrl output (fallback):', url);
       return url;
-    } catch {
+    } catch (error) {
+      console.error('getEmbedUrl error:', error);
       return url;
     }
   };
@@ -623,6 +663,12 @@ export function Media({ onStartMusic }: MediaProps) {
                 className="h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                onLoad={() => {
+                  console.log('Livestream iframe loaded with src:', getEmbedUrl(livestreamUrl));
+                }}
+                onError={() => {
+                  console.error('Livestream iframe failed to load with src:', getEmbedUrl(livestreamUrl));
+                }}
               />
             </div>
           </div>
