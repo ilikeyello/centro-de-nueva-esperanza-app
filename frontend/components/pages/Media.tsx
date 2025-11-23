@@ -201,6 +201,14 @@ export function Media({ onStartMusic }: MediaProps) {
   const getEmbedUrl = (url: string) => {
     try {
       const u = new URL(url);
+      
+      // Handle YouTube live channel embed URLs
+      if (u.pathname.includes('/embed/live_stream') && u.searchParams.get('channel')) {
+        const channelId = u.searchParams.get('channel');
+        return `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1`;
+      }
+      
+      // Handle regular YouTube URLs
       if (u.hostname.includes('youtu.be')) {
         const id = u.pathname.replace('/', '');
         return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
@@ -214,7 +222,12 @@ export function Media({ onStartMusic }: MediaProps) {
         return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
       }
       if (u.pathname.includes('/embed/')) {
-        return url; // Already in embed format
+        // Already in embed format, just add enablejsapi if missing
+        if (u.searchParams.has('enablejsapi')) {
+          return url;
+        }
+        u.searchParams.set('enablejsapi', '1');
+        return u.toString();
       }
       return url;
     } catch {
@@ -324,11 +337,16 @@ export function Media({ onStartMusic }: MediaProps) {
 
       // Extract video ID from URL
       let videoId = '';
+      let isChannelLive = false;
       try {
         const url = new URL(livestreamUrl);
         console.log('Parsing URL:', url);
         
-        if (url.hostname.includes('youtu.be')) {
+        if (url.pathname.includes('/embed/live_stream') && url.searchParams.get('channel')) {
+          // This is a live channel embed URL
+          videoId = url.searchParams.get('channel') || '';
+          isChannelLive = true;
+        } else if (url.hostname.includes('youtu.be')) {
           videoId = url.pathname.replace('/', '');
         } else if (url.searchParams.get('v')) {
           videoId = url.searchParams.get('v') || '';
@@ -336,39 +354,66 @@ export function Media({ onStartMusic }: MediaProps) {
           videoId = url.pathname.split('/embed/')[1]?.split('?')[0] || '';
         }
         
-        console.log('Extracted video ID:', videoId);
+        console.log('Extracted video ID/channel:', videoId, 'Is channel live:', isChannelLive);
       } catch (error) {
         console.error('Error extracting video ID:', error);
         return;
       }
 
       if (!videoId) {
-        console.error('No video ID found in URL');
+        console.error('No video ID/channel found in URL');
         return;
       }
 
       // Create YouTube player for detection
-      console.log('Creating YouTube player for video ID:', videoId);
-      youtubePlayerRef.current = new window.YT.Player('youtube-livestream-detector', {
-        videoId: videoId,
-        events: {
-          onReady: (event: any) => {
-            console.log('YouTube player ready for livestream detection');
-            // Start checking if stream is live
-            checkLivestreamStatus();
-            liveCheckInterval = setInterval(checkLivestreamStatus, 10000); // Check every 10 seconds for testing
-          },
-          onError: (error: any) => {
-            console.error('YouTube player error:', error);
-            setIsActuallyLive(false);
-          },
-          onStateChange: (event: any) => {
-            console.log('YouTube player state changed:', event.data);
-            // Check status when state changes
-            setTimeout(checkLivestreamStatus, 1000);
+      console.log('Creating YouTube player for:', isChannelLive ? 'channel' : 'video ID', videoId);
+      
+      if (isChannelLive) {
+        // For channel live streams, use the live_stream URL directly
+        youtubePlayerRef.current = new window.YT.Player('youtube-livestream-detector', {
+          videoId: videoId,
+          host: 'https://www.youtube.com',
+          events: {
+            onReady: (event: any) => {
+              console.log('YouTube player ready for livestream detection');
+              // For channel live streams, assume it's live if player loads successfully
+              checkLivestreamStatus();
+              liveCheckInterval = setInterval(checkLivestreamStatus, 10000); // Check every 10 seconds for testing
+            },
+            onError: (error: any) => {
+              console.error('YouTube player error:', error);
+              setIsActuallyLive(false);
+            },
+            onStateChange: (event: any) => {
+              console.log('YouTube player state changed:', event.data);
+              // Check status when state changes
+              setTimeout(checkLivestreamStatus, 1000);
+            }
           }
-        }
-      });
+        });
+      } else {
+        // Regular video ID
+        youtubePlayerRef.current = new window.YT.Player('youtube-livestream-detector', {
+          videoId: videoId,
+          events: {
+            onReady: (event: any) => {
+              console.log('YouTube player ready for livestream detection');
+              // Start checking if stream is live
+              checkLivestreamStatus();
+              liveCheckInterval = setInterval(checkLivestreamStatus, 10000); // Check every 10 seconds for testing
+            },
+            onError: (error: any) => {
+              console.error('YouTube player error:', error);
+              setIsActuallyLive(false);
+            },
+            onStateChange: (event: any) => {
+              console.log('YouTube player state changed:', event.data);
+              // Check status when state changes
+              setTimeout(checkLivestreamStatus, 1000);
+            }
+          }
+        });
+      }
     }
 
     function checkLivestreamStatus() {
@@ -421,6 +466,12 @@ export function Media({ onStartMusic }: MediaProps) {
         
         // Method 5: Check if video has ended but keeps trying to play (live behavior)
         if (playerState === YT?.PlayerState.ENDED && duration === 0) {
+          isLive = true;
+        }
+        
+        // Method 6: For channel live streams, if player loads without error, assume it might be live
+        const url = new URL(livestreamUrl);
+        if (url.pathname.includes('/embed/live_stream') && playerState !== YT?.PlayerState.UNSTARTED) {
           isLive = true;
         }
         
