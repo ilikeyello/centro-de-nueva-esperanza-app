@@ -4,20 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CNE</title>
-    <script type="module" crossorigin src="./assets/index-lejdrD8w.js"></script>
+    <style>
+      .app-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        background-color: #000000;
+        color: #f9fafb;
+        z-index: 50;
+      }
+      
+      .app-splash-logo {
+        width: min(72px, 20vw);
+        max-height: 72px;
+        height: auto;
+        display: block;
+        opacity: 1;
+      }
+      
+      .app-splash-spinner {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 9999px;
+        border: 2px solid rgba(249, 250, 251, 0.15);
+        border-top-color: #ef4444;
+        animation: app-splash-spin 0.9s linear infinite;
+      }
+      
+      @keyframes app-splash-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-BaRTBEgu.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-JBqncgYB.css">
   </head>
   <body>
     <div id="root">
-      <div
-        class="app-splash"
-        style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; background-color: #000000; z-index: 50;"
-      >
+      <div class="app-splash">
         <img
           src="./cne_logo_black.svg"
           alt="Centro de Nueva Esperanza"
           class="app-splash-logo"
-          style="width: 72px; max-height: 72px; height: auto; filter: invert(1);"
+          style="filter: invert(1);"
         />
         <div class="app-splash-spinner" aria-hidden="true"></div>
       </div>
