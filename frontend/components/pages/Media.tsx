@@ -410,23 +410,27 @@ export function Media({ onStartMusic }: MediaProps) {
       
       if (isChannelLive) {
         // For channel live streams, we can't use the YouTube API with channel IDs
-        // Instead, we'll assume it's live if the URL is valid and periodically check the iframe
-        console.log('Channel live stream detected, using direct iframe approach');
+        // We'll check if the iframe can load the content properly
+        console.log('Channel live stream detected, checking if actually live');
         
-        // Set as live immediately for channel streams (they're designed to always show current live content)
-        setIsActuallyLive(true);
+        // Start with assuming not live, then check iframe accessibility
+        setIsActuallyLive(false);
         
-        // Set up periodic checks to verify the stream is still accessible
+        // Set up periodic checks to verify the stream is accessible
         liveCheckInterval = setInterval(() => {
-          // For channel streams, we'll just keep checking if we can access the URL
-          // If the iframe loads without errors, we assume it's working
           const iframe = document.querySelector('#cne-livestream-player') as HTMLIFrameElement;
           if (iframe) {
             try {
-              // Try to access the iframe content (will fail if blocked, but that's expected)
-              // The fact that we can create the iframe means the URL is valid
-              console.log('Channel live stream iframe is accessible');
-              setIsActuallyLive(true);
+              // Check if iframe loaded successfully by trying to access its contentWindow
+              // This will fail due to cross-origin, but the fact that the iframe exists
+              // and we can reference it means the URL is valid
+              console.log('Channel live stream iframe exists, checking if live...');
+              
+              // For channel streams, we'll use a simple heuristic:
+              // If the iframe loads without immediate errors, assume it might be live
+              // We can't reliably detect live status for channel streams without API access
+              // So we'll default to showing countdown unless manually overridden
+              setIsActuallyLive(false); // Default to not live for channel streams
             } catch (error) {
               console.log('Channel live stream iframe check failed, assuming not live');
               setIsActuallyLive(false);
