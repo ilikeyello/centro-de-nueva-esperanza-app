@@ -121,28 +121,14 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
 
   // Load levels and questions from local storage
   useEffect(() => {
-    loadLevelsAndQuestions();
+    loadLevels();
+  }, []);
+
+  useEffect(() => {
+    if (selectedLevel) {
+      loadQuestions(selectedLevel).then((questions) => setQuestions(questions));
+    }
   }, [selectedLevel]);
-
-  const loadLevelsAndQuestions = () => {
-    // Load levels from local storage or use defaults
-    const savedLevels = JSON.parse(localStorage.getItem('triviaLevels') || 'null');
-    if (savedLevels) {
-      setLevels(savedLevels);
-    }
-
-    // Load questions from local storage or use sample questions
-    const savedQuestions = JSON.parse(localStorage.getItem('triviaQuestions') || '[]');
-    const levelQuestions = savedQuestions.filter((q: TriviaQuestion) => q.level === selectedLevel);
-    
-    // If no user questions for this level, use sample questions
-    if (levelQuestions.length === 0) {
-      const sampleForLevel = sampleQuestions.filter(q => q.level === selectedLevel);
-      setQuestions(sampleForLevel);
-    } else {
-      setQuestions(levelQuestions);
-    }
-  };
 
   const currentQuestion = questions[currentQuestionIndex];
 
