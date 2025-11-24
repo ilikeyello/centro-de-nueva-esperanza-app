@@ -35,3 +35,16 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 // Hide splash screen after React mounts
 hideSplashScreen();
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/cne-app/sw.js')
+      .then((registration) => {
+        console.log('SW registered: ', registration);
+      })
+      .catch((registrationError) => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
+}

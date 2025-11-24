@@ -2,45 +2,31 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Sparkles, Puzzle, Brain, Users } from "lucide-react";
+import { BibleTrivia } from "../games/BibleTrivia";
+import { useState } from "react";
 
 const gameList = [
   {
     id: 1,
-    titleEn: "Bible Trivia Sprint",
-    titleEs: "Trivia Bíblica Rápida",
-    descriptionEn: "Answer quick-fire questions covering Old and New Testament highlights.",
-    descriptionEs: "Responde preguntas rápidas que cubren los puntos destacados del Antiguo y Nuevo Testamento.",
+    titleEn: "Bible Trivia Challenge",
+    titleEs: "Desafío de Trivia Bíblica",
+    descriptionEn: "Test your Bible knowledge with interactive questions and instant feedback.",
+    descriptionEs: "Pon a prueba tu conocimiento bíblico con preguntas interactivas y retroalimentación instantánea.",
     icon: Brain,
-    ctaEn: "Play Trivia",
-    ctaEs: "Jugar Trivia",
-    link: "https://www.christianity.com/trivia/",
-  },
-  {
-    id: 2,
-    titleEn: "Memory Verse Match",
-    titleEs: "Memoriza Versículos",
-    descriptionEn: "Match verses with their references and commit Scripture to heart.",
-    descriptionEs: "Empareja versículos con sus referencias y guarda la Escritura en tu corazón.",
-    icon: Puzzle,
-    ctaEn: "Start Matching",
-    ctaEs: "Comenzar",
-    link: "https://biblepathwayadventures.com/memory/",
-  },
-  {
-    id: 3,
-    titleEn: "Kids' Adventure Quiz",
-    titleEs: "Aventura Bíblica Infantil",
-    descriptionEn: "A playful journey through the Bible designed for children and families.",
-    descriptionEs: "Un recorrido divertido por la Biblia diseñado para niños y familias.",
-    icon: Users,
-    ctaEn: "Explore Now",
-    ctaEs: "Explorar",
-    link: "https://quiz.christianbiblereference.org/children2.htm",
+    ctaEn: "Play Now",
+    ctaEs: "Jugar Ahora",
+    link: "bible-trivia",
+    internal: true,
   },
 ];
 
 export function Games() {
   const { language, t } = useLanguage();
+  const [currentGame, setCurrentGame] = useState<string | null>(null);
+
+  if (currentGame === "bible-trivia") {
+    return <BibleTrivia onBack={() => setCurrentGame(null)} />;
+  }
 
   return (
     <div className="container mx-auto space-y-10 px-4 py-8">
@@ -62,7 +48,7 @@ export function Games() {
         </p>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
+      <section className="grid gap-6 md:grid-cols-1">
         {gameList.map((game) => {
           const Icon = game.icon;
           return (
@@ -84,15 +70,33 @@ export function Games() {
                 <p className="text-sm text-neutral-300">
                   {language === "en" ? game.descriptionEn : game.descriptionEs}
                 </p>
-                <Button asChild className="bg-red-600 hover:bg-red-700">
-                  <a href={game.link} target="_blank" rel="noreferrer">
-                    {t(game.ctaEn, game.ctaEs)}
-                  </a>
+                <Button 
+                  className="bg-red-600 hover:bg-red-700"
+                  onClick={() => game.internal ? setCurrentGame(game.link) : window.open(game.link, '_blank')}
+                >
+                  {t(game.ctaEn, game.ctaEs)}
                 </Button>
               </CardContent>
             </Card>
           );
         })}
+      </section>
+
+      <section className="space-y-4">
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-6 text-center">
+          <div className="flex items-center justify-center gap-2 text-neutral-400 mb-3">
+            <Sparkles className="h-5 w-5" />
+            <span className="text-sm font-semibold uppercase tracking-[0.2em]">
+              {t("More Coming Soon", "Más Pronto")}
+            </span>
+          </div>
+          <p className="text-neutral-300">
+            {t(
+              "We're working on more exciting games and activities to help you grow in faith. Check back soon for new additions!",
+              "Estamos trabajando en más juegos y actividades emocionantes para ayudarte a crecer en la fe. ¡Vuelve pronto para ver las nuevas adiciones!"
+            )}
+          </p>
+        </div>
       </section>
     </div>
   );

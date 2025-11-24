@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePlayer } from "../../contexts/PlayerContext";
+import { TriviaManager } from "../admin/TriviaManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function AdminUpload() {
   const { t } = useLanguage();
@@ -207,99 +209,114 @@ export function AdminUpload() {
       </div>
 
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
-          {t("Music Playlist", "Lista de Música")}
-        </p>
-        <p className="mt-1 text-neutral-400">
-          {t(
-            "Set the YouTube playlist used by the Music & Worship section.",
-            "Configura la lista de reproducción de YouTube usada por la sección de Música y Adoración."
-          )}
-        </p>
-        <div className="mt-3 space-y-2 text-[0.75rem]">
-          <input
-            type="text"
-            value={playlistUrl}
-            onChange={(e) => setPlaylistUrl(e.target.value)}
-            className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            placeholder="https://youtube.com/playlist?list=..."
-          />
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              className="bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700"
-              onClick={handleSavePlaylist}
-            >
-              {t("Save Playlist", "Guardar Lista de Reproducción")}
-            </Button>
-          </div>
-          {playlistStatus && (
-            <p className="text-[0.7rem] text-neutral-400">{playlistStatus}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
-          {t("Livestream Link", "Enlace de Transmisión en Vivo")}
-        </p>
-        <p className="mt-1 text-neutral-400">
-          {t(
+        <Tabs defaultValue="media" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="media">{t("Music", "Música")}</TabsTrigger>
+            <TabsTrigger value="trivia">{t("Trivia", "Trivia")}</TabsTrigger>
+            <TabsTrigger value="other">{t("Media", "Medios")}</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="media" className="space-y-4 mt-4">
+            <div>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
+                {t("Music Playlist", "Lista de Música")}
+              </p>
+              <p className="mt-1 text-neutral-400">
+                {t(
+                  "Set the YouTube playlist used by the Music & Worship section.",
+                  "Configura la lista de reproducción de YouTube usada por la sección de Música y Adoración."
+                )}
+              </p>
+              <div className="mt-3 space-y-2 text-[0.75rem]">
+                <input
+                  type="text"
+                  value={playlistUrl}
+                  onChange={(e) => setPlaylistUrl(e.target.value)}
+                  className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  placeholder="https://youtube.com/playlist?list=..."
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    className="bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700"
+                    onClick={handleSavePlaylist}
+                  >
+                    {t("Save Playlist", "Guardar Lista de Reproducción")}
+                  </Button>
+                </div>
+                {playlistStatus && (
+                  <p className="text-[0.7rem] text-neutral-400">{playlistStatus}</p>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="trivia" className="mt-4">
+            <TriviaManager />
+          </TabsContent>
+          
+          <TabsContent value="other" className="space-y-4 mt-4">
+            <div>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
+                {t("Livestream Link", "Enlace de Transmisión en Vivo")}
+              </p>
+              <p className="mt-1 text-neutral-400">
+                {t(
             "Set the YouTube livestream link used by the Watch Live player on the Media page.",
             "Configura el enlace de transmisión en vivo de YouTube usado por el reproductor Ver en Vivo en la página de Medios."
           )}
         </p>
         <div className="mt-3 space-y-2 text-[0.75rem]">
-          <input
-            type="text"
-            value={livestreamUrl}
-            onChange={(e) => setLivestreamUrl(e.target.value)}
-            className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
-          />
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              className="bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700"
-              onClick={handleSaveLivestream}
-            >
-              {t("Save Livestream", "Guardar Transmisión en Vivo")}
-            </Button>
-          </div>
-          {livestreamStatus && (
-            <p className="text-[0.7rem] text-neutral-400">{livestreamStatus}</p>
-          )}
-          <p className="text-[0.7rem] text-neutral-500">
-            {t(
-              "Tip: You can paste a regular YouTube link; we will convert it to the correct embed format.",
-              "Consejo: Puedes pegar un enlace normal de YouTube; lo convertiremos al formato de inserción correcto."
-            )}
-          </p>
-        </div>
-      </div>
+                <input
+                  type="text"
+                  value={livestreamUrl}
+                  onChange={(e) => setLivestreamUrl(e.target.value)}
+                  className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    className="bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700"
+                    onClick={handleSaveLivestream}
+                  >
+                    {t("Save Livestream", "Guardar Transmisión en Vivo")}
+                  </Button>
+                </div>
+                {livestreamStatus && (
+                  <p className="text-[0.7rem] text-neutral-400">{livestreamStatus}</p>
+                )}
+                <p className="text-[0.7rem] text-neutral-500">
+                  {t(
+                    "Tip: You can paste a regular YouTube link; we will convert it to the correct embed format.",
+                    "Consejo: Puedes pegar un enlace normal de YouTube; lo convertiremos al formato de inserción correcto."
+                  )}
+                </p>
+              </div>
+            </div>
+            
+            <div>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
+                {t("Devotionals", "Devocionales")}
+              </p>
+              <p className="mt-1 text-neutral-400">
+                {t(
+                  "Add or remove YouTube devotional videos shown on the Media page.",
+                  "Agrega o elimina videos devocionales de YouTube que se muestran en la página de Medios."
+                )}
+              </p>
 
-      <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
-          {t("Devotionals", "Devocionales")}
-        </p>
-        <p className="mt-1 text-neutral-400">
-          {t(
-            "Add or remove YouTube devotional videos shown on the Media page.",
-            "Agrega o elimina videos devocionales de YouTube que se muestran en la página de Medios."
-          )}
-        </p>
+              <form
+                className="mt-4 space-y-2 text-[0.75rem]"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setSermonStatus(null);
 
-        <form
-          className="mt-4 space-y-2 text-[0.75rem]"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setSermonStatus(null);
-
-            if (!sermonTitle.trim() || !sermonUrl.trim()) {
-              setSermonStatus(
-                t(
-                  "Enter a title and YouTube URL before saving.",
-                  "Ingresa un título y URL de YouTube antes de guardar."
+                  if (!sermonTitle.trim() || !sermonUrl.trim()) {
+                    setSermonStatus(
+                      t(
+                        "Enter a title and YouTube URL before saving.",
+                        "Ingresa un título y URL de YouTube antes de guardar."
                 )
               );
               return;
@@ -494,6 +511,9 @@ export function AdminUpload() {
             </ul>
           )}
         </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <p className="text-[0.7rem] text-neutral-500">

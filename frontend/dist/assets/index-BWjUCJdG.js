@@ -15277,45 +15277,12 @@ function useLanguage() {
   }
   return context;
 }
-function normalizeLivestreamUrl(raw, fallback) {
-  const trimmed = raw.trim();
-  if (!trimmed) return fallback;
-  try {
-    const url = new URL(trimmed);
-    const host = url.hostname.toLowerCase();
-    let videoId = null;
-    if (host.includes("youtu.be")) {
-      videoId = url.pathname.replace("/", "");
-    } else if (host.includes("youtube.com")) {
-      if (url.pathname.startsWith("/live/")) {
-        const parts = url.pathname.split("/").filter(Boolean);
-        videoId = parts[parts.length - 1] ?? null;
-      } else if (url.pathname.startsWith("/watch")) {
-        videoId = url.searchParams.get("v");
-      } else if (url.pathname.startsWith("/embed/")) {
-        const parts = url.pathname.split("/").filter(Boolean);
-        videoId = parts[parts.length - 1] ?? null;
-      }
-    }
-    if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
-    }
-    if (!trimmed.includes("enablejsapi=1")) {
-      const separator = trimmed.includes("?") ? "&" : "?";
-      return `${trimmed}${separator}enablejsapi=1`;
-    }
-    return trimmed;
-  } catch {
-    return fallback;
-  }
-}
 const PlayerContext = reactExports.createContext(void 0);
 function PlayerProvider({ children }) {
   const [currentTrack, setCurrentTrack] = reactExports.useState(null);
   const [isPlaying, setIsPlaying] = reactExports.useState(false);
   const [isMinimized, setIsMinimized] = reactExports.useState(false);
   const defaultPlaylistUrl = "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
-  const defaultLivestreamUrl = "https://www.youtube.com/embed/HF7qrZR1rDA?enablejsapi=1";
   const [playlistUrl, setPlaylistUrlState] = reactExports.useState(() => {
     if (typeof window === "undefined") return defaultPlaylistUrl;
     try {
@@ -15326,15 +15293,12 @@ function PlayerProvider({ children }) {
     }
   });
   const [livestreamUrl, setLivestreamUrlState] = reactExports.useState(() => {
-    if (typeof window === "undefined") return defaultLivestreamUrl;
+    if (typeof window === "undefined") return "";
     try {
       const stored = window.localStorage.getItem("cne_livestream_url");
-      if (stored && stored.trim().length > 0) {
-        return normalizeLivestreamUrl(stored, defaultLivestreamUrl);
-      }
-      return defaultLivestreamUrl;
+      return stored || "";
     } catch {
-      return defaultLivestreamUrl;
+      return "";
     }
   });
   reactExports.useEffect(() => {
@@ -15345,11 +15309,10 @@ function PlayerProvider({ children }) {
         if (res.ok) {
           const data = await res.json();
           if (data.url) {
-            const normalizedUrl = normalizeLivestreamUrl(data.url, defaultLivestreamUrl);
-            setLivestreamUrlState(normalizedUrl);
+            setLivestreamUrlState(data.url);
             try {
               if (typeof window !== "undefined") {
-                window.localStorage.setItem("cne_livestream_url", normalizedUrl);
+                window.localStorage.setItem("cne_livestream_url", data.url);
               }
             } catch {
             }
@@ -15359,6 +15322,28 @@ function PlayerProvider({ children }) {
       }
     };
     loadLivestreamUrl();
+  }, []);
+  reactExports.useEffect(() => {
+    const loadPlaylistUrl = async () => {
+      try {
+        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/playlist`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            setPlaylistUrlState(data.url);
+            try {
+              if (typeof window !== "undefined") {
+                window.localStorage.setItem("cne_music_playlist_url", data.url);
+              }
+            } catch {
+            }
+          }
+        }
+      } catch {
+      }
+    };
+    loadPlaylistUrl();
   }, []);
   const playTrack = (url) => {
     setCurrentTrack(url);
@@ -15374,21 +15359,20 @@ function PlayerProvider({ children }) {
   };
   const setPlaylistUrl = (url) => {
     const trimmed = url.trim();
-    const value = trimmed.length > 0 ? trimmed : defaultPlaylistUrl;
-    setPlaylistUrlState(value);
+    setPlaylistUrlState(trimmed);
     try {
       if (typeof window !== "undefined") {
-        window.localStorage.setItem("cne_music_playlist_url", value);
+        window.localStorage.setItem("cne_music_playlist_url", trimmed);
       }
     } catch {
     }
   };
   const setLivestreamUrl = (url) => {
-    const value = normalizeLivestreamUrl(url, defaultLivestreamUrl);
-    setLivestreamUrlState(value);
+    const trimmed = url.trim();
+    setLivestreamUrlState(trimmed);
     try {
       if (typeof window !== "undefined") {
-        window.localStorage.setItem("cne_livestream_url", value);
+        window.localStorage.setItem("cne_livestream_url", trimmed);
       }
     } catch {
     }
@@ -15517,18 +15501,18 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$z = [
+const __iconNode$E = [
   ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
   ["path", { d: "M19 12H5", key: "x3x0zl" }]
 ];
-const ArrowLeft = createLucideIcon("arrow-left", __iconNode$z);
+const ArrowLeft = createLucideIcon("arrow-left", __iconNode$E);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$y = [
+const __iconNode$D = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -15538,14 +15522,14 @@ const __iconNode$y = [
     }
   ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$y);
+const Bell = createLucideIcon("bell", __iconNode$D);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$x = [
+const __iconNode$C = [
   [
     "path",
     {
@@ -15568,14 +15552,14 @@ const __iconNode$x = [
   ["path", { d: "M6 18a4 4 0 0 1-1.967-.516", key: "2e4loj" }],
   ["path", { d: "M19.967 17.484A4 4 0 0 1 18 18", key: "159ez6" }]
 ];
-const Brain = createLucideIcon("brain", __iconNode$x);
+const Brain = createLucideIcon("brain", __iconNode$C);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$w = [
+const __iconNode$B = [
   ["path", { d: "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z", key: "1b4qmf" }],
   ["path", { d: "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2", key: "i71pzd" }],
   ["path", { d: "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2", key: "10jefs" }],
@@ -15584,7 +15568,56 @@ const __iconNode$w = [
   ["path", { d: "M10 14h4", key: "kelpxr" }],
   ["path", { d: "M10 18h4", key: "1ulq68" }]
 ];
-const Building2 = createLucideIcon("building-2", __iconNode$w);
+const Building2 = createLucideIcon("building-2", __iconNode$B);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$A = [
+  ["path", { d: "M8 2v4", key: "1cmpym" }],
+  ["path", { d: "M16 2v4", key: "4m81vk" }],
+  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
+  ["path", { d: "M3 10h18", key: "8toen8" }]
+];
+const Calendar = createLucideIcon("calendar", __iconNode$A);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$z = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$z);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$y = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$y);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$x = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$x);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$w = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
+  ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
+];
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$w);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15592,66 +15625,40 @@ const Building2 = createLucideIcon("building-2", __iconNode$w);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$v = [
-  ["path", { d: "M8 2v4", key: "1cmpym" }],
-  ["path", { d: "M16 2v4", key: "4m81vk" }],
-  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
-  ["path", { d: "M3 10h18", key: "8toen8" }]
+  ["path", { d: "M21.801 10A10 10 0 1 1 17 3.335", key: "yps3ct" }],
+  ["path", { d: "m9 11 3 3L22 4", key: "1pflzl" }]
 ];
-const Calendar = createLucideIcon("calendar", __iconNode$v);
+const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$v);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$u = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$u);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$t = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$t);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$s = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$s);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$r = [
+const __iconNode$u = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
-  ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
+  ["path", { d: "m15 9-6 6", key: "1uzhvr" }],
+  ["path", { d: "m9 9 6 6", key: "z0biqf" }]
 ];
-const CircleAlert = createLucideIcon("circle-alert", __iconNode$r);
+const CircleX = createLucideIcon("circle-x", __iconNode$u);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$q = [
+const __iconNode$t = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
 ];
-const Clock = createLucideIcon("clock", __iconNode$q);
+const Clock = createLucideIcon("clock", __iconNode$t);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$p = [
+const __iconNode$s = [
   ["path", { d: "M10 2v2", key: "7u0qdc" }],
   ["path", { d: "M14 2v2", key: "6buw04" }],
   [
@@ -15663,38 +15670,38 @@ const __iconNode$p = [
   ],
   ["path", { d: "M6 2v2", key: "colzsn" }]
 ];
-const Coffee = createLucideIcon("coffee", __iconNode$p);
+const Coffee = createLucideIcon("coffee", __iconNode$s);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [
+const __iconNode$r = [
   ["line", { x1: "12", x2: "12", y1: "2", y2: "22", key: "7eqyqh" }],
   ["path", { d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6", key: "1b0p4s" }]
 ];
-const DollarSign = createLucideIcon("dollar-sign", __iconNode$o);
+const DollarSign = createLucideIcon("dollar-sign", __iconNode$r);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$n = [
+const __iconNode$q = [
   [
     "path",
     { d: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z", key: "1jg4f8" }
   ]
 ];
-const Facebook = createLucideIcon("facebook", __iconNode$n);
+const Facebook = createLucideIcon("facebook", __iconNode$q);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$m = [
+const __iconNode$p = [
   ["line", { x1: "6", x2: "10", y1: "11", y2: "11", key: "1gktln" }],
   ["line", { x1: "8", x2: "8", y1: "9", y2: "13", key: "qnk9ow" }],
   ["line", { x1: "15", x2: "15.01", y1: "12", y2: "12", key: "krot7o" }],
@@ -15707,26 +15714,26 @@ const __iconNode$m = [
     }
   ]
 ];
-const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$m);
+const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$p);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$l = [
+const __iconNode$o = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
   ["path", { d: "M2 12h20", key: "9i4pu4" }]
 ];
-const Globe = createLucideIcon("globe", __iconNode$l);
+const Globe = createLucideIcon("globe", __iconNode$o);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$k = [
+const __iconNode$n = [
   [
     "path",
     {
@@ -15735,14 +15742,14 @@ const __iconNode$k = [
     }
   ]
 ];
-const Heart = createLucideIcon("heart", __iconNode$k);
+const Heart = createLucideIcon("heart", __iconNode$n);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$j = [
+const __iconNode$m = [
   ["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", key: "5wwlr5" }],
   [
     "path",
@@ -15752,26 +15759,26 @@ const __iconNode$j = [
     }
   ]
 ];
-const House = createLucideIcon("house", __iconNode$j);
+const House = createLucideIcon("house", __iconNode$m);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$i = [
+const __iconNode$l = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "M12 16v-4", key: "1dtifu" }],
   ["path", { d: "M12 8h.01", key: "e9boi3" }]
 ];
-const Info = createLucideIcon("info", __iconNode$i);
+const Info = createLucideIcon("info", __iconNode$l);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$h = [
+const __iconNode$k = [
   ["path", { d: "m5 8 6 6", key: "1wu5hv" }],
   ["path", { d: "m4 14 6-6 2-3", key: "1k1g8d" }],
   ["path", { d: "M2 5h12", key: "or177f" }],
@@ -15779,25 +15786,25 @@ const __iconNode$h = [
   ["path", { d: "m22 22-5-10-5 10", key: "don7ne" }],
   ["path", { d: "M14 18h6", key: "1m8k6r" }]
 ];
-const Languages = createLucideIcon("languages", __iconNode$h);
+const Languages = createLucideIcon("languages", __iconNode$k);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$g = [
+const __iconNode$j = [
   ["rect", { width: "20", height: "16", x: "2", y: "4", rx: "2", key: "18n3k1" }],
   ["path", { d: "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7", key: "1ocrg3" }]
 ];
-const Mail = createLucideIcon("mail", __iconNode$g);
+const Mail = createLucideIcon("mail", __iconNode$j);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$f = [
+const __iconNode$i = [
   [
     "path",
     {
@@ -15807,7 +15814,41 @@ const __iconNode$f = [
   ],
   ["circle", { cx: "12", cy: "10", r: "3", key: "ilqhr7" }]
 ];
-const MapPin = createLucideIcon("map-pin", __iconNode$f);
+const MapPin = createLucideIcon("map-pin", __iconNode$i);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$h = [
+  ["polyline", { points: "15 3 21 3 21 9", key: "mznyad" }],
+  ["polyline", { points: "9 21 3 21 3 15", key: "1avn1i" }],
+  ["line", { x1: "21", x2: "14", y1: "3", y2: "10", key: "ota7mn" }],
+  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
+];
+const Maximize2 = createLucideIcon("maximize-2", __iconNode$h);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$g = [
+  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
+  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
+];
+const Megaphone = createLucideIcon("megaphone", __iconNode$g);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$f = [
+  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
+];
+const MessageCircle = createLucideIcon("message-circle", __iconNode$f);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15815,12 +15856,12 @@ const MapPin = createLucideIcon("map-pin", __iconNode$f);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$e = [
-  ["polyline", { points: "15 3 21 3 21 9", key: "mznyad" }],
-  ["polyline", { points: "9 21 3 21 3 15", key: "1avn1i" }],
-  ["line", { x1: "21", x2: "14", y1: "3", y2: "10", key: "ota7mn" }],
+  ["polyline", { points: "4 14 10 14 10 20", key: "11kfnr" }],
+  ["polyline", { points: "20 10 14 10 14 4", key: "rlmsce" }],
+  ["line", { x1: "14", x2: "21", y1: "10", y2: "3", key: "o5lafz" }],
   ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
 ];
-const Maximize2 = createLucideIcon("maximize-2", __iconNode$e);
+const Minimize2 = createLucideIcon("minimize-2", __iconNode$e);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15828,10 +15869,11 @@ const Maximize2 = createLucideIcon("maximize-2", __iconNode$e);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$d = [
-  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
-  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
+  ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
+  ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
+  ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }]
 ];
-const Megaphone = createLucideIcon("megaphone", __iconNode$d);
+const Music = createLucideIcon("music", __iconNode$d);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15839,9 +15881,15 @@ const Megaphone = createLucideIcon("megaphone", __iconNode$d);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$c = [
-  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
+  [
+    "path",
+    {
+      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
+      key: "1a8usu"
+    }
+  ]
 ];
-const MessageCircle = createLucideIcon("message-circle", __iconNode$c);
+const Pen = createLucideIcon("pen", __iconNode$c);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15849,31 +15897,6 @@ const MessageCircle = createLucideIcon("message-circle", __iconNode$c);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$b = [
-  ["polyline", { points: "4 14 10 14 10 20", key: "11kfnr" }],
-  ["polyline", { points: "20 10 14 10 14 4", key: "rlmsce" }],
-  ["line", { x1: "14", x2: "21", y1: "10", y2: "3", key: "o5lafz" }],
-  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
-];
-const Minimize2 = createLucideIcon("minimize-2", __iconNode$b);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$a = [
-  ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
-  ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
-  ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }]
-];
-const Music = createLucideIcon("music", __iconNode$a);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$9 = [
   [
     "path",
     {
@@ -15882,15 +15905,37 @@ const __iconNode$9 = [
     }
   ]
 ];
-const Phone = createLucideIcon("phone", __iconNode$9);
+const Phone = createLucideIcon("phone", __iconNode$b);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$8 = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
-const Play = createLucideIcon("play", __iconNode$8);
+const __iconNode$a = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
+const Play = createLucideIcon("play", __iconNode$a);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$9 = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
+];
+const Plus = createLucideIcon("plus", __iconNode$9);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$8 = [
+  ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
+  ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
+];
+const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$8);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15898,10 +15943,17 @@ const Play = createLucideIcon("play", __iconNode$8);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$7 = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "M12 5v14", key: "s699le" }]
+  [
+    "path",
+    {
+      d: "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z",
+      key: "1c8476"
+    }
+  ],
+  ["path", { d: "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7", key: "1ydtos" }],
+  ["path", { d: "M7 3v4a1 1 0 0 0 1 1h7", key: "t51u73" }]
 ];
-const Plus = createLucideIcon("plus", __iconNode$7);
+const Save = createLucideIcon("save", __iconNode$7);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15909,22 +15961,6 @@ const Plus = createLucideIcon("plus", __iconNode$7);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$6 = [
-  [
-    "path",
-    {
-      d: "M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z",
-      key: "w46dr5"
-    }
-  ]
-];
-const Puzzle = createLucideIcon("puzzle", __iconNode$6);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$5 = [
   [
     "path",
     {
@@ -15937,7 +15973,21 @@ const __iconNode$5 = [
   ["path", { d: "M4 17v2", key: "vumght" }],
   ["path", { d: "M5 18H3", key: "zchphs" }]
 ];
-const Sparkles = createLucideIcon("sparkles", __iconNode$5);
+const Sparkles = createLucideIcon("sparkles", __iconNode$6);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$5 = [
+  ["path", { d: "M3 6h18", key: "d0wm0j" }],
+  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
+  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
+  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
+  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
+];
+const Trash2 = createLucideIcon("trash-2", __iconNode$5);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15945,20 +15995,6 @@ const Sparkles = createLucideIcon("sparkles", __iconNode$5);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$4 = [
-  ["path", { d: "M3 6h18", key: "d0wm0j" }],
-  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
-  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
-  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
-  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
-];
-const Trash2 = createLucideIcon("trash-2", __iconNode$4);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$3 = [
   [
     "path",
     {
@@ -15969,7 +16005,22 @@ const __iconNode$3 = [
   ["path", { d: "M12 9v4", key: "juzpu7" }],
   ["path", { d: "M12 17h.01", key: "p32p05" }]
 ];
-const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$3);
+const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$4);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$3 = [
+  ["path", { d: "M6 9H4.5a2.5 2.5 0 0 1 0-5H6", key: "17hqa7" }],
+  ["path", { d: "M18 9h1.5a2.5 2.5 0 0 0 0-5H18", key: "lmptdp" }],
+  ["path", { d: "M4 22h16", key: "57wxv0" }],
+  ["path", { d: "M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22", key: "1nw9bq" }],
+  ["path", { d: "M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22", key: "1np0yb" }],
+  ["path", { d: "M18 2H6v7a6 6 0 0 0 12 0V2Z", key: "u46fv3" }]
+];
+const Trophy = createLucideIcon("trophy", __iconNode$3);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -19036,6 +19087,25 @@ function Navigation({ currentPage, onNavigate }) {
     toggleMinimize,
     closePlayer: closeYouTubePlayer
   } = usePlayer();
+  const getEmbedUrl = (url) => {
+    if (!url) return url;
+    if (url.includes("youtube.com/embed/videoseries")) {
+      return url;
+    }
+    const listMatch = url.match(/[?&]list=([^&]+)/);
+    const siMatch = url.match(/[?&]si=([^&]+)/);
+    if (listMatch) {
+      const playlistId = listMatch[1];
+      const sessionId = siMatch ? siMatch[1] : "";
+      let embedUrl2 = `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
+      if (sessionId) {
+        embedUrl2 += `&si=${sessionId}`;
+      }
+      return embedUrl2;
+    }
+    return url;
+  };
+  const embedUrl = getEmbedUrl(youtubeTrackUrl);
   const [desktopPlayerPosition, setDesktopPlayerPosition] = reactExports.useState({ top: 160, right: 16 });
   const [dragState, setDragState] = reactExports.useState(null);
   reactExports.useEffect(() => {
@@ -19123,7 +19193,7 @@ function Navigation({ currentPage, onNavigate }) {
                 children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                   "iframe",
                   {
-                    src: youtubeTrackUrl,
+                    src: embedUrl || "",
                     title: "YouTube player",
                     className: "h-full w-full",
                     allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
@@ -19225,7 +19295,7 @@ function Navigation({ currentPage, onNavigate }) {
               children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "iframe",
                 {
-                  src: youtubeTrackUrl,
+                  src: embedUrl || "",
                   title: "YouTube player",
                   className: "h-full w-full",
                   allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
@@ -19296,15 +19366,15 @@ function isLazyComponent(element) {
   return element != null && typeof element === "object" && "$$typeof" in element && element.$$typeof === REACT_LAZY_TYPE && "_payload" in element && isPromiseLike(element._payload);
 }
 // @__NO_SIDE_EFFECTS__
-function createSlot$4(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone$4(ownerName);
+function createSlot$1(ownerName) {
+  const SlotClone = /* @__PURE__ */ createSlotClone$1(ownerName);
   const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
     let { children, ...slotProps } = props;
     if (isLazyComponent(children) && typeof use === "function") {
       children = use(children._payload);
     }
     const childrenArray = reactExports.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable$4);
+    const slottable = childrenArray.find(isSlottable$1);
     if (slottable) {
       const newElement = slottable.props.children;
       const newChildren = childrenArray.map((child) => {
@@ -19322,17 +19392,17 @@ function createSlot$4(ownerName) {
   Slot2.displayName = `${ownerName}.Slot`;
   return Slot2;
 }
-var Slot$2 = /* @__PURE__ */ createSlot$4("Slot");
+var Slot$2 = /* @__PURE__ */ createSlot$1("Slot");
 // @__NO_SIDE_EFFECTS__
-function createSlotClone$4(ownerName) {
+function createSlotClone$1(ownerName) {
   const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
     let { children, ...slotProps } = props;
     if (isLazyComponent(children) && typeof use === "function") {
       children = use(children._payload);
     }
     if (reactExports.isValidElement(children)) {
-      const childrenRef = getElementRef$5(children);
-      const props2 = mergeProps$4(slotProps, children.props);
+      const childrenRef = getElementRef$2(children);
+      const props2 = mergeProps$1(slotProps, children.props);
       if (children.type !== reactExports.Fragment) {
         props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
       }
@@ -19343,11 +19413,11 @@ function createSlotClone$4(ownerName) {
   SlotClone.displayName = `${ownerName}.SlotClone`;
   return SlotClone;
 }
-var SLOTTABLE_IDENTIFIER$4 = Symbol("radix.slottable");
-function isSlottable$4(child) {
-  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER$4;
+var SLOTTABLE_IDENTIFIER$1 = Symbol("radix.slottable");
+function isSlottable$1(child) {
+  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER$1;
 }
-function mergeProps$4(slotProps, childProps) {
+function mergeProps$1(slotProps, childProps) {
   const overrideProps = { ...childProps };
   for (const propName in childProps) {
     const slotPropValue = slotProps[propName];
@@ -19371,7 +19441,7 @@ function mergeProps$4(slotProps, childProps) {
   }
   return { ...slotProps, ...overrideProps };
 }
-function getElementRef$5(element) {
+function getElementRef$2(element) {
   var _a2, _b2;
   let getter = (_a2 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a2.get;
   let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
@@ -19507,7 +19577,7 @@ var NODES$1 = [
   "ul"
 ];
 var Primitive$1 = NODES$1.reduce((primitive, node) => {
-  const Slot2 = /* @__PURE__ */ createSlot$4(`Primitive.${node}`);
+  const Slot2 = /* @__PURE__ */ createSlot$1(`Primitive.${node}`);
   const Node2 = reactExports.forwardRef((props, forwardedRef) => {
     const { asChild, ...primitiveProps } = props;
     const Comp = asChild ? Slot2 : node;
@@ -19537,13 +19607,13 @@ var Label$1 = reactExports.forwardRef((props, forwardedRef) => {
   );
 });
 Label$1.displayName = NAME$2;
-var Root$3 = Label$1;
+var Root$4 = Label$1;
 function Label({
   className,
   ...props
 }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Root$3,
+    Root$4,
     {
       "data-slot": "label",
       className: cn(
@@ -20688,7 +20758,7 @@ function useId(deterministicId) {
   useLayoutEffect2(() => {
     setId((reactId) => reactId ?? String(count$1++));
   }, [deterministicId]);
-  return deterministicId || (id ? `radix-${id}` : "");
+  return id ? `radix-${id}` : "";
 }
 var useInsertionEffect = React$1[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
 function useControllableState({
@@ -20722,7 +20792,7 @@ function useControllableState({
     (nextValue) => {
       var _a2;
       if (isControlled) {
-        const value2 = isFunction(nextValue) ? nextValue(prop) : nextValue;
+        const value2 = isFunction$1(nextValue) ? nextValue(prop) : nextValue;
         if (value2 !== prop) {
           (_a2 = onChangeRef.current) == null ? void 0 : _a2.call(onChangeRef, value2);
         }
@@ -20753,16 +20823,16 @@ function useUncontrolledState({
   }, [value, prevValueRef]);
   return [value, setValue, onChangeRef];
 }
-function isFunction(value) {
+function isFunction$1(value) {
   return typeof value === "function";
 }
 // @__NO_SIDE_EFFECTS__
-function createSlot$3(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone$3(ownerName);
+function createSlot(ownerName) {
+  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
   const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
     const { children, ...slotProps } = props;
     const childrenArray = reactExports.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable$3);
+    const slottable = childrenArray.find(isSlottable);
     if (slottable) {
       const newElement = slottable.props.children;
       const newChildren = childrenArray.map((child) => {
@@ -20781,12 +20851,12 @@ function createSlot$3(ownerName) {
   return Slot2;
 }
 // @__NO_SIDE_EFFECTS__
-function createSlotClone$3(ownerName) {
+function createSlotClone(ownerName) {
   const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
     const { children, ...slotProps } = props;
     if (reactExports.isValidElement(children)) {
-      const childrenRef = getElementRef$4(children);
-      const props2 = mergeProps$3(slotProps, children.props);
+      const childrenRef = getElementRef$1(children);
+      const props2 = mergeProps(slotProps, children.props);
       if (children.type !== reactExports.Fragment) {
         props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
       }
@@ -20797,11 +20867,11 @@ function createSlotClone$3(ownerName) {
   SlotClone.displayName = `${ownerName}.SlotClone`;
   return SlotClone;
 }
-var SLOTTABLE_IDENTIFIER$3 = Symbol("radix.slottable");
-function isSlottable$3(child) {
-  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER$3;
+var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
+function isSlottable(child) {
+  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
 }
-function mergeProps$3(slotProps, childProps) {
+function mergeProps(slotProps, childProps) {
   const overrideProps = { ...childProps };
   for (const propName in childProps) {
     const slotPropValue = slotProps[propName];
@@ -20825,7 +20895,7 @@ function mergeProps$3(slotProps, childProps) {
   }
   return { ...slotProps, ...overrideProps };
 }
-function getElementRef$4(element) {
+function getElementRef$1(element) {
   var _a2, _b2;
   let getter = (_a2 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a2.get;
   let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
@@ -20859,7 +20929,7 @@ var NODES = [
   "ul"
 ];
 var Primitive = NODES.reduce((primitive, node) => {
-  const Slot2 = /* @__PURE__ */ createSlot$3(`Primitive.${node}`);
+  const Slot2 = /* @__PURE__ */ createSlot(`Primitive.${node}`);
   const Node2 = reactExports.forwardRef((props, forwardedRef) => {
     const { asChild, ...primitiveProps } = props;
     const Comp = asChild ? Slot2 : node;
@@ -21097,11 +21167,11 @@ function handleAndDispatchCustomEvent$1(name, handler, detail, { discrete }) {
     target.dispatchEvent(event);
   }
 }
-var Root$2 = DismissableLayer;
+var Root$3 = DismissableLayer;
 var Branch = DismissableLayerBranch;
 var AUTOFOCUS_ON_MOUNT = "focusScope.autoFocusOnMount";
 var AUTOFOCUS_ON_UNMOUNT = "focusScope.autoFocusOnUnmount";
-var EVENT_OPTIONS = { bubbles: false, cancelable: true };
+var EVENT_OPTIONS$1 = { bubbles: false, cancelable: true };
 var FOCUS_SCOPE_NAME = "FocusScope";
 var FocusScope = reactExports.forwardRef((props, forwardedRef) => {
   const {
@@ -21166,11 +21236,11 @@ var FocusScope = reactExports.forwardRef((props, forwardedRef) => {
       const previouslyFocusedElement = document.activeElement;
       const hasFocusedCandidate = container.contains(previouslyFocusedElement);
       if (!hasFocusedCandidate) {
-        const mountEvent = new CustomEvent(AUTOFOCUS_ON_MOUNT, EVENT_OPTIONS);
+        const mountEvent = new CustomEvent(AUTOFOCUS_ON_MOUNT, EVENT_OPTIONS$1);
         container.addEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
         container.dispatchEvent(mountEvent);
         if (!mountEvent.defaultPrevented) {
-          focusFirst$1(removeLinks(getTabbableCandidates$1(container)), { select: true });
+          focusFirst$2(removeLinks(getTabbableCandidates$1(container)), { select: true });
           if (document.activeElement === previouslyFocusedElement) {
             focus(container);
           }
@@ -21179,7 +21249,7 @@ var FocusScope = reactExports.forwardRef((props, forwardedRef) => {
       return () => {
         container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
         setTimeout(() => {
-          const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
+          const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS$1);
           container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
           container.dispatchEvent(unmountEvent);
           if (!unmountEvent.defaultPrevented) {
@@ -21219,7 +21289,7 @@ var FocusScope = reactExports.forwardRef((props, forwardedRef) => {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { tabIndex: -1, ...scopeProps, ref: composedRefs, onKeyDown: handleKeyDown });
 });
 FocusScope.displayName = FOCUS_SCOPE_NAME;
-function focusFirst$1(candidates, { select = false } = {}) {
+function focusFirst$2(candidates, { select = false } = {}) {
   const previouslyFocusedElement = document.activeElement;
   for (const candidate of candidates) {
     focus(candidate, { select });
@@ -21319,7 +21389,7 @@ var Presence = (props) => {
   const { present, children } = props;
   const presence = usePresence(present);
   const child = typeof children === "function" ? children({ present: presence.isPresent }) : reactExports.Children.only(children);
-  const ref = useComposedRefs(presence.ref, getElementRef$3(child));
+  const ref = useComposedRefs(presence.ref, getElementRef(child));
   const forceMount = typeof children === "function";
   return forceMount || presence.isPresent ? reactExports.cloneElement(child, { ref }) : null;
 };
@@ -21418,7 +21488,7 @@ function usePresence(present) {
 function getAnimationName(styles) {
   return (styles == null ? void 0 : styles.animationName) || "none";
 }
-function getElementRef$3(element) {
+function getElementRef(element) {
   var _a2, _b2;
   let getter = (_a2 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a2.get;
   let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
@@ -22230,89 +22300,6 @@ var hideOthers = function(originalTarget, parentNode, markerName) {
   targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll("[aria-live], script")));
   return applyAttributeToOthers(targets, activeParentNode, markerName, "aria-hidden");
 };
-// @__NO_SIDE_EFFECTS__
-function createSlot$2(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone$2(ownerName);
-  const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    const childrenArray = reactExports.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable$2);
-    if (slottable) {
-      const newElement = slottable.props.children;
-      const newChildren = childrenArray.map((child) => {
-        if (child === slottable) {
-          if (reactExports.Children.count(newElement) > 1) return reactExports.Children.only(null);
-          return reactExports.isValidElement(newElement) ? newElement.props.children : null;
-        } else {
-          return child;
-        }
-      });
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children: reactExports.isValidElement(newElement) ? reactExports.cloneElement(newElement, void 0, newChildren) : null });
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children });
-  });
-  Slot2.displayName = `${ownerName}.Slot`;
-  return Slot2;
-}
-// @__NO_SIDE_EFFECTS__
-function createSlotClone$2(ownerName) {
-  const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    if (reactExports.isValidElement(children)) {
-      const childrenRef = getElementRef$2(children);
-      const props2 = mergeProps$2(slotProps, children.props);
-      if (children.type !== reactExports.Fragment) {
-        props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
-      }
-      return reactExports.cloneElement(children, props2);
-    }
-    return reactExports.Children.count(children) > 1 ? reactExports.Children.only(null) : null;
-  });
-  SlotClone.displayName = `${ownerName}.SlotClone`;
-  return SlotClone;
-}
-var SLOTTABLE_IDENTIFIER$2 = Symbol("radix.slottable");
-function isSlottable$2(child) {
-  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER$2;
-}
-function mergeProps$2(slotProps, childProps) {
-  const overrideProps = { ...childProps };
-  for (const propName in childProps) {
-    const slotPropValue = slotProps[propName];
-    const childPropValue = childProps[propName];
-    const isHandler = /^on[A-Z]/.test(propName);
-    if (isHandler) {
-      if (slotPropValue && childPropValue) {
-        overrideProps[propName] = (...args) => {
-          const result = childPropValue(...args);
-          slotPropValue(...args);
-          return result;
-        };
-      } else if (slotPropValue) {
-        overrideProps[propName] = slotPropValue;
-      }
-    } else if (propName === "style") {
-      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
-    } else if (propName === "className") {
-      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
-    }
-  }
-  return { ...slotProps, ...overrideProps };
-}
-function getElementRef$2(element) {
-  var _a2, _b2;
-  let getter = (_a2 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a2.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.ref;
-  }
-  getter = (_b2 = Object.getOwnPropertyDescriptor(element, "ref")) == null ? void 0 : _b2.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.props.ref;
-  }
-  return element.props.ref || element.ref;
-}
 var DIALOG_NAME = "Dialog";
 var [createDialogContext] = createContextScope(DIALOG_NAME);
 var [DialogProvider, useDialogContext] = createDialogContext(DIALOG_NAME);
@@ -22351,11 +22338,11 @@ var Dialog$1 = (props) => {
   );
 };
 Dialog$1.displayName = DIALOG_NAME;
-var TRIGGER_NAME$1 = "DialogTrigger";
+var TRIGGER_NAME$3 = "DialogTrigger";
 var DialogTrigger$1 = reactExports.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, ...triggerProps } = props;
-    const context = useDialogContext(TRIGGER_NAME$1, __scopeDialog);
+    const context = useDialogContext(TRIGGER_NAME$3, __scopeDialog);
     const composedTriggerRef = useComposedRefs(forwardedRef, context.triggerRef);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       Primitive.button,
@@ -22364,7 +22351,7 @@ var DialogTrigger$1 = reactExports.forwardRef(
         "aria-haspopup": "dialog",
         "aria-expanded": context.open,
         "aria-controls": context.contentId,
-        "data-state": getState(context.open),
+        "data-state": getState$1(context.open),
         ...triggerProps,
         ref: composedTriggerRef,
         onClick: composeEventHandlers(props.onClick, context.onOpenToggle)
@@ -22372,7 +22359,7 @@ var DialogTrigger$1 = reactExports.forwardRef(
     );
   }
 );
-DialogTrigger$1.displayName = TRIGGER_NAME$1;
+DialogTrigger$1.displayName = TRIGGER_NAME$3;
 var PORTAL_NAME$1 = "DialogPortal";
 var [PortalProvider, usePortalContext] = createDialogContext(PORTAL_NAME$1, {
   forceMount: void 0
@@ -22393,7 +22380,7 @@ var DialogOverlay$1 = reactExports.forwardRef(
   }
 );
 DialogOverlay$1.displayName = OVERLAY_NAME;
-var Slot$1 = /* @__PURE__ */ createSlot$2("DialogOverlay.RemoveScroll");
+var Slot$1 = /* @__PURE__ */ createSlot("DialogOverlay.RemoveScroll");
 var DialogOverlayImpl = reactExports.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, ...overlayProps } = props;
@@ -22404,7 +22391,7 @@ var DialogOverlayImpl = reactExports.forwardRef(
       /* @__PURE__ */ jsxRuntimeExports.jsx(ReactRemoveScroll, { as: Slot$1, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         Primitive.div,
         {
-          "data-state": getState(context.open),
+          "data-state": getState$1(context.open),
           ...overlayProps,
           ref: forwardedRef,
           style: { pointerEvents: "auto", ...overlayProps.style }
@@ -22413,19 +22400,19 @@ var DialogOverlayImpl = reactExports.forwardRef(
     );
   }
 );
-var CONTENT_NAME$2 = "DialogContent";
+var CONTENT_NAME$3 = "DialogContent";
 var DialogContent$1 = reactExports.forwardRef(
   (props, forwardedRef) => {
-    const portalContext = usePortalContext(CONTENT_NAME$2, props.__scopeDialog);
+    const portalContext = usePortalContext(CONTENT_NAME$3, props.__scopeDialog);
     const { forceMount = portalContext.forceMount, ...contentProps } = props;
-    const context = useDialogContext(CONTENT_NAME$2, props.__scopeDialog);
+    const context = useDialogContext(CONTENT_NAME$3, props.__scopeDialog);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, { present: forceMount || context.open, children: context.modal ? /* @__PURE__ */ jsxRuntimeExports.jsx(DialogContentModal, { ...contentProps, ref: forwardedRef }) : /* @__PURE__ */ jsxRuntimeExports.jsx(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });
   }
 );
-DialogContent$1.displayName = CONTENT_NAME$2;
+DialogContent$1.displayName = CONTENT_NAME$3;
 var DialogContentModal = reactExports.forwardRef(
   (props, forwardedRef) => {
-    const context = useDialogContext(CONTENT_NAME$2, props.__scopeDialog);
+    const context = useDialogContext(CONTENT_NAME$3, props.__scopeDialog);
     const contentRef = reactExports.useRef(null);
     const composedRefs = useComposedRefs(forwardedRef, context.contentRef, contentRef);
     reactExports.useEffect(() => {
@@ -22460,7 +22447,7 @@ var DialogContentModal = reactExports.forwardRef(
 );
 var DialogContentNonModal = reactExports.forwardRef(
   (props, forwardedRef) => {
-    const context = useDialogContext(CONTENT_NAME$2, props.__scopeDialog);
+    const context = useDialogContext(CONTENT_NAME$3, props.__scopeDialog);
     const hasInteractedOutsideRef = reactExports.useRef(false);
     const hasPointerDownOutsideRef = reactExports.useRef(false);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -22503,7 +22490,7 @@ var DialogContentNonModal = reactExports.forwardRef(
 var DialogContentImpl = reactExports.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, trapFocus, onOpenAutoFocus, onCloseAutoFocus, ...contentProps } = props;
-    const context = useDialogContext(CONTENT_NAME$2, __scopeDialog);
+    const context = useDialogContext(CONTENT_NAME$3, __scopeDialog);
     const contentRef = reactExports.useRef(null);
     const composedRefs = useComposedRefs(forwardedRef, contentRef);
     useFocusGuards();
@@ -22523,7 +22510,7 @@ var DialogContentImpl = reactExports.forwardRef(
               id: context.contentId,
               "aria-describedby": context.descriptionId,
               "aria-labelledby": context.titleId,
-              "data-state": getState(context.open),
+              "data-state": getState$1(context.open),
               ...contentProps,
               ref: composedRefs,
               onDismiss: () => context.onOpenChange(false)
@@ -22573,12 +22560,12 @@ var DialogClose$1 = reactExports.forwardRef(
   }
 );
 DialogClose$1.displayName = CLOSE_NAME$1;
-function getState(open) {
+function getState$1(open) {
   return open ? "open" : "closed";
 }
 var TITLE_WARNING_NAME = "DialogTitleWarning";
 var [WarningProvider, useWarningContext] = createContext2(TITLE_WARNING_NAME, {
-  contentName: CONTENT_NAME$2,
+  contentName: CONTENT_NAME$3,
   titleName: TITLE_NAME$1,
   docsSlug: "dialog"
 });
@@ -22611,23 +22598,23 @@ var DescriptionWarning = ({ contentRef, descriptionId }) => {
   }, [MESSAGE, contentRef, descriptionId]);
   return null;
 };
-var Root$1 = Dialog$1;
-var Trigger$1 = DialogTrigger$1;
+var Root$2 = Dialog$1;
+var Trigger$2 = DialogTrigger$1;
 var Portal$1 = DialogPortal$1;
 var Overlay = DialogOverlay$1;
-var Content$1 = DialogContent$1;
+var Content$2 = DialogContent$1;
 var Title$1 = DialogTitle$1;
 var Description$1 = DialogDescription$1;
 var Close$1 = DialogClose$1;
 function Dialog({
   ...props
 }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root$1, { "data-slot": "dialog", ...props });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root$2, { "data-slot": "dialog", ...props });
 }
 function DialogTrigger({
   ...props
 }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Trigger$1, { "data-slot": "dialog-trigger", ...props });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Trigger$2, { "data-slot": "dialog-trigger", ...props });
 }
 function DialogPortal({
   ...props
@@ -22664,7 +22651,7 @@ function DialogContent({
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogPortal, { "data-slot": "dialog-portal", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(DialogOverlay, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      Content$1,
+      Content$2,
       {
         "data-slot": "dialog-content",
         className: cn(
@@ -22742,89 +22729,6 @@ function DialogDescription({
 function clamp$1(value, [min2, max2]) {
   return Math.min(max2, Math.max(min2, value));
 }
-// @__NO_SIDE_EFFECTS__
-function createSlot$1(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone$1(ownerName);
-  const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    const childrenArray = reactExports.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable$1);
-    if (slottable) {
-      const newElement = slottable.props.children;
-      const newChildren = childrenArray.map((child) => {
-        if (child === slottable) {
-          if (reactExports.Children.count(newElement) > 1) return reactExports.Children.only(null);
-          return reactExports.isValidElement(newElement) ? newElement.props.children : null;
-        } else {
-          return child;
-        }
-      });
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children: reactExports.isValidElement(newElement) ? reactExports.cloneElement(newElement, void 0, newChildren) : null });
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children });
-  });
-  Slot2.displayName = `${ownerName}.Slot`;
-  return Slot2;
-}
-// @__NO_SIDE_EFFECTS__
-function createSlotClone$1(ownerName) {
-  const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    if (reactExports.isValidElement(children)) {
-      const childrenRef = getElementRef$1(children);
-      const props2 = mergeProps$1(slotProps, children.props);
-      if (children.type !== reactExports.Fragment) {
-        props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
-      }
-      return reactExports.cloneElement(children, props2);
-    }
-    return reactExports.Children.count(children) > 1 ? reactExports.Children.only(null) : null;
-  });
-  SlotClone.displayName = `${ownerName}.SlotClone`;
-  return SlotClone;
-}
-var SLOTTABLE_IDENTIFIER$1 = Symbol("radix.slottable");
-function isSlottable$1(child) {
-  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER$1;
-}
-function mergeProps$1(slotProps, childProps) {
-  const overrideProps = { ...childProps };
-  for (const propName in childProps) {
-    const slotPropValue = slotProps[propName];
-    const childPropValue = childProps[propName];
-    const isHandler = /^on[A-Z]/.test(propName);
-    if (isHandler) {
-      if (slotPropValue && childPropValue) {
-        overrideProps[propName] = (...args) => {
-          const result = childPropValue(...args);
-          slotPropValue(...args);
-          return result;
-        };
-      } else if (slotPropValue) {
-        overrideProps[propName] = slotPropValue;
-      }
-    } else if (propName === "style") {
-      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
-    } else if (propName === "className") {
-      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
-    }
-  }
-  return { ...slotProps, ...overrideProps };
-}
-function getElementRef$1(element) {
-  var _a2, _b2;
-  let getter = (_a2 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a2.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.ref;
-  }
-  getter = (_b2 = Object.getOwnPropertyDescriptor(element, "ref")) == null ? void 0 : _b2.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.props.ref;
-  }
-  return element.props.ref || element.ref;
-}
 function createCollection(name) {
   const PROVIDER_NAME2 = name + "CollectionProvider";
   const [createCollectionContext, createCollectionScope2] = createContextScope(PROVIDER_NAME2);
@@ -22840,7 +22744,7 @@ function createCollection(name) {
   };
   CollectionProvider.displayName = PROVIDER_NAME2;
   const COLLECTION_SLOT_NAME = name + "CollectionSlot";
-  const CollectionSlotImpl = /* @__PURE__ */ createSlot$1(COLLECTION_SLOT_NAME);
+  const CollectionSlotImpl = /* @__PURE__ */ createSlot(COLLECTION_SLOT_NAME);
   const CollectionSlot = React.forwardRef(
     (props, forwardedRef) => {
       const { scope, children } = props;
@@ -22852,7 +22756,7 @@ function createCollection(name) {
   CollectionSlot.displayName = COLLECTION_SLOT_NAME;
   const ITEM_SLOT_NAME = name + "CollectionItemSlot";
   const ITEM_DATA_ATTR = "data-radix-collection-item";
-  const CollectionItemSlotImpl = /* @__PURE__ */ createSlot$1(ITEM_SLOT_NAME);
+  const CollectionItemSlotImpl = /* @__PURE__ */ createSlot(ITEM_SLOT_NAME);
   const CollectionItemSlot = React.forwardRef(
     (props, forwardedRef) => {
       const { scope, children, ...itemData } = props;
@@ -24786,7 +24690,7 @@ var Arrow$1 = reactExports.forwardRef((props, forwardedRef) => {
   );
 });
 Arrow$1.displayName = NAME$1;
-var Root = Arrow$1;
+var Root$1 = Arrow$1;
 function useSize(element) {
   const [size2, setSize] = reactExports.useState(void 0);
   useLayoutEffect2(() => {
@@ -24849,8 +24753,8 @@ var PopperAnchor = reactExports.forwardRef(
   }
 );
 PopperAnchor.displayName = ANCHOR_NAME;
-var CONTENT_NAME$1 = "PopperContent";
-var [PopperContentProvider, useContentContext] = createPopperContext(CONTENT_NAME$1);
+var CONTENT_NAME$2 = "PopperContent";
+var [PopperContentProvider, useContentContext] = createPopperContext(CONTENT_NAME$2);
 var PopperContent = reactExports.forwardRef(
   (props, forwardedRef) => {
     var _a2, _b2, _c2, _d2, _e2, _f2;
@@ -24870,7 +24774,7 @@ var PopperContent = reactExports.forwardRef(
       onPlaced,
       ...contentProps
     } = props;
-    const context = usePopperContext(CONTENT_NAME$1, __scopePopper);
+    const context = usePopperContext(CONTENT_NAME$2, __scopePopper);
     const [content, setContent] = reactExports.useState(null);
     const composedRefs = useComposedRefs(forwardedRef, (node) => setContent(node));
     const [arrow$12, setArrow] = reactExports.useState(null);
@@ -24993,7 +24897,7 @@ var PopperContent = reactExports.forwardRef(
     );
   }
 );
-PopperContent.displayName = CONTENT_NAME$1;
+PopperContent.displayName = CONTENT_NAME$2;
 var ARROW_NAME$1 = "PopperArrow";
 var OPPOSITE_SIDE = {
   top: "bottom",
@@ -25033,7 +24937,7 @@ var PopperArrow = reactExports.forwardRef(function PopperArrow2(props, forwarded
           visibility: contentContext.shouldHideArrow ? "hidden" : void 0
         },
         children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Root,
+          Root$1,
           {
             ...arrowProps,
             ref: forwardedRef,
@@ -25088,93 +24992,10 @@ function getSideAndAlignFromPlacement(placement) {
   const [side, align = "center"] = placement.split("-");
   return [side, align];
 }
-var Root2$2 = Popper;
+var Root2$3 = Popper;
 var Anchor = PopperAnchor;
-var Content = PopperContent;
+var Content$1 = PopperContent;
 var Arrow = PopperArrow;
-// @__NO_SIDE_EFFECTS__
-function createSlot(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
-  const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    const childrenArray = reactExports.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable);
-    if (slottable) {
-      const newElement = slottable.props.children;
-      const newChildren = childrenArray.map((child) => {
-        if (child === slottable) {
-          if (reactExports.Children.count(newElement) > 1) return reactExports.Children.only(null);
-          return reactExports.isValidElement(newElement) ? newElement.props.children : null;
-        } else {
-          return child;
-        }
-      });
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children: reactExports.isValidElement(newElement) ? reactExports.cloneElement(newElement, void 0, newChildren) : null });
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children });
-  });
-  Slot2.displayName = `${ownerName}.Slot`;
-  return Slot2;
-}
-// @__NO_SIDE_EFFECTS__
-function createSlotClone(ownerName) {
-  const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
-    const { children, ...slotProps } = props;
-    if (reactExports.isValidElement(children)) {
-      const childrenRef = getElementRef(children);
-      const props2 = mergeProps(slotProps, children.props);
-      if (children.type !== reactExports.Fragment) {
-        props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
-      }
-      return reactExports.cloneElement(children, props2);
-    }
-    return reactExports.Children.count(children) > 1 ? reactExports.Children.only(null) : null;
-  });
-  SlotClone.displayName = `${ownerName}.SlotClone`;
-  return SlotClone;
-}
-var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
-function isSlottable(child) {
-  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
-}
-function mergeProps(slotProps, childProps) {
-  const overrideProps = { ...childProps };
-  for (const propName in childProps) {
-    const slotPropValue = slotProps[propName];
-    const childPropValue = childProps[propName];
-    const isHandler = /^on[A-Z]/.test(propName);
-    if (isHandler) {
-      if (slotPropValue && childPropValue) {
-        overrideProps[propName] = (...args) => {
-          const result = childPropValue(...args);
-          slotPropValue(...args);
-          return result;
-        };
-      } else if (slotPropValue) {
-        overrideProps[propName] = slotPropValue;
-      }
-    } else if (propName === "style") {
-      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
-    } else if (propName === "className") {
-      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
-    }
-  }
-  return { ...slotProps, ...overrideProps };
-}
-function getElementRef(element) {
-  var _a2, _b2;
-  let getter = (_a2 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a2.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.ref;
-  }
-  getter = (_b2 = Object.getOwnPropertyDescriptor(element, "ref")) == null ? void 0 : _b2.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.props.ref;
-  }
-  return element.props.ref || element.ref;
-}
 function usePrevious$1(value) {
   const ref = reactExports.useRef({ value, previous: value });
   return reactExports.useMemo(() => {
@@ -25215,9 +25036,9 @@ VisuallyHidden.displayName = NAME;
 var OPEN_KEYS = [" ", "Enter", "ArrowUp", "ArrowDown"];
 var SELECTION_KEYS = [" ", "Enter"];
 var SELECT_NAME = "Select";
-var [Collection$1, useCollection$1, createCollectionScope$1] = createCollection(SELECT_NAME);
+var [Collection$2, useCollection$2, createCollectionScope$2] = createCollection(SELECT_NAME);
 var [createSelectContext] = createContextScope(SELECT_NAME, [
-  createCollectionScope$1,
+  createCollectionScope$2,
   createPopperScope
 ]);
 var usePopperScope = createPopperScope();
@@ -25261,7 +25082,7 @@ var Select$1 = (props) => {
   const isFormControl = trigger ? form || !!trigger.closest("form") : true;
   const [nativeOptionsSet, setNativeOptionsSet] = reactExports.useState(/* @__PURE__ */ new Set());
   const nativeSelectKey = Array.from(nativeOptionsSet).map((option) => option.props.value).join(";");
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root2$2, { ...popperScope, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root2$3, { ...popperScope, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
     SelectProvider,
     {
       required,
@@ -25281,7 +25102,7 @@ var Select$1 = (props) => {
       triggerPointerDownPosRef,
       disabled,
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Collection$1.Provider, { scope: __scopeSelect, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Collection$2.Provider, { scope: __scopeSelect, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           SelectNativeOptionsProvider,
           {
             scope: props.__scopeSelect,
@@ -25322,15 +25143,15 @@ var Select$1 = (props) => {
   ) });
 };
 Select$1.displayName = SELECT_NAME;
-var TRIGGER_NAME = "SelectTrigger";
+var TRIGGER_NAME$2 = "SelectTrigger";
 var SelectTrigger$1 = reactExports.forwardRef(
   (props, forwardedRef) => {
     const { __scopeSelect, disabled = false, ...triggerProps } = props;
     const popperScope = usePopperScope(__scopeSelect);
-    const context = useSelectContext(TRIGGER_NAME, __scopeSelect);
+    const context = useSelectContext(TRIGGER_NAME$2, __scopeSelect);
     const isDisabled = context.disabled || disabled;
     const composedRefs = useComposedRefs(forwardedRef, context.onTriggerChange);
-    const getItems = useCollection$1(__scopeSelect);
+    const getItems = useCollection$2(__scopeSelect);
     const pointerTypeRef = reactExports.useRef("touch");
     const [searchRef, handleTypeaheadSearch, resetTypeahead] = useTypeaheadSearch((search) => {
       const enabledItems = getItems().filter((item) => !item.disabled);
@@ -25399,7 +25220,7 @@ var SelectTrigger$1 = reactExports.forwardRef(
     ) });
   }
 );
-SelectTrigger$1.displayName = TRIGGER_NAME;
+SelectTrigger$1.displayName = TRIGGER_NAME$2;
 var VALUE_NAME = "SelectValue";
 var SelectValue$1 = reactExports.forwardRef(
   (props, forwardedRef) => {
@@ -25436,10 +25257,10 @@ var SelectPortal = (props) => {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(Portal$2, { asChild: true, ...props });
 };
 SelectPortal.displayName = PORTAL_NAME;
-var CONTENT_NAME = "SelectContent";
+var CONTENT_NAME$1 = "SelectContent";
 var SelectContent$1 = reactExports.forwardRef(
   (props, forwardedRef) => {
-    const context = useSelectContext(CONTENT_NAME, props.__scopeSelect);
+    const context = useSelectContext(CONTENT_NAME$1, props.__scopeSelect);
     const [fragment, setFragment] = reactExports.useState();
     useLayoutEffect2(() => {
       setFragment(new DocumentFragment());
@@ -25447,16 +25268,16 @@ var SelectContent$1 = reactExports.forwardRef(
     if (!context.open) {
       const frag = fragment;
       return frag ? reactDomExports.createPortal(
-        /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContentProvider, { scope: props.__scopeSelect, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Collection$1.Slot, { scope: props.__scopeSelect, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: props.children }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContentProvider, { scope: props.__scopeSelect, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Collection$2.Slot, { scope: props.__scopeSelect, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: props.children }) }) }),
         frag
       ) : null;
     }
     return /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContentImpl, { ...props, ref: forwardedRef });
   }
 );
-SelectContent$1.displayName = CONTENT_NAME;
+SelectContent$1.displayName = CONTENT_NAME$1;
 var CONTENT_MARGIN = 10;
-var [SelectContentProvider, useSelectContentContext] = createSelectContext(CONTENT_NAME);
+var [SelectContentProvider, useSelectContentContext] = createSelectContext(CONTENT_NAME$1);
 var CONTENT_IMPL_NAME = "SelectContentImpl";
 var Slot = /* @__PURE__ */ createSlot("SelectContent.RemoveScroll");
 var SelectContentImpl = reactExports.forwardRef(
@@ -25482,7 +25303,7 @@ var SelectContentImpl = reactExports.forwardRef(
       //
       ...contentProps
     } = props;
-    const context = useSelectContext(CONTENT_NAME, __scopeSelect);
+    const context = useSelectContext(CONTENT_NAME$1, __scopeSelect);
     const [content, setContent] = reactExports.useState(null);
     const [viewport, setViewport] = reactExports.useState(null);
     const composedRefs = useComposedRefs(forwardedRef, (node) => setContent(node));
@@ -25490,7 +25311,7 @@ var SelectContentImpl = reactExports.forwardRef(
     const [selectedItemText, setSelectedItemText] = reactExports.useState(
       null
     );
-    const getItems = useCollection$1(__scopeSelect);
+    const getItems = useCollection$2(__scopeSelect);
     const [isPositioned, setIsPositioned] = reactExports.useState(false);
     const firstValidItemFoundRef = reactExports.useRef(false);
     reactExports.useEffect(() => {
@@ -25697,12 +25518,12 @@ SelectContentImpl.displayName = CONTENT_IMPL_NAME;
 var ITEM_ALIGNED_POSITION_NAME = "SelectItemAlignedPosition";
 var SelectItemAlignedPosition = reactExports.forwardRef((props, forwardedRef) => {
   const { __scopeSelect, onPlaced, ...popperProps } = props;
-  const context = useSelectContext(CONTENT_NAME, __scopeSelect);
-  const contentContext = useSelectContentContext(CONTENT_NAME, __scopeSelect);
+  const context = useSelectContext(CONTENT_NAME$1, __scopeSelect);
+  const contentContext = useSelectContentContext(CONTENT_NAME$1, __scopeSelect);
   const [contentWrapper, setContentWrapper] = reactExports.useState(null);
   const [content, setContent] = reactExports.useState(null);
   const composedRefs = useComposedRefs(forwardedRef, (node) => setContent(node));
-  const getItems = useCollection$1(__scopeSelect);
+  const getItems = useCollection$2(__scopeSelect);
   const shouldExpandOnScrollRef = reactExports.useRef(false);
   const shouldRepositionRef = reactExports.useRef(true);
   const { viewport, selectedItem, selectedItemText, focusSelectedItem } = contentContext;
@@ -25868,7 +25689,7 @@ var SelectPopperPosition = reactExports.forwardRef((props, forwardedRef) => {
   } = props;
   const popperScope = usePopperScope(__scopeSelect);
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Content,
+    Content$1,
     {
       ...popperScope,
       ...popperProps,
@@ -25892,7 +25713,7 @@ var SelectPopperPosition = reactExports.forwardRef((props, forwardedRef) => {
   );
 });
 SelectPopperPosition.displayName = POPPER_POSITION_NAME;
-var [SelectViewportProvider, useSelectViewportContext] = createSelectContext(CONTENT_NAME, {});
+var [SelectViewportProvider, useSelectViewportContext] = createSelectContext(CONTENT_NAME$1, {});
 var VIEWPORT_NAME$1 = "SelectViewport";
 var SelectViewport = reactExports.forwardRef(
   (props, forwardedRef) => {
@@ -25911,7 +25732,7 @@ var SelectViewport = reactExports.forwardRef(
           nonce
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Collection$1.Slot, { scope: __scopeSelect, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Collection$2.Slot, { scope: __scopeSelect, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         Primitive.div,
         {
           "data-radix-select-viewport": "",
@@ -25961,8 +25782,8 @@ var SelectViewport = reactExports.forwardRef(
   }
 );
 SelectViewport.displayName = VIEWPORT_NAME$1;
-var GROUP_NAME = "SelectGroup";
-var [SelectGroupContextProvider, useSelectGroupContext] = createSelectContext(GROUP_NAME);
+var GROUP_NAME$1 = "SelectGroup";
+var [SelectGroupContextProvider, useSelectGroupContext] = createSelectContext(GROUP_NAME$1);
 var SelectGroup = reactExports.forwardRef(
   (props, forwardedRef) => {
     const { __scopeSelect, ...groupProps } = props;
@@ -25970,7 +25791,7 @@ var SelectGroup = reactExports.forwardRef(
     return /* @__PURE__ */ jsxRuntimeExports.jsx(SelectGroupContextProvider, { scope: __scopeSelect, id: groupId, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { role: "group", "aria-labelledby": groupId, ...groupProps, ref: forwardedRef }) });
   }
 );
-SelectGroup.displayName = GROUP_NAME;
+SelectGroup.displayName = GROUP_NAME$1;
 var LABEL_NAME = "SelectLabel";
 var SelectLabel = reactExports.forwardRef(
   (props, forwardedRef) => {
@@ -25980,8 +25801,8 @@ var SelectLabel = reactExports.forwardRef(
   }
 );
 SelectLabel.displayName = LABEL_NAME;
-var ITEM_NAME = "SelectItem";
-var [SelectItemContextProvider, useSelectItemContext] = createSelectContext(ITEM_NAME);
+var ITEM_NAME$1 = "SelectItem";
+var [SelectItemContextProvider, useSelectItemContext] = createSelectContext(ITEM_NAME$1);
 var SelectItem$1 = reactExports.forwardRef(
   (props, forwardedRef) => {
     const {
@@ -25991,8 +25812,8 @@ var SelectItem$1 = reactExports.forwardRef(
       textValue: textValueProp,
       ...itemProps
     } = props;
-    const context = useSelectContext(ITEM_NAME, __scopeSelect);
-    const contentContext = useSelectContentContext(ITEM_NAME, __scopeSelect);
+    const context = useSelectContext(ITEM_NAME$1, __scopeSelect);
+    const contentContext = useSelectContentContext(ITEM_NAME$1, __scopeSelect);
     const isSelected = context.value === value;
     const [textValue, setTextValue] = reactExports.useState(textValueProp ?? "");
     const [isFocused, setIsFocused] = reactExports.useState(false);
@@ -26028,7 +25849,7 @@ var SelectItem$1 = reactExports.forwardRef(
           setTextValue((prevTextValue) => prevTextValue || ((node == null ? void 0 : node.textContent) ?? "").trim());
         }, []),
         children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Collection$1.ItemSlot,
+          Collection$2.ItemSlot,
           {
             scope: __scopeSelect,
             value,
@@ -26088,7 +25909,7 @@ var SelectItem$1 = reactExports.forwardRef(
     );
   }
 );
-SelectItem$1.displayName = ITEM_NAME;
+SelectItem$1.displayName = ITEM_NAME$1;
 var ITEM_TEXT_NAME = "SelectItemText";
 var SelectItemText = reactExports.forwardRef(
   (props, forwardedRef) => {
@@ -26204,7 +26025,7 @@ var SelectScrollButtonImpl = reactExports.forwardRef((props, forwardedRef) => {
   const { __scopeSelect, onAutoScroll, ...scrollIndicatorProps } = props;
   const contentContext = useSelectContentContext("SelectScrollButton", __scopeSelect);
   const autoScrollTimerRef = reactExports.useRef(null);
-  const getItems = useCollection$1(__scopeSelect);
+  const getItems = useCollection$2(__scopeSelect);
   const clearAutoScrollTimer = reactExports.useCallback(() => {
     if (autoScrollTimerRef.current !== null) {
       window.clearInterval(autoScrollTimerRef.current);
@@ -26263,7 +26084,7 @@ var SelectArrow = reactExports.forwardRef(
   }
 );
 SelectArrow.displayName = ARROW_NAME;
-var BUBBLE_INPUT_NAME = "SelectBubbleInput";
+var BUBBLE_INPUT_NAME$1 = "SelectBubbleInput";
 var SelectBubbleInput = reactExports.forwardRef(
   ({ __scopeSelect, value, ...props }, forwardedRef) => {
     const ref = reactExports.useRef(null);
@@ -26295,7 +26116,7 @@ var SelectBubbleInput = reactExports.forwardRef(
     );
   }
 );
-SelectBubbleInput.displayName = BUBBLE_INPUT_NAME;
+SelectBubbleInput.displayName = BUBBLE_INPUT_NAME$1;
 function shouldShowPlaceholder(value) {
   return value === "" || value === void 0;
 }
@@ -26328,7 +26149,7 @@ function findNextItem(items, search, currentItem) {
   const isRepeated = search.length > 1 && Array.from(search).every((char) => char === search[0]);
   const normalizedSearch = isRepeated ? search[0] : search;
   const currentItemIndex = currentItem ? items.indexOf(currentItem) : -1;
-  let wrappedItems = wrapArray(items, Math.max(currentItemIndex, 0));
+  let wrappedItems = wrapArray$1(items, Math.max(currentItemIndex, 0));
   const excludeCurrentItem = normalizedSearch.length === 1;
   if (excludeCurrentItem) wrappedItems = wrappedItems.filter((v) => v !== currentItem);
   const nextItem = wrappedItems.find(
@@ -26336,17 +26157,17 @@ function findNextItem(items, search, currentItem) {
   );
   return nextItem !== currentItem ? nextItem : void 0;
 }
-function wrapArray(array, startIndex) {
+function wrapArray$1(array, startIndex) {
   return array.map((_, index2) => array[(startIndex + index2) % array.length]);
 }
-var Root2$1 = Select$1;
-var Trigger = SelectTrigger$1;
+var Root2$2 = Select$1;
+var Trigger$1 = SelectTrigger$1;
 var Value = SelectValue$1;
 var Icon = SelectIcon;
 var Portal = SelectPortal;
 var Content2 = SelectContent$1;
 var Viewport$1 = SelectViewport;
-var Item = SelectItem$1;
+var Item$1 = SelectItem$1;
 var ItemText = SelectItemText;
 var ItemIndicator = SelectItemIndicator;
 var ScrollUpButton = SelectScrollUpButton$1;
@@ -26354,7 +26175,7 @@ var ScrollDownButton = SelectScrollDownButton$1;
 function Select({
   ...props
 }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root2$1, { "data-slot": "select", ...props });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root2$2, { "data-slot": "select", ...props });
 }
 function SelectValue({
   ...props
@@ -26368,7 +26189,7 @@ function SelectTrigger({
   ...props
 }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    Trigger,
+    Trigger$1,
     {
       "data-slot": "select-trigger",
       "data-size": size2,
@@ -26426,7 +26247,7 @@ function SelectItem({
   ...props
 }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    Item,
+    Item$1,
     {
       "data-slot": "select-item",
       className: cn(
@@ -29032,6 +28853,7 @@ const LIVESTREAM_DAY = 0;
 const LIVESTREAM_HOUR = 15;
 const LIVESTREAM_MINUTE = 30;
 const LIVESTREAM_DURATION_MINUTES = 120;
+let liveCheckInterval = null;
 function getNextLivestream(reference) {
   const next = new Date(reference);
   next.setSeconds(0, 0);
@@ -29065,7 +28887,10 @@ function Media({ onStartMusic }) {
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
   const { playTrack, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = reactExports.useState(false);
+  const [isActuallyLive, setIsActuallyLive] = reactExports.useState(false);
+  const [manualLiveOverride, setManualLiveOverride] = reactExports.useState(false);
   const playerRef = reactExports.useRef(null);
+  const youtubePlayerRef = reactExports.useRef(null);
   const [uploadFiles, setUploadFiles] = reactExports.useState([]);
   const [uploadPasscode, setUploadPasscode] = reactExports.useState("");
   const [uploadStatus, setUploadStatus] = reactExports.useState(null);
@@ -29154,18 +28979,67 @@ function Media({ onStartMusic }) {
   const devSampleSermon = null;
   const effectiveSelectedSermon = selectedSermon ?? devSampleSermon;
   const getEmbedUrl = (url) => {
+    var _a2, _b2, _c2, _d2;
+    console.log("getEmbedUrl input:", url);
     try {
       const u = new URL(url);
+      if (u.pathname.includes("/embed/live_stream") && u.searchParams.get("channel")) {
+        const channelId = u.searchParams.get("channel");
+        const result = `https://www.youtube.com/embed/live_stream?channel=${channelId}`;
+        console.log("getEmbedUrl output (channel live):", result);
+        return result;
+      }
+      if (u.pathname.includes("/channel/") || u.pathname.includes("/c/") || u.pathname.includes("/@")) {
+        let channelId = "";
+        if (u.pathname.includes("/channel/")) {
+          channelId = ((_a2 = u.pathname.split("/channel/")[1]) == null ? void 0 : _a2.split("?")[0]) || "";
+        } else if (u.pathname.includes("/c/")) {
+          channelId = ((_b2 = u.pathname.split("/c/")[1]) == null ? void 0 : _b2.split("?")[0]) || "";
+        } else if (u.pathname.includes("/@")) {
+          channelId = ((_c2 = u.pathname.split("/@")[1]) == null ? void 0 : _c2.split("?")[0]) || "";
+        }
+        if (channelId) {
+          const formats = [
+            `https://www.youtube.com/embed/live_stream?channel=${channelId}`,
+            `https://www.youtube.com/embed/${channelId}?live=1`,
+            `https://www.youtube.com/embed/live_stream?channel=${channelId}`
+          ];
+          console.log("getEmbedUrl output (channel live formats):", formats[0]);
+          return formats[0];
+        }
+      }
       if (u.hostname.includes("youtu.be")) {
         const id = u.pathname.replace("/", "");
-        return `https://www.youtube.com/embed/${id}`;
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        console.log("getEmbedUrl output (youtu.be):", result);
+        return result;
       }
       if (u.searchParams.get("v")) {
         const id = u.searchParams.get("v");
-        return `https://www.youtube.com/embed/${id}`;
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        console.log("getEmbedUrl output (watch):", result);
+        return result;
       }
+      if (u.pathname.includes("/live/")) {
+        const id = (_d2 = u.pathname.split("/live/")[1]) == null ? void 0 : _d2.split("?")[0];
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        console.log("getEmbedUrl output (live):", result);
+        return result;
+      }
+      if (u.pathname.includes("/embed/")) {
+        if (u.searchParams.has("enablejsapi")) {
+          console.log("getEmbedUrl output (already embed):", url);
+          return url;
+        }
+        u.searchParams.set("enablejsapi", "1");
+        const result = u.toString();
+        console.log("getEmbedUrl output (embed with enablejsapi):", result);
+        return result;
+      }
+      console.log("getEmbedUrl output (fallback):", url);
       return url;
-    } catch {
+    } catch (error) {
+      console.error("getEmbedUrl error:", error);
       return url;
     }
   };
@@ -29182,7 +29056,8 @@ function Media({ onStartMusic }) {
   }, [previousLivestreamStart]);
   const millisecondsUntilStream = nextLivestream.getTime() - now.getTime();
   const isInCurrentLivestreamWindow = now >= previousLivestreamStart && now <= previousLivestreamEnd;
-  const showCountdown = millisecondsUntilStream > 0 && now >= previousLivestreamEnd && !isStreamPlaying;
+  const showCountdown = millisecondsUntilStream > 0 && now >= previousLivestreamEnd && !isStreamPlaying && !isActuallyLive && !manualLiveOverride;
+  const showStartingSoon = millisecondsUntilStream <= 0 && now >= previousLivestreamEnd && !isStreamPlaying && !isActuallyLive && !manualLiveOverride && livestreamUrl;
   const countdownLabel = formatCountdown(Math.max(millisecondsUntilStream, 0));
   const nextServiceFormatted = reactExports.useMemo(() => {
     return nextLivestream.toLocaleString(language === "en" ? "en-US" : "es-MX", {
@@ -29202,6 +29077,171 @@ function Media({ onStartMusic }) {
     } catch {
     }
   }, [isInCurrentLivestreamWindow, showCountdown, isStreamPlaying]);
+  reactExports.useEffect(() => {
+    var _a2;
+    if (!livestreamUrl) {
+      console.log("No livestream URL provided");
+      return;
+    }
+    console.log("Initializing YouTube livestream detection for:", livestreamUrl);
+    if (!window.YT) {
+      console.log("Loading YouTube IFrame API...");
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      (_a2 = firstScriptTag.parentNode) == null ? void 0 : _a2.insertBefore(tag, firstScriptTag);
+    } else {
+      console.log("YouTube API already loaded");
+    }
+    window.onYouTubeIframeAPIReady = () => {
+      console.log("YouTube IFrame API ready");
+      initializeLivestreamDetection();
+    };
+    if (window.YT && window.YT.Player) {
+      console.log("YouTube API already available, initializing immediately");
+      initializeLivestreamDetection();
+    }
+    function initializeLivestreamDetection() {
+      var _a3;
+      if (!livestreamUrl || youtubePlayerRef.current) {
+        console.log("Livestream detection already initialized or no URL");
+        return;
+      }
+      console.log("Initializing livestream detection...");
+      let videoId = "";
+      let isChannelLive = false;
+      try {
+        const url = new URL(livestreamUrl);
+        console.log("Parsing URL:", url);
+        if (url.pathname.includes("/embed/live_stream") && url.searchParams.get("channel")) {
+          videoId = url.searchParams.get("channel") || "";
+          isChannelLive = true;
+        } else if (url.hostname.includes("youtu.be")) {
+          videoId = url.pathname.replace("/", "");
+        } else if (url.searchParams.get("v")) {
+          videoId = url.searchParams.get("v") || "";
+        } else if (url.pathname.includes("/embed/")) {
+          videoId = ((_a3 = url.pathname.split("/embed/")[1]) == null ? void 0 : _a3.split("?")[0]) || "";
+        }
+        console.log("Extracted video ID/channel:", videoId, "Is channel live:", isChannelLive);
+      } catch (error) {
+        console.error("Error extracting video ID:", error);
+        return;
+      }
+      if (!videoId) {
+        console.error("No video ID/channel found in URL");
+        return;
+      }
+      console.log("Creating YouTube player for:", isChannelLive ? "channel" : "video ID", videoId);
+      if (isChannelLive) {
+        console.log("Channel live stream detected, checking if actually live");
+        setIsActuallyLive(false);
+        liveCheckInterval = setInterval(() => {
+          const iframe = document.querySelector("#cne-livestream-player");
+          if (iframe) {
+            try {
+              console.log("Channel live stream iframe exists, checking if live...");
+              setIsActuallyLive(false);
+            } catch (error) {
+              console.log("Channel live stream iframe check failed, assuming not live");
+              setIsActuallyLive(false);
+            }
+          }
+        }, 3e4);
+      } else {
+        youtubePlayerRef.current = new window.YT.Player("youtube-livestream-detector", {
+          videoId,
+          events: {
+            onReady: (event) => {
+              console.log("YouTube player ready for livestream detection");
+              checkLivestreamStatus();
+              liveCheckInterval = setInterval(checkLivestreamStatus, 1e4);
+            },
+            onError: (error) => {
+              console.error("YouTube player error:", error);
+              setIsActuallyLive(false);
+            },
+            onStateChange: (event) => {
+              console.log("YouTube player state changed:", event.data);
+              setTimeout(checkLivestreamStatus, 1e3);
+            }
+          }
+        });
+      }
+    }
+    function checkLivestreamStatus() {
+      var _a3, _b2, _c2, _d2;
+      const url = new URL(livestreamUrl);
+      if (url.pathname.includes("/embed/live_stream")) {
+        console.log("Skipping API-based check for channel stream");
+        return;
+      }
+      if (!youtubePlayerRef.current) {
+        console.log("YouTube player not ready for livestream check");
+        return;
+      }
+      try {
+        const player = youtubePlayerRef.current;
+        const playerState = player.getPlayerState();
+        const playerInfo = player.getVideoData();
+        const videoData = (_a3 = player.getVideoData) == null ? void 0 : _a3.call(player);
+        console.log("Livestream check:", {
+          playerState,
+          playerInfo,
+          videoData,
+          isLive: playerInfo == null ? void 0 : playerInfo.isLive,
+          duration: (_b2 = player.getDuration) == null ? void 0 : _b2.call(player),
+          currentTime: (_c2 = player.getCurrentTime) == null ? void 0 : _c2.call(player)
+        });
+        let isLive = false;
+        if ((playerInfo == null ? void 0 : playerInfo.isLive) === true) {
+          isLive = true;
+        }
+        const duration = (_d2 = player.getDuration) == null ? void 0 : _d2.call(player);
+        if (duration === 0 || isNaN(duration) || duration > 7200) {
+          isLive = true;
+        }
+        const YT = window.YT;
+        if (YT && YT.PlayerState && playerState === YT.PlayerState.BUFFERING) {
+          isLive = true;
+        }
+        if (playerInfo && playerInfo.title && (playerInfo.title.toLowerCase().includes("live") || playerInfo.title.toLowerCase().includes("en vivo"))) {
+          isLive = true;
+        }
+        if (playerState === (YT == null ? void 0 : YT.PlayerState.ENDED) && duration === 0) {
+          isLive = true;
+        }
+        console.log("Setting isActuallyLive to:", isLive, "(detection methods used)");
+        setIsActuallyLive(isLive);
+      } catch (error) {
+        console.error("Error checking livestream status:", error);
+        setIsActuallyLive(false);
+      }
+    }
+    return () => {
+      if (liveCheckInterval) {
+        clearInterval(liveCheckInterval);
+        liveCheckInterval = null;
+      }
+      if (youtubePlayerRef.current) {
+        youtubePlayerRef.current.destroy();
+        youtubePlayerRef.current = null;
+      }
+    };
+  }, [livestreamUrl]);
+  reactExports.useEffect(() => {
+    if (!livestreamUrl) return;
+    const detectorDiv = document.createElement("div");
+    detectorDiv.id = "youtube-livestream-detector";
+    detectorDiv.style.display = "none";
+    document.body.appendChild(detectorDiv);
+    return () => {
+      const existingDiv = document.getElementById("youtube-livestream-detector");
+      if (existingDiv) {
+        existingDiv.remove();
+      }
+    };
+  }, [livestreamUrl]);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "space-y-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-6 md:grid-cols-3", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
@@ -29231,6 +29271,18 @@ function Media({ onStartMusic }) {
               ]
             }
           ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: "outline",
+              className: "border-yellow-600 bg-yellow-900/20 text-yellow-400 hover:bg-yellow-900/30",
+              onClick: () => {
+                setManualLiveOverride(!manualLiveOverride);
+                console.log("Manual live override:", !manualLiveOverride);
+              },
+              children: manualLiveOverride ? "🔴 Live (Manual)" : "⚫ Test Live"
+            }
+          ),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Button,
             {
@@ -29271,15 +29323,38 @@ function Media({ onStartMusic }) {
             "Permanece en esta página y la transmisión comenzará automáticamente."
           ) })
         ] }) }),
+        showStartingSoon && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-950/90 px-6 text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-3 w-3 animate-pulse rounded-full bg-red-500" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold uppercase tracking-[0.3em] text-red-400", children: t("Starting Soon", "Comenzando Pronto") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-3 w-3 animate-pulse rounded-full bg-red-500" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl font-semibold text-white sm:text-2xl", children: t("The stream will begin any moment", "La transmisión comenzará en cualquier momento") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-2 w-2 animate-pulse rounded-full bg-red-400" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-300", children: t("Please wait while we connect", "Por favor espera mientras nos conectamos") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-2 w-2 animate-pulse rounded-full bg-red-400" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500", children: t(
+            "The service is scheduled to start now. Stay on this page!",
+            "El servicio está programado para comenzar ahora. ¡Permanece en esta página!"
+          ) })
+        ] }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "iframe",
           {
             id: "cne-livestream-player",
-            src: livestreamUrl,
+            src: getEmbedUrl(livestreamUrl),
             title: t("CNE Live Stream", "Transmisión en Vivo de CNE"),
             className: "h-full w-full",
             allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-            allowFullScreen: true
+            allowFullScreen: true,
+            onLoad: () => {
+              console.log("Livestream iframe loaded with src:", getEmbedUrl(livestreamUrl));
+            },
+            onError: () => {
+              console.error("Livestream iframe failed to load with src:", getEmbedUrl(livestreamUrl));
+            }
           }
         )
       ] }) })
@@ -29368,43 +29443,487 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-const gameList = [
+const sampleQuestions = [
   {
     id: 1,
-    titleEn: "Bible Trivia Sprint",
-    titleEs: "Trivia Bíblica Rápida",
-    descriptionEn: "Answer quick-fire questions covering Old and New Testament highlights.",
-    descriptionEs: "Responde preguntas rápidas que cubren los puntos destacados del Antiguo y Nuevo Testamento.",
-    icon: Brain,
-    ctaEn: "Play Trivia",
-    ctaEs: "Jugar Trivia",
-    link: "https://www.christianity.com/trivia/"
+    questionEn: "Who was the first man created by God according to Genesis?",
+    questionEs: "¿Quién fue el primer hombre creado por Dios según Génesis?",
+    question: "Who was the first man created by God according to Genesis?",
+    options: {
+      en: ["Noah", "Adam", "Abraham", "Moses"],
+      es: ["Noé", "Adán", "Abraham", "Moisés"]
+    },
+    optionInputs: ["Noah", "Adam", "Abraham", "Moses"],
+    correctAnswer: 1,
+    category: "Old Testament",
+    reference: "Genesis 2:7",
+    level: "kids"
   },
   {
     id: 2,
-    titleEn: "Memory Verse Match",
-    titleEs: "Memoriza Versículos",
-    descriptionEn: "Match verses with their references and commit Scripture to heart.",
-    descriptionEs: "Empareja versículos con sus referencias y guarda la Escritura en tu corazón.",
-    icon: Puzzle,
-    ctaEn: "Start Matching",
-    ctaEs: "Comenzar",
-    link: "https://biblepathwayadventures.com/memory/"
+    questionEn: "How many commandments did God give to Moses on Mount Sinai?",
+    questionEs: "¿Cuántos mandamientos dio Dios a Moisés en el Monte Sinaí?",
+    question: "How many commandments did God give to Moses on Mount Sinai?",
+    options: {
+      en: ["7", "10", "12", "3"],
+      es: ["7", "10", "12", "3"]
+    },
+    optionInputs: ["7", "10", "12", "3"],
+    correctAnswer: 1,
+    category: "Old Testament",
+    reference: "Exodus 20:1-17",
+    level: "kids"
   },
   {
     id: 3,
-    titleEn: "Kids' Adventure Quiz",
-    titleEs: "Aventura Bíblica Infantil",
-    descriptionEn: "A playful journey through the Bible designed for children and families.",
-    descriptionEs: "Un recorrido divertido por la Biblia diseñado para niños y familias.",
-    icon: Users,
-    ctaEn: "Explore Now",
-    ctaEs: "Explorar",
-    link: "https://quiz.christianbiblereference.org/children2.htm"
+    questionEn: "Who baptized Jesus in the Jordan River?",
+    questionEs: "¿Quién bautizó a Jesús en el río Jordán?",
+    question: "Who baptized Jesus in the Jordan River?",
+    options: {
+      en: ["Peter", "Paul", "John the Baptist", "Matthew"],
+      es: ["Pedro", "Pablo", "Juan el Bautista", "Mateo"]
+    },
+    optionInputs: ["Peter", "Paul", "John the Baptist", "Matthew"],
+    correctAnswer: 2,
+    category: "New Testament",
+    reference: "Matthew 3:13-17",
+    level: "youth"
+  },
+  {
+    id: 4,
+    questionEn: "What is the Golden Rule found in Matthew 7:12?",
+    questionEs: "¿Cuál es la Regla de Oro encontrada en Mateo 7:12?",
+    question: "What is the Golden Rule found in Matthew 7:12?",
+    options: {
+      en: [
+        "Love your neighbor as yourself",
+        "Do to others what you would have them do to you",
+        "Honor your father and mother",
+        "Love God with all your heart"
+      ],
+      es: [
+        "Ama a tu prójimo como a ti mismo",
+        "Haz a los demás lo que quieres que ellos te hagan a ti",
+        "Honra a tu padre y a tu madre",
+        "Ama a Dios con todo tu corazón"
+      ]
+    },
+    optionInputs: [
+      "Love your neighbor as yourself",
+      "Do to others what you would have them do to you",
+      "Honor your father and mother",
+      "Love God with all your heart"
+    ],
+    correctAnswer: 1,
+    category: "New Testament",
+    reference: "Matthew 7:12",
+    level: "adults"
+  },
+  {
+    id: 5,
+    questionEn: "Who was thrown into the lion's den but was protected by God?",
+    questionEs: "¿Quién fue arrojado al foso de los leones pero fue protegido por Dios?",
+    question: "Who was thrown into the lion's den but was protected by God?",
+    options: {
+      en: ["David", "Daniel", "Joseph", "Samuel"],
+      es: ["David", "Daniel", "José", "Samuel"]
+    },
+    optionInputs: ["David", "Daniel", "Joseph", "Samuel"],
+    correctAnswer: 1,
+    category: "Old Testament",
+    reference: "Daniel 6:16-23",
+    level: "youth"
+  }
+];
+const defaultLevels = [
+  {
+    id: "kids",
+    name: "Kids",
+    description: "For children ages 6-12",
+    targetGroup: "Children",
+    shuffleQuestions: true,
+    timeLimit: 30,
+    passingScore: 70
+  },
+  {
+    id: "youth",
+    name: "Youth",
+    description: "For teenagers and young adults",
+    targetGroup: "Youth",
+    shuffleQuestions: true,
+    timeLimit: 20,
+    passingScore: 80
+  },
+  {
+    id: "adults",
+    name: "Adults",
+    description: "For adult church members",
+    targetGroup: "Adults",
+    shuffleQuestions: true,
+    timeLimit: 15,
+    passingScore: 85
+  }
+];
+function BibleTrivia({ onBack }) {
+  const { language, t } = useLanguage();
+  const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
+  const [levels, setLevels] = reactExports.useState(defaultLevels);
+  const [questions, setQuestions] = reactExports.useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = reactExports.useState(0);
+  const [selectedAnswer, setSelectedAnswer] = reactExports.useState(null);
+  const [showResult, setShowResult] = reactExports.useState(false);
+  const [score, setScore] = reactExports.useState(0);
+  const [gameComplete, setGameComplete] = reactExports.useState(false);
+  const [gameStarted, setGameStarted] = reactExports.useState(false);
+  const [timeLeft, setTimeLeft] = reactExports.useState(0);
+  const [timerActive, setTimerActive] = reactExports.useState(false);
+  reactExports.useEffect(() => {
+    let interval;
+    if (timerActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setTimerActive(false);
+            if (!showResult) {
+              handleAnswerSelect(-1);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1e3);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timerActive, timeLeft, showResult]);
+  reactExports.useEffect(() => {
+    loadLevelsAndQuestions();
+  }, [selectedLevel]);
+  const loadLevelsAndQuestions = () => {
+    const savedLevels = JSON.parse(localStorage.getItem("triviaLevels") || "null");
+    if (savedLevels) {
+      setLevels(savedLevels);
+    }
+    const savedQuestions = JSON.parse(localStorage.getItem("triviaQuestions") || "[]");
+    const levelQuestions = savedQuestions.filter((q) => q.level === selectedLevel);
+    if (levelQuestions.length === 0) {
+      const sampleForLevel = sampleQuestions.filter((q) => q.level === selectedLevel);
+      setQuestions(sampleForLevel);
+    } else {
+      setQuestions(levelQuestions);
+    }
+  };
+  const currentQuestion = questions[currentQuestionIndex];
+  const startGame = () => {
+    setGameStarted(true);
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setScore(0);
+    setGameComplete(false);
+    const currentLevel = levels.find((l) => l.id === selectedLevel);
+    if ((currentLevel == null ? void 0 : currentLevel.timeLimit) && currentLevel.timeLimit > 0) {
+      setTimeLeft(currentLevel.timeLimit);
+      setTimerActive(true);
+    } else {
+      setTimeLeft(0);
+      setTimerActive(false);
+    }
+    if (currentLevel == null ? void 0 : currentLevel.shuffleQuestions) {
+      const shuffled = [...questions].sort(() => Math.random() - 0.5);
+      setQuestions(shuffled);
+    }
+  };
+  const handleAnswerSelect = (answerIndex) => {
+    if (showResult) return;
+    setTimerActive(false);
+    setSelectedAnswer(answerIndex);
+    setShowResult(true);
+    if (answerIndex === currentQuestion.correctAnswer) {
+      setScore(score + 1);
+    }
+  };
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+      setShowResult(false);
+      const currentLevel = levels.find((l) => l.id === selectedLevel);
+      if ((currentLevel == null ? void 0 : currentLevel.timeLimit) && currentLevel.timeLimit > 0) {
+        setTimeLeft(currentLevel.timeLimit);
+        setTimerActive(true);
+      } else {
+        setTimeLeft(0);
+        setTimerActive(false);
+      }
+    } else {
+      setGameComplete(true);
+      setTimerActive(false);
+    }
+  };
+  const resetGame = () => {
+    setGameStarted(false);
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setScore(0);
+    setGameComplete(false);
+    loadLevelsAndQuestions();
+  };
+  if (!gameStarted) {
+    levels.find((l) => l.id === selectedLevel);
+    questions.length;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto max-w-2xl space-y-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4", children: [
+        onBack && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            variant: "outline",
+            size: "sm",
+            onClick: onBack,
+            className: "border-neutral-700 text-white hover:bg-neutral-800",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "mr-2 h-4 w-4" }),
+              t("Back", "Volver")
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-2xl font-bold text-white", children: t("Bible Trivia Challenge", "Desafío de Trivia Bíblica") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Select a level to begin", "Selecciona un nivel para comenzar") })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-lg font-semibold text-white", children: t("Choose Your Level", "Elige Tu Nivel") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-4", children: levels.map((level) => {
+          const questionCount2 = questions.filter((q) => q.level === level.id).length;
+          const isSelected = selectedLevel === level.id;
+          return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Card,
+            {
+              className: `cursor-pointer border-neutral-800 bg-neutral-900/60 transition-all ${isSelected ? "ring-2 ring-red-600 bg-red-600/10" : "hover:bg-neutral-800"}`,
+              onClick: () => setSelectedLevel(level.id),
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: level.name }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: level.description }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-2 flex gap-4 text-xs text-neutral-500", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                      t("Target", "Objetivo"),
+                      ": ",
+                      level.targetGroup
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                      t("Time Limit", "Límite de Tiempo"),
+                      ": ",
+                      level.timeLimit && level.timeLimit > 0 ? `${level.timeLimit}s` : t("Disabled", "Desactivado")
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                      t("Passing Score", "Puntuación Aprobatoria"),
+                      ": ",
+                      level.passingScore,
+                      "%"
+                    ] })
+                  ] }),
+                  isSelected && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-4 pt-4 border-t border-neutral-700", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: questionCount2 > 0 ? t(`${questionCount2} questions available`, `${questionCount2} preguntas disponibles`) : t("Sample questions will be used", "Se usarán preguntas de ejemplo") }),
+                      level.timeLimit && level.timeLimit > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-neutral-500 mt-1", children: [
+                        t("Timer", "Temporizador"),
+                        ": ",
+                        level.timeLimit,
+                        "s ",
+                        t("per question", "por pregunta")
+                      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500 mt-1", children: t("No timer", "Sin temporizador") })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      Button,
+                      {
+                        onClick: startGame,
+                        className: "bg-red-600 hover:bg-red-700",
+                        disabled: questionCount2 === 0,
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "mr-2 h-4 w-4" }),
+                          t("Start Game", "Comenzar Juego")
+                        ]
+                      }
+                    )
+                  ] }) })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ml-4", children: isSelected && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-full bg-red-600 p-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheckBig, { className: "h-5 w-5 text-white" }) }) })
+              ] }) })
+            }
+          ) }, level.id);
+        }) })
+      ] })
+    ] }) });
+  }
+  if (gameComplete) {
+    const percentage = Math.round(score / questions.length * 100);
+    const getMessage = () => {
+      if (percentage === 100) return t("Perfect! You're a Bible expert!", "¡Perfecto! ¡Eres un experto en la Biblia!");
+      if (percentage >= 80) return t("Excellent! Great knowledge!", "¡Excelente! ¡Gran conocimiento!");
+      if (percentage >= 60) return t("Good job! Keep studying!", "¡Buen trabajo! ¡Sigue estudiando!");
+      return t("Keep learning! God loves you!", "¡Sigue aprendiendo! ¡Dios te ama!");
+    };
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "mx-auto max-w-md border-neutral-800 bg-neutral-900/60", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "text-center", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Trophy, { className: "mx-auto h-16 w-16 text-yellow-400" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-2xl font-bold text-white", children: t("Game Complete!", "¡Juego Terminado!") })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4 text-center", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-4xl font-bold text-white", children: [
+          score,
+          "/",
+          questions.length
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-lg text-neutral-300", children: [
+          percentage,
+          "% ",
+          t("Correct", "Correctas")
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: getMessage() }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: resetGame, className: "w-full bg-red-600 hover:bg-red-700", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "mr-2 h-4 w-4" }),
+          t("Back to Levels", "Volver a Niveles")
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => {
+          setGameStarted(true);
+          setGameComplete(false);
+          setCurrentQuestionIndex(0);
+          setSelectedAnswer(null);
+          setShowResult(false);
+          setScore(0);
+          const currentLevel = levels.find((l) => l.id === selectedLevel);
+          if (currentLevel == null ? void 0 : currentLevel.timeLimit) {
+            setTimeLeft(currentLevel.timeLimit);
+            setTimerActive(true);
+          } else {
+            setTimeLeft(0);
+            setTimerActive(false);
+          }
+        }, className: "w-full bg-neutral-700 hover:bg-neutral-600", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "mr-2 h-4 w-4" }),
+          t("Play Again", "Jugar de Nuevo")
+        ] })
+      ] })
+    ] }) });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto max-w-2xl space-y-6", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            variant: "outline",
+            size: "sm",
+            onClick: resetGame,
+            className: "border-neutral-700 text-white hover:bg-neutral-800",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "mr-2 h-4 w-4" }),
+              t("Back to Levels", "Volver a Niveles")
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-2xl font-bold text-white", children: t("Bible Trivia Challenge", "Desafío de Trivia Bíblica") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t(
+            `Question ${currentQuestionIndex + 1} of ${questions.length}`,
+            `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`
+          ) })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4", children: [
+        timerActive && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-right ${timeLeft <= 5 ? "text-red-400" : "text-white"}`, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm text-neutral-400", children: t("Time Left", "Tiempo Restante") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xl font-bold", children: [
+            timeLeft,
+            "s"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-right", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm text-neutral-400", children: t("Score", "Puntuación") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xl font-bold text-white", children: score })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-2 w-full rounded-full bg-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "h-2 rounded-full bg-red-600 transition-all duration-300",
+        style: { width: `${(currentQuestionIndex + 1) / questions.length * 100}%` }
+      }
+    ) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "border-neutral-800 bg-neutral-900/60", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "rounded-full bg-red-600/20 px-3 py-1 text-xs font-semibold text-red-400", children: currentQuestion.category }),
+          currentQuestion.reference && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-neutral-400", children: currentQuestion.reference })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-lg font-semibold text-white", children: language === "en" ? currentQuestion.questionEn : currentQuestion.questionEs })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: currentQuestion.options[language === "en" ? "en" : "es"].map((option, index2) => {
+        const isCorrect = index2 === currentQuestion.correctAnswer;
+        const isSelected = index2 === selectedAnswer;
+        const showCorrect = showResult && isCorrect;
+        const showIncorrect = showResult && isSelected && !isCorrect;
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            variant: "outline",
+            onClick: () => handleAnswerSelect(index2),
+            disabled: showResult,
+            className: `w-full justify-start border-neutral-700 text-left transition-all ${showCorrect ? "border-green-600 bg-green-600/20 text-green-400" : showIncorrect ? "border-red-600 bg-red-600/20 text-red-400" : isSelected ? "border-red-600 bg-red-600/20 text-white" : "text-white hover:bg-neutral-800"}`,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: option }),
+              showCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheckBig, { className: "h-5 w-5" }),
+              showIncorrect && /* @__PURE__ */ jsxRuntimeExports.jsx(CircleX, { className: "h-5 w-5" })
+            ] })
+          },
+          index2
+        );
+      }) })
+    ] }),
+    showResult && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `rounded-lg p-4 ${selectedAnswer === currentQuestion.correctAnswer ? "bg-green-600/20 text-green-400" : selectedAnswer === -1 ? "bg-yellow-600/20 text-yellow-400" : "bg-red-600/20 text-red-400"}`, children: [
+        selectedAnswer === currentQuestion.correctAnswer ? t("Correct! Well done!", "¡Correcto! ¡Bien hecho!") : selectedAnswer === -1 ? t("Time's up! The correct answer was:", "¡Se acabó el tiempo! La respuesta correcta era:") : t(
+          `Incorrect. The correct answer was: ${currentQuestion.options[language === "en" ? "en" : "es"][currentQuestion.correctAnswer]}`,
+          `Incorrecto. La respuesta correcta era: ${currentQuestion.options[language === "en" ? "es" : "en"][currentQuestion.correctAnswer]}`
+        ),
+        selectedAnswer === -1 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1", children: currentQuestion.options[language === "en" ? "en" : "es"][currentQuestion.correctAnswer] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Button,
+        {
+          onClick: handleNextQuestion,
+          className: "w-full bg-red-600 hover:bg-red-700",
+          children: currentQuestionIndex < questions.length - 1 ? t("Next Question", "Siguiente Pregunta") : t("See Results", "Ver Resultados")
+        }
+      )
+    ] })
+  ] }) });
+}
+const gameList = [
+  {
+    id: 1,
+    titleEn: "Bible Trivia Challenge",
+    titleEs: "Desafío de Trivia Bíblica",
+    descriptionEn: "Test your Bible knowledge with interactive questions and instant feedback.",
+    descriptionEs: "Pon a prueba tu conocimiento bíblico con preguntas interactivas y retroalimentación instantánea.",
+    icon: Brain,
+    ctaEn: "Play Now",
+    ctaEs: "Jugar Ahora",
+    link: "bible-trivia",
+    internal: true
   }
 ];
 function Games() {
   const { language, t } = useLanguage();
+  const [currentGame, setCurrentGame] = reactExports.useState(null);
+  if (currentGame === "bible-trivia") {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(BibleTrivia, { onBack: () => setCurrentGame(null) });
+  }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
@@ -29417,7 +29936,7 @@ function Games() {
         "Crece en la fe mientras te diviertes con juegos familiares que fortalecen el conocimiento bíblico y la comunidad."
       ) })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "grid gap-6 md:grid-cols-2", children: gameList.map((game) => {
+    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "grid gap-6 md:grid-cols-1", children: gameList.map((game) => {
       const Icon2 = game.icon;
       return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "border-neutral-800 bg-neutral-900/60", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "flex items-center gap-3", children: [
@@ -29429,10 +29948,27 @@ function Games() {
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-300", children: language === "en" ? game.descriptionEn : game.descriptionEs }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { asChild: true, className: "bg-red-600 hover:bg-red-700", children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: game.link, target: "_blank", rel: "noreferrer", children: t(game.ctaEn, game.ctaEs) }) })
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              className: "bg-red-600 hover:bg-red-700",
+              onClick: () => game.internal ? setCurrentGame(game.link) : window.open(game.link, "_blank"),
+              children: t(game.ctaEn, game.ctaEs)
+            }
+          )
         ] })
       ] }, game.id);
-    }) })
+    }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "space-y-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-xl border border-neutral-800 bg-neutral-900/40 p-6 text-center", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-center gap-2 text-neutral-400 mb-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("More Coming Soon", "Más Pronto") })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-300", children: t(
+        "We're working on more exciting games and activities to help you grow in faith. Check back soon for new additions!",
+        "Estamos trabajando en más juegos y actividades emocionantes para ayudarte a crecer en la fe. ¡Vuelve pronto para ver las nuevas adiciones!"
+      ) })
+    ] }) })
   ] });
 }
 function Contact({ onNavigate }) {
@@ -29630,6 +30166,1395 @@ function NewHere({ onNavigate }) {
     ] })
   ] });
 }
+var CHECKBOX_NAME = "Checkbox";
+var [createCheckboxContext] = createContextScope(CHECKBOX_NAME);
+var [CheckboxProviderImpl, useCheckboxContext] = createCheckboxContext(CHECKBOX_NAME);
+function CheckboxProvider(props) {
+  const {
+    __scopeCheckbox,
+    checked: checkedProp,
+    children,
+    defaultChecked,
+    disabled,
+    form,
+    name,
+    onCheckedChange,
+    required,
+    value = "on",
+    // @ts-expect-error
+    internal_do_not_use_render
+  } = props;
+  const [checked, setChecked] = useControllableState({
+    prop: checkedProp,
+    defaultProp: defaultChecked ?? false,
+    onChange: onCheckedChange,
+    caller: CHECKBOX_NAME
+  });
+  const [control, setControl] = reactExports.useState(null);
+  const [bubbleInput, setBubbleInput] = reactExports.useState(null);
+  const hasConsumerStoppedPropagationRef = reactExports.useRef(false);
+  const isFormControl = control ? !!form || !!control.closest("form") : (
+    // We set this to true by default so that events bubble to forms without JS (SSR)
+    true
+  );
+  const context = {
+    checked,
+    disabled,
+    setChecked,
+    control,
+    setControl,
+    name,
+    form,
+    value,
+    hasConsumerStoppedPropagationRef,
+    required,
+    defaultChecked: isIndeterminate(defaultChecked) ? false : defaultChecked,
+    isFormControl,
+    bubbleInput,
+    setBubbleInput
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    CheckboxProviderImpl,
+    {
+      scope: __scopeCheckbox,
+      ...context,
+      children: isFunction(internal_do_not_use_render) ? internal_do_not_use_render(context) : children
+    }
+  );
+}
+var TRIGGER_NAME$1 = "CheckboxTrigger";
+var CheckboxTrigger = reactExports.forwardRef(
+  ({ __scopeCheckbox, onKeyDown, onClick, ...checkboxProps }, forwardedRef) => {
+    const {
+      control,
+      value,
+      disabled,
+      checked,
+      required,
+      setControl,
+      setChecked,
+      hasConsumerStoppedPropagationRef,
+      isFormControl,
+      bubbleInput
+    } = useCheckboxContext(TRIGGER_NAME$1, __scopeCheckbox);
+    const composedRefs = useComposedRefs(forwardedRef, setControl);
+    const initialCheckedStateRef = reactExports.useRef(checked);
+    reactExports.useEffect(() => {
+      const form = control == null ? void 0 : control.form;
+      if (form) {
+        const reset = () => setChecked(initialCheckedStateRef.current);
+        form.addEventListener("reset", reset);
+        return () => form.removeEventListener("reset", reset);
+      }
+    }, [control, setChecked]);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Primitive.button,
+      {
+        type: "button",
+        role: "checkbox",
+        "aria-checked": isIndeterminate(checked) ? "mixed" : checked,
+        "aria-required": required,
+        "data-state": getState(checked),
+        "data-disabled": disabled ? "" : void 0,
+        disabled,
+        value,
+        ...checkboxProps,
+        ref: composedRefs,
+        onKeyDown: composeEventHandlers(onKeyDown, (event) => {
+          if (event.key === "Enter") event.preventDefault();
+        }),
+        onClick: composeEventHandlers(onClick, (event) => {
+          setChecked((prevChecked) => isIndeterminate(prevChecked) ? true : !prevChecked);
+          if (bubbleInput && isFormControl) {
+            hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
+            if (!hasConsumerStoppedPropagationRef.current) event.stopPropagation();
+          }
+        })
+      }
+    );
+  }
+);
+CheckboxTrigger.displayName = TRIGGER_NAME$1;
+var Checkbox$1 = reactExports.forwardRef(
+  (props, forwardedRef) => {
+    const {
+      __scopeCheckbox,
+      name,
+      checked,
+      defaultChecked,
+      required,
+      disabled,
+      value,
+      onCheckedChange,
+      form,
+      ...checkboxProps
+    } = props;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      CheckboxProvider,
+      {
+        __scopeCheckbox,
+        checked,
+        defaultChecked,
+        disabled,
+        required,
+        onCheckedChange,
+        name,
+        form,
+        value,
+        internal_do_not_use_render: ({ isFormControl }) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            CheckboxTrigger,
+            {
+              ...checkboxProps,
+              ref: forwardedRef,
+              __scopeCheckbox
+            }
+          ),
+          isFormControl && /* @__PURE__ */ jsxRuntimeExports.jsx(
+            CheckboxBubbleInput,
+            {
+              __scopeCheckbox
+            }
+          )
+        ] })
+      }
+    );
+  }
+);
+Checkbox$1.displayName = CHECKBOX_NAME;
+var INDICATOR_NAME = "CheckboxIndicator";
+var CheckboxIndicator = reactExports.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeCheckbox, forceMount, ...indicatorProps } = props;
+    const context = useCheckboxContext(INDICATOR_NAME, __scopeCheckbox);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Presence,
+      {
+        present: forceMount || isIndeterminate(context.checked) || context.checked === true,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Primitive.span,
+          {
+            "data-state": getState(context.checked),
+            "data-disabled": context.disabled ? "" : void 0,
+            ...indicatorProps,
+            ref: forwardedRef,
+            style: { pointerEvents: "none", ...props.style }
+          }
+        )
+      }
+    );
+  }
+);
+CheckboxIndicator.displayName = INDICATOR_NAME;
+var BUBBLE_INPUT_NAME = "CheckboxBubbleInput";
+var CheckboxBubbleInput = reactExports.forwardRef(
+  ({ __scopeCheckbox, ...props }, forwardedRef) => {
+    const {
+      control,
+      hasConsumerStoppedPropagationRef,
+      checked,
+      defaultChecked,
+      required,
+      disabled,
+      name,
+      value,
+      form,
+      bubbleInput,
+      setBubbleInput
+    } = useCheckboxContext(BUBBLE_INPUT_NAME, __scopeCheckbox);
+    const composedRefs = useComposedRefs(forwardedRef, setBubbleInput);
+    const prevChecked = usePrevious$1(checked);
+    const controlSize = useSize(control);
+    reactExports.useEffect(() => {
+      const input = bubbleInput;
+      if (!input) return;
+      const inputProto = window.HTMLInputElement.prototype;
+      const descriptor = Object.getOwnPropertyDescriptor(
+        inputProto,
+        "checked"
+      );
+      const setChecked = descriptor.set;
+      const bubbles = !hasConsumerStoppedPropagationRef.current;
+      if (prevChecked !== checked && setChecked) {
+        const event = new Event("click", { bubbles });
+        input.indeterminate = isIndeterminate(checked);
+        setChecked.call(input, isIndeterminate(checked) ? false : checked);
+        input.dispatchEvent(event);
+      }
+    }, [bubbleInput, prevChecked, checked, hasConsumerStoppedPropagationRef]);
+    const defaultCheckedRef = reactExports.useRef(isIndeterminate(checked) ? false : checked);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Primitive.input,
+      {
+        type: "checkbox",
+        "aria-hidden": true,
+        defaultChecked: defaultChecked ?? defaultCheckedRef.current,
+        required,
+        disabled,
+        name,
+        value,
+        form,
+        ...props,
+        tabIndex: -1,
+        ref: composedRefs,
+        style: {
+          ...props.style,
+          ...controlSize,
+          position: "absolute",
+          pointerEvents: "none",
+          opacity: 0,
+          margin: 0,
+          // We transform because the input is absolutely positioned but we have
+          // rendered it **after** the button. This pulls it back to sit on top
+          // of the button.
+          transform: "translateX(-100%)"
+        }
+      }
+    );
+  }
+);
+CheckboxBubbleInput.displayName = BUBBLE_INPUT_NAME;
+function isFunction(value) {
+  return typeof value === "function";
+}
+function isIndeterminate(checked) {
+  return checked === "indeterminate";
+}
+function getState(checked) {
+  return isIndeterminate(checked) ? "indeterminate" : checked ? "checked" : "unchecked";
+}
+function Checkbox({
+  className,
+  ...props
+}) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    Checkbox$1,
+    {
+      "data-slot": "checkbox",
+      className: cn(
+        "peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      ),
+      ...props,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        CheckboxIndicator,
+        {
+          "data-slot": "checkbox-indicator",
+          className: "grid place-content-center text-current transition-none",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "size-3.5" })
+        }
+      )
+    }
+  );
+}
+const categories = [
+  "Old Testament",
+  "New Testament",
+  "Bible Characters",
+  "Bible Verses",
+  "Bible History",
+  "Jesus Life",
+  "Apostles",
+  "Miracles",
+  "Parables",
+  "Other"
+];
+function TriviaManager() {
+  var _a2, _b2, _c2, _d2, _e2, _f2;
+  const { t } = useLanguage();
+  const [questions, setQuestions] = reactExports.useState([]);
+  const [levels, setLevels] = reactExports.useState([]);
+  const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
+  const [loading, setLoading] = reactExports.useState(false);
+  const [error, setError] = reactExports.useState(null);
+  const [success, setSuccess] = reactExports.useState(null);
+  const [isAdding, setIsAdding] = reactExports.useState(false);
+  const [isAddingLevel, setIsAddingLevel] = reactExports.useState(false);
+  const [editingId, setEditingId] = reactExports.useState(null);
+  const [editingLevelId, setEditingLevelId] = reactExports.useState(null);
+  const [shuffleQuestions, setShuffleQuestions] = reactExports.useState(true);
+  const [formData, setFormData] = reactExports.useState({
+    questionEn: "",
+    questionEs: "",
+    question: "",
+    options: { en: ["", "", "", ""], es: ["", "", "", ""] },
+    optionInputs: ["", "", "", ""],
+    correctAnswer: 0,
+    category: "Old Testament",
+    reference: "",
+    level: selectedLevel
+  });
+  const [levelFormData, setLevelFormData] = reactExports.useState({
+    name: "",
+    description: "",
+    targetGroup: "",
+    shuffleQuestions: true,
+    timeLimit: 30,
+    passingScore: 70
+  });
+  reactExports.useEffect(() => {
+    loadLevelsAndQuestions();
+  }, [selectedLevel]);
+  const loadLevelsAndQuestions = () => {
+    const savedLevels = JSON.parse(localStorage.getItem("triviaLevels") || "null");
+    if (savedLevels) {
+      setLevels(savedLevels);
+    } else {
+      const defaultLevels2 = [
+        {
+          id: "kids",
+          name: "Kids",
+          description: "For children ages 6-12",
+          targetGroup: "Children",
+          shuffleQuestions: true,
+          timeLimit: 30,
+          passingScore: 70
+        },
+        {
+          id: "youth",
+          name: "Youth",
+          description: "For teenagers and young adults",
+          targetGroup: "Youth",
+          shuffleQuestions: true,
+          timeLimit: 20,
+          passingScore: 80
+        },
+        {
+          id: "adults",
+          name: "Adults",
+          description: "For adult church members",
+          targetGroup: "Adults",
+          shuffleQuestions: true,
+          timeLimit: 15,
+          passingScore: 85
+        }
+      ];
+      localStorage.setItem("triviaLevels", JSON.stringify(defaultLevels2));
+      setLevels(defaultLevels2);
+    }
+    loadQuestions();
+  };
+  const loadQuestions = async () => {
+    try {
+      setLoading(true);
+      const savedQuestions = JSON.parse(localStorage.getItem("triviaQuestions") || "[]");
+      const filteredQuestions = savedQuestions.filter((q) => q.level === selectedLevel);
+      setQuestions(filteredQuestions);
+    } catch (err) {
+      setError(t("Failed to load questions", "Error al cargar preguntas"));
+    } finally {
+      setLoading(false);
+    }
+  };
+  const saveLevel = async () => {
+    try {
+      if (!levelFormData.name) {
+        setError(t("Please enter a level name", "Por favor ingresa un nombre de nivel"));
+        return;
+      }
+      const levelData = {
+        id: editingLevelId || levelFormData.name.toLowerCase().replace(/\s+/g, "-"),
+        name: levelFormData.name,
+        description: levelFormData.description || "",
+        targetGroup: levelFormData.targetGroup || "",
+        shuffleQuestions: levelFormData.shuffleQuestions || true,
+        timeLimit: levelFormData.timeLimit || 30,
+        passingScore: levelFormData.passingScore || 70
+      };
+      let savedLevels = JSON.parse(localStorage.getItem("triviaLevels") || "null") || levels;
+      if (editingLevelId) {
+        savedLevels = savedLevels.map(
+          (level) => level.id === editingLevelId ? levelData : level
+        );
+        setSuccess(t("Level updated successfully!", "¡Nivel actualizado exitosamente!"));
+      } else {
+        savedLevels = [...savedLevels, levelData];
+        setSuccess(t("Level created successfully!", "¡Nivel creado exitosamente!"));
+      }
+      localStorage.setItem("triviaLevels", JSON.stringify(savedLevels));
+      setLevels(savedLevels);
+      resetLevelForm();
+    } catch (err) {
+      setError(t("Failed to save level", "Error al guardar nivel"));
+    }
+  };
+  const deleteLevel = async (levelId) => {
+    var _a3;
+    if (!confirm(t("Are you sure you want to delete this level?", "¿Estás seguro de que quieres eliminar este nivel?"))) {
+      return;
+    }
+    try {
+      let savedLevels = JSON.parse(localStorage.getItem("triviaLevels") || "null") || levels;
+      savedLevels = savedLevels.filter((level) => level.id !== levelId);
+      localStorage.setItem("triviaLevels", JSON.stringify(savedLevels));
+      setLevels(savedLevels);
+      setSuccess(t("Level deleted successfully!", "¡Nivel eliminado exitosamente!"));
+      if (selectedLevel === levelId) {
+        setSelectedLevel(((_a3 = levels[0]) == null ? void 0 : _a3.id) || "kids");
+      }
+    } catch (err) {
+      setError(t("Failed to delete level", "Error al eliminar nivel"));
+    }
+  };
+  const resetLevelForm = () => {
+    setLevelFormData({
+      name: "",
+      description: "",
+      targetGroup: "",
+      shuffleQuestions: true,
+      timeLimit: 30,
+      passingScore: 70
+    });
+    setIsAddingLevel(false);
+    setEditingLevelId(null);
+  };
+  const saveQuestion = async () => {
+    try {
+      if (!formData.question || !formData.optionInputs) {
+        setError(t("Please fill all required fields", "Por favor completa todos los campos requeridos"));
+        return;
+      }
+      const spanishWords = ["¿", "ñ", "él", "ella", "dios", "biblia", "pregunta", "mandamientos"];
+      const hasSpanishChars = /[¿ñáéíóúü]/i.test(formData.question || "");
+      const hasSpanishWords = spanishWords.some((word) => (formData.question || "").toLowerCase().includes(word));
+      const isSpanish = hasSpanishChars || hasSpanishWords;
+      const questionData = {
+        id: editingId || Date.now(),
+        questionEn: isSpanish ? "" : formData.question || "",
+        questionEs: isSpanish ? formData.question : "",
+        question: formData.question || "",
+        options: {
+          en: isSpanish ? ["", "", "", ""] : formData.optionInputs || ["", "", "", ""],
+          es: isSpanish ? formData.optionInputs || ["", "", "", ""] : ["", "", "", ""]
+        },
+        optionInputs: formData.optionInputs || ["", "", "", ""],
+        correctAnswer: formData.correctAnswer || 0,
+        category: formData.category || "Old Testament",
+        reference: formData.reference,
+        level: selectedLevel
+      };
+      let savedQuestions = JSON.parse(localStorage.getItem("triviaQuestions") || "[]");
+      if (editingId) {
+        savedQuestions = savedQuestions.map(
+          (q) => q.id === editingId ? questionData : q
+        );
+        setSuccess(t("Question updated successfully!", "¡Pregunta actualizada exitosamente!"));
+      } else {
+        savedQuestions.push(questionData);
+        setSuccess(t("Question added successfully!", "¡Pregunta agregada exitosamente!"));
+      }
+      localStorage.setItem("triviaQuestions", JSON.stringify(savedQuestions));
+      loadQuestions();
+      resetForm();
+    } catch (err) {
+      setError(t("Failed to save question", "Error al guardar pregunta"));
+    }
+  };
+  const deleteQuestion = async (id) => {
+    if (!confirm(t("Are you sure you want to delete this question?", "¿Estás seguro de que quieres eliminar esta pregunta?"))) {
+      return;
+    }
+    try {
+      let savedQuestions = JSON.parse(localStorage.getItem("triviaQuestions") || "[]");
+      savedQuestions = savedQuestions.filter((q) => q.id !== id);
+      localStorage.setItem("triviaQuestions", JSON.stringify(savedQuestions));
+      setSuccess(t("Question deleted successfully!", "¡Pregunta eliminada exitosamente!"));
+      loadQuestions();
+    } catch (err) {
+      setError(t("Failed to delete question", "Error al eliminar pregunta"));
+    }
+  };
+  const resetForm = () => {
+    setFormData({
+      questionEn: "",
+      questionEs: "",
+      question: "",
+      options: { en: ["", "", "", ""], es: ["", "", "", ""] },
+      optionInputs: ["", "", "", ""],
+      correctAnswer: 0,
+      category: "Old Testament",
+      reference: ""
+    });
+    setIsAdding(false);
+    setEditingId(null);
+  };
+  const startEdit = (question) => {
+    console.log("Editing question:", question);
+    const primaryQuestion = question.questionEn || question.questionEs;
+    const primaryOptions = question.options.en.some((opt) => opt) ? question.options.en : question.options.es;
+    console.log("Setting form data with:", {
+      ...question,
+      question: primaryQuestion,
+      optionInputs: primaryOptions
+    });
+    setFormData({
+      ...question,
+      question: primaryQuestion,
+      optionInputs: primaryOptions
+    });
+    setEditingId(question.id);
+    setIsAdding(true);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-xl font-semibold text-white", children: t("Trivia Levels", "Niveles de Trivia") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            onClick: () => {
+              console.log("Add Level button clicked");
+              setIsAddingLevel(true);
+            },
+            className: "bg-red-600 hover:bg-red-700",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "mr-2 h-4 w-4" }),
+              t("Add Level", "Agregar Nivel")
+            ]
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Button,
+        {
+          variant: selectedLevel === level.id ? "default" : "outline",
+          onClick: () => setSelectedLevel(level.id),
+          className: selectedLevel === level.id ? "bg-red-600 hover:bg-red-700" : "border-neutral-700 text-white hover:bg-neutral-800",
+          children: level.name
+        },
+        level.id
+      )) }),
+      levels.find((l) => l.id === selectedLevel) && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-xl border border-neutral-800 bg-neutral-900/40 p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: (_a2 = levels.find((l) => l.id === selectedLevel)) == null ? void 0 : _a2.name }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: (_b2 = levels.find((l) => l.id === selectedLevel)) == null ? void 0 : _b2.description }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-2 flex gap-4 text-xs text-neutral-500", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              t("Target", "Objetivo"),
+              ": ",
+              (_c2 = levels.find((l) => l.id === selectedLevel)) == null ? void 0 : _c2.targetGroup
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              t("Time Limit", "Límite de Tiempo"),
+              ": ",
+              (_d2 = levels.find((l) => l.id === selectedLevel)) == null ? void 0 : _d2.timeLimit,
+              "s"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              t("Passing Score", "Puntuación Aprobatoria"),
+              ": ",
+              (_e2 = levels.find((l) => l.id === selectedLevel)) == null ? void 0 : _e2.passingScore,
+              "%"
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: "outline",
+              size: "sm",
+              onClick: () => {
+                console.log("Level edit button clicked for level:", levels.find((l) => l.id === selectedLevel));
+                const levelData = levels.find((l) => l.id === selectedLevel);
+                if (levelData) {
+                  console.log("Setting level form data:", levelData);
+                  setLevelFormData(levelData);
+                  setEditingLevelId(levelData.id);
+                  setIsAddingLevel(true);
+                }
+              },
+              className: "border-neutral-700 text-white hover:bg-neutral-800",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-4 w-4" })
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: "outline",
+              size: "sm",
+              onClick: () => deleteLevel(selectedLevel),
+              className: "border-red-600 text-red-400 hover:bg-red-600/20",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
+            }
+          )
+        ] })
+      ] }) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-xl font-semibold text-white", children: [
+          t("Bible Trivia Questions", "Preguntas de Trivia Bíblica"),
+          " - ",
+          (_f2 = levels.find((l) => l.id === selectedLevel)) == null ? void 0 : _f2.name
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Checkbox,
+              {
+                id: "shuffle-questions",
+                checked: shuffleQuestions,
+                onCheckedChange: (checked) => setShuffleQuestions(checked),
+                className: "border-neutral-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Label,
+              {
+                htmlFor: "shuffle-questions",
+                className: "text-sm text-neutral-300 cursor-pointer",
+                children: t("Shuffle Questions", "Barajar Preguntas")
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Button,
+            {
+              onClick: () => setIsAdding(true),
+              className: "bg-red-600 hover:bg-red-700",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "mr-2 h-4 w-4" }),
+                t("Add Question", "Agregar Pregunta")
+              ]
+            }
+          )
+        ] })
+      ] }),
+      error && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg bg-red-600/20 p-3 text-red-400", children: error }),
+      success && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg bg-green-600/20 p-3 text-green-400", children: success }),
+      isAdding && (() => {
+        var _a3;
+        console.log("Question modal should be showing, isAdding:", isAdding, "editingId:", editingId);
+        return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/50", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "mx-4 max-w-2xl border-neutral-800 bg-neutral-900", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: editingId ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "outline", size: "sm", onClick: resetForm, children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4" }) })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Question", "Pregunta") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Textarea,
+                {
+                  value: formData.question || "",
+                  onChange: (e) => setFormData((prev) => ({ ...prev, question: e.target.value })),
+                  className: "border-neutral-700 bg-neutral-800 text-white",
+                  placeholder: t("Enter your question in any language", "Ingresa tu pregunta en cualquier idioma")
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Category", "Categoría") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: formData.category,
+                  onValueChange: (value) => setFormData((prev) => ({ ...prev, category: value })),
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, {}) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: categories.map((category) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: category, className: "text-white", children: category }, category)) })
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Level", "Nivel") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: formData.level,
+                  onValueChange: (value) => setFormData((prev) => ({ ...prev, level: value })),
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, {}) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: level.id, className: "text-white", children: level.name }, level.id)) })
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Reference (Optional)", "Referencia (Opcional)") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  value: formData.reference || "",
+                  onChange: (e) => setFormData((prev) => ({ ...prev, reference: e.target.value })),
+                  className: "border-neutral-700 bg-neutral-800 text-white",
+                  placeholder: t("e.g., Genesis 1:1", "ej., Génesis 1:1")
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Answer Options", "Opciones de Respuesta") }),
+              [0, 1, 2, 3].map((index2) => {
+                var _a4;
+                return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400", children: [
+                    index2 + 1,
+                    "."
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      value: ((_a4 = formData.optionInputs) == null ? void 0 : _a4[index2]) || "",
+                      onChange: (e) => {
+                        const newOptions = [...formData.optionInputs || ["", "", "", ""]];
+                        newOptions[index2] = e.target.value;
+                        setFormData((prev) => ({ ...prev, optionInputs: newOptions }));
+                      },
+                      className: "border-neutral-700 bg-neutral-800 text-white",
+                      placeholder: t("Enter option in any language", "Ingresa la opción en cualquier idioma")
+                    }
+                  )
+                ] }, index2);
+              })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Correct Answer", "Respuesta Correcta") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: (_a3 = formData.correctAnswer) == null ? void 0 : _a3.toString(),
+                  onValueChange: (value) => setFormData((prev) => ({ ...prev, correctAnswer: parseInt(value) })),
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, {}) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: [0, 1, 2, 3].map((index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: index2.toString(), className: "text-white", children: [
+                      t("Option", "Opción"),
+                      " ",
+                      index2 + 1
+                    ] }, index2)) })
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: saveQuestion, className: "bg-red-600 hover:bg-red-700", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "mr-2 h-4 w-4" }),
+                t("Save Question", "Guardar Pregunta")
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "outline", onClick: resetForm, children: t("Cancel", "Cancelar") })
+            ] })
+          ] })
+        ] }) });
+      })(),
+      isAddingLevel && (() => {
+        console.log("Level modal should be showing, isAddingLevel:", isAddingLevel, "editingLevelId:", editingLevelId);
+        return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/50", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "mx-4 max-w-2xl border-neutral-800 bg-neutral-900", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: editingLevelId ? t("Edit Level", "Editar Nivel") : t("Add New Level", "Agregar Nuevo Nivel") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "outline", size: "sm", onClick: () => {
+              setIsAddingLevel(false);
+              setEditingLevelId(null);
+              resetLevelForm();
+            }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4" }) })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Level Name", "Nombre del Nivel") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  value: levelFormData.name || "",
+                  onChange: (e) => setLevelFormData((prev) => ({ ...prev, name: e.target.value })),
+                  placeholder: t("e.g., Kids, Youth, Adults", "ej., Niños, Jóvenes, Adultos"),
+                  className: "border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Description", "Descripción") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Textarea,
+                {
+                  value: levelFormData.description || "",
+                  onChange: (e) => setLevelFormData((prev) => ({ ...prev, description: e.target.value })),
+                  placeholder: t("Describe this level...", "Describe este nivel..."),
+                  className: "border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Target Group", "Grupo Objetivo") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  value: levelFormData.targetGroup || "",
+                  onChange: (e) => setLevelFormData((prev) => ({ ...prev, targetGroup: e.target.value })),
+                  placeholder: t("e.g., Children, Teenagers, Adults", "ej., Niños, Adolescentes, Adultos"),
+                  className: "border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Checkbox,
+                  {
+                    id: "enable-timer",
+                    checked: levelFormData.timeLimit !== void 0 && levelFormData.timeLimit > 0,
+                    onCheckedChange: (checked) => setLevelFormData((prev) => ({
+                      ...prev,
+                      timeLimit: checked ? prev.timeLimit || 30 : 0
+                    })),
+                    className: "border-neutral-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Label,
+                  {
+                    htmlFor: "enable-timer",
+                    className: "text-sm text-neutral-300 cursor-pointer",
+                    children: t("Enable Timer", "Habilitar Temporizador")
+                  }
+                )
+              ] }),
+              levelFormData.timeLimit !== void 0 && levelFormData.timeLimit > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Time Limit (seconds)", "Límite de Tiempo (segundos)") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Input,
+                  {
+                    type: "number",
+                    value: levelFormData.timeLimit || "",
+                    onChange: (e) => setLevelFormData((prev) => ({ ...prev, timeLimit: parseInt(e.target.value) || 30 })),
+                    placeholder: "30",
+                    min: "5",
+                    max: "300",
+                    className: "border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500", children: t("Set 0 to disable timer", "Establecer 0 para desactivar el temporizador") })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white", children: t("Passing Score (%)", "Puntuación Aprobatoria (%)") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  type: "number",
+                  value: levelFormData.passingScore || "",
+                  onChange: (e) => setLevelFormData((prev) => ({ ...prev, passingScore: parseInt(e.target.value) || 70 })),
+                  placeholder: "70",
+                  min: "0",
+                  max: "100",
+                  className: "border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Checkbox,
+                {
+                  id: "shuffle-questions-level",
+                  checked: levelFormData.shuffleQuestions || false,
+                  onCheckedChange: (checked) => setLevelFormData((prev) => ({ ...prev, shuffleQuestions: checked })),
+                  className: "border-neutral-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Label,
+                {
+                  htmlFor: "shuffle-questions-level",
+                  className: "text-sm text-neutral-300 cursor-pointer",
+                  children: t("Shuffle Questions", "Barajar Preguntas")
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: saveLevel, className: "bg-red-600 hover:bg-red-700", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "mr-2 h-4 w-4" }),
+                t("Save Level", "Guardar Nivel")
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "outline", onClick: () => {
+                setIsAddingLevel(false);
+                setEditingLevelId(null);
+                resetLevelForm();
+              }, children: t("Cancel", "Cancelar") })
+            ] })
+          ] })
+        ] }) });
+      })(),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-4", children: loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center text-neutral-400", children: t("Loading questions...", "Cargando preguntas...") }) : questions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center text-neutral-400", children: t("No questions yet. Add your first question!", "No hay preguntas aún. ¡Agrega tu primera pregunta!") }) : questions.map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "border-neutral-800 bg-neutral-900/60", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 space-y-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "rounded-full bg-red-600/20 px-2 py-1 text-xs font-semibold text-red-400", children: question.category }),
+            question.reference && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-neutral-400", children: question.reference })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-medium text-white", children: question.questionEn }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: question.questionEs })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-1 text-xs text-neutral-400 md:grid-cols-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-medium text-white", children: "EN:" }),
+              " ",
+              question.options.en.join(" • ")
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-medium text-white", children: "ES:" }),
+              " ",
+              question.options.es.join(" • ")
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-xs", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheckBig, { className: "h-3 w-3 text-green-400" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-green-400", children: [
+              t("Correct", "Correcto"),
+              ": ",
+              t("Option", "Opción"),
+              " ",
+              question.correctAnswer + 1
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: "outline",
+              size: "sm",
+              onClick: () => {
+                console.log("Edit button clicked for question:", question);
+                startEdit(question);
+              },
+              className: "border-neutral-700 text-white hover:bg-neutral-800",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-4 w-4" })
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: "outline",
+              size: "sm",
+              onClick: () => deleteQuestion(question.id),
+              className: "border-red-600 text-red-400 hover:bg-red-600/20",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
+            }
+          )
+        ] })
+      ] }) }) }, question.id)) })
+    ] })
+  ] });
+}
+var ENTRY_FOCUS = "rovingFocusGroup.onEntryFocus";
+var EVENT_OPTIONS = { bubbles: false, cancelable: true };
+var GROUP_NAME = "RovingFocusGroup";
+var [Collection$1, useCollection$1, createCollectionScope$1] = createCollection(GROUP_NAME);
+var [createRovingFocusGroupContext, createRovingFocusGroupScope] = createContextScope(
+  GROUP_NAME,
+  [createCollectionScope$1]
+);
+var [RovingFocusProvider, useRovingFocusContext] = createRovingFocusGroupContext(GROUP_NAME);
+var RovingFocusGroup = reactExports.forwardRef(
+  (props, forwardedRef) => {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Collection$1.Provider, { scope: props.__scopeRovingFocusGroup, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Collection$1.Slot, { scope: props.__scopeRovingFocusGroup, children: /* @__PURE__ */ jsxRuntimeExports.jsx(RovingFocusGroupImpl, { ...props, ref: forwardedRef }) }) });
+  }
+);
+RovingFocusGroup.displayName = GROUP_NAME;
+var RovingFocusGroupImpl = reactExports.forwardRef((props, forwardedRef) => {
+  const {
+    __scopeRovingFocusGroup,
+    orientation,
+    loop = false,
+    dir,
+    currentTabStopId: currentTabStopIdProp,
+    defaultCurrentTabStopId,
+    onCurrentTabStopIdChange,
+    onEntryFocus,
+    preventScrollOnEntryFocus = false,
+    ...groupProps
+  } = props;
+  const ref = reactExports.useRef(null);
+  const composedRefs = useComposedRefs(forwardedRef, ref);
+  const direction = useDirection(dir);
+  const [currentTabStopId, setCurrentTabStopId] = useControllableState({
+    prop: currentTabStopIdProp,
+    defaultProp: defaultCurrentTabStopId ?? null,
+    onChange: onCurrentTabStopIdChange,
+    caller: GROUP_NAME
+  });
+  const [isTabbingBackOut, setIsTabbingBackOut] = reactExports.useState(false);
+  const handleEntryFocus = useCallbackRef$1(onEntryFocus);
+  const getItems = useCollection$1(__scopeRovingFocusGroup);
+  const isClickFocusRef = reactExports.useRef(false);
+  const [focusableItemsCount, setFocusableItemsCount] = reactExports.useState(0);
+  reactExports.useEffect(() => {
+    const node = ref.current;
+    if (node) {
+      node.addEventListener(ENTRY_FOCUS, handleEntryFocus);
+      return () => node.removeEventListener(ENTRY_FOCUS, handleEntryFocus);
+    }
+  }, [handleEntryFocus]);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    RovingFocusProvider,
+    {
+      scope: __scopeRovingFocusGroup,
+      orientation,
+      dir: direction,
+      loop,
+      currentTabStopId,
+      onItemFocus: reactExports.useCallback(
+        (tabStopId) => setCurrentTabStopId(tabStopId),
+        [setCurrentTabStopId]
+      ),
+      onItemShiftTab: reactExports.useCallback(() => setIsTabbingBackOut(true), []),
+      onFocusableItemAdd: reactExports.useCallback(
+        () => setFocusableItemsCount((prevCount) => prevCount + 1),
+        []
+      ),
+      onFocusableItemRemove: reactExports.useCallback(
+        () => setFocusableItemsCount((prevCount) => prevCount - 1),
+        []
+      ),
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Primitive.div,
+        {
+          tabIndex: isTabbingBackOut || focusableItemsCount === 0 ? -1 : 0,
+          "data-orientation": orientation,
+          ...groupProps,
+          ref: composedRefs,
+          style: { outline: "none", ...props.style },
+          onMouseDown: composeEventHandlers(props.onMouseDown, () => {
+            isClickFocusRef.current = true;
+          }),
+          onFocus: composeEventHandlers(props.onFocus, (event) => {
+            const isKeyboardFocus = !isClickFocusRef.current;
+            if (event.target === event.currentTarget && isKeyboardFocus && !isTabbingBackOut) {
+              const entryFocusEvent = new CustomEvent(ENTRY_FOCUS, EVENT_OPTIONS);
+              event.currentTarget.dispatchEvent(entryFocusEvent);
+              if (!entryFocusEvent.defaultPrevented) {
+                const items = getItems().filter((item) => item.focusable);
+                const activeItem = items.find((item) => item.active);
+                const currentItem = items.find((item) => item.id === currentTabStopId);
+                const candidateItems = [activeItem, currentItem, ...items].filter(
+                  Boolean
+                );
+                const candidateNodes = candidateItems.map((item) => item.ref.current);
+                focusFirst$1(candidateNodes, preventScrollOnEntryFocus);
+              }
+            }
+            isClickFocusRef.current = false;
+          }),
+          onBlur: composeEventHandlers(props.onBlur, () => setIsTabbingBackOut(false))
+        }
+      )
+    }
+  );
+});
+var ITEM_NAME = "RovingFocusGroupItem";
+var RovingFocusGroupItem = reactExports.forwardRef(
+  (props, forwardedRef) => {
+    const {
+      __scopeRovingFocusGroup,
+      focusable = true,
+      active = false,
+      tabStopId,
+      children,
+      ...itemProps
+    } = props;
+    const autoId = useId();
+    const id = tabStopId || autoId;
+    const context = useRovingFocusContext(ITEM_NAME, __scopeRovingFocusGroup);
+    const isCurrentTabStop = context.currentTabStopId === id;
+    const getItems = useCollection$1(__scopeRovingFocusGroup);
+    const { onFocusableItemAdd, onFocusableItemRemove, currentTabStopId } = context;
+    reactExports.useEffect(() => {
+      if (focusable) {
+        onFocusableItemAdd();
+        return () => onFocusableItemRemove();
+      }
+    }, [focusable, onFocusableItemAdd, onFocusableItemRemove]);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Collection$1.ItemSlot,
+      {
+        scope: __scopeRovingFocusGroup,
+        id,
+        focusable,
+        active,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Primitive.span,
+          {
+            tabIndex: isCurrentTabStop ? 0 : -1,
+            "data-orientation": context.orientation,
+            ...itemProps,
+            ref: forwardedRef,
+            onMouseDown: composeEventHandlers(props.onMouseDown, (event) => {
+              if (!focusable) event.preventDefault();
+              else context.onItemFocus(id);
+            }),
+            onFocus: composeEventHandlers(props.onFocus, () => context.onItemFocus(id)),
+            onKeyDown: composeEventHandlers(props.onKeyDown, (event) => {
+              if (event.key === "Tab" && event.shiftKey) {
+                context.onItemShiftTab();
+                return;
+              }
+              if (event.target !== event.currentTarget) return;
+              const focusIntent = getFocusIntent(event, context.orientation, context.dir);
+              if (focusIntent !== void 0) {
+                if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+                event.preventDefault();
+                const items = getItems().filter((item) => item.focusable);
+                let candidateNodes = items.map((item) => item.ref.current);
+                if (focusIntent === "last") candidateNodes.reverse();
+                else if (focusIntent === "prev" || focusIntent === "next") {
+                  if (focusIntent === "prev") candidateNodes.reverse();
+                  const currentIndex = candidateNodes.indexOf(event.currentTarget);
+                  candidateNodes = context.loop ? wrapArray(candidateNodes, currentIndex + 1) : candidateNodes.slice(currentIndex + 1);
+                }
+                setTimeout(() => focusFirst$1(candidateNodes));
+              }
+            }),
+            children: typeof children === "function" ? children({ isCurrentTabStop, hasTabStop: currentTabStopId != null }) : children
+          }
+        )
+      }
+    );
+  }
+);
+RovingFocusGroupItem.displayName = ITEM_NAME;
+var MAP_KEY_TO_FOCUS_INTENT = {
+  ArrowLeft: "prev",
+  ArrowUp: "prev",
+  ArrowRight: "next",
+  ArrowDown: "next",
+  PageUp: "first",
+  Home: "first",
+  PageDown: "last",
+  End: "last"
+};
+function getDirectionAwareKey(key, dir) {
+  if (dir !== "rtl") return key;
+  return key === "ArrowLeft" ? "ArrowRight" : key === "ArrowRight" ? "ArrowLeft" : key;
+}
+function getFocusIntent(event, orientation, dir) {
+  const key = getDirectionAwareKey(event.key, dir);
+  if (orientation === "vertical" && ["ArrowLeft", "ArrowRight"].includes(key)) return void 0;
+  if (orientation === "horizontal" && ["ArrowUp", "ArrowDown"].includes(key)) return void 0;
+  return MAP_KEY_TO_FOCUS_INTENT[key];
+}
+function focusFirst$1(candidates, preventScroll = false) {
+  const PREVIOUSLY_FOCUSED_ELEMENT = document.activeElement;
+  for (const candidate of candidates) {
+    if (candidate === PREVIOUSLY_FOCUSED_ELEMENT) return;
+    candidate.focus({ preventScroll });
+    if (document.activeElement !== PREVIOUSLY_FOCUSED_ELEMENT) return;
+  }
+}
+function wrapArray(array, startIndex) {
+  return array.map((_, index2) => array[(startIndex + index2) % array.length]);
+}
+var Root = RovingFocusGroup;
+var Item = RovingFocusGroupItem;
+var TABS_NAME = "Tabs";
+var [createTabsContext] = createContextScope(TABS_NAME, [
+  createRovingFocusGroupScope
+]);
+var useRovingFocusGroupScope = createRovingFocusGroupScope();
+var [TabsProvider, useTabsContext] = createTabsContext(TABS_NAME);
+var Tabs$1 = reactExports.forwardRef(
+  (props, forwardedRef) => {
+    const {
+      __scopeTabs,
+      value: valueProp,
+      onValueChange,
+      defaultValue,
+      orientation = "horizontal",
+      dir,
+      activationMode = "automatic",
+      ...tabsProps
+    } = props;
+    const direction = useDirection(dir);
+    const [value, setValue] = useControllableState({
+      prop: valueProp,
+      onChange: onValueChange,
+      defaultProp: defaultValue ?? "",
+      caller: TABS_NAME
+    });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      TabsProvider,
+      {
+        scope: __scopeTabs,
+        baseId: useId(),
+        value,
+        onValueChange: setValue,
+        orientation,
+        dir: direction,
+        activationMode,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Primitive.div,
+          {
+            dir: direction,
+            "data-orientation": orientation,
+            ...tabsProps,
+            ref: forwardedRef
+          }
+        )
+      }
+    );
+  }
+);
+Tabs$1.displayName = TABS_NAME;
+var TAB_LIST_NAME = "TabsList";
+var TabsList$1 = reactExports.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeTabs, loop = true, ...listProps } = props;
+    const context = useTabsContext(TAB_LIST_NAME, __scopeTabs);
+    const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Root,
+      {
+        asChild: true,
+        ...rovingFocusGroupScope,
+        orientation: context.orientation,
+        dir: context.dir,
+        loop,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Primitive.div,
+          {
+            role: "tablist",
+            "aria-orientation": context.orientation,
+            ...listProps,
+            ref: forwardedRef
+          }
+        )
+      }
+    );
+  }
+);
+TabsList$1.displayName = TAB_LIST_NAME;
+var TRIGGER_NAME = "TabsTrigger";
+var TabsTrigger$1 = reactExports.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeTabs, value, disabled = false, ...triggerProps } = props;
+    const context = useTabsContext(TRIGGER_NAME, __scopeTabs);
+    const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
+    const triggerId = makeTriggerId(context.baseId, value);
+    const contentId = makeContentId(context.baseId, value);
+    const isSelected = value === context.value;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Item,
+      {
+        asChild: true,
+        ...rovingFocusGroupScope,
+        focusable: !disabled,
+        active: isSelected,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Primitive.button,
+          {
+            type: "button",
+            role: "tab",
+            "aria-selected": isSelected,
+            "aria-controls": contentId,
+            "data-state": isSelected ? "active" : "inactive",
+            "data-disabled": disabled ? "" : void 0,
+            disabled,
+            id: triggerId,
+            ...triggerProps,
+            ref: forwardedRef,
+            onMouseDown: composeEventHandlers(props.onMouseDown, (event) => {
+              if (!disabled && event.button === 0 && event.ctrlKey === false) {
+                context.onValueChange(value);
+              } else {
+                event.preventDefault();
+              }
+            }),
+            onKeyDown: composeEventHandlers(props.onKeyDown, (event) => {
+              if ([" ", "Enter"].includes(event.key)) context.onValueChange(value);
+            }),
+            onFocus: composeEventHandlers(props.onFocus, () => {
+              const isAutomaticActivation = context.activationMode !== "manual";
+              if (!isSelected && !disabled && isAutomaticActivation) {
+                context.onValueChange(value);
+              }
+            })
+          }
+        )
+      }
+    );
+  }
+);
+TabsTrigger$1.displayName = TRIGGER_NAME;
+var CONTENT_NAME = "TabsContent";
+var TabsContent$1 = reactExports.forwardRef(
+  (props, forwardedRef) => {
+    const { __scopeTabs, value, forceMount, children, ...contentProps } = props;
+    const context = useTabsContext(CONTENT_NAME, __scopeTabs);
+    const triggerId = makeTriggerId(context.baseId, value);
+    const contentId = makeContentId(context.baseId, value);
+    const isSelected = value === context.value;
+    const isMountAnimationPreventedRef = reactExports.useRef(isSelected);
+    reactExports.useEffect(() => {
+      const rAF = requestAnimationFrame(() => isMountAnimationPreventedRef.current = false);
+      return () => cancelAnimationFrame(rAF);
+    }, []);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, { present: forceMount || isSelected, children: ({ present }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Primitive.div,
+      {
+        "data-state": isSelected ? "active" : "inactive",
+        "data-orientation": context.orientation,
+        role: "tabpanel",
+        "aria-labelledby": triggerId,
+        hidden: !present,
+        id: contentId,
+        tabIndex: 0,
+        ...contentProps,
+        ref: forwardedRef,
+        style: {
+          ...props.style,
+          animationDuration: isMountAnimationPreventedRef.current ? "0s" : void 0
+        },
+        children: present && children
+      }
+    ) });
+  }
+);
+TabsContent$1.displayName = CONTENT_NAME;
+function makeTriggerId(baseId, value) {
+  return `${baseId}-trigger-${value}`;
+}
+function makeContentId(baseId, value) {
+  return `${baseId}-content-${value}`;
+}
+var Root2$1 = Tabs$1;
+var List = TabsList$1;
+var Trigger = TabsTrigger$1;
+var Content = TabsContent$1;
+const Tabs = Root2$1;
+const TabsList = reactExports.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  List,
+  {
+    ref,
+    className: cn(
+      "inline-flex h-10 items-center justify-center rounded-md bg-neutral-100 p-1 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400",
+      className
+    ),
+    ...props
+  }
+));
+TabsList.displayName = List.displayName;
+const TabsTrigger = reactExports.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  Trigger,
+  {
+    ref,
+    className: cn(
+      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+      className
+    ),
+    ...props
+  }
+));
+TabsTrigger.displayName = Trigger.displayName;
+const TabsContent = reactExports.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  Content,
+  {
+    ref,
+    className: cn(
+      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      className
+    ),
+    ...props
+  }
+));
+TabsContent.displayName = Content.displayName;
 function AdminUpload() {
   const { t } = useLanguage();
   const { playlistUrl, setPlaylistUrl, livestreamUrl, setLivestreamUrl } = usePlayer();
@@ -29662,17 +31587,62 @@ function AdminUpload() {
     };
     loadSermons();
   }, []);
-  const handleSaveLivestream = async () => {
-    setLivestreamStatus(null);
-    if (!livestreamUrl.trim()) {
-      setLivestreamStatus(
+  const handleSavePlaylist = async () => {
+    setPlaylistStatus(null);
+    if (!playlistUrl.trim()) {
+      setPlaylistStatus(
         t(
-          "Enter a livestream URL before saving.",
-          "Ingresa una URL de transmisión en vivo antes de guardar."
+          "Enter a playlist URL before saving.",
+          "Ingresa una URL de lista de reproducción antes de guardar."
         )
       );
       return;
     }
+    if (!uploadPasscode) {
+      setPlaylistStatus(
+        t(
+          "Enter the upload passcode before saving.",
+          "Ingresa el código de carga antes de guardar."
+        )
+      );
+      return;
+    }
+    try {
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const res = await fetch(`${base}/playlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          passcode: uploadPasscode,
+          url: playlistUrl.trim()
+        })
+      });
+      if (!res.ok) {
+        setPlaylistStatus(
+          t(
+            "Failed to save playlist URL. Check the passcode and URL.",
+            "No se pudo guardar la URL de la lista de reproducción. Verifica el código y la URL."
+          )
+        );
+        return;
+      }
+      setPlaylistStatus(
+        t(
+          "Playlist URL saved successfully.",
+          "URL de la lista de reproducción guardada correctamente."
+        )
+      );
+    } catch {
+      setPlaylistStatus(
+        t(
+          "An unexpected error occurred while saving the playlist URL.",
+          "Ocurrió un error inesperado al guardar la URL de la lista de reproducción."
+        )
+      );
+    }
+  };
+  const handleSaveLivestream = async () => {
+    setLivestreamStatus(null);
     if (!uploadPasscode) {
       setLivestreamStatus(
         t(
@@ -29745,266 +31715,274 @@ function AdminUpload() {
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.65rem] text-neutral-500 sm:flex-1", children: t("Required for all actions on this page.", "Requerido para todas las acciones en esta página.") })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Music Playlist", "Lista de Música") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-neutral-400", children: t(
-        "Set the YouTube playlist used by the Music & Worship section.",
-        "Configura la lista de reproducción de YouTube usada por la sección de Música y Adoración."
-      ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-3 space-y-2 text-[0.75rem]", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: playlistUrl,
-            onChange: (e) => setPlaylistUrl(e.target.value),
-            className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500",
-            placeholder: "https://www.youtube.com/embed/videoseries?..."
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            type: "button",
-            className: "bg-neutral-800 px-3 py-1 text-[0.7rem] hover:bg-neutral-700",
-            onClick: () => setPlaylistUrl(
-              "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW"
-            ),
-            children: t("Default CNE Playlist", "Lista predeterminada de CNE")
-          }
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tabs, { defaultValue: "media", className: "w-full", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(TabsList, { className: "grid w-full grid-cols-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "media", children: t("Music", "Música") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "trivia", children: t("Trivia", "Trivia") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "other", children: t("Media", "Medios") })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "media", className: "space-y-4 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Music Playlist", "Lista de Música") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-neutral-400", children: t(
+          "Set the YouTube playlist used by the Music & Worship section.",
+          "Configura la lista de reproducción de YouTube usada por la sección de Música y Adoración."
         ) }),
-        playlistStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: playlistStatus })
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Livestream Link", "Enlace de Transmisión en Vivo") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-neutral-400", children: t(
-        "Set the YouTube livestream link used by the Watch Live player on the Media page.",
-        "Configura el enlace de transmisión en vivo de YouTube usado por el reproductor Ver en Vivo en la página de Medios."
-      ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-3 space-y-2 text-[0.75rem]", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: livestreamUrl,
-            onChange: (e) => setLivestreamUrl(e.target.value),
-            className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500",
-            placeholder: "https://www.youtube.com/watch?v=..."
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            type: "button",
-            className: "bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700",
-            onClick: handleSaveLivestream,
-            children: t("Save Livestream", "Guardar Transmisión en Vivo")
-          }
-        ) }),
-        livestreamStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: livestreamStatus }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
-          "Tip: You can paste a regular YouTube link; we will convert it to the correct embed format.",
-          "Consejo: Puedes pegar un enlace normal de YouTube; lo convertiremos al formato de inserción correcto."
-        ) })
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Devotionals", "Devocionales") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-neutral-400", children: t(
-        "Add or remove YouTube devotional videos shown on the Media page.",
-        "Agrega o elimina videos devocionales de YouTube que se muestran en la página de Medios."
-      ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "form",
-        {
-          className: "mt-4 space-y-2 text-[0.75rem]",
-          onSubmit: async (e) => {
-            e.preventDefault();
-            setSermonStatus(null);
-            if (!sermonTitle.trim() || !sermonUrl.trim()) {
-              setSermonStatus(
-                t(
-                  "Enter a title and YouTube URL before saving.",
-                  "Ingresa un título y URL de YouTube antes de guardar."
-                )
-              );
-              return;
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-3 space-y-2 text-[0.75rem]", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "input",
+            {
+              type: "text",
+              value: playlistUrl,
+              onChange: (e) => setPlaylistUrl(e.target.value),
+              className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500",
+              placeholder: "https://youtube.com/playlist?list=..."
             }
-            if (!uploadPasscode) {
-              setSermonStatus(
-                t(
-                  "Enter the upload passcode before saving.",
-                  "Ingresa el código de carga antes de guardar."
-                )
-              );
-              return;
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              type: "button",
+              className: "bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700",
+              onClick: handleSavePlaylist,
+              children: t("Save Playlist", "Guardar Lista de Reproducción")
             }
-            try {
-              const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-              const res = await fetch(`${base}/sermons`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  passcode: uploadPasscode,
-                  title: sermonTitle.trim(),
-                  youtubeUrl: sermonUrl.trim()
-                })
-              });
-              if (!res.ok) {
-                setSermonStatus(
-                  t(
-                    "Failed to save sermon. Check the passcode and URL.",
-                    "No se pudo guardar el sermón. Verifica el código y la URL."
-                  )
-                );
-                return;
-              }
-              const created = await res.json();
-              setSermons((prev) => {
-                const current = Array.isArray(prev) ? prev : [];
-                return [
-                  {
-                    id: created.id,
-                    title: sermonTitle.trim(),
-                    youtubeUrl: sermonUrl.trim(),
-                    createdAt: (/* @__PURE__ */ new Date()).toISOString()
-                  },
-                  ...current
-                ];
-              });
-              setSermonTitle("");
-              setSermonUrl("");
-              setSermonStatus(
-                t(
-                  "Devotional saved. Reload the Media page to see it.",
-                  "Devocional guardado. Recarga la página de Medios para verlo."
-                )
-              );
-            } catch {
-              setSermonStatus(
-                t(
-                  "An unexpected error occurred while saving the sermon.",
-                  "Ocurrió un error inesperado al guardar el sermón."
-                )
-              );
-            }
-          },
-          children: [
+          ) }),
+          playlistStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: playlistStatus })
+        ] })
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaManager, {}) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(TabsContent, { value: "other", className: "space-y-4 mt-4", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Livestream Link", "Enlace de Transmisión en Vivo") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-neutral-400", children: t(
+            "Set the YouTube livestream link used by the Watch Live player on the Media page.",
+            "Configura el enlace de transmisión en vivo de YouTube usado por el reproductor Ver en Vivo en la página de Medios."
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-3 space-y-2 text-[0.75rem]", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               "input",
               {
                 type: "text",
-                placeholder: t("Devotional title", "Título del devocional"),
-                value: sermonTitle,
-                onChange: (e) => setSermonTitle(e.target.value),
-                className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                value: livestreamUrl,
+                onChange: (e) => setLivestreamUrl(e.target.value),
+                className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500",
+                placeholder: "https://youtube.com/watch?v=... or https://youtu.be/..."
               }
             ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "input",
-              {
-                type: "text",
-                placeholder: "https://www.youtube.com/watch?v=...",
-                value: sermonUrl,
-                onChange: (e) => setSermonUrl(e.target.value),
-                className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-wrap gap-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
               Button,
               {
-                type: "submit",
-                className: "mt-1 bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700",
-                children: t("Save Devotional", "Guardar Devocional")
+                type: "button",
+                className: "bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700",
+                onClick: handleSaveLivestream,
+                children: t("Save Livestream", "Guardar Transmisión en Vivo")
               }
-            )
-          ]
-        }
-      ),
-      sermonStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.7rem] text-neutral-400", children: sermonStatus }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950/40 p-2", children: [
-        loadingSermons && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading devotionals...", "Cargando devocionales...") }),
-        !loadingSermons && sermons.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No devotionals found.", "No se encontraron devocionales.") }),
-        !loadingSermons && sermons.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons.map((sermon) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "li",
-          {
-            className: "flex items-center justify-between rounded-md bg-neutral-900/80 px-2 py-1.5",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1 pr-2", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "truncate text-[0.8rem] font-medium text-neutral-100", children: sermon.title }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "truncate text-[0.65rem] text-neutral-500", children: sermon.youtubeUrl })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Button,
-                {
-                  type: "button",
-                  variant: "destructive",
-                  className: "ml-2 bg-red-700 px-2 py-1 text-[0.7rem] hover:bg-red-800",
-                  onClick: async () => {
-                    if (!uploadPasscode) {
-                      setSermonStatus(
-                        t(
-                          "Enter the upload passcode before deleting.",
-                          "Ingresa el código de carga antes de eliminar."
-                        )
-                      );
-                      return;
-                    }
-                    const confirmDelete = window.confirm(
+            ) }),
+            livestreamStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: livestreamStatus }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+              "Tip: You can paste a regular YouTube link; we will convert it to the correct embed format.",
+              "Consejo: Puedes pegar un enlace normal de YouTube; lo convertiremos al formato de inserción correcto."
+            ) })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Devotionals", "Devocionales") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-neutral-400", children: t(
+            "Add or remove YouTube devotional videos shown on the Media page.",
+            "Agrega o elimina videos devocionales de YouTube que se muestran en la página de Medios."
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "form",
+            {
+              className: "mt-4 space-y-2 text-[0.75rem]",
+              onSubmit: async (e) => {
+                e.preventDefault();
+                setSermonStatus(null);
+                if (!sermonTitle.trim() || !sermonUrl.trim()) {
+                  setSermonStatus(
+                    t(
+                      "Enter a title and YouTube URL before saving.",
+                      "Ingresa un título y URL de YouTube antes de guardar."
+                    )
+                  );
+                  return;
+                }
+                if (!uploadPasscode) {
+                  setSermonStatus(
+                    t(
+                      "Enter the upload passcode before saving.",
+                      "Ingresa el código de carga antes de guardar."
+                    )
+                  );
+                  return;
+                }
+                try {
+                  const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+                  const res = await fetch(`${base}/sermons`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      passcode: uploadPasscode,
+                      title: sermonTitle.trim(),
+                      youtubeUrl: sermonUrl.trim()
+                    })
+                  });
+                  if (!res.ok) {
+                    setSermonStatus(
                       t(
-                        "Are you sure you want to delete this devotional?",
-                        "¿Seguro que deseas eliminar este devocional?"
+                        "Failed to save sermon. Check the passcode and URL.",
+                        "No se pudo guardar el sermón. Verifica el código y la URL."
                       )
                     );
-                    if (!confirmDelete) return;
-                    try {
-                      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-                      const res = await fetch(`${base}/sermons/delete`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          id: sermon.id,
-                          passcode: uploadPasscode
-                        })
-                      });
-                      if (!res.ok) {
-                        setSermonStatus(
+                    return;
+                  }
+                  const created = await res.json();
+                  setSermons((prev) => {
+                    const current = Array.isArray(prev) ? prev : [];
+                    return [
+                      {
+                        id: created.id,
+                        title: sermonTitle.trim(),
+                        youtubeUrl: sermonUrl.trim(),
+                        createdAt: (/* @__PURE__ */ new Date()).toISOString()
+                      },
+                      ...current
+                    ];
+                  });
+                  setSermonTitle("");
+                  setSermonUrl("");
+                  setSermonStatus(
+                    t(
+                      "Devotional saved. Reload the Media page to see it.",
+                      "Devocional guardado. Recarga la página de Medios para verlo."
+                    )
+                  );
+                } catch {
+                  setSermonStatus(
+                    t(
+                      "An unexpected error occurred while saving the sermon.",
+                      "Ocurrió un error inesperado al guardar el sermón."
+                    )
+                  );
+                }
+              },
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "input",
+                  {
+                    type: "text",
+                    placeholder: t("Devotional title", "Título del devocional"),
+                    value: sermonTitle,
+                    onChange: (e) => setSermonTitle(e.target.value),
+                    className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "input",
+                  {
+                    type: "text",
+                    placeholder: "https://www.youtube.com/watch?v=...",
+                    value: sermonUrl,
+                    onChange: (e) => setSermonUrl(e.target.value),
+                    className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    type: "submit",
+                    className: "mt-1 bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700",
+                    children: t("Save Devotional", "Guardar Devocional")
+                  }
+                )
+              ]
+            }
+          ),
+          sermonStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.7rem] text-neutral-400", children: sermonStatus }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950/40 p-2", children: [
+            loadingSermons && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading devotionals...", "Cargando devocionales...") }),
+            !loadingSermons && sermons.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No devotionals found.", "No se encontraron devocionales.") }),
+            !loadingSermons && sermons.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons.map((sermon) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "li",
+              {
+                className: "flex items-center justify-between rounded-md bg-neutral-900/80 px-2 py-1.5",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1 pr-2", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "truncate text-[0.8rem] font-medium text-neutral-100", children: sermon.title }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "truncate text-[0.65rem] text-neutral-500", children: sermon.youtubeUrl })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Button,
+                    {
+                      type: "button",
+                      variant: "destructive",
+                      className: "ml-2 bg-red-700 px-2 py-1 text-[0.7rem] hover:bg-red-800",
+                      onClick: async () => {
+                        if (!uploadPasscode) {
+                          setSermonStatus(
+                            t(
+                              "Enter the upload passcode before deleting.",
+                              "Ingresa el código de carga antes de eliminar."
+                            )
+                          );
+                          return;
+                        }
+                        const confirmDelete = window.confirm(
                           t(
-                            "Delete failed: server returned an error.",
-                            "La eliminación falló: el servidor devolvió un error."
+                            "Are you sure you want to delete this devotional?",
+                            "¿Seguro que deseas eliminar este devocional?"
                           )
                         );
-                        return;
-                      }
-                      setSermons((prev) => {
-                        const current = Array.isArray(prev) ? prev : [];
-                        return current.filter((s) => s.id !== sermon.id);
-                      });
-                      setSermonStatus(
-                        t(
-                          "Devotional deleted.",
-                          "Devocional eliminado."
-                        )
-                      );
-                    } catch {
-                      setSermonStatus(
-                        t(
-                          "An unexpected error occurred while deleting.",
-                          "Ocurrió un error inesperado al eliminar."
-                        )
-                      );
+                        if (!confirmDelete) return;
+                        try {
+                          const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+                          const res = await fetch(`${base}/sermons/delete`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              id: sermon.id,
+                              passcode: uploadPasscode
+                            })
+                          });
+                          if (!res.ok) {
+                            setSermonStatus(
+                              t(
+                                "Delete failed: server returned an error.",
+                                "La eliminación falló: el servidor devolvió un error."
+                              )
+                            );
+                            return;
+                          }
+                          setSermons((prev) => {
+                            const current = Array.isArray(prev) ? prev : [];
+                            return current.filter((s) => s.id !== sermon.id);
+                          });
+                          setSermonStatus(
+                            t(
+                              "Devotional deleted.",
+                              "Devocional eliminado."
+                            )
+                          );
+                        } catch {
+                          setSermonStatus(
+                            t(
+                              "An unexpected error occurred while deleting.",
+                              "Ocurrió un error inesperado al eliminar."
+                            )
+                          );
+                        }
+                      },
+                      children: t("Delete", "Eliminar")
                     }
-                  },
-                  children: t("Delete", "Eliminar")
-                }
-              )
-            ]
-          },
-          sermon.id
-        )) })
+                  )
+                ]
+              },
+              sermon.id
+            )) })
+          ] })
+        ] })
       ] })
-    ] }),
+    ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
       "Tip: Bookmark this URL. It is not linked from the main site.",
       "Consejo: Guarda esta URL en favoritos. No está enlazada desde el sitio principal."
@@ -30372,7 +32350,7 @@ var ToastImpl = reactExports.forwardRef(
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx(ToastInteractiveProvider, { scope: __scopeToast, onClose: handleClose, children: reactDomExports.createPortal(
         /* @__PURE__ */ jsxRuntimeExports.jsx(Collection.ItemSlot, { scope: __scopeToast, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Root$2,
+          Root$3,
           {
             asChild: true,
             onEscapeKeyDown: composeEventHandlers(onEscapeKeyDown, () => {
@@ -30726,6 +32704,7 @@ function AppInner() {
   const [currentPage, setCurrentPage] = reactExports.useState("home");
   const handleNavigate = (page) => {
     setCurrentPage(page);
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
   reactExports.useEffect(() => {
     if (window.location.hash === "#admin-upload") {
@@ -30752,6 +32731,34 @@ const queryClient = new QueryClient();
 function App() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsxRuntimeExports.jsx(LanguageProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(PlayerProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "dark", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AppInner, {}) }) }) }) });
 }
+const hideSplashScreen = () => {
+  const splash = document.querySelector(".app-splash");
+  if (splash) {
+    setTimeout(() => {
+      splash.style.opacity = "0";
+      splash.style.transition = "opacity 0.5s ease-out";
+      setTimeout(() => {
+        splash.remove();
+      }, 500);
+    }, 2e3);
+  }
+};
+if (typeof window !== "undefined") {
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
+}
 ReactDOM$1.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsxRuntimeExports.jsx(React.StrictMode, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(App, {}) })
 );
+hideSplashScreen();
+if ("serviceWorker" in navigator && true) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/cne-app/sw.js").then((registration) => {
+      console.log("SW registered: ", registration);
+    }).catch((registrationError) => {
+      console.log("SW registration failed: ", registrationError);
+    });
+  });
+}
