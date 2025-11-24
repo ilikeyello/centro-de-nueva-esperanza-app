@@ -85,7 +85,11 @@ export interface UpdateQuestionRequest {
 export const levels = api(
   { expose: true, path: "/trivia/levels", method: "GET" },
   async (): Promise<TriviaLevelsResponse> => {
-    const rows = await database.query`SELECT * FROM trivia_levels ORDER BY created_at ASC`;
+    const result = await database.query`SELECT * FROM trivia_levels ORDER BY created_at ASC`;
+    const rows = [];
+    for await (const row of result) {
+      rows.push(row);
+    }
     
     return {
       levels: rows.map((row: any) => ({
@@ -106,12 +110,16 @@ export const levels = api(
 export const createLevel = api(
   { expose: true, path: "/trivia/levels", method: "POST" },
   async (params: CreateLevelRequest): Promise<TriviaLevel> => {
-    const rows = await database.query`
+    const result = await database.query`
       INSERT INTO trivia_levels (id, name, description, target_group, shuffle_questions, time_limit, passing_score)
       VALUES (${params.id}, ${params.name}, ${params.description || null}, ${params.target_group || null}, 
               ${params.shuffle_questions ?? true}, ${params.time_limit ?? 30}, ${params.passing_score ?? 70})
       RETURNING *
     `;
+    const rows = [];
+    for await (const row of result) {
+      rows.push(row);
+    }
     
     const row = rows[0];
     return {
@@ -163,7 +171,11 @@ export const updateLevel = api(
     values.push(params.id);
 
     const queryString = `UPDATE trivia_levels SET ${updates.join(', ')} WHERE id = $${updates.length + 1} RETURNING *`;
-    const rows = await database.query(queryString, ...values);
+    const result = await database.query(queryString, ...values);
+    const rows = [];
+    for await (const row of result) {
+      rows.push(row);
+    }
     
     if (rows.length === 0) {
       throw new Error("Level not found");
@@ -205,7 +217,11 @@ export const questions = api(
     
     queryString += ` ORDER BY created_at ASC`;
     
-    const rows = await database.query(queryString, ...params);
+    const result = await database.query(queryString, ...params);
+    const rows = [];
+    for await (const row of result) {
+      rows.push(row);
+    }
     
     return {
       questions: rows.map((row: any) => ({
@@ -228,12 +244,16 @@ export const questions = api(
 export const createQuestion = api(
   { expose: true, path: "/trivia/questions", method: "POST" },
   async (params: CreateQuestionRequest): Promise<TriviaQuestion> => {
-    const rows = await database.query`
+    const result = await database.query`
       INSERT INTO trivia_questions (question_en, question_es, options_en, options_es, correct_answer, category, reference, level_id)
       VALUES (${params.question_en}, ${params.question_es}, ${JSON.stringify(params.options_en)}, ${JSON.stringify(params.options_es)}, 
               ${params.correct_answer}, ${params.category}, ${params.reference || null}, ${params.level_id})
       RETURNING *
     `;
+    const rows = [];
+    for await (const row of result) {
+      rows.push(row);
+    }
     
     const row = rows[0];
     return {
@@ -295,7 +315,11 @@ export const updateQuestion = api(
     values.push(params.id);
 
     const queryString = `UPDATE trivia_questions SET ${updates.join(', ')} WHERE id = $${updates.length + 1} RETURNING *`;
-    const rows = await database.query(queryString, ...values);
+    const result = await database.query(queryString, ...values);
+    const rows = [];
+    for await (const row of result) {
+      rows.push(row);
+    }
     
     if (rows.length === 0) {
       throw new Error("Question not found");

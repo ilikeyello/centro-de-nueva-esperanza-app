@@ -197,7 +197,10 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
     setShowResult(false);
     setScore(0);
     setGameComplete(false);
-    loadLevelsAndQuestions();
+    loadLevels();
+    if (selectedLevel) {
+      loadQuestions(selectedLevel).then((questions) => setQuestions(questions || []));
+    }
   };
 
 
