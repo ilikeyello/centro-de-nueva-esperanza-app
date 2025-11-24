@@ -139,39 +139,41 @@ export const createLevel = api(
 export const updateLevel = api(
   { expose: true, path: "/trivia/levels/:id", method: "PUT" },
   async (params: UpdateLevelRequest & { id: string }): Promise<TriviaLevel> => {
+    let updateQuery = "UPDATE trivia_levels SET ";
     const updates: string[] = [];
     const values: any[] = [];
 
     if (params.name !== undefined) {
-      updates.push(`name = $${updates.length + 1}`);
+      updates.push("name = $1");
       values.push(params.name);
     }
     if (params.description !== undefined) {
-      updates.push(`description = $${updates.length + 1}`);
+      updates.push("description = $2");
       values.push(params.description);
     }
     if (params.target_group !== undefined) {
-      updates.push(`target_group = $${updates.length + 1}`);
+      updates.push("target_group = $3");
       values.push(params.target_group);
     }
     if (params.shuffle_questions !== undefined) {
-      updates.push(`shuffle_questions = $${updates.length + 1}`);
+      updates.push("shuffle_questions = $4");
       values.push(params.shuffle_questions);
     }
     if (params.time_limit !== undefined) {
-      updates.push(`time_limit = $${updates.length + 1}`);
+      updates.push("time_limit = $5");
       values.push(params.time_limit);
     }
     if (params.passing_score !== undefined) {
-      updates.push(`passing_score = $${updates.length + 1}`);
+      updates.push("passing_score = $6");
       values.push(params.passing_score);
     }
 
-    updates.push(`updated_at = NOW()`);
+    updates.push("updated_at = NOW()");
     values.push(params.id);
 
-    const queryString = `UPDATE trivia_levels SET ${updates.join(', ')} WHERE id = $${updates.length + 1} RETURNING *`;
-    const result = await database.query(queryString, ...values);
+    updateQuery += updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
+    
+    const result = await database.query(updateQuery, ...values);
     const rows = [];
     for await (const row of result) {
       rows.push(row);
@@ -207,15 +209,15 @@ export const deleteLevel = api(
 export const questions = api(
   { expose: true, path: "/trivia/questions", method: "GET" },
   async ({ level_id }: { level_id?: string }): Promise<TriviaQuestionsResponse> => {
-    let queryString = `SELECT * FROM trivia_questions`;
+    let queryString = "SELECT * FROM trivia_questions";
     const params: any[] = [];
     
     if (level_id) {
-      queryString += ` WHERE level_id = $1`;
+      queryString += " WHERE level_id = $1";
       params.push(level_id);
     }
     
-    queryString += ` ORDER BY created_at ASC`;
+    queryString += " ORDER BY created_at ASC";
     
     const result = await database.query(queryString, ...params);
     const rows = [];
@@ -275,47 +277,48 @@ export const createQuestion = api(
 export const updateQuestion = api(
   { expose: true, path: "/trivia/questions/:id", method: "PUT" },
   async (params: UpdateQuestionRequest & { id: number }): Promise<TriviaQuestion> => {
+    let updateQuery = "UPDATE trivia_questions SET ";
     const updates: string[] = [];
     const values: any[] = [];
 
     if (params.question_en !== undefined) {
-      updates.push(`question_en = $${updates.length + 1}`);
+      updates.push("question_en = $1");
       values.push(params.question_en);
     }
     if (params.question_es !== undefined) {
-      updates.push(`question_es = $${updates.length + 1}`);
+      updates.push("question_es = $2");
       values.push(params.question_es);
     }
     if (params.options_en !== undefined) {
-      updates.push(`options_en = $${updates.length + 1}`);
+      updates.push("options_en = $3");
       values.push(JSON.stringify(params.options_en));
     }
     if (params.options_es !== undefined) {
-      updates.push(`options_es = $${updates.length + 1}`);
+      updates.push("options_es = $4");
       values.push(JSON.stringify(params.options_es));
     }
     if (params.correct_answer !== undefined) {
-      updates.push(`correct_answer = $${updates.length + 1}`);
+      updates.push("correct_answer = $5");
       values.push(params.correct_answer);
     }
     if (params.category !== undefined) {
-      updates.push(`category = $${updates.length + 1}`);
+      updates.push("category = $6");
       values.push(params.category);
     }
     if (params.reference !== undefined) {
-      updates.push(`reference = $${updates.length + 1}`);
+      updates.push("reference = $7");
       values.push(params.reference);
     }
     if (params.level_id !== undefined) {
-      updates.push(`level_id = $${updates.length + 1}`);
+      updates.push("level_id = $8");
       values.push(params.level_id);
     }
 
-    updates.push(`updated_at = NOW()`);
+    updates.push("updated_at = NOW()");
     values.push(params.id);
 
-    const queryString = `UPDATE trivia_questions SET ${updates.join(', ')} WHERE id = $${updates.length + 1} RETURNING *`;
-    const result = await database.query(queryString, ...values);
+    updateQuery += updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
+    const result = await database.query(updateQuery, ...values);
     const rows = [];
     for await (const row of result) {
       rows.push(row);
