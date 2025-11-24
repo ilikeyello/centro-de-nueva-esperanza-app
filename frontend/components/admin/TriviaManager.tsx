@@ -96,7 +96,7 @@ export function TriviaManager() {
       const levelsRes = await fetch(`${base}/trivia/levels`);
       if (levelsRes.ok) {
         const levelsData = await levelsRes.json();
-        const formattedLevels = levelsData.map((level: any) => ({
+        const formattedLevels = levelsData.levels.map((level: any) => ({
           id: level.id,
           name: level.name,
           description: level.description || "",
@@ -121,7 +121,7 @@ export function TriviaManager() {
       const res = await fetch(`${base}/trivia/questions?level_id=${selectedLevel}`);
       if (res.ok) {
         const questionsData = await res.json();
-        const formattedQuestions = questionsData.map((q: any) => ({
+        const formattedQuestions = questionsData.questions.map((q: any) => ({
           id: q.id,
           questionEn: q.question_en,
           questionEs: q.question_es,

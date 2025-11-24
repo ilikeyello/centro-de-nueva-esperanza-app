@@ -39,7 +39,7 @@ const loadLevels = async () => {
     const res = await fetch(`${base}/trivia/levels`);
     if (res.ok) {
       const levelsData = await res.json();
-      const formattedLevels = levelsData.map((level: any) => ({
+      const formattedLevels = levelsData.levels.map((level: any) => ({
         id: level.id,
         name: level.name,
         description: level.description || "",
@@ -60,7 +60,7 @@ const loadQuestions = async (levelId: string) => {
     const res = await fetch(`${base}/trivia/questions?level_id=${levelId}`);
     if (res.ok) {
       const questionsData = await res.json();
-      const formattedQuestions = questionsData.map((q: any) => ({
+      const formattedQuestions = questionsData.questions.map((q: any) => ({
         id: q.id,
         questionEn: q.question_en,
         questionEs: q.question_es,

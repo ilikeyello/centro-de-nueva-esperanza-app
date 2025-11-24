@@ -31,6 +31,15 @@ export interface TriviaQuestion {
   updated_at: string;
 }
 
+// Wrapper interfaces for Encore API responses
+export interface TriviaLevelsResponse {
+  levels: TriviaLevel[];
+}
+
+export interface TriviaQuestionsResponse {
+  questions: TriviaQuestion[];
+}
+
 export interface CreateLevelRequest {
   id: string;
   name: string;
@@ -75,34 +84,36 @@ export interface UpdateQuestionRequest {
 // Level endpoints
 export const levels = api(
   { expose: true, path: "/trivia/levels", method: "GET" },
-  async (): Promise<TriviaLevel[]> => {
-    const result = await database.query`SELECT * FROM trivia_levels ORDER BY created_at ASC`;
+  async (): Promise<TriviaLevelsResponse> => {
+    const rows = await database.query`SELECT * FROM trivia_levels ORDER BY created_at ASC`;
     
-    return result.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      description: row.description,
-      target_group: row.target_group,
-      shuffle_questions: row.shuffle_questions,
-      time_limit: row.time_limit,
-      passing_score: row.passing_score,
-      created_at: row.created_at.toISOString(),
-      updated_at: row.updated_at.toISOString(),
-    }));
+    return {
+      levels: rows.map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        target_group: row.target_group,
+        shuffle_questions: row.shuffle_questions,
+        time_limit: row.time_limit,
+        passing_score: row.passing_score,
+        created_at: row.created_at.toISOString(),
+        updated_at: row.updated_at.toISOString(),
+      }))
+    };
   }
 );
 
 export const createLevel = api(
   { expose: true, path: "/trivia/levels", method: "POST" },
   async (params: CreateLevelRequest): Promise<TriviaLevel> => {
-    const result = await database.query`
+    const rows = await database.query`
       INSERT INTO trivia_levels (id, name, description, target_group, shuffle_questions, time_limit, passing_score)
       VALUES (${params.id}, ${params.name}, ${params.description || null}, ${params.target_group || null}, 
               ${params.shuffle_questions ?? true}, ${params.time_limit ?? 30}, ${params.passing_score ?? 70})
       RETURNING *
     `;
     
-    const row = result[0];
+    const row = rows[0];
     return {
       id: row.id,
       name: row.name,
@@ -151,14 +162,14 @@ export const updateLevel = api(
     updates.push(`updated_at = NOW()`);
     values.push(params.id);
 
-    const query = `UPDATE trivia_levels SET ${updates.join(', ')} WHERE id = $${updates.length + 1} RETURNING *`;
-    const result = await database.query(query, ...values);
+    const queryString = `UPDATE trivia_levels SET ${updates.join(', ')} WHERE id = $${updates.length + 1} RETURNING *`;
+    const rows = await database.query(queryString, ...values);
     
-    if (result.length === 0) {
+    if (rows.length === 0) {
       throw new Error("Level not found");
     }
     
-    const row = result[0];
+    const row = rows[0];
     return {
       id: row.id,
       name: row.name,
@@ -183,46 +194,48 @@ export const deleteLevel = api(
 // Question endpoints
 export const questions = api(
   { expose: true, path: "/trivia/questions", method: "GET" },
-  async ({ level_id }: { level_id?: string }): Promise<TriviaQuestion[]> => {
-    let query = `SELECT * FROM trivia_questions`;
+  async ({ level_id }: { level_id?: string }): Promise<TriviaQuestionsResponse> => {
+    let queryString = `SELECT * FROM trivia_questions`;
     const params: any[] = [];
     
     if (level_id) {
-      query += ` WHERE level_id = $1`;
+      queryString += ` WHERE level_id = $1`;
       params.push(level_id);
     }
     
-    query += ` ORDER BY created_at ASC`;
+    queryString += ` ORDER BY created_at ASC`;
     
-    const result = await database.query(query, ...params);
+    const rows = await database.query(queryString, ...params);
     
-    return result.map((row: any) => ({
-      id: row.id,
-      question_en: row.question_en,
-      question_es: row.question_es,
-      options_en: row.options_en,
-      options_es: row.options_es,
-      correct_answer: row.correct_answer,
-      category: row.category,
-      reference: row.reference,
-      level_id: row.level_id,
-      created_at: row.created_at.toISOString(),
-      updated_at: row.updated_at.toISOString(),
-    }));
+    return {
+      questions: rows.map((row: any) => ({
+        id: row.id,
+        question_en: row.question_en,
+        question_es: row.question_es,
+        options_en: row.options_en,
+        options_es: row.options_es,
+        correct_answer: row.correct_answer,
+        category: row.category,
+        reference: row.reference,
+        level_id: row.level_id,
+        created_at: row.created_at.toISOString(),
+        updated_at: row.updated_at.toISOString(),
+      }))
+    };
   }
 );
 
 export const createQuestion = api(
   { expose: true, path: "/trivia/questions", method: "POST" },
   async (params: CreateQuestionRequest): Promise<TriviaQuestion> => {
-    const result = await database.query`
+    const rows = await database.query`
       INSERT INTO trivia_questions (question_en, question_es, options_en, options_es, correct_answer, category, reference, level_id)
       VALUES (${params.question_en}, ${params.question_es}, ${JSON.stringify(params.options_en)}, ${JSON.stringify(params.options_es)}, 
               ${params.correct_answer}, ${params.category}, ${params.reference || null}, ${params.level_id})
       RETURNING *
     `;
     
-    const row = result[0];
+    const row = rows[0];
     return {
       id: row.id,
       question_en: row.question_en,
@@ -281,14 +294,14 @@ export const updateQuestion = api(
     updates.push(`updated_at = NOW()`);
     values.push(params.id);
 
-    const query = `UPDATE trivia_questions SET ${updates.join(', ')} WHERE id = $${updates.length + 1} RETURNING *`;
-    const result = await database.query(query, ...values);
+    const queryString = `UPDATE trivia_questions SET ${updates.join(', ')} WHERE id = $${updates.length + 1} RETURNING *`;
+    const rows = await database.query(queryString, ...values);
     
-    if (result.length === 0) {
+    if (rows.length === 0) {
       throw new Error("Question not found");
     }
     
-    const row = result[0];
+    const row = rows[0];
     return {
       id: row.id,
       question_en: row.question_en,
