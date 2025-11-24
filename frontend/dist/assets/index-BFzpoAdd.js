@@ -15304,8 +15304,8 @@ function PlayerProvider({ children }) {
   reactExports.useEffect(() => {
     const loadLivestreamUrl = async () => {
       try {
-        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/livestream`);
+        const base2 = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base2}/livestream`);
         if (res.ok) {
           const data = await res.json();
           if (data.url) {
@@ -15326,8 +15326,8 @@ function PlayerProvider({ children }) {
   reactExports.useEffect(() => {
     const loadPlaylistUrl = async () => {
       try {
-        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/playlist`);
+        const base2 = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base2}/playlist`);
         if (res.ok) {
           const data = await res.json();
           if (data.url) {
@@ -19457,9 +19457,9 @@ function getElementRef$2(element) {
 }
 const falsyToString = (value) => typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 const cx = clsx;
-const cva = (base, config) => (props) => {
+const cva = (base2, config) => (props) => {
   var _config_compoundVariants;
-  if ((config === null || config === void 0 ? void 0 : config.variants) == null) return cx(base, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
+  if ((config === null || config === void 0 ? void 0 : config.variants) == null) return cx(base2, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
   const { variants, defaultVariants } = config;
   const getVariantClassNames = Object.keys(variants).map((variant) => {
     const variantProp = props === null || props === void 0 ? void 0 : props[variant];
@@ -19493,7 +19493,7 @@ const cva = (base, config) => (props) => {
       cvClassName
     ] : acc;
   }, []);
-  return cx(base, getVariantClassNames, getCompoundVariantClassNames, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
+  return cx(base2, getVariantClassNames, getCompoundVariantClassNames, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
 };
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -19764,13 +19764,13 @@ class Client {
   constructor(target, options) {
     this.target = target;
     this.options = options ?? {};
-    const base = new BaseClient(this.target, this.options);
-    this.announcements = new announcements.ServiceClient(base);
-    this.church = new church.ServiceClient(base);
-    this.donations = new donations.ServiceClient(base);
-    this.events = new events.ServiceClient(base);
-    this.media = new media.ServiceClient(base);
-    this.prayers = new prayers.ServiceClient(base);
+    const base2 = new BaseClient(this.target, this.options);
+    this.announcements = new announcements.ServiceClient(base2);
+    this.church = new church.ServiceClient(base2);
+    this.donations = new donations.ServiceClient(base2);
+    this.events = new events.ServiceClient(base2);
+    this.media = new media.ServiceClient(base2);
+    this.prayers = new prayers.ServiceClient(base2);
   }
   /**
    * Creates a new Encore client with the given client options set.
@@ -28905,8 +28905,8 @@ function Media({ onStartMusic }) {
     const loadSermons = async () => {
       try {
         setLoadingSermons(true);
-        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/sermons/recent`);
+        const base2 = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base2}/sermons/recent`);
         if (!res.ok) return;
         const raw = await res.json();
         const rawSermons = raw == null ? void 0 : raw.sermons;
@@ -29443,131 +29443,10 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-const sampleQuestions = [
-  {
-    id: 1,
-    questionEn: "Who was the first man created by God according to Genesis?",
-    questionEs: "¿Quién fue el primer hombre creado por Dios según Génesis?",
-    question: "Who was the first man created by God according to Genesis?",
-    options: {
-      en: ["Noah", "Adam", "Abraham", "Moses"],
-      es: ["Noé", "Adán", "Abraham", "Moisés"]
-    },
-    optionInputs: ["Noah", "Adam", "Abraham", "Moses"],
-    correctAnswer: 1,
-    category: "Old Testament",
-    reference: "Genesis 2:7",
-    level: "kids"
-  },
-  {
-    id: 2,
-    questionEn: "How many commandments did God give to Moses on Mount Sinai?",
-    questionEs: "¿Cuántos mandamientos dio Dios a Moisés en el Monte Sinaí?",
-    question: "How many commandments did God give to Moses on Mount Sinai?",
-    options: {
-      en: ["7", "10", "12", "3"],
-      es: ["7", "10", "12", "3"]
-    },
-    optionInputs: ["7", "10", "12", "3"],
-    correctAnswer: 1,
-    category: "Old Testament",
-    reference: "Exodus 20:1-17",
-    level: "kids"
-  },
-  {
-    id: 3,
-    questionEn: "Who baptized Jesus in the Jordan River?",
-    questionEs: "¿Quién bautizó a Jesús en el río Jordán?",
-    question: "Who baptized Jesus in the Jordan River?",
-    options: {
-      en: ["Peter", "Paul", "John the Baptist", "Matthew"],
-      es: ["Pedro", "Pablo", "Juan el Bautista", "Mateo"]
-    },
-    optionInputs: ["Peter", "Paul", "John the Baptist", "Matthew"],
-    correctAnswer: 2,
-    category: "New Testament",
-    reference: "Matthew 3:13-17",
-    level: "youth"
-  },
-  {
-    id: 4,
-    questionEn: "What is the Golden Rule found in Matthew 7:12?",
-    questionEs: "¿Cuál es la Regla de Oro encontrada en Mateo 7:12?",
-    question: "What is the Golden Rule found in Matthew 7:12?",
-    options: {
-      en: [
-        "Love your neighbor as yourself",
-        "Do to others what you would have them do to you",
-        "Honor your father and mother",
-        "Love God with all your heart"
-      ],
-      es: [
-        "Ama a tu prójimo como a ti mismo",
-        "Haz a los demás lo que quieres que ellos te hagan a ti",
-        "Honra a tu padre y a tu madre",
-        "Ama a Dios con todo tu corazón"
-      ]
-    },
-    optionInputs: [
-      "Love your neighbor as yourself",
-      "Do to others what you would have them do to you",
-      "Honor your father and mother",
-      "Love God with all your heart"
-    ],
-    correctAnswer: 1,
-    category: "New Testament",
-    reference: "Matthew 7:12",
-    level: "adults"
-  },
-  {
-    id: 5,
-    questionEn: "Who was thrown into the lion's den but was protected by God?",
-    questionEs: "¿Quién fue arrojado al foso de los leones pero fue protegido por Dios?",
-    question: "Who was thrown into the lion's den but was protected by God?",
-    options: {
-      en: ["David", "Daniel", "Joseph", "Samuel"],
-      es: ["David", "Daniel", "José", "Samuel"]
-    },
-    optionInputs: ["David", "Daniel", "Joseph", "Samuel"],
-    correctAnswer: 1,
-    category: "Old Testament",
-    reference: "Daniel 6:16-23",
-    level: "youth"
-  }
-];
-const defaultLevels = [
-  {
-    id: "kids",
-    name: "Kids",
-    description: "For children ages 6-12",
-    targetGroup: "Children",
-    shuffleQuestions: true,
-    timeLimit: 30,
-    passingScore: 70
-  },
-  {
-    id: "youth",
-    name: "Youth",
-    description: "For teenagers and young adults",
-    targetGroup: "Youth",
-    shuffleQuestions: true,
-    timeLimit: 20,
-    passingScore: 80
-  },
-  {
-    id: "adults",
-    name: "Adults",
-    description: "For adult church members",
-    targetGroup: "Adults",
-    shuffleQuestions: true,
-    timeLimit: 15,
-    passingScore: 85
-  }
-];
 function BibleTrivia({ onBack }) {
   const { language, t } = useLanguage();
   const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
-  const [levels, setLevels] = reactExports.useState(defaultLevels);
+  const [levels, setLevels] = reactExports.useState([]);
   const [questions, setQuestions] = reactExports.useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = reactExports.useState(0);
   const [selectedAnswer, setSelectedAnswer] = reactExports.useState(null);
@@ -30447,6 +30326,7 @@ function Checkbox({
     }
   );
 }
+const base = "https://prod-cne-sh82.encr.app";
 const categories = [
   "Old Testament",
   "New Testament",
@@ -30461,7 +30341,7 @@ const categories = [
 ];
 function TriviaManager() {
   var _a2, _b2, _c2, _d2, _e2, _f2;
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [questions, setQuestions] = reactExports.useState([]);
   const [levels, setLevels] = reactExports.useState([]);
   const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
@@ -30495,51 +30375,50 @@ function TriviaManager() {
   reactExports.useEffect(() => {
     loadLevelsAndQuestions();
   }, [selectedLevel]);
-  const loadLevelsAndQuestions = () => {
-    const savedLevels = JSON.parse(localStorage.getItem("triviaLevels") || "null");
-    if (savedLevels) {
-      setLevels(savedLevels);
-    } else {
-      const defaultLevels2 = [
-        {
-          id: "kids",
-          name: "Kids",
-          description: "For children ages 6-12",
-          targetGroup: "Children",
-          shuffleQuestions: true,
-          timeLimit: 30,
-          passingScore: 70
-        },
-        {
-          id: "youth",
-          name: "Youth",
-          description: "For teenagers and young adults",
-          targetGroup: "Youth",
-          shuffleQuestions: true,
-          timeLimit: 20,
-          passingScore: 80
-        },
-        {
-          id: "adults",
-          name: "Adults",
-          description: "For adult church members",
-          targetGroup: "Adults",
-          shuffleQuestions: true,
-          timeLimit: 15,
-          passingScore: 85
-        }
-      ];
-      localStorage.setItem("triviaLevels", JSON.stringify(defaultLevels2));
-      setLevels(defaultLevels2);
+  const loadLevelsAndQuestions = async () => {
+    try {
+      const levelsRes = await fetch(`${base}/trivia/levels`);
+      if (levelsRes.ok) {
+        const levelsData = await levelsRes.json();
+        const formattedLevels = levelsData.map((level) => ({
+          id: level.id,
+          name: level.name,
+          description: level.description || "",
+          targetGroup: level.target_group || "",
+          shuffleQuestions: level.shuffle_questions,
+          timeLimit: level.time_limit,
+          passingScore: level.passing_score
+        }));
+        setLevels(formattedLevels);
+      }
+      await loadQuestions();
+    } catch (err) {
+      setError(t("Failed to load levels", "Error al cargar niveles"));
     }
-    loadQuestions();
   };
   const loadQuestions = async () => {
     try {
       setLoading(true);
-      const savedQuestions = JSON.parse(localStorage.getItem("triviaQuestions") || "[]");
-      const filteredQuestions = savedQuestions.filter((q) => q.level === selectedLevel);
-      setQuestions(filteredQuestions);
+      const res = await fetch(`${base}/trivia/questions?level_id=${selectedLevel}`);
+      if (res.ok) {
+        const questionsData = await res.json();
+        const formattedQuestions = questionsData.map((q) => ({
+          id: q.id,
+          questionEn: q.question_en,
+          questionEs: q.question_es,
+          question: q.question_en,
+          options: {
+            en: q.options_en,
+            es: q.options_es
+          },
+          optionInputs: q.options_en,
+          correctAnswer: q.correct_answer,
+          category: q.category,
+          reference: q.reference,
+          level: q.level_id
+        }));
+        setQuestions(formattedQuestions);
+      }
     } catch (err) {
       setError(t("Failed to load questions", "Error al cargar preguntas"));
     } finally {
@@ -30556,24 +30435,28 @@ function TriviaManager() {
         id: editingLevelId || levelFormData.name.toLowerCase().replace(/\s+/g, "-"),
         name: levelFormData.name,
         description: levelFormData.description || "",
-        targetGroup: levelFormData.targetGroup || "",
-        shuffleQuestions: levelFormData.shuffleQuestions || true,
-        timeLimit: levelFormData.timeLimit || 30,
-        passingScore: levelFormData.passingScore || 70
+        target_group: levelFormData.targetGroup || "",
+        shuffle_questions: levelFormData.shuffleQuestions || true,
+        time_limit: levelFormData.timeLimit || 30,
+        passing_score: levelFormData.passingScore || 70
       };
-      let savedLevels = JSON.parse(localStorage.getItem("triviaLevels") || "null") || levels;
-      if (editingLevelId) {
-        savedLevels = savedLevels.map(
-          (level) => level.id === editingLevelId ? levelData : level
-        );
-        setSuccess(t("Level updated successfully!", "¡Nivel actualizado exitosamente!"));
+      const url = editingLevelId ? `${base}/trivia/levels/${editingLevelId}` : `${base}/trivia/levels`;
+      const method = editingLevelId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(levelData)
+      });
+      if (res.ok) {
+        setSuccess(t(
+          editingLevelId ? "Level updated successfully!" : "Level created successfully!",
+          editingLevelId ? "¡Nivel actualizado exitosamente!" : "¡Nivel creado exitosamente!"
+        ));
+        loadLevelsAndQuestions();
+        resetLevelForm();
       } else {
-        savedLevels = [...savedLevels, levelData];
-        setSuccess(t("Level created successfully!", "¡Nivel creado exitosamente!"));
+        throw new Error("Failed to save level");
       }
-      localStorage.setItem("triviaLevels", JSON.stringify(savedLevels));
-      setLevels(savedLevels);
-      resetLevelForm();
     } catch (err) {
       setError(t("Failed to save level", "Error al guardar nivel"));
     }
@@ -30584,13 +30467,17 @@ function TriviaManager() {
       return;
     }
     try {
-      let savedLevels = JSON.parse(localStorage.getItem("triviaLevels") || "null") || levels;
-      savedLevels = savedLevels.filter((level) => level.id !== levelId);
-      localStorage.setItem("triviaLevels", JSON.stringify(savedLevels));
-      setLevels(savedLevels);
-      setSuccess(t("Level deleted successfully!", "¡Nivel eliminado exitosamente!"));
-      if (selectedLevel === levelId) {
-        setSelectedLevel(((_a3 = levels[0]) == null ? void 0 : _a3.id) || "kids");
+      const res = await fetch(`${base}/trivia/levels/${levelId}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        setSuccess(t("Level deleted successfully!", "¡Nivel eliminado exitosamente!"));
+        if (selectedLevel === levelId) {
+          setSelectedLevel(((_a3 = levels[0]) == null ? void 0 : _a3.id) || "kids");
+        }
+        loadLevelsAndQuestions();
+      } else {
+        throw new Error("Failed to delete level");
       }
     } catch (err) {
       setError(t("Failed to delete level", "Error al eliminar nivel"));
@@ -30610,42 +30497,38 @@ function TriviaManager() {
   };
   const saveQuestion = async () => {
     try {
-      if (!formData.question || !formData.optionInputs) {
-        setError(t("Please fill all required fields", "Por favor completa todos los campos requeridos"));
+      if (!formData.question || !formData.optionInputs || formData.optionInputs.length !== 4) {
+        setError(t("Please fill in all required fields", "Por favor completa todos los campos requeridos"));
         return;
       }
-      const spanishWords = ["¿", "ñ", "él", "ella", "dios", "biblia", "pregunta", "mandamientos"];
-      const hasSpanishChars = /[¿ñáéíóúü]/i.test(formData.question || "");
-      const hasSpanishWords = spanishWords.some((word) => (formData.question || "").toLowerCase().includes(word));
-      const isSpanish = hasSpanishChars || hasSpanishWords;
+      const isSpanish = language === "es";
       const questionData = {
-        id: editingId || Date.now(),
-        questionEn: isSpanish ? "" : formData.question || "",
-        questionEs: isSpanish ? formData.question : "",
-        question: formData.question || "",
-        options: {
-          en: isSpanish ? ["", "", "", ""] : formData.optionInputs || ["", "", "", ""],
-          es: isSpanish ? formData.optionInputs || ["", "", "", ""] : ["", "", "", ""]
-        },
-        optionInputs: formData.optionInputs || ["", "", "", ""],
-        correctAnswer: formData.correctAnswer || 0,
+        question_en: isSpanish ? "" : formData.question || "",
+        question_es: isSpanish ? formData.question : "",
+        options_en: isSpanish ? ["", "", "", ""] : formData.optionInputs || ["", "", "", ""],
+        options_es: isSpanish ? formData.optionInputs || ["", "", "", ""] : ["", "", "", ""],
+        correct_answer: formData.correctAnswer || 0,
         category: formData.category || "Old Testament",
         reference: formData.reference,
-        level: selectedLevel
+        level_id: selectedLevel
       };
-      let savedQuestions = JSON.parse(localStorage.getItem("triviaQuestions") || "[]");
-      if (editingId) {
-        savedQuestions = savedQuestions.map(
-          (q) => q.id === editingId ? questionData : q
-        );
-        setSuccess(t("Question updated successfully!", "¡Pregunta actualizada exitosamente!"));
+      const url = editingId ? `${base}/trivia/questions/${editingId}` : `${base}/trivia/questions`;
+      const method = editingId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(questionData)
+      });
+      if (res.ok) {
+        setSuccess(t(
+          editingId ? "Question updated successfully!" : "Question added successfully!",
+          editingId ? "¡Pregunta actualizada exitosamente!" : "¡Pregunta agregada exitosamente!"
+        ));
+        loadQuestions();
+        resetForm();
       } else {
-        savedQuestions.push(questionData);
-        setSuccess(t("Question added successfully!", "¡Pregunta agregada exitosamente!"));
+        throw new Error("Failed to save question");
       }
-      localStorage.setItem("triviaQuestions", JSON.stringify(savedQuestions));
-      loadQuestions();
-      resetForm();
     } catch (err) {
       setError(t("Failed to save question", "Error al guardar pregunta"));
     }
@@ -30655,11 +30538,15 @@ function TriviaManager() {
       return;
     }
     try {
-      let savedQuestions = JSON.parse(localStorage.getItem("triviaQuestions") || "[]");
-      savedQuestions = savedQuestions.filter((q) => q.id !== id);
-      localStorage.setItem("triviaQuestions", JSON.stringify(savedQuestions));
-      setSuccess(t("Question deleted successfully!", "¡Pregunta eliminada exitosamente!"));
-      loadQuestions();
+      const res = await fetch(`${base}/trivia/questions/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        setSuccess(t("Question deleted successfully!", "¡Pregunta eliminada exitosamente!"));
+        loadQuestions();
+      } else {
+        throw new Error("Failed to delete question");
+      }
     } catch (err) {
       setError(t("Failed to delete question", "Error al eliminar pregunta"));
     }
@@ -31573,8 +31460,8 @@ function AdminUpload() {
     const loadSermons = async () => {
       try {
         setLoadingSermons(true);
-        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/sermons/recent`);
+        const base2 = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base2}/sermons/recent`);
         if (!res.ok) return;
         const raw = await res.json();
         const rawSermons = raw == null ? void 0 : raw.sermons;
@@ -31608,8 +31495,8 @@ function AdminUpload() {
       return;
     }
     try {
-      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const res = await fetch(`${base}/playlist`, {
+      const base2 = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const res = await fetch(`${base2}/playlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -31653,8 +31540,8 @@ function AdminUpload() {
       return;
     }
     try {
-      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const res = await fetch(`${base}/livestream`, {
+      const base2 = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const res = await fetch(`${base2}/livestream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -31817,8 +31704,8 @@ function AdminUpload() {
                   return;
                 }
                 try {
-                  const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-                  const res = await fetch(`${base}/sermons`, {
+                  const base2 = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+                  const res = await fetch(`${base2}/sermons`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -31935,8 +31822,8 @@ function AdminUpload() {
                         );
                         if (!confirmDelete) return;
                         try {
-                          const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-                          const res = await fetch(`${base}/sermons/delete`, {
+                          const base2 = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+                          const res = await fetch(`${base2}/sermons/delete`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -32733,14 +32620,16 @@ function App() {
 }
 const hideSplashScreen = () => {
   const splash = document.querySelector(".app-splash");
-  if (splash) {
+  const body = document.body;
+  if (splash && body) {
+    body.classList.add("app-loaded");
     setTimeout(() => {
       splash.style.opacity = "0";
       splash.style.transition = "opacity 0.5s ease-out";
       setTimeout(() => {
         splash.remove();
       }, 500);
-    }, 2e3);
+    }, 1500);
   }
 };
 if (typeof window !== "undefined") {

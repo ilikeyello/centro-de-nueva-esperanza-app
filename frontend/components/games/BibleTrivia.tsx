@@ -5,21 +5,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLanguage } from "../../contexts/LanguageContext";
 import { CheckCircle, XCircle, RotateCcw, Trophy, ArrowLeft, Play } from "lucide-react";
 
-interface TriviaQuestion {
-  id: number;
-  questionEn: string;
-  questionEs: string;
-  question: string;
-  options: {
-    en: string[];
-    es: string[];
-  };
-  optionInputs: string[];
-  correctAnswer: number;
-  category: string;
-  reference?: string;
-  level: string;
-}
+// API base URLs
+const base = import.meta.env.DEV
+  ? "http://127.0.0.1:4000"
+  : "https://prod-cne-sh82.encr.app";
 
 interface TriviaLevel {
   id: string;
@@ -31,133 +20,70 @@ interface TriviaLevel {
   passingScore?: number;
 }
 
-const sampleQuestions: TriviaQuestion[] = [
-  {
-    id: 1,
-    questionEn: "Who was the first man created by God according to Genesis?",
-    questionEs: "¿Quién fue el primer hombre creado por Dios según Génesis?",
-    question: "Who was the first man created by God according to Genesis?",
-    options: {
-      en: ["Noah", "Adam", "Abraham", "Moses"],
-      es: ["Noé", "Adán", "Abraham", "Moisés"]
-    },
-    optionInputs: ["Noah", "Adam", "Abraham", "Moses"],
-    correctAnswer: 1,
-    category: "Old Testament",
-    reference: "Genesis 2:7",
-    level: "kids"
-  },
-  {
-    id: 2,
-    questionEn: "How many commandments did God give to Moses on Mount Sinai?",
-    questionEs: "¿Cuántos mandamientos dio Dios a Moisés en el Monte Sinaí?",
-    question: "How many commandments did God give to Moses on Mount Sinai?",
-    options: {
-      en: ["7", "10", "12", "3"],
-      es: ["7", "10", "12", "3"]
-    },
-    optionInputs: ["7", "10", "12", "3"],
-    correctAnswer: 1,
-    category: "Old Testament",
-    reference: "Exodus 20:1-17",
-    level: "kids"
-  },
-  {
-    id: 3,
-    questionEn: "Who baptized Jesus in the Jordan River?",
-    questionEs: "¿Quién bautizó a Jesús en el río Jordán?",
-    question: "Who baptized Jesus in the Jordan River?",
-    options: {
-      en: ["Peter", "Paul", "John the Baptist", "Matthew"],
-      es: ["Pedro", "Pablo", "Juan el Bautista", "Mateo"]
-    },
-    optionInputs: ["Peter", "Paul", "John the Baptist", "Matthew"],
-    correctAnswer: 2,
-    category: "New Testament",
-    reference: "Matthew 3:13-17",
-    level: "youth"
-  },
-  {
-    id: 4,
-    questionEn: "What is the Golden Rule found in Matthew 7:12?",
-    questionEs: "¿Cuál es la Regla de Oro encontrada en Mateo 7:12?",
-    question: "What is the Golden Rule found in Matthew 7:12?",
-    options: {
-      en: [
-        "Love your neighbor as yourself",
-        "Do to others what you would have them do to you",
-        "Honor your father and mother",
-        "Love God with all your heart"
-      ],
-      es: [
-        "Ama a tu prójimo como a ti mismo",
-        "Haz a los demás lo que quieres que ellos te hagan a ti",
-        "Honra a tu padre y a tu madre",
-        "Ama a Dios con todo tu corazón"
-      ]
-    },
-    optionInputs: [
-      "Love your neighbor as yourself",
-      "Do to others what you would have them do to you",
-      "Honor your father and mother",
-      "Love God with all your heart"
-    ],
-    correctAnswer: 1,
-    category: "New Testament",
-    reference: "Matthew 7:12",
-    level: "adults"
-  },
-  {
-    id: 5,
-    questionEn: "Who was thrown into the lion's den but was protected by God?",
-    questionEs: "¿Quién fue arrojado al foso de los leones pero fue protegido por Dios?",
-    question: "Who was thrown into the lion's den but was protected by God?",
-    options: {
-      en: ["David", "Daniel", "Joseph", "Samuel"],
-      es: ["David", "Daniel", "José", "Samuel"]
-    },
-    optionInputs: ["David", "Daniel", "Joseph", "Samuel"],
-    correctAnswer: 1,
-    category: "Old Testament",
-    reference: "Daniel 6:16-23",
-    level: "youth"
-  }
-];
+interface TriviaQuestion {
+  id: number;
+  questionEn: string;
+  questionEs: string;
+  options: {
+    en: string[];
+    es: string[];
+  };
+  correctAnswer: number;
+  category: string;
+  reference?: string;
+  level: string;
+}
 
-const defaultLevels: TriviaLevel[] = [
-  {
-    id: 'kids',
-    name: 'Kids',
-    description: 'For children ages 6-12',
-    targetGroup: 'Children',
-    shuffleQuestions: true,
-    timeLimit: 30,
-    passingScore: 70
-  },
-  {
-    id: 'youth',
-    name: 'Youth',
-    description: 'For teenagers and young adults',
-    targetGroup: 'Youth',
-    shuffleQuestions: true,
-    timeLimit: 20,
-    passingScore: 80
-  },
-  {
-    id: 'adults',
-    name: 'Adults',
-    description: 'For adult church members',
-    targetGroup: 'Adults',
-    shuffleQuestions: true,
-    timeLimit: 15,
-    passingScore: 85
+const loadLevels = async () => {
+  try {
+    const res = await fetch(`${base}/trivia/levels`);
+    if (res.ok) {
+      const levelsData = await res.json();
+      const formattedLevels = levelsData.map((level: any) => ({
+        id: level.id,
+        name: level.name,
+        description: level.description || "",
+        targetGroup: level.target_group || "",
+        shuffleQuestions: level.shuffle_questions,
+        timeLimit: level.time_limit,
+        passingScore: level.passing_score
+      }));
+      return formattedLevels;
+    }
+  } catch (err) {
+    console.error("Failed to load levels:", err);
   }
-];
+};
+
+const loadQuestions = async (levelId: string) => {
+  try {
+    const res = await fetch(`${base}/trivia/questions?level_id=${levelId}`);
+    if (res.ok) {
+      const questionsData = await res.json();
+      const formattedQuestions = questionsData.map((q: any) => ({
+        id: q.id,
+        questionEn: q.question_en,
+        questionEs: q.question_es,
+        options: {
+          en: q.options_en,
+          es: q.options_es
+        },
+        correctAnswer: q.correct_answer,
+        category: q.category,
+        reference: q.reference,
+        level: q.level_id
+      }));
+      return formattedQuestions;
+    }
+  } catch (err) {
+    console.error("Failed to load questions:", err);
+  }
+};
 
 export function BibleTrivia({ onBack }: { onBack?: () => void }) {
   const { language, t } = useLanguage();
   const [selectedLevel, setSelectedLevel] = useState<string>('kids');
-  const [levels, setLevels] = useState<TriviaLevel[]>(defaultLevels);
+  const [levels, setLevels] = useState<TriviaLevel[]>([]);
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);

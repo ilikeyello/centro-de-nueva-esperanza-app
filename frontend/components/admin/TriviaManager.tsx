@@ -9,6 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Plus, Edit2, Trash2, Save, X, CheckCircle } from "lucide-react";
 
+// API base URLs
+const base = import.meta.env.DEV
+  ? "http://127.0.0.1:4000"
+  : "https://prod-cne-sh82.encr.app";
+
 interface TriviaQuestion {
   id: number;
   questionEn: string;
@@ -49,7 +54,7 @@ const categories = [
 ];
 
 export function TriviaManager() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [levels, setLevels] = useState<TriviaLevel[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>('kids');
@@ -85,56 +90,54 @@ export function TriviaManager() {
     loadLevelsAndQuestions();
   }, [selectedLevel]);
 
-  const loadLevelsAndQuestions = () => {
-    // Load levels from local storage or use defaults
-    const savedLevels = JSON.parse(localStorage.getItem('triviaLevels') || 'null');
-    if (savedLevels) {
-      setLevels(savedLevels);
-    } else {
-      // Initialize with default levels and save to local storage
-      const defaultLevels = [
-        {
-          id: 'kids',
-          name: 'Kids',
-          description: 'For children ages 6-12',
-          targetGroup: 'Children',
-          shuffleQuestions: true,
-          timeLimit: 30,
-          passingScore: 70
-        },
-        {
-          id: 'youth',
-          name: 'Youth',
-          description: 'For teenagers and young adults',
-          targetGroup: 'Youth',
-          shuffleQuestions: true,
-          timeLimit: 20,
-          passingScore: 80
-        },
-        {
-          id: 'adults',
-          name: 'Adults',
-          description: 'For adult church members',
-          targetGroup: 'Adults',
-          shuffleQuestions: true,
-          timeLimit: 15,
-          passingScore: 85
-        }
-      ];
-      localStorage.setItem('triviaLevels', JSON.stringify(defaultLevels));
-      setLevels(defaultLevels);
+  const loadLevelsAndQuestions = async () => {
+    try {
+      // Load levels from API
+      const levelsRes = await fetch(`${base}/trivia/levels`);
+      if (levelsRes.ok) {
+        const levelsData = await levelsRes.json();
+        const formattedLevels = levelsData.map((level: any) => ({
+          id: level.id,
+          name: level.name,
+          description: level.description || "",
+          targetGroup: level.target_group || "",
+          shuffleQuestions: level.shuffle_questions,
+          timeLimit: level.time_limit,
+          passingScore: level.passing_score
+        }));
+        setLevels(formattedLevels);
+      }
+      
+      await loadQuestions();
+    } catch (err) {
+      setError(t("Failed to load levels", "Error al cargar niveles"));
     }
-    
-    loadQuestions();
   };
 
   const loadQuestions = async () => {
     try {
       setLoading(true);
-      // Load from local storage for now (until backend is ready)
-      const savedQuestions = JSON.parse(localStorage.getItem('triviaQuestions') || '[]');
-      const filteredQuestions = savedQuestions.filter((q: TriviaQuestion) => q.level === selectedLevel);
-      setQuestions(filteredQuestions);
+      // Load questions from API
+      const res = await fetch(`${base}/trivia/questions?level_id=${selectedLevel}`);
+      if (res.ok) {
+        const questionsData = await res.json();
+        const formattedQuestions = questionsData.map((q: any) => ({
+          id: q.id,
+          questionEn: q.question_en,
+          questionEs: q.question_es,
+          question: q.question_en,
+          options: {
+            en: q.options_en,
+            es: q.options_es
+          },
+          optionInputs: q.options_en,
+          correctAnswer: q.correct_answer,
+          category: q.category,
+          reference: q.reference,
+          level: q.level_id
+        }));
+        setQuestions(formattedQuestions);
+      }
     } catch (err) {
       setError(t("Failed to load questions", "Error al cargar preguntas"));
     } finally {
@@ -153,28 +156,34 @@ export function TriviaManager() {
         id: editingLevelId || levelFormData.name.toLowerCase().replace(/\s+/g, '-'),
         name: levelFormData.name,
         description: levelFormData.description || "",
-        targetGroup: levelFormData.targetGroup || "",
-        shuffleQuestions: levelFormData.shuffleQuestions || true,
-        timeLimit: levelFormData.timeLimit || 30,
-        passingScore: levelFormData.passingScore || 70
+        target_group: levelFormData.targetGroup || "",
+        shuffle_questions: levelFormData.shuffleQuestions || true,
+        time_limit: levelFormData.timeLimit || 30,
+        passing_score: levelFormData.passingScore || 70
       };
 
-      // Save to local storage
-      let savedLevels = JSON.parse(localStorage.getItem('triviaLevels') || 'null') || levels;
-      
-      if (editingLevelId) {
-        savedLevels = savedLevels.map((level: TriviaLevel) => 
-          level.id === editingLevelId ? levelData : level
-        );
-        setSuccess(t("Level updated successfully!", "¡Nivel actualizado exitosamente!"));
+      const url = editingLevelId
+        ? `${base}/trivia/levels/${editingLevelId}`
+        : `${base}/trivia/levels`;
+
+      const method = editingLevelId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(levelData)
+      });
+
+      if (res.ok) {
+        setSuccess(t(
+          editingLevelId ? "Level updated successfully!" : "Level created successfully!",
+          editingLevelId ? "¡Nivel actualizado exitosamente!" : "¡Nivel creado exitosamente!"
+        ));
+        loadLevelsAndQuestions();
+        resetLevelForm();
       } else {
-        savedLevels = [...savedLevels, levelData];
-        setSuccess(t("Level created successfully!", "¡Nivel creado exitosamente!"));
+        throw new Error("Failed to save level");
       }
-      
-      localStorage.setItem('triviaLevels', JSON.stringify(savedLevels));
-      setLevels(savedLevels);
-      resetLevelForm();
     } catch (err) {
       setError(t("Failed to save level", "Error al guardar nivel"));
     }
@@ -186,16 +195,20 @@ export function TriviaManager() {
     }
 
     try {
-      // Remove from local storage
-      let savedLevels = JSON.parse(localStorage.getItem('triviaLevels') || 'null') || levels;
-      savedLevels = savedLevels.filter((level: TriviaLevel) => level.id !== levelId);
-      localStorage.setItem('triviaLevels', JSON.stringify(savedLevels));
-      
-      setLevels(savedLevels);
-      setSuccess(t("Level deleted successfully!", "¡Nivel eliminado exitosamente!"));
-      
-      if (selectedLevel === levelId) {
-        setSelectedLevel(levels[0]?.id || 'kids');
+      const res = await fetch(`${base}/trivia/levels/${levelId}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        setSuccess(t("Level deleted successfully!", "¡Nivel eliminado exitosamente!"));
+        
+        if (selectedLevel === levelId) {
+          setSelectedLevel(levels[0]?.id || 'kids');
+        }
+        
+        loadLevelsAndQuestions();
+      } else {
+        throw new Error("Failed to delete level");
       }
     } catch (err) {
       setError(t("Failed to delete level", "Error al eliminar nivel"));
@@ -217,49 +230,45 @@ export function TriviaManager() {
 
   const saveQuestion = async () => {
     try {
-      if (!formData.question || !formData.optionInputs) {
-        setError(t("Please fill all required fields", "Por favor completa todos los campos requeridos"));
+      if (!formData.question || !formData.optionInputs || formData.optionInputs.length !== 4) {
+        setError(t("Please fill in all required fields", "Por favor completa todos los campos requeridos"));
         return;
       }
 
-      // Detect language and set appropriate fields
-      const spanishWords = ['¿', 'ñ', 'él', 'ella', 'dios', 'biblia', 'pregunta', 'mandamientos'];
-      const hasSpanishChars = /[¿ñáéíóúü]/i.test(formData.question || "");
-      const hasSpanishWords = spanishWords.some(word => (formData.question || "").toLowerCase().includes(word));
-      const isSpanish = hasSpanishChars || hasSpanishWords;
-      
-      const questionData: TriviaQuestion = {
-        id: editingId || Date.now(),
-        questionEn: isSpanish ? "" : formData.question || "",
-        questionEs: isSpanish ? formData.question : "",
-        question: formData.question || "",
-        options: {
-          en: isSpanish ? ["", "", "", ""] : formData.optionInputs || ["", "", "", ""],
-          es: isSpanish ? formData.optionInputs || ["", "", "", ""] : ["", "", "", ""]
-        },
-        optionInputs: formData.optionInputs || ["", "", "", ""],
-        correctAnswer: formData.correctAnswer || 0,
+      const isSpanish = language === "es";
+      const questionData = {
+        question_en: isSpanish ? "" : formData.question || "",
+        question_es: isSpanish ? formData.question : "",
+        options_en: isSpanish ? ["", "", "", ""] : formData.optionInputs || ["", "", "", ""],
+        options_es: isSpanish ? formData.optionInputs || ["", "", "", ""] : ["", "", "", ""],
+        correct_answer: formData.correctAnswer || 0,
         category: formData.category || "Old Testament",
         reference: formData.reference,
-        level: selectedLevel
+        level_id: selectedLevel
       };
 
-      // Save to local storage for now (until backend is ready)
-      let savedQuestions = JSON.parse(localStorage.getItem('triviaQuestions') || '[]');
-      
-      if (editingId) {
-        savedQuestions = savedQuestions.map((q: TriviaQuestion) => 
-          q.id === editingId ? questionData : q
-        );
-        setSuccess(t("Question updated successfully!", "¡Pregunta actualizada exitosamente!"));
+      const url = editingId
+        ? `${base}/trivia/questions/${editingId}`
+        : `${base}/trivia/questions`;
+
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(questionData)
+      });
+
+      if (res.ok) {
+        setSuccess(t(
+          editingId ? "Question updated successfully!" : "Question added successfully!",
+          editingId ? "¡Pregunta actualizada exitosamente!" : "¡Pregunta agregada exitosamente!"
+        ));
+        loadQuestions();
+        resetForm();
       } else {
-        savedQuestions.push(questionData);
-        setSuccess(t("Question added successfully!", "¡Pregunta agregada exitosamente!"));
+        throw new Error("Failed to save question");
       }
-      
-      localStorage.setItem('triviaQuestions', JSON.stringify(savedQuestions));
-      loadQuestions();
-      resetForm();
     } catch (err) {
       setError(t("Failed to save question", "Error al guardar pregunta"));
     }
@@ -271,13 +280,16 @@ export function TriviaManager() {
     }
 
     try {
-      // Delete from local storage for now (until backend is ready)
-      let savedQuestions = JSON.parse(localStorage.getItem('triviaQuestions') || '[]');
-      savedQuestions = savedQuestions.filter((q: TriviaQuestion) => q.id !== id);
-      localStorage.setItem('triviaQuestions', JSON.stringify(savedQuestions));
-      
-      setSuccess(t("Question deleted successfully!", "¡Pregunta eliminada exitosamente!"));
-      loadQuestions();
+      const res = await fetch(`${base}/trivia/questions/${id}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        setSuccess(t("Question deleted successfully!", "¡Pregunta eliminada exitosamente!"));
+        loadQuestions();
+      } else {
+        throw new Error("Failed to delete question");
+      }
     } catch (err) {
       setError(t("Failed to delete question", "Error al eliminar pregunta"));
     }

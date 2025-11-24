@@ -6,7 +6,12 @@ import "./index.css";
 // Hide splash screen with delay
 const hideSplashScreen = () => {
   const splash = document.querySelector('.app-splash') as HTMLElement;
-  if (splash) {
+  const body = document.body;
+  
+  if (splash && body) {
+    // Add app-loaded class for smooth transition
+    body.classList.add('app-loaded');
+    
     // Show loading screen for a reasonable duration
     setTimeout(() => {
       splash.style.opacity = '0';
@@ -14,7 +19,7 @@ const hideSplashScreen = () => {
       setTimeout(() => {
         splash.remove();
       }, 500);
-    }, 2000); // 2 seconds delay (logo shows immediately)
+    }, 1500); // 1.5 seconds delay (logo shows immediately)
   }
 };
 
