@@ -139,7 +139,6 @@ export const createLevel = api(
 export const updateLevel = api(
   { expose: true, path: "/trivia/levels/:id", method: "PUT" },
   async (params: UpdateLevelRequest & { id: string }): Promise<TriviaLevel> => {
-    let updateQuery = "UPDATE trivia_levels SET ";
     const updates: string[] = [];
     const values: any[] = [];
 
@@ -171,7 +170,7 @@ export const updateLevel = api(
     updates.push("updated_at = NOW()");
     values.push(params.id);
 
-    updateQuery += updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
+    const updateQuery = "UPDATE trivia_levels SET " + updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
     
     const result = await database.query(updateQuery, ...values);
     const rows = [];
@@ -274,7 +273,6 @@ export const createQuestion = api(
 export const updateQuestion = api(
   { expose: true, path: "/trivia/questions/:id", method: "PUT" },
   async (params: UpdateQuestionRequest & { id: number }): Promise<TriviaQuestion> => {
-    let updateQuery = "UPDATE trivia_questions SET ";
     const updates: string[] = [];
     const values: any[] = [];
 
@@ -314,7 +312,7 @@ export const updateQuestion = api(
     updates.push("updated_at = NOW()");
     values.push(params.id);
 
-    updateQuery += updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
+    const updateQuery = "UPDATE trivia_questions SET " + updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
     const result = await database.query(updateQuery, ...values);
     const rows = [];
     for await (const row of result) {
