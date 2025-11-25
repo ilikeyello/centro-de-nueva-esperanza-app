@@ -172,7 +172,8 @@ export const updateLevel = api(
 
     const updateQuery = "UPDATE trivia_levels SET " + updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
     
-    const result = await database.query(updateQuery, ...values);
+    // Use raw SQL execution for dynamic queries
+    const result = await database.exec(updateQuery, ...values);
     const rows = [];
     for await (const row of result) {
       rows.push(row);
@@ -313,7 +314,9 @@ export const updateQuestion = api(
     values.push(params.id);
 
     const updateQuery = "UPDATE trivia_questions SET " + updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
-    const result = await database.query(updateQuery, ...values);
+    
+    // Use raw SQL execution for dynamic queries
+    const result = await database.exec(updateQuery, ...values);
     const rows = [];
     for await (const row of result) {
       rows.push(row);
