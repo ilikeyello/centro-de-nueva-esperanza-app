@@ -19574,7 +19574,7 @@ var Primitive$1 = NODES$1.reduce((primitive, node) => {
   return { ...primitive, [node]: Node2 };
 }, {});
 var NAME$2 = "Label";
-var Label$2 = reactExports.forwardRef((props, forwardedRef) => {
+var Label$1 = reactExports.forwardRef((props, forwardedRef) => {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
     Primitive$1.label,
     {
@@ -19590,9 +19590,9 @@ var Label$2 = reactExports.forwardRef((props, forwardedRef) => {
     }
   );
 });
-Label$2.displayName = NAME$2;
-var Root$4 = Label$2;
-function Label$1({
+Label$1.displayName = NAME$2;
+var Root$4 = Label$1;
+function Label({
   className,
   ...props
 }) {
@@ -20549,7 +20549,7 @@ function Home({ onNavigate }) {
             },
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "prayer-title", className: "text-neutral-200", children: t("Title", "Título") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "prayer-title", className: "text-neutral-200", children: t("Title", "Título") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Input,
                   {
@@ -20562,7 +20562,7 @@ function Home({ onNavigate }) {
                 )
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "prayer-description", className: "text-neutral-200", children: t("Description", "Descripción") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "prayer-description", className: "text-neutral-200", children: t("Description", "Descripción") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Textarea,
                   {
@@ -20576,7 +20576,7 @@ function Home({ onNavigate }) {
                 )
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "prayer-name", className: "text-neutral-200", children: t("Name", "Nombre") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "prayer-name", className: "text-neutral-200", children: t("Name", "Nombre") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Input,
                   {
@@ -26656,7 +26656,7 @@ function News() {
               /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("Create Announcement", "Crear Anuncio") }) }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleCreateAnnouncement, className: "space-y-4", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "titleEn", className: "text-neutral-200", children: t("Title (English)", "Título (Inglés)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "titleEn", className: "text-neutral-200", children: t("Title (English)", "Título (Inglés)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26668,7 +26668,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "titleEs", className: "text-neutral-200", children: t("Title (Spanish)", "Título (Español)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "titleEs", className: "text-neutral-200", children: t("Title (Spanish)", "Título (Español)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26680,7 +26680,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "announcementPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "announcementPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26694,7 +26694,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "contentEn", className: "text-neutral-200", children: t("Content (English)", "Contenido (Inglés)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "contentEn", className: "text-neutral-200", children: t("Content (English)", "Contenido (Inglés)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Textarea,
                     {
@@ -26706,7 +26706,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "contentEs", className: "text-neutral-200", children: t("Content (Spanish)", "Contenido (Español)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "contentEs", className: "text-neutral-200", children: t("Content (Spanish)", "Contenido (Español)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Textarea,
                     {
@@ -26718,7 +26718,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { className: "text-neutral-200", children: t("Priority", "Prioridad") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-200", children: t("Priority", "Prioridad") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: priority, onValueChange: (value) => setPriority(normalizePriority(value)), children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, {}) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: priorityOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: option, children: t(
@@ -26748,7 +26748,7 @@ function News() {
               /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("Create New Event", "Crear Nuevo Evento") }) }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleCreateEvent, className: "space-y-4", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "titleEn", className: "text-neutral-200", children: t("Title (English)", "Título (Inglés)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "titleEn", className: "text-neutral-200", children: t("Title (English)", "Título (Inglés)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26760,7 +26760,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "titleEs", className: "text-neutral-200", children: t("Title (Spanish)", "Título (Español)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "titleEs", className: "text-neutral-200", children: t("Title (Spanish)", "Título (Español)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26772,7 +26772,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "descriptionEn", className: "text-neutral-200", children: t("Description (English)", "Descripción (Inglés)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "descriptionEn", className: "text-neutral-200", children: t("Description (English)", "Descripción (Inglés)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Textarea,
                     {
@@ -26783,7 +26783,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "descriptionEs", className: "text-neutral-200", children: t("Description (Spanish)", "Descripción (Español)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "descriptionEs", className: "text-neutral-200", children: t("Description (Spanish)", "Descripción (Español)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Textarea,
                     {
@@ -26794,7 +26794,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "eventPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26808,7 +26808,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "eventDate", className: "text-neutral-200", children: t("Date & Time", "Fecha y Hora") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventDate", className: "text-neutral-200", children: t("Date & Time", "Fecha y Hora") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26821,7 +26821,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "location", className: "text-neutral-200", children: t("Location", "Ubicación") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "location", className: "text-neutral-200", children: t("Location", "Ubicación") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26833,7 +26833,7 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "maxAttendees", className: "text-neutral-200", children: t("Max Attendees (optional)", "Máximo de Asistentes (opcional)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "maxAttendees", className: "text-neutral-200", children: t("Max Attendees (optional)", "Máximo de Asistentes (opcional)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -26907,7 +26907,7 @@ function News() {
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleDeleteAnnouncement, className: "space-y-4", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "deletePasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "deletePasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
                     {
@@ -27018,7 +27018,7 @@ function News() {
           /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("RSVP for Event", "Confirmar Asistencia al Evento") }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleRsvp, className: "space-y-4", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "attendee-name", className: "text-neutral-200", children: t("Your name", "Tu nombre") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "attendee-name", className: "text-neutral-200", children: t("Your name", "Tu nombre") }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 Input,
                 {
@@ -27031,7 +27031,7 @@ function News() {
               )
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "attendees", className: "text-neutral-200", children: t("Number of Attendees", "Número de Asistentes") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "attendees", className: "text-neutral-200", children: t("Number of Attendees", "Número de Asistentes") }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 Input,
                 {
@@ -27071,7 +27071,7 @@ function News() {
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleDeleteEvent, className: "space-y-4", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "eventDeletePasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventDeletePasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 Input,
                 {
@@ -27559,7 +27559,7 @@ function BulletinBoard() {
                 /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-px bg-neutral-800" }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { className: "space-y-3", onSubmit: (event) => handleSubmitComment(event, post.id), children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { className: "text-neutral-300", htmlFor: `post-comment-name-${post.id}`, children: t("Name", "Nombre") }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", htmlFor: `post-comment-name-${post.id}`, children: t("Name", "Nombre") }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Input,
                       {
@@ -27572,7 +27572,7 @@ function BulletinBoard() {
                     )
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { className: "text-neutral-300", htmlFor: `post-comment-content-${post.id}`, children: t("Comment", "Comentario") }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", htmlFor: `post-comment-content-${post.id}`, children: t("Comment", "Comentario") }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
                       Textarea,
                       {
@@ -27617,7 +27617,7 @@ function BulletinBoard() {
             /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("Create Post", "Crear Publicación") }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmitPost, className: "space-y-4", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "bulletin-title", className: "text-neutral-200", children: t("Title", "Título") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "bulletin-title", className: "text-neutral-200", children: t("Title", "Título") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Input,
                   {
@@ -27630,7 +27630,7 @@ function BulletinBoard() {
                 )
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "bulletin-content", className: "text-neutral-200", children: t("Description", "Descripción") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "bulletin-content", className: "text-neutral-200", children: t("Description", "Descripción") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Textarea,
                   {
@@ -27644,7 +27644,7 @@ function BulletinBoard() {
                 )
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "bulletin-author", className: "text-neutral-200", children: t("Name", "Nombre") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "bulletin-author", className: "text-neutral-200", children: t("Name", "Nombre") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Input,
                   {
@@ -27744,7 +27744,7 @@ function BulletinBoard() {
             /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("Share Prayer Request", "Compartir Petición de Oración") }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmitPrayer, className: "space-y-4", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "prayer-title", className: "text-neutral-200", children: t("Title", "Título") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "prayer-title", className: "text-neutral-200", children: t("Title", "Título") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Input,
                   {
@@ -27757,7 +27757,7 @@ function BulletinBoard() {
                 )
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "prayer-description", className: "text-neutral-200", children: t("Description", "Descripción") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "prayer-description", className: "text-neutral-200", children: t("Description", "Descripción") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Textarea,
                   {
@@ -27771,7 +27771,7 @@ function BulletinBoard() {
                 )
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "prayer-author", className: "text-neutral-200", children: t("Name", "Nombre") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "prayer-author", className: "text-neutral-200", children: t("Name", "Nombre") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Input,
                   {
@@ -27816,7 +27816,7 @@ function BulletinBoard() {
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "delete-target", className: "text-neutral-300", children: t("Item", "Elemento") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "delete-target", className: "text-neutral-300", children: t("Item", "Elemento") }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Input,
             {
@@ -27828,7 +27828,7 @@ function BulletinBoard() {
           )
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "delete-passcode", className: "text-neutral-300", children: t("Admin code", "Código de administrador") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "delete-passcode", className: "text-neutral-300", children: t("Admin code", "Código de administrador") }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Input,
             {
@@ -28771,7 +28771,7 @@ function DonationForm({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: t("Donation Details", "Detalles de Donación") }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "amount", className: "text-neutral-200", children: t("Amount ($)", "Cantidad ($)") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "amount", className: "text-neutral-200", children: t("Amount ($)", "Cantidad ($)") }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Input,
             {
@@ -28787,7 +28787,7 @@ function DonationForm({ onNavigate }) {
           )
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "message", className: "text-neutral-200", children: t("Message (optional)", "Mensaje (opcional)") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "message", className: "text-neutral-200", children: t("Message (optional)", "Mensaje (opcional)") }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Textarea,
             {
@@ -28799,7 +28799,7 @@ function DonationForm({ onNavigate }) {
           )
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { className: "text-neutral-200", children: t("Card Details", "Detalles de Tarjeta") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-200", children: t("Card Details", "Detalles de Tarjeta") }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 rounded-md border border-neutral-700 bg-neutral-800 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
             CardElement,
             {
@@ -30037,12 +30037,14 @@ function SimpleTriviaAdmin() {
       setError(t("Please fill in all fields", "Por favor completa todos los campos"));
       return;
     }
+    const level = triviaData.levels.find((l) => l.id === selectedLevel);
     const question = {
       question: newQuestion.trim(),
       question_es: newQuestionEs.trim() || void 0,
       answers: [...newAnswers],
       answers_es: newAnswersEs.some((a) => a.trim()) ? [...newAnswersEs] : void 0,
       correctAnswer: newCorrectAnswer,
+      timer: (level == null ? void 0 : level.time_limit) || 30,
       level_id: selectedLevel,
       category: newCategory.trim() || void 0,
       reference: newReference.trim() || void 0
@@ -30078,7 +30080,7 @@ function SimpleTriviaAdmin() {
       /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-3xl font-bold text-red-600", children: t("Trivia Admin", "Administrador de Trivia") }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label$1, { htmlFor: "default-timer", className: "text-sm", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { htmlFor: "default-timer", className: "text-sm", children: [
             t("Default Timer (s)", "Temporizador Predeterminado (s)"),
             ":"
           ] }),
@@ -30121,7 +30123,7 @@ function SimpleTriviaAdmin() {
       ] }) }),
       isAdding && /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { htmlFor: "question", children: t("Question", "Pregunta") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "question", children: t("Question", "Pregunta") }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Textarea,
             {
@@ -30134,7 +30136,7 @@ function SimpleTriviaAdmin() {
           )
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { children: t("Answers", "Respuestas") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { children: t("Answers", "Respuestas") }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 mt-1", children: newAnswers.map((answer, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "w-8 text-sm font-bold", children: [
               String.fromCharCode(65 + index2),
@@ -30159,26 +30161,8 @@ function SimpleTriviaAdmin() {
                 className: "w-4 h-4"
               }
             ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Label$1, { className: "text-xs", children: t("Correct", "Correcta") })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-xs", children: t("Correct", "Correcta") })
           ] }, index2)) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label$1, { htmlFor: "timer", children: [
-            t("Timer (seconds)", "Temporizador (segundos)"),
-            ":"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Input,
-            {
-              id: "timer",
-              type: "number",
-              min: "10",
-              max: "120",
-              value: newTimer,
-              onChange: (e) => setNewTimer(parseInt(e.target.value) || 30),
-              className: "w-20 bg-neutral-800 border-neutral-700 text-white"
-            }
-          )
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: handleAddQuestion, className: "bg-green-600 hover:bg-green-700", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "mr-2 h-4 w-4" }),

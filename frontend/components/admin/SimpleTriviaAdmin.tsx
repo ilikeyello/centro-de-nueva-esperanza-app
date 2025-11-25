@@ -65,12 +65,14 @@ export default function SimpleTriviaAdmin() {
       return;
     }
 
+    const level = triviaData.levels.find(l => l.id === selectedLevel);
     const question: TriviaQuestion = {
       question: newQuestion.trim(),
       question_es: newQuestionEs.trim() || undefined,
       answers: [...newAnswers],
       answers_es: newAnswersEs.some(a => a.trim()) ? [...newAnswersEs] : undefined,
       correctAnswer: newCorrectAnswer,
+      timer: level?.time_limit || 30,
       level_id: selectedLevel,
       category: newCategory.trim() || undefined,
       reference: newReference.trim() || undefined
@@ -202,19 +204,6 @@ export default function SimpleTriviaAdmin() {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Label htmlFor="timer">{t("Timer (seconds)", "Temporizador (segundos)")}:</Label>
-                <Input
-                  id="timer"
-                  type="number"
-                  min="10"
-                  max="120"
-                  value={newTimer}
-                  onChange={(e) => setNewTimer(parseInt(e.target.value) || 30)}
-                  className="w-20 bg-neutral-800 border-neutral-700 text-white"
-                />
               </div>
 
               <Button onClick={handleAddQuestion} className="bg-green-600 hover:bg-green-700">
