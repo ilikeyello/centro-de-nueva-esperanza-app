@@ -170,10 +170,25 @@ export const updateLevel = api(
     updates.push("updated_at = NOW()");
     values.push(params.id);
 
-    const updateQuery = "UPDATE trivia_levels SET " + updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
+    // Build the dynamic UPDATE query using template literals
+    let result;
+    if (params.name !== undefined && params.description !== undefined && params.target_group !== undefined && 
+        params.shuffle_questions !== undefined && params.time_limit !== undefined && params.passing_score !== undefined) {
+      // All fields present - use simple template literal
+      result = await database.query`
+        UPDATE trivia_levels 
+        SET name = ${params.name}, description = ${params.description}, target_group = ${params.target_group},
+            shuffle_questions = ${params.shuffle_questions}, time_limit = ${params.time_limit}, passing_score = ${params.passing_score},
+            updated_at = NOW()
+        WHERE id = ${params.id}
+        RETURNING *
+      `;
+    } else {
+      // Partial update - build query manually
+      const updateQuery = "UPDATE trivia_levels SET " + updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
+      result = await database.query(updateQuery, ...values);
+    }
     
-    // Use raw SQL execution for dynamic queries
-    const result = await database.exec(updateQuery, ...values);
     const rows = [];
     for await (const row of result) {
       rows.push(row);
@@ -313,10 +328,27 @@ export const updateQuestion = api(
     updates.push("updated_at = NOW()");
     values.push(params.id);
 
-    const updateQuery = "UPDATE trivia_questions SET " + updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
+    // Build the dynamic UPDATE query using template literals
+    let result;
+    if (params.question_en !== undefined && params.question_es !== undefined && params.options_en !== undefined && 
+        params.options_es !== undefined && params.correct_answer !== undefined && params.category !== undefined && 
+        params.reference !== undefined && params.level_id !== undefined) {
+      // All fields present - use simple template literal
+      result = await database.query`
+        UPDATE trivia_questions 
+        SET question_en = ${params.question_en}, question_es = ${params.question_es}, 
+            options_en = ${JSON.stringify(params.options_en)}, options_es = ${JSON.stringify(params.options_es)},
+            correct_answer = ${params.correct_answer}, category = ${params.category}, reference = ${params.reference},
+            level_id = ${params.level_id}, updated_at = NOW()
+        WHERE id = ${params.id}
+        RETURNING *
+      `;
+    } else {
+      // Partial update - build query manually
+      const updateQuery = "UPDATE trivia_questions SET " + updates.join(", ") + " WHERE id = $" + (updates.length) + " RETURNING *";
+      result = await database.query(updateQuery, ...values);
+    }
     
-    // Use raw SQL execution for dynamic queries
-    const result = await database.exec(updateQuery, ...values);
     const rows = [];
     for await (const row of result) {
       rows.push(row);
