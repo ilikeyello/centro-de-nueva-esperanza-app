@@ -29443,7 +29443,7 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-const base$1 = "https://bilingual-church-community-app-8dn2.encr.app";
+const base$1 = "https://prod-cne-sh82.encr.app";
 const loadLevels = async () => {
   try {
     const res = await fetch(`${base$1}/trivia/levels`);
@@ -30365,7 +30365,7 @@ function Checkbox({
     }
   );
 }
-const base = "https://bilingual-church-community-app-8dn2.encr.app";
+const base = "https://prod-cne-sh82.encr.app";
 const categories = [
   "Old Testament",
   "New Testament",

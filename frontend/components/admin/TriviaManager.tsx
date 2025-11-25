@@ -12,7 +12,7 @@ import { Plus, Edit2, Trash2, Save, X, CheckCircle } from "lucide-react";
 // API base URLs
 const base = import.meta.env.DEV
   ? "http://127.0.0.1:4000"
-  : "https://bilingual-church-community-app-8dn2.encr.app";
+  : "https://prod-cne-sh82.encr.app";
 
 interface TriviaQuestion {
   id: number;
