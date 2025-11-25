@@ -4,17 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Plus, Trash2, Save, X } from "lucide-react";
-import { triviaService, TriviaQuestion, TriviaData } from "../../services/triviaService";
+import { Plus, Trash2, Save, X, Edit, Check } from "lucide-react";
+import { triviaService, TriviaQuestion, TriviaLevel, TriviaData } from "../../services/triviaService";
 
 export default function SimpleTriviaAdmin() {
   const { t } = useLanguage();
-  const [triviaData, setTriviaData] = useState<TriviaData>({ questions: [], defaultTimer: 30 });
+  const [triviaData, setTriviaData] = useState<TriviaData>({ questions: [], levels: [], defaultTimer: 30 });
+  const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [newQuestion, setNewQuestion] = useState("");
+  const [newQuestionEs, setNewQuestionEs] = useState("");
   const [newAnswers, setNewAnswers] = useState(["", "", "", ""]);
+  const [newAnswersEs, setNewAnswersEs] = useState(["", "", "", ""]);
   const [newCorrectAnswer, setNewCorrectAnswer] = useState(0);
-  const [newTimer, setNewTimer] = useState(30);
+  const [newCategory, setNewCategory] = useState("");
+  const [newReference, setNewReference] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
@@ -26,7 +31,9 @@ export default function SimpleTriviaAdmin() {
       try {
         const data = await triviaService.loadTrivia();
         setTriviaData(data);
-        setNewTimer(data.defaultTimer);
+        if (data.levels.length > 0) {
+          setSelectedLevel(data.levels[0].id);
+        }
       } catch (err) {
         setError(t("Failed to load trivia data", "Error al cargar datos de trivia"));
       }
@@ -41,7 +48,7 @@ export default function SimpleTriviaAdmin() {
     setSuccess("");
 
     try {
-      await triviaService.saveTrivia(triviaData.questions, triviaData.defaultTimer);
+      await triviaService.saveTrivia(triviaData.questions, triviaData.levels, triviaData.defaultTimer);
       setSuccess(t("Trivia saved successfully!", "¡Trivia guardada exitosamente!"));
       console.log("Trivia saved successfully in admin");
     } catch (err) {
@@ -53,16 +60,20 @@ export default function SimpleTriviaAdmin() {
   };
 
   const handleAddQuestion = () => {
-    if (!newQuestion.trim() || newAnswers.some(answer => !answer.trim())) {
+    if (!newQuestion.trim() || !selectedLevel || newAnswers.some(answer => !answer.trim())) {
       setError(t("Please fill in all fields", "Por favor completa todos los campos"));
       return;
     }
 
     const question: TriviaQuestion = {
       question: newQuestion.trim(),
+      question_es: newQuestionEs.trim() || undefined,
       answers: [...newAnswers],
+      answers_es: newAnswersEs.some(a => a.trim()) ? [...newAnswersEs] : undefined,
       correctAnswer: newCorrectAnswer,
-      timer: newTimer
+      level_id: selectedLevel,
+      category: newCategory.trim() || undefined,
+      reference: newReference.trim() || undefined
     };
 
     setTriviaData({
@@ -72,8 +83,12 @@ export default function SimpleTriviaAdmin() {
 
     // Reset form
     setNewQuestion("");
+    setNewQuestionEs("");
     setNewAnswers(["", "", "", ""]);
+    setNewAnswersEs(["", "", "", ""]);
     setNewCorrectAnswer(0);
+    setNewCategory("");
+    setNewReference("");
     setIsAdding(false);
     setSuccess(t("Question added successfully!", "¡Pregunta agregada exitosamente!"));
   };

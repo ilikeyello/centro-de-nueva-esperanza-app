@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { CheckCircle, XCircle, RotateCcw, Trophy, ArrowLeft, Play } from "lucide-react";
-import { triviaService, TriviaQuestion, TriviaData } from "../../services/triviaService";
+import { triviaService, TriviaQuestion, TriviaLevel, TriviaData } from "../../services/triviaService";
 
 export default function SimpleTrivia() {
   const { t, language } = useLanguage();
-  const [triviaData, setTriviaData] = useState<TriviaData>({ questions: [], defaultTimer: 30 });
+  const [triviaData, setTriviaData] = useState<TriviaData>({ questions: [], levels: [], defaultTimer: 30 });
+  const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -16,6 +18,7 @@ export default function SimpleTrivia() {
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
+  const [shuffledQuestions, setShuffledQuestions] = useState<TriviaQuestion[]>([]);
 
   // Load trivia data on component mount
   useEffect(() => {
@@ -23,13 +26,35 @@ export default function SimpleTrivia() {
       try {
         const data = await triviaService.loadTrivia();
         setTriviaData(data);
-        setTimeLeft(data.defaultTimer);
+        if (data.levels.length > 0) {
+          setSelectedLevel(data.levels[0].id);
+          setTimeLeft(data.levels[0].time_limit);
+        }
       } catch (error) {
         console.error('Failed to load trivia:', error);
       }
     };
     loadTrivia();
   }, []);
+
+  // Shuffle questions when level changes
+  useEffect(() => {
+    if (selectedLevel) {
+      const level = triviaData.levels.find(l => l.id === selectedLevel);
+      const levelQuestions = triviaData.questions.filter(q => q.level_id === selectedLevel);
+      
+      if (level?.shuffle_questions) {
+        const shuffled = [...levelQuestions].sort(() => Math.random() - 0.5);
+        setShuffledQuestions(shuffled);
+      } else {
+        setShuffledQuestions(levelQuestions);
+      }
+      
+      if (level) {
+        setTimeLeft(level.time_limit);
+      }
+    }
+  }, [selectedLevel, triviaData.questions, triviaData.levels]);
 
   // Timer effect
   useEffect(() => {
@@ -50,13 +75,17 @@ export default function SimpleTrivia() {
   };
 
   const startGame = () => {
+    if (!selectedLevel) return;
+    
     setGameStarted(true);
     setGameOver(false);
     setCurrentQuestionIndex(0);
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
-    setTimeLeft(triviaData.defaultTimer);
+    
+    const level = triviaData.levels.find(l => l.id === selectedLevel);
+    setTimeLeft(level?.time_limit || 30);
     setTimerActive(true);
   };
 
@@ -72,11 +101,12 @@ export default function SimpleTrivia() {
   };
 
   const nextQuestion = () => {
-    if (currentQuestionIndex < triviaData.questions.length - 1) {
+    if (currentQuestionIndex < shuffledQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setShowResult(false);
-      setTimeLeft(triviaData.defaultTimer);
+      const level = triviaData.levels.find(l => l.id === selectedLevel);
+      setTimeLeft(level?.time_limit || 30);
       setTimerActive(true);
     } else {
       setGameOver(true);
@@ -91,11 +121,13 @@ export default function SimpleTrivia() {
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
-    setTimeLeft(triviaData.defaultTimer);
+    const level = triviaData.levels.find(l => l.id === selectedLevel);
+    setTimeLeft(level?.time_limit || 30);
     setTimerActive(false);
   };
 
-  const currentQuestion = triviaData.questions[currentQuestionIndex];
+  const currentQuestion = shuffledQuestions[currentQuestionIndex];
+  const currentLevel = triviaData.levels.find(l => l.id === selectedLevel);
 
   if (!gameStarted) {
     return (
@@ -110,24 +142,63 @@ export default function SimpleTrivia() {
             </p>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <div className="text-lg">
-              {t("Questions Available:", "Preguntas Disponibles:")} {triviaData.questions.length}
+            {/* Level Selection */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                {t("Select Level", "Seleccionar Nivel")}
+              </Label>
+              <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+                <SelectTrigger className="bg-neutral-800 border-neutral-700 text-white">
+                  <SelectValue placeholder={t("Choose a level...", "Elige un nivel...")} />
+                </SelectTrigger>
+                <SelectContent className="bg-neutral-800 border-neutral-700">
+                  {triviaData.levels.map((level) => (
+                    <SelectItem key={level.id} value={level.id} className="text-white">
+                      <div className="flex flex-col">
+                        <span>{language === 'es' && level.name === 'Kids' ? 'Niños' : 
+                               language === 'es' && level.name === 'Youth' ? 'Jóvenes' :
+                               language === 'es' && level.name === 'Adults' ? 'Adultos' : level.name}</span>
+                        <span className="text-xs text-neutral-400">{level.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="text-lg">
-              {t("Time per Question:", "Tiempo por Pregunta:")} {triviaData.defaultTimer}s
-            </div>
+
+            {/* Level Info */}
+            {currentLevel && (
+              <div className="text-lg space-y-1">
+                <div>
+                  {t("Questions Available:", "Preguntas Disponibles:")} {shuffledQuestions.length}
+                </div>
+                <div>
+                  {t("Time per Question:", "Tiempo por Pregunta:")} {currentLevel.time_limit}s
+                </div>
+                <div>
+                  {t("Passing Score:", "Puntuación para Aprobar:")} {currentLevel.passing_score}%
+                </div>
+              </div>
+            )}
+
             <Button 
               onClick={startGame} 
               className="bg-red-600 hover:bg-red-700 text-white px-8 py-3"
-              disabled={triviaData.questions.length === 0}
+              disabled={!selectedLevel || shuffledQuestions.length === 0}
             >
               <Play className="mr-2 h-5 w-5" />
               {t("Start Game", "Comenzar Juego")}
             </Button>
-            {triviaData.questions.length === 0 && (
+            
+            {!selectedLevel && (
               <p className="text-yellow-400">
-                {t("No trivia questions available. Please check back later.", 
-                   "No hay preguntas de trivia disponibles. Por favor, regresa más tarde.")}
+                {t("Please select a level to start.", "Por favor selecciona un nivel para comenzar.")}
+              </p>
+            )}
+            
+            {selectedLevel && shuffledQuestions.length === 0 && (
+              <p className="text-yellow-400">
+                {t("No questions available for this level.", "No hay preguntas disponibles para este nivel.")}
               </p>
             )}
           </CardContent>
@@ -137,22 +208,36 @@ export default function SimpleTrivia() {
   }
 
   if (gameOver) {
+    const percentage = Math.round((score / shuffledQuestions.length) * 100);
+    const passed = percentage >= (currentLevel?.passing_score || 70);
+    
     return (
       <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
         <Card className="w-full max-w-2xl bg-neutral-900 border-neutral-800">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-red-600 flex items-center justify-center gap-2">
-              <Trophy className="h-8 w-8" />
+            <CardTitle className="text-2xl flex items-center justify-center gap-2">
+              <Trophy className={`h-8 w-8 ${passed ? 'text-yellow-400' : 'text-gray-400'}`} />
               {t("Game Over!", "¡Juego Terminado!")}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <div className="text-4xl font-bold text-yellow-400">
-              {score} / {triviaData.questions.length}
+            <div className={`text-4xl font-bold ${passed ? 'text-green-400' : 'text-red-400'}`}>
+              {score} / {shuffledQuestions.length}
             </div>
             <p className="text-xl text-neutral-300">
               {t("Correct Answers", "Respuestas Correctas")}
             </p>
+            <div className="text-lg">
+              <div className={`font-semibold ${passed ? 'text-green-400' : 'text-red-400'}`}>
+                {percentage}%
+              </div>
+              <div className="text-sm text-neutral-400">
+                {passed ? 
+                  t("You Passed! 🎉", "¡Aprobaste! 🎉") : 
+                  t("Try Again!", "¡Inténtalo de nuevo!")
+                }
+              </div>
+            </div>
             <div className="space-y-2">
               <Button onClick={resetGame} className="bg-red-600 hover:bg-red-700">
                 <RotateCcw className="mr-2 h-4 w-4" />
@@ -190,10 +275,10 @@ export default function SimpleTrivia() {
           </Button>
           <div className="text-center">
             <div className="text-lg font-semibold">
-              {t("Question", "Pregunta")} {currentQuestionIndex + 1} / {triviaData.questions.length}
+              {t("Question", "Pregunta")} {currentQuestionIndex + 1} / {shuffledQuestions.length}
             </div>
             <div className="text-sm text-neutral-400">
-              {t("Score", "Puntuación")}: {score}
+              {currentLevel?.name} - {t("Score", "Puntuación")}: {score}
             </div>
           </div>
           <div className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-green-500'}`}>
@@ -205,11 +290,20 @@ export default function SimpleTrivia() {
         <Card className="bg-neutral-900 border-neutral-800">
           <CardHeader>
             <CardTitle className="text-xl text-center">
-              {language === 'es' ? currentQuestion.question : currentQuestion.question}
+              {language === 'es' && currentQuestion.question_es ? 
+                currentQuestion.question_es : 
+                currentQuestion.question}
             </CardTitle>
+            {currentQuestion.reference && (
+              <p className="text-center text-sm text-neutral-400">
+                {currentQuestion.reference}
+              </p>
+            )}
           </CardHeader>
           <CardContent className="space-y-3">
-            {currentQuestion.answers.map((answer, index) => {
+            {(language === 'es' && currentQuestion.answers_es ? 
+              currentQuestion.answers_es : 
+              currentQuestion.answers).map((answer, index) => {
               const isCorrect = index === currentQuestion.correctAnswer;
               const isSelected = index === selectedAnswer;
               const showCorrectAnswer = showResult && isCorrect;
@@ -256,7 +350,7 @@ export default function SimpleTrivia() {
         {showResult && (
           <div className="text-center">
             <Button onClick={nextQuestion} className="bg-red-600 hover:bg-red-700 px-8">
-              {currentQuestionIndex < triviaData.questions.length - 1
+              {currentQuestionIndex < shuffledQuestions.length - 1
                 ? t("Next Question", "Siguiente Pregunta")
                 : t("See Results", "Ver Resultados")}
             </Button>
