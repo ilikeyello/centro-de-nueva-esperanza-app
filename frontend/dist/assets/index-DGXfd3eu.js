@@ -29443,7 +29443,7 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-const base$1 = "https://prod-cne-sh82.encr.app";
+const base$1 = "https://centro-de-nueva-esperanza-app.ue.r.appspot.com";
 const loadLevels = async () => {
   try {
     const res = await fetch(`${base$1}/trivia/levels`);
@@ -30365,7 +30365,7 @@ function Checkbox({
     }
   );
 }
-const base = "https://prod-cne-sh82.encr.app";
+const base = "https://centro-de-nueva-esperanza-app.ue.r.appspot.com";
 const categories = [
   "Old Testament",
   "New Testament",
