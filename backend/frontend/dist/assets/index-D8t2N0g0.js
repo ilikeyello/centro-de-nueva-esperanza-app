@@ -29443,7 +29443,7 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-const base$1 = "https://centro-de-nueva-esperanza-app.ue.r.appspot.com";
+const base$1 = "https://bilingual-church-community-app-8dn2.encr.app";
 const loadLevels = async () => {
   try {
     const res = await fetch(`${base$1}/trivia/levels`);
@@ -30365,7 +30365,7 @@ function Checkbox({
     }
   );
 }
-const base = "https://centro-de-nueva-esperanza-app.ue.r.appspot.com";
+const base = "https://bilingual-church-community-app-8dn2.encr.app";
 const categories = [
   "Old Testament",
   "New Testament",

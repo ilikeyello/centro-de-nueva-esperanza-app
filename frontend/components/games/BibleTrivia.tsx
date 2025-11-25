@@ -8,7 +8,7 @@ import { CheckCircle, XCircle, RotateCcw, Trophy, ArrowLeft, Play } from "lucide
 // API base URLs
 const base = import.meta.env.DEV
   ? "http://127.0.0.1:4000"
-  : "https://centro-de-nueva-esperanza-app.ue.r.appspot.com";
+  : "https://bilingual-church-community-app-8dn2.encr.app";
 
 interface TriviaLevel {
   id: string;
