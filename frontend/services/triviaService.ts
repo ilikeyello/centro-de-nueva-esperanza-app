@@ -76,6 +76,44 @@ export const triviaService = {
       
       const data = await response.json();
       console.log("Load successful, data:", data);
+      
+      // Handle backward compatibility - if no levels, add default levels
+      if (!data.levels) {
+        console.log("No levels found, adding default levels");
+        return {
+          ...data,
+          levels: [
+            {
+              id: "kids",
+              name: "Kids",
+              description: "For children ages 6-12",
+              target_group: "Children",
+              shuffle_questions: true,
+              time_limit: 30,
+              passing_score: 70
+            },
+            {
+              id: "youth", 
+              name: "Youth",
+              description: "For teenagers and young adults",
+              target_group: "Youth",
+              shuffle_questions: true,
+              time_limit: 20,
+              passing_score: 80
+            },
+            {
+              id: "adults",
+              name: "Adults", 
+              description: "For adult church members",
+              target_group: "Adults",
+              shuffle_questions: true,
+              time_limit: 15,
+              passing_score: 85
+            }
+          ]
+        };
+      }
+      
       return data;
     } catch (error) {
       console.error("Error in loadTrivia:", error);
