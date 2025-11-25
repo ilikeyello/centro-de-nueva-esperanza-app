@@ -35,6 +35,7 @@ export default function SimpleTriviaAdmin() {
   }, [t]);
 
   const handleSave = async () => {
+    console.log("handleSave called - saving trivia data");
     setLoading(true);
     setError("");
     setSuccess("");
@@ -42,7 +43,9 @@ export default function SimpleTriviaAdmin() {
     try {
       await triviaService.saveTrivia(triviaData.questions, triviaData.defaultTimer);
       setSuccess(t("Trivia saved successfully!", "¡Trivia guardada exitosamente!"));
+      console.log("Trivia saved successfully in admin");
     } catch (err) {
+      console.error("Save failed in admin:", err);
       setError(t("Failed to save trivia", "Error al guardar trivia"));
     } finally {
       setLoading(false);
