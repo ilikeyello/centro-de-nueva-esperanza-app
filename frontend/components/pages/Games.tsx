@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Sparkles, Puzzle, Brain, Users } from "lucide-react";
-import { BibleTrivia } from "../games/BibleTrivia";
+import SimpleTrivia from "../games/SimpleTrivia";
 import { useState } from "react";
 
 const gameList = [
@@ -25,7 +25,7 @@ export function Games() {
   const [currentGame, setCurrentGame] = useState<string | null>(null);
 
   if (currentGame === "bible-trivia") {
-    return <BibleTrivia onBack={() => setCurrentGame(null)} />;
+    return <SimpleTrivia />;
   }
 
   return (
