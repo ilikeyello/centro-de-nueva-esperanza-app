@@ -209,17 +209,14 @@ export const deleteLevel = api(
 export const questions = api(
   { expose: true, path: "/trivia/questions", method: "GET" },
   async ({ level_id }: { level_id?: string }): Promise<TriviaQuestionsResponse> => {
-    let queryString = "SELECT * FROM trivia_questions";
-    const params: any[] = [];
+    let result;
     
     if (level_id) {
-      queryString += " WHERE level_id = $1";
-      params.push(level_id);
+      result = await database.query`SELECT * FROM trivia_questions WHERE level_id = ${level_id} ORDER BY created_at ASC`;
+    } else {
+      result = await database.query`SELECT * FROM trivia_questions ORDER BY created_at ASC`;
     }
     
-    queryString += " ORDER BY created_at ASC";
-    
-    const result = await database.query(queryString, ...params);
     const rows = [];
     for await (const row of result) {
       rows.push(row);
