@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePlayer } from "../../contexts/PlayerContext";
-import SimpleTriviaAdminPanel from "../admin/SimpleTriviaAdminPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function AdminUpload() {
@@ -210,9 +209,8 @@ export function AdminUpload() {
 
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300">
         <Tabs defaultValue="media" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="media">{t("Music", "Música")}</TabsTrigger>
-            <TabsTrigger value="trivia">{t("Trivia", "Trivia")}</TabsTrigger>
             <TabsTrigger value="other">{t("Media", "Medios")}</TabsTrigger>
           </TabsList>
           
@@ -249,10 +247,6 @@ export function AdminUpload() {
                 )}
               </div>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="trivia" className="mt-4">
-            <SimpleTriviaAdminPanel />
           </TabsContent>
           
           <TabsContent value="other" className="space-y-4 mt-4">

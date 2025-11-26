@@ -1,32 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Sparkles, Puzzle, Brain, Users } from "lucide-react";
-import SimpleTriviaGame from "../games/SimpleTriviaGame";
-import { useState } from "react";
-
-const gameList = [
-  {
-    id: 1,
-    titleEn: "Bible Trivia Challenge",
-    titleEs: "Desafío de Trivia Bíblica",
-    descriptionEn: "Test your Bible knowledge with interactive questions and instant feedback.",
-    descriptionEs: "Pon a prueba tu conocimiento bíblico con preguntas interactivas y retroalimentación instantánea.",
-    icon: Brain,
-    ctaEn: "Play Now",
-    ctaEs: "Jugar Ahora",
-    link: "bible-trivia",
-    internal: true,
-  },
-];
+import { Sparkles, Brain } from "lucide-react";
 
 export function Games() {
   const { language, t } = useLanguage();
-  const [currentGame, setCurrentGame] = useState<string | null>(null);
-
-  if (currentGame === "bible-trivia") {
-    return <SimpleTriviaGame />;
-  }
 
   return (
     <div className="container mx-auto space-y-10 px-4 py-8">
@@ -37,49 +14,35 @@ export function Games() {
             {t("Faith-filled Fun", "Diversión con Fe")}
           </span>
         </div>
-        <h1 className="text-3xl font-bold text-white sm:text-4xl">
-          {t("Christian Games & Activities", "Juegos y Actividades Cristianas")}
+        <h1 className="text-4xl font-bold text-white">
+          {language === "es" ? "Juegos" : "Games"}
         </h1>
-        <p className="max-w-3xl text-neutral-300">
-          {t(
-            "Grow in faith while having fun with family-friendly games that build Bible knowledge and community.",
-            "Crece en la fe mientras te diviertes con juegos familiares que fortalecen el conocimiento bíblico y la comunidad."
-          )}
+        <p className="text-neutral-400 max-w-2xl">
+          {language === "es"
+            ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirador."
+            : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment."}
         </p>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-1">
-        {gameList.map((game) => {
-          const Icon = game.icon;
-          return (
-            <Card key={game.id} className="border-neutral-800 bg-neutral-900/60">
-              <CardHeader className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-600/20 text-red-400">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-semibold text-white">
-                    {language === "en" ? game.titleEn : game.titleEs}
-                  </CardTitle>
-                  <p className="text-xs text-neutral-400">
-                    {t("Interactive", "Interactivo")}
-                  </p>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-neutral-300">
-                  {language === "en" ? game.descriptionEn : game.descriptionEs}
-                </p>
-                <Button 
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => game.internal ? setCurrentGame(game.link) : window.open(game.link, '_blank')}
-                >
-                  {t(game.ctaEn, game.ctaEs)}
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
+      <section className="space-y-6">
+        <div className="text-center py-16">
+          <Card className="w-full max-w-2xl mx-auto bg-neutral-900 border-neutral-800">
+            <CardContent className="text-center p-8">
+              <Brain className="h-16 w-16 text-red-600 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {t("Games Coming Soon", "Juegos Próximamente")}
+              </h2>
+              <p className="text-neutral-400 mb-4">
+                {language === "es"
+                  ? "Estamos trabajando para traerte juegos y actividades divertidas. Vuelve pronto para ver las novedades."
+                  : "We're working on bringing you fun games and activities. Check back soon for updates."}
+              </p>
+              <p className="text-sm text-neutral-500">
+                {t("Trivia, puzzles, and more coming your way!", "¡Trivia, acertijos y más en camino!")}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </section>
 
       <section className="space-y-4">

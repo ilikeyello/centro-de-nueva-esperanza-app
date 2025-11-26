@@ -15501,18 +15501,18 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$D = [
+const __iconNode$y = [
   ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
   ["path", { d: "M19 12H5", key: "x3x0zl" }]
 ];
-const ArrowLeft = createLucideIcon("arrow-left", __iconNode$D);
+const ArrowLeft = createLucideIcon("arrow-left", __iconNode$y);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$C = [
+const __iconNode$x = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -15522,14 +15522,14 @@ const __iconNode$C = [
     }
   ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$C);
+const Bell = createLucideIcon("bell", __iconNode$x);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$B = [
+const __iconNode$w = [
   [
     "path",
     {
@@ -15552,14 +15552,14 @@ const __iconNode$B = [
   ["path", { d: "M6 18a4 4 0 0 1-1.967-.516", key: "2e4loj" }],
   ["path", { d: "M19.967 17.484A4 4 0 0 1 18 18", key: "159ez6" }]
 ];
-const Brain = createLucideIcon("brain", __iconNode$B);
+const Brain = createLucideIcon("brain", __iconNode$w);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$A = [
+const __iconNode$v = [
   ["path", { d: "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z", key: "1b4qmf" }],
   ["path", { d: "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2", key: "i71pzd" }],
   ["path", { d: "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2", key: "10jefs" }],
@@ -15568,56 +15568,7 @@ const __iconNode$A = [
   ["path", { d: "M10 14h4", key: "kelpxr" }],
   ["path", { d: "M10 18h4", key: "1ulq68" }]
 ];
-const Building2 = createLucideIcon("building-2", __iconNode$A);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$z = [
-  ["path", { d: "M8 2v4", key: "1cmpym" }],
-  ["path", { d: "M16 2v4", key: "4m81vk" }],
-  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
-  ["path", { d: "M3 10h18", key: "8toen8" }]
-];
-const Calendar = createLucideIcon("calendar", __iconNode$z);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$y = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$y);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$x = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$x);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$w = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$w);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$v = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
-  ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
-];
-const CircleAlert = createLucideIcon("circle-alert", __iconNode$v);
+const Building2 = createLucideIcon("building-2", __iconNode$v);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15625,40 +15576,66 @@ const CircleAlert = createLucideIcon("circle-alert", __iconNode$v);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$u = [
-  ["path", { d: "M21.801 10A10 10 0 1 1 17 3.335", key: "yps3ct" }],
-  ["path", { d: "m9 11 3 3L22 4", key: "1pflzl" }]
+  ["path", { d: "M8 2v4", key: "1cmpym" }],
+  ["path", { d: "M16 2v4", key: "4m81vk" }],
+  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
+  ["path", { d: "M3 10h18", key: "8toen8" }]
 ];
-const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$u);
+const Calendar = createLucideIcon("calendar", __iconNode$u);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$t = [
+const __iconNode$t = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$t);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$s = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$s);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$r = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$r);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$q = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "m15 9-6 6", key: "1uzhvr" }],
-  ["path", { d: "m9 9 6 6", key: "z0biqf" }]
+  ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
+  ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
 ];
-const CircleX = createLucideIcon("circle-x", __iconNode$t);
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$q);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$s = [
+const __iconNode$p = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
 ];
-const Clock = createLucideIcon("clock", __iconNode$s);
+const Clock = createLucideIcon("clock", __iconNode$p);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$r = [
+const __iconNode$o = [
   ["path", { d: "M10 2v2", key: "7u0qdc" }],
   ["path", { d: "M14 2v2", key: "6buw04" }],
   [
@@ -15670,38 +15647,38 @@ const __iconNode$r = [
   ],
   ["path", { d: "M6 2v2", key: "colzsn" }]
 ];
-const Coffee = createLucideIcon("coffee", __iconNode$r);
+const Coffee = createLucideIcon("coffee", __iconNode$o);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$q = [
+const __iconNode$n = [
   ["line", { x1: "12", x2: "12", y1: "2", y2: "22", key: "7eqyqh" }],
   ["path", { d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6", key: "1b0p4s" }]
 ];
-const DollarSign = createLucideIcon("dollar-sign", __iconNode$q);
+const DollarSign = createLucideIcon("dollar-sign", __iconNode$n);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$p = [
+const __iconNode$m = [
   [
     "path",
     { d: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z", key: "1jg4f8" }
   ]
 ];
-const Facebook = createLucideIcon("facebook", __iconNode$p);
+const Facebook = createLucideIcon("facebook", __iconNode$m);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [
+const __iconNode$l = [
   ["line", { x1: "6", x2: "10", y1: "11", y2: "11", key: "1gktln" }],
   ["line", { x1: "8", x2: "8", y1: "9", y2: "13", key: "qnk9ow" }],
   ["line", { x1: "15", x2: "15.01", y1: "12", y2: "12", key: "krot7o" }],
@@ -15714,26 +15691,26 @@ const __iconNode$o = [
     }
   ]
 ];
-const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$o);
+const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$l);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$n = [
+const __iconNode$k = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
   ["path", { d: "M2 12h20", key: "9i4pu4" }]
 ];
-const Globe = createLucideIcon("globe", __iconNode$n);
+const Globe = createLucideIcon("globe", __iconNode$k);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$m = [
+const __iconNode$j = [
   [
     "path",
     {
@@ -15742,14 +15719,14 @@ const __iconNode$m = [
     }
   ]
 ];
-const Heart = createLucideIcon("heart", __iconNode$m);
+const Heart = createLucideIcon("heart", __iconNode$j);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$l = [
+const __iconNode$i = [
   ["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", key: "5wwlr5" }],
   [
     "path",
@@ -15759,45 +15736,7 @@ const __iconNode$l = [
     }
   ]
 ];
-const House = createLucideIcon("house", __iconNode$l);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$k = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "M12 16v-4", key: "1dtifu" }],
-  ["path", { d: "M12 8h.01", key: "e9boi3" }]
-];
-const Info = createLucideIcon("info", __iconNode$k);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$j = [
-  ["path", { d: "m5 8 6 6", key: "1wu5hv" }],
-  ["path", { d: "m4 14 6-6 2-3", key: "1k1g8d" }],
-  ["path", { d: "M2 5h12", key: "or177f" }],
-  ["path", { d: "M7 2h1", key: "1t2jsx" }],
-  ["path", { d: "m22 22-5-10-5 10", key: "don7ne" }],
-  ["path", { d: "M14 18h6", key: "1m8k6r" }]
-];
-const Languages = createLucideIcon("languages", __iconNode$j);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$i = [
-  ["rect", { width: "20", height: "16", x: "2", y: "4", rx: "2", key: "18n3k1" }],
-  ["path", { d: "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7", key: "1ocrg3" }]
-];
-const Mail = createLucideIcon("mail", __iconNode$i);
+const House = createLucideIcon("house", __iconNode$i);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15805,6 +15744,44 @@ const Mail = createLucideIcon("mail", __iconNode$i);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$h = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "M12 16v-4", key: "1dtifu" }],
+  ["path", { d: "M12 8h.01", key: "e9boi3" }]
+];
+const Info = createLucideIcon("info", __iconNode$h);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$g = [
+  ["path", { d: "m5 8 6 6", key: "1wu5hv" }],
+  ["path", { d: "m4 14 6-6 2-3", key: "1k1g8d" }],
+  ["path", { d: "M2 5h12", key: "or177f" }],
+  ["path", { d: "M7 2h1", key: "1t2jsx" }],
+  ["path", { d: "m22 22-5-10-5 10", key: "don7ne" }],
+  ["path", { d: "M14 18h6", key: "1m8k6r" }]
+];
+const Languages = createLucideIcon("languages", __iconNode$g);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$f = [
+  ["rect", { width: "20", height: "16", x: "2", y: "4", rx: "2", key: "18n3k1" }],
+  ["path", { d: "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7", key: "1ocrg3" }]
+];
+const Mail = createLucideIcon("mail", __iconNode$f);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$e = [
   [
     "path",
     {
@@ -15814,41 +15791,7 @@ const __iconNode$h = [
   ],
   ["circle", { cx: "12", cy: "10", r: "3", key: "ilqhr7" }]
 ];
-const MapPin = createLucideIcon("map-pin", __iconNode$h);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$g = [
-  ["polyline", { points: "15 3 21 3 21 9", key: "mznyad" }],
-  ["polyline", { points: "9 21 3 21 3 15", key: "1avn1i" }],
-  ["line", { x1: "21", x2: "14", y1: "3", y2: "10", key: "ota7mn" }],
-  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
-];
-const Maximize2 = createLucideIcon("maximize-2", __iconNode$g);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$f = [
-  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
-  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
-];
-const Megaphone = createLucideIcon("megaphone", __iconNode$f);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$e = [
-  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
-];
-const MessageCircle = createLucideIcon("message-circle", __iconNode$e);
+const MapPin = createLucideIcon("map-pin", __iconNode$e);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15856,12 +15799,12 @@ const MessageCircle = createLucideIcon("message-circle", __iconNode$e);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$d = [
-  ["polyline", { points: "4 14 10 14 10 20", key: "11kfnr" }],
-  ["polyline", { points: "20 10 14 10 14 4", key: "rlmsce" }],
-  ["line", { x1: "14", x2: "21", y1: "10", y2: "3", key: "o5lafz" }],
+  ["polyline", { points: "15 3 21 3 21 9", key: "mznyad" }],
+  ["polyline", { points: "9 21 3 21 3 15", key: "1avn1i" }],
+  ["line", { x1: "21", x2: "14", y1: "3", y2: "10", key: "ota7mn" }],
   ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
 ];
-const Minimize2 = createLucideIcon("minimize-2", __iconNode$d);
+const Maximize2 = createLucideIcon("maximize-2", __iconNode$d);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15869,11 +15812,10 @@ const Minimize2 = createLucideIcon("minimize-2", __iconNode$d);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$c = [
-  ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
-  ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
-  ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }]
+  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
+  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
 ];
-const Music = createLucideIcon("music", __iconNode$c);
+const Megaphone = createLucideIcon("megaphone", __iconNode$c);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15881,6 +15823,41 @@ const Music = createLucideIcon("music", __iconNode$c);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$b = [
+  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
+];
+const MessageCircle = createLucideIcon("message-circle", __iconNode$b);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$a = [
+  ["polyline", { points: "4 14 10 14 10 20", key: "11kfnr" }],
+  ["polyline", { points: "20 10 14 10 14 4", key: "rlmsce" }],
+  ["line", { x1: "14", x2: "21", y1: "10", y2: "3", key: "o5lafz" }],
+  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
+];
+const Minimize2 = createLucideIcon("minimize-2", __iconNode$a);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$9 = [
+  ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
+  ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
+  ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }]
+];
+const Music = createLucideIcon("music", __iconNode$9);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$8 = [
   [
     "path",
     {
@@ -15889,55 +15866,15 @@ const __iconNode$b = [
     }
   ]
 ];
-const Phone = createLucideIcon("phone", __iconNode$b);
+const Phone = createLucideIcon("phone", __iconNode$8);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$a = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
-const Play = createLucideIcon("play", __iconNode$a);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$9 = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "M12 5v14", key: "s699le" }]
-];
-const Plus = createLucideIcon("plus", __iconNode$9);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$8 = [
-  ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
-  ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
-];
-const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$8);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$7 = [
-  [
-    "path",
-    {
-      d: "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z",
-      key: "1c8476"
-    }
-  ],
-  ["path", { d: "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7", key: "1ydtos" }],
-  ["path", { d: "M7 3v4a1 1 0 0 0 1 1h7", key: "t51u73" }]
-];
-const Save = createLucideIcon("save", __iconNode$7);
+const __iconNode$7 = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
+const Play = createLucideIcon("play", __iconNode$7);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15945,6 +15882,17 @@ const Save = createLucideIcon("save", __iconNode$7);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$6 = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
+];
+const Plus = createLucideIcon("plus", __iconNode$6);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$5 = [
   [
     "path",
     {
@@ -15957,21 +15905,7 @@ const __iconNode$6 = [
   ["path", { d: "M4 17v2", key: "vumght" }],
   ["path", { d: "M5 18H3", key: "zchphs" }]
 ];
-const Sparkles = createLucideIcon("sparkles", __iconNode$6);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$5 = [
-  ["path", { d: "M3 6h18", key: "d0wm0j" }],
-  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
-  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
-  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
-  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
-];
-const Trash2 = createLucideIcon("trash-2", __iconNode$5);
+const Sparkles = createLucideIcon("sparkles", __iconNode$5);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15979,6 +15913,20 @@ const Trash2 = createLucideIcon("trash-2", __iconNode$5);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$4 = [
+  ["path", { d: "M3 6h18", key: "d0wm0j" }],
+  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
+  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
+  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
+  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
+];
+const Trash2 = createLucideIcon("trash-2", __iconNode$4);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$3 = [
   [
     "path",
     {
@@ -15989,22 +15937,7 @@ const __iconNode$4 = [
   ["path", { d: "M12 9v4", key: "juzpu7" }],
   ["path", { d: "M12 17h.01", key: "p32p05" }]
 ];
-const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$4);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$3 = [
-  ["path", { d: "M6 9H4.5a2.5 2.5 0 0 1 0-5H6", key: "17hqa7" }],
-  ["path", { d: "M18 9h1.5a2.5 2.5 0 0 0 0-5H18", key: "lmptdp" }],
-  ["path", { d: "M4 22h16", key: "57wxv0" }],
-  ["path", { d: "M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22", key: "1nw9bq" }],
-  ["path", { d: "M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22", key: "1np0yb" }],
-  ["path", { d: "M18 2H6v7a6 6 0 0 0 12 0V2Z", key: "u46fv3" }]
-];
-const Trophy = createLucideIcon("trophy", __iconNode$3);
+const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$3);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -29427,395 +29360,23 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-const SIMPLE_TRIVIA_API = "https://prod-cne-sh82.encr.app/simple-trivia";
-const simpleTriviaService = {
-  // Load all trivia data
-  async loadTrivia() {
-    console.log("Loading simple trivia data");
-    try {
-      const response = await fetch(SIMPLE_TRIVIA_API);
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.log("Simple trivia API not found, using fallback data");
-          return {
-            levels: {
-              kids: { name: "Kids", timeLimit: 30, passingScore: 70 },
-              youth: { name: "Youth", timeLimit: 20, passingScore: 80 },
-              adults: { name: "Adults", timeLimit: 15, passingScore: 85 }
-            },
-            questions: []
-          };
-        }
-        throw new Error(`Failed to load trivia: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log("Simple trivia loaded successfully:", data);
-      return data;
-    } catch (error) {
-      console.error("Error loading simple trivia:", error);
-      return {
-        levels: {
-          kids: { name: "Kids", timeLimit: 30, passingScore: 70 },
-          youth: { name: "Youth", timeLimit: 20, passingScore: 80 },
-          adults: { name: "Adults", timeLimit: 15, passingScore: 85 }
-        },
-        questions: []
-      };
-    }
-  },
-  // Save all trivia data (admin only)
-  async saveTrivia(data) {
-    console.log("Saving simple trivia data");
-    try {
-      const response = await fetch(SIMPLE_TRIVIA_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          passcode: "78598",
-          data
-        })
-      });
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("Simple trivia API not deployed yet. Please deploy the backend first.");
-        }
-        throw new Error(`Failed to save trivia: ${response.status}`);
-      }
-      console.log("Simple trivia saved successfully");
-    } catch (error) {
-      console.error("Error saving simple trivia:", error);
-      throw error;
-    }
-  },
-  // Get questions for a specific level
-  getQuestionsForLevel(data, level) {
-    return data.questions.filter((q) => q.level === level);
-  },
-  // Generate unique ID for new questions
-  generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-  }
-};
-function SimpleTriviaGame() {
-  var _a2;
-  const { t, language } = useLanguage();
-  const [triviaData, setTriviaData] = reactExports.useState(null);
-  const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
-  const [questions, setQuestions] = reactExports.useState([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = reactExports.useState(0);
-  const [selectedAnswer, setSelectedAnswer] = reactExports.useState(null);
-  const [showResult, setShowResult] = reactExports.useState(false);
-  const [score, setScore] = reactExports.useState(0);
-  const [gameStarted, setGameStarted] = reactExports.useState(false);
-  const [gameOver, setGameOver] = reactExports.useState(false);
-  const [timeLeft, setTimeLeft] = reactExports.useState(30);
-  const [timerActive, setTimerActive] = reactExports.useState(false);
-  const [loading, setLoading] = reactExports.useState(true);
-  reactExports.useEffect(() => {
-    const loadTrivia = async () => {
-      try {
-        const data = await simpleTriviaService.loadTrivia();
-        setTriviaData(data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to load trivia:", error);
-        setLoading(false);
-      }
-    };
-    loadTrivia();
-  }, []);
-  reactExports.useEffect(() => {
-    if (triviaData && triviaData.levels && triviaData.levels[selectedLevel]) {
-      const levelQuestions = simpleTriviaService.getQuestionsForLevel(triviaData, selectedLevel);
-      setQuestions(levelQuestions.sort(() => Math.random() - 0.5));
-      setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
-    } else if (triviaData) {
-      console.log("Using fallback level data");
-      const fallbackLevel = { timeLimit: 30 };
-      setQuestions(triviaData.questions || []);
-      setTimeLeft(fallbackLevel.timeLimit);
-    }
-  }, [selectedLevel, triviaData]);
-  reactExports.useEffect(() => {
-    let interval;
-    if (timerActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1e3);
-    } else if (timeLeft === 0) {
-      setTimerActive(false);
-      setShowResult(true);
-    }
-    return () => clearInterval(interval);
-  }, [timerActive, timeLeft]);
-  const startGame = () => {
-    var _a3;
-    if (questions.length === 0) return;
-    const levelData = ((_a3 = triviaData == null ? void 0 : triviaData.levels) == null ? void 0 : _a3[selectedLevel]) || { timeLimit: 30 };
-    setGameStarted(true);
-    setGameOver(false);
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setTimeLeft(levelData.timeLimit);
-    setTimerActive(true);
-  };
-  const handleAnswerSelect = (answerIndex) => {
-    if (showResult) return;
-    setSelectedAnswer(answerIndex);
-    setTimerActive(false);
-    setShowResult(true);
-    if (answerIndex === currentQuestion.correctAnswer) {
-      setScore(score + 1);
-    }
-  };
-  const nextQuestion = () => {
-    var _a3;
-    if (currentQuestionIndex < questions.length - 1) {
-      const levelData = ((_a3 = triviaData == null ? void 0 : triviaData.levels) == null ? void 0 : _a3[selectedLevel]) || { timeLimit: 30 };
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(null);
-      setShowResult(false);
-      setTimeLeft(levelData.timeLimit);
-      setTimerActive(true);
-    } else {
-      setGameOver(true);
-      setTimerActive(false);
-    }
-  };
-  const resetGame = () => {
-    var _a3;
-    const levelData = ((_a3 = triviaData == null ? void 0 : triviaData.levels) == null ? void 0 : _a3[selectedLevel]) || { timeLimit: 30 };
-    setGameStarted(false);
-    setGameOver(false);
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setTimeLeft(levelData.timeLimit);
-    setTimerActive(false);
-  };
-  const currentQuestion = questions[currentQuestionIndex];
-  const currentLevel = ((_a2 = triviaData == null ? void 0 : triviaData.levels) == null ? void 0 : _a2[selectedLevel]) || { name: "Default", timeLimit: 30, passingScore: 70 };
-  if (loading) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "text-center p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl", children: t("Loading trivia...", "Cargando trivia...") }) }) }) });
-  }
-  if (!gameStarted) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "text-center", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-2xl text-red-600", children: t("Bible Trivia", "Trivia Bíblica") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Test your Bible knowledge!", "¡Pon a prueba tu conocimiento de la Biblia!") })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "text-center space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-sm font-medium", children: t("Select Level", "Seleccionar Nivel") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedLevel, onValueChange: (value) => setSelectedLevel(value), children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "bg-neutral-800 border-neutral-700 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose a level...", "Elige un nivel...") }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "bg-neutral-800 border-neutral-700", children: (triviaData == null ? void 0 : triviaData.levels) ? Object.entries(triviaData.levels).map(([key, level]) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: key, className: "text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: language === "es" ? key === "kids" ? "Niños" : key === "youth" ? "Jóvenes" : "Adultos" : level.name }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-neutral-400", children: [
-                t("Time:", "Tiempo:"),
-                " ",
-                level.timeLimit,
-                "s |",
-                t("Passing:", "Para Aprobar:"),
-                " ",
-                level.passingScore,
-                "%"
-              ] })
-            ] }) }, key)) : /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "kids", className: "text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: language === "es" ? "Niños" : "Kids" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-neutral-400", children: [
-                t("Time:", "Tiempo:"),
-                " 30s |",
-                t("Passing:", "Para Aprobar:"),
-                " 70%"
-              ] })
-            ] }) }) })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-lg space-y-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            t("Questions Available:", "Preguntas Disponibles:"),
-            " ",
-            questions.length
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            t("Time per Question:", "Tiempo por Pregunta:"),
-            " ",
-            currentLevel == null ? void 0 : currentLevel.timeLimit,
-            "s"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            t("Passing Score:", "Puntuación para Aprobar:"),
-            " ",
-            currentLevel == null ? void 0 : currentLevel.passingScore,
-            "%"
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: startGame,
-            className: "bg-red-600 hover:bg-red-700 text-white px-8 py-3",
-            disabled: questions.length === 0,
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "mr-2 h-5 w-5" }),
-              t("Start Game", "Comenzar Juego")
-            ]
-          }
-        ),
-        questions.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-yellow-400", children: t("No questions available for this level.", "No hay preguntas disponibles para este nivel.") })
-      ] })
-    ] }) });
-  }
-  if (gameOver) {
-    const percentage = Math.round(score / questions.length * 100);
-    const passed = percentage >= ((currentLevel == null ? void 0 : currentLevel.passingScore) || 70);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { className: "text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-2xl flex items-center justify-center gap-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Trophy, { className: `h-8 w-8 ${passed ? "text-yellow-400" : "text-gray-400"}` }),
-        t("Game Over!", "¡Juego Terminado!")
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "text-center space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-4xl font-bold ${passed ? "text-green-400" : "text-red-400"}`, children: [
-          score,
-          " / ",
-          questions.length
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl text-neutral-300", children: t("Correct Answers", "Respuestas Correctas") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-lg", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `font-semibold ${passed ? "text-green-400" : "text-red-400"}`, children: [
-            percentage,
-            "%"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm text-neutral-400", children: passed ? t("You Passed! 🎉", "¡Aprobaste! 🎉") : t("Try Again!", "¡Inténtalo de nuevo!") })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: resetGame, className: "bg-red-600 hover:bg-red-700", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "mr-2 h-4 w-4" }),
-          t("Play Again", "Jugar de Nuevo")
-        ] }) })
-      ] })
-    ] }) });
-  }
-  if (!currentQuestion) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "text-center p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl", children: t("Loading question...", "Cargando pregunta...") }) }) }) });
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-4xl mx-auto space-y-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { variant: "outline", onClick: resetGame, className: "border-neutral-700 text-white", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "mr-2 h-4 w-4" }),
-        t("Exit", "Salir")
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-lg font-semibold", children: [
-          t("Question", "Pregunta"),
-          " ",
-          currentQuestionIndex + 1,
-          " / ",
-          questions.length
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm text-neutral-400", children: [
-          currentLevel == null ? void 0 : currentLevel.name,
-          " - ",
-          t("Score", "Puntuación"),
-          ": ",
-          score
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-2xl font-bold ${timeLeft <= 10 ? "text-red-500" : "text-green-500"}`, children: [
-        timeLeft,
-        "s"
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-xl text-center", children: language === "es" && currentQuestion.question_es ? currentQuestion.question_es : currentQuestion.question }),
-        currentQuestion.reference && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-center text-sm text-neutral-400", children: currentQuestion.reference })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: (language === "es" && currentQuestion.answers_es ? currentQuestion.answers_es : currentQuestion.answers).map((answer, index2) => {
-        const isCorrect = index2 === currentQuestion.correctAnswer;
-        const isSelected = index2 === selectedAnswer;
-        const showCorrectAnswer = showResult && isCorrect;
-        const showWrongAnswer = showResult && isSelected && !isCorrect;
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            onClick: () => handleAnswerSelect(index2),
-            disabled: showResult,
-            className: `w-full text-left justify-start h-auto p-4 transition-all ${showCorrectAnswer ? "bg-green-600 hover:bg-green-700 border-green-500" : showWrongAnswer ? "bg-red-600 hover:bg-red-700 border-red-500" : isSelected ? "bg-blue-600 hover:bg-blue-700 border-blue-500" : "bg-neutral-800 hover:bg-neutral-700 border-neutral-700"}`,
-            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-3", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold ${showCorrectAnswer ? "border-white bg-white text-green-600" : showWrongAnswer ? "border-white bg-white text-red-600" : isSelected ? "border-white bg-white text-blue-600" : "border-neutral-500"}`, children: [
-                showCorrectAnswer && /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheckBig, { className: "h-5 w-5" }),
-                showWrongAnswer && /* @__PURE__ */ jsxRuntimeExports.jsx(CircleX, { className: "h-5 w-5" }),
-                !showResult && !isSelected && String.fromCharCode(65 + index2)
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-lg", children: answer })
-            ] })
-          },
-          index2
-        );
-      }) })
-    ] }),
-    showResult && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: nextQuestion, className: "bg-red-600 hover:bg-red-700 px-8", children: currentQuestionIndex < questions.length - 1 ? t("Next Question", "Siguiente Pregunta") : t("See Results", "Ver Resultados") }) })
-  ] }) });
-}
-const gameList = [
-  {
-    id: 1,
-    titleEn: "Bible Trivia Challenge",
-    titleEs: "Desafío de Trivia Bíblica",
-    descriptionEn: "Test your Bible knowledge with interactive questions and instant feedback.",
-    descriptionEs: "Pon a prueba tu conocimiento bíblico con preguntas interactivas y retroalimentación instantánea.",
-    icon: Brain,
-    ctaEn: "Play Now",
-    ctaEs: "Jugar Ahora",
-    link: "bible-trivia",
-    internal: true
-  }
-];
 function Games() {
   const { language, t } = useLanguage();
-  const [currentGame, setCurrentGame] = reactExports.useState(null);
-  if (currentGame === "bible-trivia") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(SimpleTriviaGame, {});
-  }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-3xl font-bold text-white sm:text-4xl", children: t("Christian Games & Activities", "Juegos y Actividades Cristianas") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "max-w-3xl text-neutral-300", children: t(
-        "Grow in faith while having fun with family-friendly games that build Bible knowledge and community.",
-        "Crece en la fe mientras te diviertes con juegos familiares que fortalecen el conocimiento bíblico y la comunidad."
-      ) })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Juegos" : "Games" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl", children: language === "es" ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirador." : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment." })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "grid gap-6 md:grid-cols-1", children: gameList.map((game) => {
-      const Icon2 = game.icon;
-      return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "border-neutral-800 bg-neutral-900/60", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "flex items-center gap-3", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex h-12 w-12 items-center justify-center rounded-full bg-red-600/20 text-red-400", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { className: "h-6 w-6" }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-lg font-semibold text-white", children: language === "en" ? game.titleEn : game.titleEs }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-400", children: t("Interactive", "Interactivo") })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-300", children: language === "en" ? game.descriptionEn : game.descriptionEs }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button,
-            {
-              className: "bg-red-600 hover:bg-red-700",
-              onClick: () => game.internal ? setCurrentGame(game.link) : window.open(game.link, "_blank"),
-              children: t(game.ctaEn, game.ctaEs)
-            }
-          )
-        ] })
-      ] }, game.id);
-    }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "space-y-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-16", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "w-full max-w-2xl mx-auto bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "text-center p-8", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-16 w-16 text-red-600 mx-auto mb-4" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-2xl font-bold text-white mb-2", children: t("Games Coming Soon", "Juegos Próximamente") }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Estamos trabajando para traerte juegos y actividades divertidas. Vuelve pronto para ver las novedades." : "We're working on bringing you fun games and activities. Check back soon for updates." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-500", children: t("Trivia, puzzles, and more coming your way!", "¡Trivia, acertijos y más en camino!") })
+    ] }) }) }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "space-y-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-xl border border-neutral-800 bg-neutral-900/40 p-6 text-center", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-center gap-2 text-neutral-400 mb-3", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
@@ -30022,309 +29583,6 @@ function NewHere({ onNavigate }) {
       )
     ] })
   ] });
-}
-function SimpleTriviaAdminPanel() {
-  const { t } = useLanguage();
-  const [triviaData, setTriviaData] = reactExports.useState(null);
-  const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
-  const [newQuestion, setNewQuestion] = reactExports.useState("");
-  const [newQuestionEs, setNewQuestionEs] = reactExports.useState("");
-  const [newAnswers, setNewAnswers] = reactExports.useState(["", "", "", ""]);
-  const [newAnswersEs, setNewAnswersEs] = reactExports.useState(["", "", "", ""]);
-  const [newCorrectAnswer, setNewCorrectAnswer] = reactExports.useState(0);
-  const [newCategory, setNewCategory] = reactExports.useState("");
-  const [newReference, setNewReference] = reactExports.useState("");
-  const [isAdding, setIsAdding] = reactExports.useState(false);
-  const [loading, setLoading] = reactExports.useState(false);
-  const [success, setSuccess] = reactExports.useState("");
-  const [error, setError] = reactExports.useState("");
-  reactExports.useEffect(() => {
-    const loadTrivia = async () => {
-      try {
-        const data = await simpleTriviaService.loadTrivia();
-        setTriviaData(data);
-      } catch (err) {
-        setError(t("Failed to load trivia data", "Error al cargar datos de trivia"));
-      }
-    };
-    loadTrivia();
-  }, [t]);
-  const handleSave = async () => {
-    if (!triviaData) return;
-    console.log("Saving simple trivia data");
-    setLoading(true);
-    setError("");
-    setSuccess("");
-    try {
-      await simpleTriviaService.saveTrivia(triviaData);
-      setSuccess(t("Trivia saved successfully!", "¡Trivia guardada exitosamente!"));
-      console.log("Simple trivia saved successfully");
-    } catch (err) {
-      console.error("Save failed:", err);
-      setError(t("Failed to save trivia", "Error al guardar trivia"));
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleAddQuestion = () => {
-    if (!newQuestion.trim() || newAnswers.some((answer) => !answer.trim())) {
-      setError(t("Please fill in all fields", "Por favor completa todos los campos"));
-      return;
-    }
-    const question = {
-      id: simpleTriviaService.generateId(),
-      question: newQuestion.trim(),
-      question_es: newQuestionEs.trim() || void 0,
-      answers: [...newAnswers],
-      answers_es: newAnswersEs.some((a) => a.trim()) ? [...newAnswersEs] : void 0,
-      correctAnswer: newCorrectAnswer,
-      level: selectedLevel,
-      category: newCategory.trim() || void 0,
-      reference: newReference.trim() || void 0
-    };
-    if (!triviaData) return;
-    setTriviaData({
-      ...triviaData,
-      questions: [...triviaData.questions, question]
-    });
-    setNewQuestion("");
-    setNewQuestionEs("");
-    setNewAnswers(["", "", "", ""]);
-    setNewAnswersEs(["", "", "", ""]);
-    setNewCorrectAnswer(0);
-    setNewCategory("");
-    setNewReference("");
-    setIsAdding(false);
-    setSuccess(t("Question added successfully!", "¡Pregunta agregada exitosamente!"));
-  };
-  const handleDeleteQuestion = (questionId) => {
-    if (!triviaData) return;
-    setTriviaData({
-      ...triviaData,
-      questions: triviaData.questions.filter((q) => q.id !== questionId)
-    });
-    setSuccess(t("Question deleted successfully!", "¡Pregunta eliminada exitosamente!"));
-  };
-  const handleAnswerChange = (index2, value) => {
-    const updatedAnswers = [...newAnswers];
-    updatedAnswers[index2] = value;
-    setNewAnswers(updatedAnswers);
-  };
-  const handleAnswerEsChange = (index2, value) => {
-    const updatedAnswers = [...newAnswersEs];
-    updatedAnswers[index2] = value;
-    setNewAnswersEs(updatedAnswers);
-  };
-  const levelQuestions = triviaData ? triviaData.questions.filter((q) => q.level === selectedLevel) : [];
-  if (!triviaData) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "text-center p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl", children: t("Loading trivia data...", "Cargando datos de trivia...") }) }) }) });
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-6xl mx-auto space-y-6", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-3xl font-bold text-red-600", children: t("Trivia Admin", "Administrador de Trivia") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "text-sm", children: [
-            t("Level", "Nivel"),
-            ":"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedLevel, onValueChange: (value) => setSelectedLevel(value), children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "bg-neutral-800 border-neutral-700 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, {}) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "bg-neutral-800 border-neutral-700", children: Object.entries(triviaData.levels).map(([key, level]) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: key, className: "text-white", children: level.name }, key)) })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: handleSave, disabled: loading, className: "bg-green-600 hover:bg-green-700", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "mr-2 h-4 w-4" }),
-          loading ? t("Saving...", "Guardando...") : t("Save All", "Guardar Todo")
-        ] })
-      ] })
-    ] }),
-    success && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-green-900/50 border border-green-600 text-green-400 p-3 rounded", children: success }),
-    error && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-red-900/50 border border-red-600 text-red-400 p-3 rounded", children: error }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-xl", children: t("Add New Question", "Agregar Nueva Pregunta") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => setIsAdding(!isAdding),
-            variant: isAdding ? "outline" : "default",
-            className: isAdding ? "border-neutral-600" : "bg-red-600 hover:bg-red-700",
-            children: [
-              isAdding ? /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "mr-2 h-4 w-4" }),
-              isAdding ? t("Cancel", "Cancelar") : t("Add Question", "Agregar Pregunta")
-            ]
-          }
-        )
-      ] }) }),
-      isAdding && /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "question", children: t("Question", "Pregunta") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Textarea,
-            {
-              id: "question",
-              value: newQuestion,
-              onChange: (e) => setNewQuestion(e.target.value),
-              placeholder: t("Enter your question here...", "Ingresa tu pregunta aquí..."),
-              className: "bg-neutral-800 border-neutral-700 text-white"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { htmlFor: "question-es", children: [
-            t("Question (Spanish)", "Pregunta (Español)"),
-            " (",
-            t("Optional", "Opcional"),
-            ")"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Textarea,
-            {
-              id: "question-es",
-              value: newQuestionEs,
-              onChange: (e) => setNewQuestionEs(e.target.value),
-              placeholder: t("Spanish translation...", "Traducción en español..."),
-              className: "bg-neutral-800 border-neutral-700 text-white"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { children: t("Answers", "Respuestas") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: newAnswers.map((answer, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Input,
-              {
-                value: answer,
-                onChange: (e) => handleAnswerChange(index2, e.target.value),
-                placeholder: `${t("Answer", "Respuesta")} ${String.fromCharCode(65 + index2)}`,
-                className: "bg-neutral-800 border-neutral-700 text-white"
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "input",
-              {
-                type: "radio",
-                name: "correct-answer",
-                checked: newCorrectAnswer === index2,
-                onChange: () => setNewCorrectAnswer(index2),
-                className: "w-4 h-4"
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-xs", children: t("Correct", "Correcta") })
-          ] }, index2)) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { children: [
-            t("Answers (Spanish)", "Respuestas (Español)"),
-            " (",
-            t("Optional", "Opcional"),
-            ")"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: newAnswersEs.map((answer, index2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Input,
-            {
-              value: answer,
-              onChange: (e) => handleAnswerEsChange(index2, e.target.value),
-              placeholder: `${t("Spanish Answer", "Respuesta en Español")} ${String.fromCharCode(65 + index2)}`,
-              className: "bg-neutral-800 border-neutral-700 text-white"
-            },
-            index2
-          )) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { htmlFor: "category", children: [
-              t("Category", "Categoría"),
-              " (",
-              t("Optional", "Opcional"),
-              ")"
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Input,
-              {
-                id: "category",
-                value: newCategory,
-                onChange: (e) => setNewCategory(e.target.value),
-                placeholder: t("e.g., Old Testament, New Testament", "ej: Antiguo Testamento, Nuevo Testamento"),
-                className: "bg-neutral-800 border-neutral-700 text-white"
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { htmlFor: "reference", children: [
-              t("Bible Reference", "Referencia Bíblica"),
-              " (",
-              t("Optional", "Opcional"),
-              ")"
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Input,
-              {
-                id: "reference",
-                value: newReference,
-                onChange: (e) => setNewReference(e.target.value),
-                placeholder: t("e.g., John 3:16", "ej: Juan 3:16"),
-                className: "bg-neutral-800 border-neutral-700 text-white"
-              }
-            )
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: handleAddQuestion, className: "bg-green-600 hover:bg-green-700", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "mr-2 h-4 w-4" }),
-          t("Add Question", "Agregar Pregunta")
-        ] })
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-xl", children: [
-        t("Questions for Level", "Preguntas para Nivel"),
-        " ",
-        triviaData.levels[selectedLevel].name,
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 ml-2", children: [
-          "(",
-          levelQuestions.length,
-          " ",
-          t("questions", "preguntas"),
-          ")"
-        ] })
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-center py-8", children: t(
-        "No questions for this level yet. Add your first question above!",
-        "No hay preguntas para este nivel aún. ¡Agrega tu primera pregunta arriba!"
-      ) }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-4", children: levelQuestions.map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-neutral-800 border border-neutral-700 rounded-lg p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex justify-between items-start", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { className: "font-semibold text-white mb-2", children: question.question }),
-          question.question_es && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 mb-2", children: question.question_es }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-1", children: question.answers.map((answer, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-sm ${index2 === question.correctAnswer ? "text-green-400 font-semibold" : "text-neutral-300"}`, children: [
-            String.fromCharCode(65 + index2),
-            ". ",
-            answer,
-            index2 === question.correctAnswer && " ✓"
-          ] }, index2)) }),
-          (question.category || question.reference) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xs text-neutral-400 mt-2", children: [
-            question.category && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              t("Category", "Categoría"),
-              ": ",
-              question.category
-            ] }),
-            question.category && question.reference && " | ",
-            question.reference && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: question.reference })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            onClick: () => handleDeleteQuestion(question.id),
-            variant: "outline",
-            size: "sm",
-            className: "ml-4 border-red-600 text-red-400 hover:bg-red-600 hover:text-white",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
-          }
-        )
-      ] }) }, question.id)) }) })
-    ] })
-  ] }) });
 }
 var ENTRY_FOCUS = "rovingFocusGroup.onEntryFocus";
 var EVENT_OPTIONS = { bubbles: false, cancelable: true };
@@ -30907,9 +30165,8 @@ function AdminUpload() {
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tabs, { defaultValue: "media", className: "w-full", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(TabsList, { className: "grid w-full grid-cols-3", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(TabsList, { className: "grid w-full grid-cols-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "media", children: t("Music", "Música") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "trivia", children: t("Trivia", "Trivia") }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "other", children: t("Media", "Medios") })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "media", className: "space-y-4 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
@@ -30941,7 +30198,6 @@ function AdminUpload() {
           playlistStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: playlistStatus })
         ] })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SimpleTriviaAdminPanel, {}) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(TabsContent, { value: "other", className: "space-y-4 mt-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Livestream Link", "Enlace de Transmisión en Vivo") }),
