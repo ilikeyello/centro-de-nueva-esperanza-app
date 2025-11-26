@@ -116,7 +116,6 @@ export function Home({ onNavigate }: HomeProps) {
           src={heroImageUrl}
           alt={t("Congregation worshipping in church", "Congregación adorando en la iglesia")}
           className="h-[39rem] w-full object-cover md:h-[54rem]"
-          loading="lazy"
         />
         <div className="absolute inset-0 bg-neutral-950/35 backdrop-blur-[1.5px]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-950/30 to-neutral-950" />

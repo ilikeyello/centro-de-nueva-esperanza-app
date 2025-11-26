@@ -3,23 +3,57 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Hide splash screen with delay
+// Enhanced loading screen that waits for all resources
 const hideSplashScreen = () => {
   const splash = document.querySelector('.app-splash') as HTMLElement;
   const body = document.body;
   
   if (splash && body) {
-    // Add app-loaded class for smooth transition
-    body.classList.add('app-loaded');
-    
-    // Show loading screen for a reasonable duration
-    setTimeout(() => {
+    // Function to actually hide the splash screen
+    const hideSplash = () => {
+      body.classList.add('app-loaded');
       splash.style.opacity = '0';
       splash.style.transition = 'opacity 0.5s ease-out';
       setTimeout(() => {
         splash.remove();
       }, 500);
-    }, 1500); // 1.5 seconds delay (logo shows immediately)
+    };
+
+    // Check if all resources are loaded
+    const checkResourcesLoaded = () => {
+      const images = Array.from(document.images);
+      
+      // Check if all images are loaded
+      const imagesLoaded = images.every(img => {
+        return img.complete && img.naturalHeight !== 0;
+      });
+
+      // Check if fonts are loaded
+      const fontsLoaded = document.fonts.ready;
+
+      // Wait for minimum time and all resources
+      const minLoadTime = 2000; // 2 seconds minimum
+      const startTime = Date.now();
+      
+      const checkComplete = () => {
+        const elapsed = Date.now() - startTime;
+        const minTimePassed = elapsed >= minLoadTime;
+        
+        fontsLoaded.then(() => {
+          if (minTimePassed && imagesLoaded) {
+            hideSplash();
+          } else {
+            // Check again in 100ms
+            setTimeout(checkComplete, 100);
+          }
+        });
+      };
+
+      checkComplete();
+    };
+
+    // Start checking after React mounts
+    setTimeout(checkResourcesLoaded, 100);
   }
 };
 

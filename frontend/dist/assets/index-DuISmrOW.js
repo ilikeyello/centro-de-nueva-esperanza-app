@@ -20365,8 +20365,7 @@ function Home({ onNavigate }) {
         {
           src: heroImageUrl,
           alt: t("Congregation worshipping in church", "Congregación adorando en la iglesia"),
-          className: "h-[39rem] w-full object-cover md:h-[54rem]",
-          loading: "lazy"
+          className: "h-[39rem] w-full object-cover md:h-[54rem]"
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-neutral-950/35 backdrop-blur-[1.5px]" }),
@@ -31182,14 +31181,36 @@ const hideSplashScreen = () => {
   const splash = document.querySelector(".app-splash");
   const body = document.body;
   if (splash && body) {
-    body.classList.add("app-loaded");
-    setTimeout(() => {
+    const hideSplash = () => {
+      body.classList.add("app-loaded");
       splash.style.opacity = "0";
       splash.style.transition = "opacity 0.5s ease-out";
       setTimeout(() => {
         splash.remove();
       }, 500);
-    }, 1500);
+    };
+    const checkResourcesLoaded = () => {
+      const images = Array.from(document.images);
+      const imagesLoaded = images.every((img) => {
+        return img.complete && img.naturalHeight !== 0;
+      });
+      const fontsLoaded = document.fonts.ready;
+      const minLoadTime = 2e3;
+      const startTime = Date.now();
+      const checkComplete = () => {
+        const elapsed = Date.now() - startTime;
+        const minTimePassed = elapsed >= minLoadTime;
+        fontsLoaded.then(() => {
+          if (minTimePassed && imagesLoaded) {
+            hideSplash();
+          } else {
+            setTimeout(checkComplete, 100);
+          }
+        });
+      };
+      checkComplete();
+    };
+    setTimeout(checkResourcesLoaded, 100);
   }
 };
 if (typeof window !== "undefined") {
