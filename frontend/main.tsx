@@ -32,7 +32,7 @@ const hideSplashScreen = () => {
       const fontsLoaded = document.fonts.ready;
 
       // Wait for minimum time and all resources
-      const minLoadTime = 2000; // 2 seconds minimum
+      const minLoadTime = 8000; // 8 seconds minimum
       const startTime = Date.now();
       
       const checkComplete = () => {

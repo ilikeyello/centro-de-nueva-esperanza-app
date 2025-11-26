@@ -31195,7 +31195,7 @@ const hideSplashScreen = () => {
         return img.complete && img.naturalHeight !== 0;
       });
       const fontsLoaded = document.fonts.ready;
-      const minLoadTime = 2e3;
+      const minLoadTime = 8e3;
       const startTime = Date.now();
       const checkComplete = () => {
         const elapsed = Date.now() - startTime;
