@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePlayer } from "../../contexts/PlayerContext";
-import SimpleTriviaAdmin from "../admin/SimpleTriviaAdmin";
+import SimpleTriviaAdminPanel from "../admin/SimpleTriviaAdminPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function AdminUpload() {
@@ -252,7 +252,7 @@ export function AdminUpload() {
           </TabsContent>
           
           <TabsContent value="trivia" className="mt-4">
-            <SimpleTriviaAdmin />
+            <SimpleTriviaAdminPanel />
           </TabsContent>
           
           <TabsContent value="other" className="space-y-4 mt-4">

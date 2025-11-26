@@ -29427,94 +29427,59 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-const TRIVIA_API = "https://prod-cne-sh82.encr.app/trivia";
-const triviaService = {
-  // Save trivia data (admin only)
-  async saveTrivia(questions, levels, defaultTimer) {
-    console.log("triviaService.saveTrivia called with:", { questions, levels, defaultTimer });
+const SIMPLE_TRIVIA_API = "https://prod-cne-sh82.encr.app/simple-trivia";
+const simpleTriviaService = {
+  // Load all trivia data
+  async loadTrivia() {
+    console.log("Loading simple trivia data");
     try {
-      const response = await fetch(TRIVIA_API, {
+      const response = await fetch(SIMPLE_TRIVIA_API);
+      if (!response.ok) {
+        throw new Error(`Failed to load trivia: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Simple trivia loaded successfully:", data);
+      return data;
+    } catch (error) {
+      console.error("Error loading simple trivia:", error);
+      throw error;
+    }
+  },
+  // Save all trivia data (admin only)
+  async saveTrivia(data) {
+    console.log("Saving simple trivia data");
+    try {
+      const response = await fetch(SIMPLE_TRIVIA_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           passcode: "78598",
-          questions,
-          levels,
-          defaultTimer
+          data
         })
       });
-      console.log("Save response status:", response.status);
-      console.log("Save response ok:", response.ok);
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Save failed response:", errorText);
-        throw new Error(`Failed to save trivia data: ${response.status} ${errorText}`);
+        throw new Error(`Failed to save trivia: ${response.status}`);
       }
-      console.log("Save successful!");
+      console.log("Simple trivia saved successfully");
     } catch (error) {
-      console.error("Error in saveTrivia:", error);
+      console.error("Error saving simple trivia:", error);
       throw error;
     }
   },
-  // Load trivia data (everyone)
-  async loadTrivia() {
-    console.log("triviaService.loadTrivia called");
-    try {
-      const response = await fetch(TRIVIA_API);
-      console.log("Load response status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Load failed response:", errorText);
-        throw new Error(`Failed to load trivia data: ${response.status} ${errorText}`);
-      }
-      const data = await response.json();
-      console.log("Load successful, data:", data);
-      if (!data.levels) {
-        console.log("No levels found, adding default levels");
-        return {
-          ...data,
-          levels: [
-            {
-              id: "kids",
-              name: "Kids",
-              description: "For children ages 6-12",
-              target_group: "Children",
-              shuffle_questions: true,
-              time_limit: 30,
-              passing_score: 70
-            },
-            {
-              id: "youth",
-              name: "Youth",
-              description: "For teenagers and young adults",
-              target_group: "Youth",
-              shuffle_questions: true,
-              time_limit: 20,
-              passing_score: 80
-            },
-            {
-              id: "adults",
-              name: "Adults",
-              description: "For adult church members",
-              target_group: "Adults",
-              shuffle_questions: true,
-              time_limit: 15,
-              passing_score: 85
-            }
-          ]
-        };
-      }
-      return data;
-    } catch (error) {
-      console.error("Error in loadTrivia:", error);
-      throw error;
-    }
+  // Get questions for a specific level
+  getQuestionsForLevel(data, level) {
+    return data.questions.filter((q) => q.level === level);
+  },
+  // Generate unique ID for new questions
+  generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 };
-function SimpleTrivia() {
+function SimpleTriviaGame() {
   const { t, language } = useLanguage();
-  const [triviaData, setTriviaData] = reactExports.useState({ questions: [], levels: [], defaultTimer: 30 });
-  const [selectedLevel, setSelectedLevel] = reactExports.useState("");
+  const [triviaData, setTriviaData] = reactExports.useState(null);
+  const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
+  const [questions, setQuestions] = reactExports.useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = reactExports.useState(0);
   const [selectedAnswer, setSelectedAnswer] = reactExports.useState(null);
   const [showResult, setShowResult] = reactExports.useState(false);
@@ -29523,37 +29488,27 @@ function SimpleTrivia() {
   const [gameOver, setGameOver] = reactExports.useState(false);
   const [timeLeft, setTimeLeft] = reactExports.useState(30);
   const [timerActive, setTimerActive] = reactExports.useState(false);
-  const [shuffledQuestions, setShuffledQuestions] = reactExports.useState([]);
+  const [loading, setLoading] = reactExports.useState(true);
   reactExports.useEffect(() => {
     const loadTrivia = async () => {
       try {
-        const data = await triviaService.loadTrivia();
+        const data = await simpleTriviaService.loadTrivia();
         setTriviaData(data);
-        if (data.levels.length > 0) {
-          setSelectedLevel(data.levels[0].id);
-          setTimeLeft(data.levels[0].time_limit);
-        }
+        setLoading(false);
       } catch (error) {
         console.error("Failed to load trivia:", error);
+        setLoading(false);
       }
     };
     loadTrivia();
   }, []);
   reactExports.useEffect(() => {
-    if (selectedLevel) {
-      const level = triviaData.levels.find((l) => l.id === selectedLevel);
-      const levelQuestions = triviaData.questions.filter((q) => q.level_id === selectedLevel);
-      if (level == null ? void 0 : level.shuffle_questions) {
-        const shuffled = [...levelQuestions].sort(() => Math.random() - 0.5);
-        setShuffledQuestions(shuffled);
-      } else {
-        setShuffledQuestions(levelQuestions);
-      }
-      if (level) {
-        setTimeLeft(level.time_limit);
-      }
+    if (triviaData) {
+      const levelQuestions = simpleTriviaService.getQuestionsForLevel(triviaData, selectedLevel);
+      setQuestions(levelQuestions.sort(() => Math.random() - 0.5));
+      setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
     }
-  }, [selectedLevel, triviaData.questions, triviaData.levels]);
+  }, [selectedLevel, triviaData]);
   reactExports.useEffect(() => {
     let interval;
     if (timerActive && timeLeft > 0) {
@@ -29561,24 +29516,20 @@ function SimpleTrivia() {
         setTimeLeft(timeLeft - 1);
       }, 1e3);
     } else if (timeLeft === 0) {
-      handleTimeUp();
+      setTimerActive(false);
+      setShowResult(true);
     }
     return () => clearInterval(interval);
   }, [timerActive, timeLeft]);
-  const handleTimeUp = () => {
-    setTimerActive(false);
-    setShowResult(true);
-  };
   const startGame = () => {
-    if (!selectedLevel) return;
+    if (questions.length === 0) return;
     setGameStarted(true);
     setGameOver(false);
     setCurrentQuestionIndex(0);
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
-    const level = triviaData.levels.find((l) => l.id === selectedLevel);
-    setTimeLeft((level == null ? void 0 : level.time_limit) || 30);
+    setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
     setTimerActive(true);
   };
   const handleAnswerSelect = (answerIndex) => {
@@ -29591,12 +29542,11 @@ function SimpleTrivia() {
     }
   };
   const nextQuestion = () => {
-    if (currentQuestionIndex < shuffledQuestions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setShowResult(false);
-      const level = triviaData.levels.find((l) => l.id === selectedLevel);
-      setTimeLeft((level == null ? void 0 : level.time_limit) || 30);
+      setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
       setTimerActive(true);
     } else {
       setGameOver(true);
@@ -29610,12 +29560,14 @@ function SimpleTrivia() {
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
-    const level = triviaData.levels.find((l) => l.id === selectedLevel);
-    setTimeLeft((level == null ? void 0 : level.time_limit) || 30);
+    setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
     setTimerActive(false);
   };
-  const currentQuestion = shuffledQuestions[currentQuestionIndex];
-  const currentLevel = triviaData.levels.find((l) => l.id === selectedLevel);
+  const currentQuestion = questions[currentQuestionIndex];
+  const currentLevel = triviaData == null ? void 0 : triviaData.levels[selectedLevel];
+  if (loading) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "text-center p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl", children: t("Loading trivia...", "Cargando trivia...") }) }) }) });
+  }
   if (!gameStarted) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "text-center", children: [
@@ -29625,30 +29577,39 @@ function SimpleTrivia() {
       /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "text-center space-y-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-sm font-medium", children: t("Select Level", "Seleccionar Nivel") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedLevel, onValueChange: setSelectedLevel, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedLevel, onValueChange: (value) => setSelectedLevel(value), children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "bg-neutral-800 border-neutral-700 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose a level...", "Elige un nivel...") }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "bg-neutral-800 border-neutral-700", children: triviaData.levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: level.id, className: "text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: language === "es" && level.name === "Kids" ? "Niños" : language === "es" && level.name === "Youth" ? "Jóvenes" : language === "es" && level.name === "Adults" ? "Adultos" : level.name }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-neutral-400", children: level.description })
-            ] }) }, level.id)) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "bg-neutral-800 border-neutral-700", children: Object.entries(triviaData.levels).map(([key, level]) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: key, className: "text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: language === "es" ? key === "kids" ? "Niños" : key === "youth" ? "Jóvenes" : "Adultos" : level.name }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-neutral-400", children: [
+                t("Time:", "Tiempo:"),
+                " ",
+                level.timeLimit,
+                "s |",
+                t("Passing:", "Para Aprobar:"),
+                " ",
+                level.passingScore,
+                "%"
+              ] })
+            ] }) }, key)) })
           ] })
         ] }),
-        currentLevel && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-lg space-y-1", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-lg space-y-1", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
             t("Questions Available:", "Preguntas Disponibles:"),
             " ",
-            shuffledQuestions.length
+            questions.length
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
             t("Time per Question:", "Tiempo por Pregunta:"),
             " ",
-            currentLevel.time_limit,
+            currentLevel == null ? void 0 : currentLevel.timeLimit,
             "s"
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
             t("Passing Score:", "Puntuación para Aprobar:"),
             " ",
-            currentLevel.passing_score,
+            currentLevel == null ? void 0 : currentLevel.passingScore,
             "%"
           ] })
         ] }),
@@ -29657,21 +29618,20 @@ function SimpleTrivia() {
           {
             onClick: startGame,
             className: "bg-red-600 hover:bg-red-700 text-white px-8 py-3",
-            disabled: !selectedLevel || shuffledQuestions.length === 0,
+            disabled: questions.length === 0,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "mr-2 h-5 w-5" }),
               t("Start Game", "Comenzar Juego")
             ]
           }
         ),
-        !selectedLevel && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-yellow-400", children: t("Please select a level to start.", "Por favor selecciona un nivel para comenzar.") }),
-        selectedLevel && shuffledQuestions.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-yellow-400", children: t("No questions available for this level.", "No hay preguntas disponibles para este nivel.") })
+        questions.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-yellow-400", children: t("No questions available for this level.", "No hay preguntas disponibles para este nivel.") })
       ] })
     ] }) });
   }
   if (gameOver) {
-    const percentage = Math.round(score / shuffledQuestions.length * 100);
-    const passed = percentage >= ((currentLevel == null ? void 0 : currentLevel.passing_score) || 70);
+    const percentage = Math.round(score / questions.length * 100);
+    const passed = percentage >= ((currentLevel == null ? void 0 : currentLevel.passingScore) || 70);
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { className: "text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-2xl flex items-center justify-center gap-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Trophy, { className: `h-8 w-8 ${passed ? "text-yellow-400" : "text-gray-400"}` }),
@@ -29681,7 +29641,7 @@ function SimpleTrivia() {
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-4xl font-bold ${passed ? "text-green-400" : "text-red-400"}`, children: [
           score,
           " / ",
-          shuffledQuestions.length
+          questions.length
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl text-neutral-300", children: t("Correct Answers", "Respuestas Correctas") }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-lg", children: [
@@ -29713,7 +29673,7 @@ function SimpleTrivia() {
           " ",
           currentQuestionIndex + 1,
           " / ",
-          shuffledQuestions.length
+          questions.length
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm text-neutral-400", children: [
           currentLevel == null ? void 0 : currentLevel.name,
@@ -29757,7 +29717,7 @@ function SimpleTrivia() {
         );
       }) })
     ] }),
-    showResult && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: nextQuestion, className: "bg-red-600 hover:bg-red-700 px-8", children: currentQuestionIndex < shuffledQuestions.length - 1 ? t("Next Question", "Siguiente Pregunta") : t("See Results", "Ver Resultados") }) })
+    showResult && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: nextQuestion, className: "bg-red-600 hover:bg-red-700 px-8", children: currentQuestionIndex < questions.length - 1 ? t("Next Question", "Siguiente Pregunta") : t("See Results", "Ver Resultados") }) })
   ] }) });
 }
 const gameList = [
@@ -29778,7 +29738,7 @@ function Games() {
   const { language, t } = useLanguage();
   const [currentGame, setCurrentGame] = reactExports.useState(null);
   if (currentGame === "bible-trivia") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(SimpleTrivia, {});
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(SimpleTriviaGame, {});
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
@@ -30022,10 +29982,10 @@ function NewHere({ onNavigate }) {
     ] })
   ] });
 }
-function SimpleTriviaAdmin() {
+function SimpleTriviaAdminPanel() {
   const { t } = useLanguage();
-  const [triviaData, setTriviaData] = reactExports.useState({ questions: [], levels: [], defaultTimer: 30 });
-  const [selectedLevel, setSelectedLevel] = reactExports.useState("");
+  const [triviaData, setTriviaData] = reactExports.useState(null);
+  const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
   const [newQuestion, setNewQuestion] = reactExports.useState("");
   const [newQuestionEs, setNewQuestionEs] = reactExports.useState("");
   const [newAnswers, setNewAnswers] = reactExports.useState(["", "", "", ""]);
@@ -30040,11 +30000,8 @@ function SimpleTriviaAdmin() {
   reactExports.useEffect(() => {
     const loadTrivia = async () => {
       try {
-        const data = await triviaService.loadTrivia();
+        const data = await simpleTriviaService.loadTrivia();
         setTriviaData(data);
-        if (data.levels.length > 0) {
-          setSelectedLevel(data.levels[0].id);
-        }
       } catch (err) {
         setError(t("Failed to load trivia data", "Error al cargar datos de trivia"));
       }
@@ -30052,38 +30009,39 @@ function SimpleTriviaAdmin() {
     loadTrivia();
   }, [t]);
   const handleSave = async () => {
-    console.log("handleSave called - saving trivia data");
+    if (!triviaData) return;
+    console.log("Saving simple trivia data");
     setLoading(true);
     setError("");
     setSuccess("");
     try {
-      await triviaService.saveTrivia(triviaData.questions, triviaData.levels, triviaData.defaultTimer);
+      await simpleTriviaService.saveTrivia(triviaData);
       setSuccess(t("Trivia saved successfully!", "¡Trivia guardada exitosamente!"));
-      console.log("Trivia saved successfully in admin");
+      console.log("Simple trivia saved successfully");
     } catch (err) {
-      console.error("Save failed in admin:", err);
+      console.error("Save failed:", err);
       setError(t("Failed to save trivia", "Error al guardar trivia"));
     } finally {
       setLoading(false);
     }
   };
   const handleAddQuestion = () => {
-    if (!newQuestion.trim() || !selectedLevel || newAnswers.some((answer) => !answer.trim())) {
+    if (!newQuestion.trim() || newAnswers.some((answer) => !answer.trim())) {
       setError(t("Please fill in all fields", "Por favor completa todos los campos"));
       return;
     }
-    const level = triviaData.levels.find((l) => l.id === selectedLevel);
     const question = {
+      id: simpleTriviaService.generateId(),
       question: newQuestion.trim(),
       question_es: newQuestionEs.trim() || void 0,
       answers: [...newAnswers],
       answers_es: newAnswersEs.some((a) => a.trim()) ? [...newAnswersEs] : void 0,
       correctAnswer: newCorrectAnswer,
-      timer: (level == null ? void 0 : level.time_limit) || 30,
-      level_id: selectedLevel,
+      level: selectedLevel,
       category: newCategory.trim() || void 0,
       reference: newReference.trim() || void 0
     };
+    if (!triviaData) return;
     setTriviaData({
       ...triviaData,
       questions: [...triviaData.questions, question]
@@ -30098,10 +30056,11 @@ function SimpleTriviaAdmin() {
     setIsAdding(false);
     setSuccess(t("Question added successfully!", "¡Pregunta agregada exitosamente!"));
   };
-  const handleDeleteQuestion = (index2) => {
+  const handleDeleteQuestion = (questionId) => {
+    if (!triviaData) return;
     setTriviaData({
       ...triviaData,
-      questions: triviaData.questions.filter((_, i) => i !== index2)
+      questions: triviaData.questions.filter((q) => q.id !== questionId)
     });
     setSuccess(t("Question deleted successfully!", "¡Pregunta eliminada exitosamente!"));
   };
@@ -30110,27 +30069,28 @@ function SimpleTriviaAdmin() {
     updatedAnswers[index2] = value;
     setNewAnswers(updatedAnswers);
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-4xl mx-auto space-y-6", children: [
+  const handleAnswerEsChange = (index2, value) => {
+    const updatedAnswers = [...newAnswersEs];
+    updatedAnswers[index2] = value;
+    setNewAnswersEs(updatedAnswers);
+  };
+  const levelQuestions = triviaData ? triviaData.questions.filter((q) => q.level === selectedLevel) : [];
+  if (!triviaData) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "text-center p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl", children: t("Loading trivia data...", "Cargando datos de trivia...") }) }) }) });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-6xl mx-auto space-y-6", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-3xl font-bold text-red-600", children: t("Trivia Admin", "Administrador de Trivia") }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { htmlFor: "default-timer", className: "text-sm", children: [
-            t("Default Timer (s)", "Temporizador Predeterminado (s)"),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "text-sm", children: [
+            t("Level", "Nivel"),
             ":"
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Input,
-            {
-              id: "default-timer",
-              type: "number",
-              min: "10",
-              max: "120",
-              value: triviaData.defaultTimer,
-              onChange: (e) => setTriviaData({ ...triviaData, defaultTimer: parseInt(e.target.value) || 30 }),
-              className: "w-20 bg-neutral-800 border-neutral-700 text-white"
-            }
-          )
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedLevel, onValueChange: (value) => setSelectedLevel(value), children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "bg-neutral-800 border-neutral-700 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, {}) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "bg-neutral-800 border-neutral-700", children: Object.entries(triviaData.levels).map(([key, level]) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: key, className: "text-white", children: level.name }, key)) })
+          ] })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: handleSave, disabled: loading, className: "bg-green-600 hover:bg-green-700", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "mr-2 h-4 w-4" }),
@@ -30166,23 +30126,37 @@ function SimpleTriviaAdmin() {
               value: newQuestion,
               onChange: (e) => setNewQuestion(e.target.value),
               placeholder: t("Enter your question here...", "Ingresa tu pregunta aquí..."),
-              className: "bg-neutral-800 border-neutral-700 text-white mt-1"
+              className: "bg-neutral-800 border-neutral-700 text-white"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { htmlFor: "question-es", children: [
+            t("Question (Spanish)", "Pregunta (Español)"),
+            " (",
+            t("Optional", "Opcional"),
+            ")"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Textarea,
+            {
+              id: "question-es",
+              value: newQuestionEs,
+              onChange: (e) => setNewQuestionEs(e.target.value),
+              placeholder: t("Spanish translation...", "Traducción en español..."),
+              className: "bg-neutral-800 border-neutral-700 text-white"
             }
           )
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { children: t("Answers", "Respuestas") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 mt-1", children: newAnswers.map((answer, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "w-8 text-sm font-bold", children: [
-              String.fromCharCode(65 + index2),
-              "."
-            ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: newAnswers.map((answer, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center space-x-2", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               Input,
               {
                 value: answer,
                 onChange: (e) => handleAnswerChange(index2, e.target.value),
-                placeholder: `${t("Answer", "Respuesta")} ${index2 + 1}`,
+                placeholder: `${t("Answer", "Respuesta")} ${String.fromCharCode(65 + index2)}`,
                 className: "bg-neutral-800 border-neutral-700 text-white"
               }
             ),
@@ -30190,7 +30164,7 @@ function SimpleTriviaAdmin() {
               "input",
               {
                 type: "radio",
-                name: "correctAnswer",
+                name: "correct-answer",
                 checked: newCorrectAnswer === index2,
                 onChange: () => setNewCorrectAnswer(index2),
                 className: "w-4 h-4"
@@ -30198,6 +30172,62 @@ function SimpleTriviaAdmin() {
             ),
             /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-xs", children: t("Correct", "Correcta") })
           ] }, index2)) })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { children: [
+            t("Answers (Spanish)", "Respuestas (Español)"),
+            " (",
+            t("Optional", "Opcional"),
+            ")"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: newAnswersEs.map((answer, index2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Input,
+            {
+              value: answer,
+              onChange: (e) => handleAnswerEsChange(index2, e.target.value),
+              placeholder: `${t("Spanish Answer", "Respuesta en Español")} ${String.fromCharCode(65 + index2)}`,
+              className: "bg-neutral-800 border-neutral-700 text-white"
+            },
+            index2
+          )) })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { htmlFor: "category", children: [
+              t("Category", "Categoría"),
+              " (",
+              t("Optional", "Opcional"),
+              ")"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Input,
+              {
+                id: "category",
+                value: newCategory,
+                onChange: (e) => setNewCategory(e.target.value),
+                placeholder: t("e.g., Old Testament, New Testament", "ej: Antiguo Testamento, Nuevo Testamento"),
+                className: "bg-neutral-800 border-neutral-700 text-white"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { htmlFor: "reference", children: [
+              t("Bible Reference", "Referencia Bíblica"),
+              " (",
+              t("Optional", "Opcional"),
+              ")"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Input,
+              {
+                id: "reference",
+                value: newReference,
+                onChange: (e) => setNewReference(e.target.value),
+                placeholder: t("e.g., John 3:16", "ej: Juan 3:16"),
+                className: "bg-neutral-800 border-neutral-700 text-white"
+              }
+            )
+          ] })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: handleAddQuestion, className: "bg-green-600 hover:bg-green-700", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "mr-2 h-4 w-4" }),
@@ -30207,54 +30237,51 @@ function SimpleTriviaAdmin() {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-xl", children: [
-        t("Current Questions", "Preguntas Actuales"),
-        " (",
-        triviaData.questions.length,
-        ")"
+        t("Questions for Level", "Preguntas para Nivel"),
+        " ",
+        triviaData.levels[selectedLevel].name,
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 ml-2", children: [
+          "(",
+          levelQuestions.length,
+          " ",
+          t("questions", "preguntas"),
+          ")"
+        ] })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: triviaData.questions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-center py-8", children: t(
-        "No questions yet. Add your first question above!",
-        "No hay preguntas aún. ¡Agrega tu primera pregunta arriba!"
-      ) }) : triviaData.questions.map((question, index2) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-neutral-800 border border-neutral-700 rounded p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-center py-8", children: t(
+        "No questions for this level yet. Add your first question above!",
+        "No hay preguntas para este nivel aún. ¡Agrega tu primera pregunta arriba!"
+      ) }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-4", children: levelQuestions.map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-neutral-800 border border-neutral-700 rounded-lg p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex justify-between items-start", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "font-semibold text-lg mb-2", children: [
-            index2 + 1,
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { className: "font-semibold text-white mb-2", children: question.question }),
+          question.question_es && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 mb-2", children: question.question_es }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-1", children: question.answers.map((answer, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `text-sm ${index2 === question.correctAnswer ? "text-green-400 font-semibold" : "text-neutral-300"}`, children: [
+            String.fromCharCode(65 + index2),
             ". ",
-            question.question
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-1 text-sm", children: question.answers.map((answer, answerIndex) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "div",
-            {
-              className: `flex items-center space-x-2 ${answerIndex === question.correctAnswer ? "text-green-400" : "text-neutral-300"}`,
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                  String.fromCharCode(65 + answerIndex),
-                  "."
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: answer }),
-                answerIndex === question.correctAnswer && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs bg-green-600 px-2 py-1 rounded", children: t("Correct", "Correcta") })
-              ]
-            },
-            answerIndex
-          )) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xs text-neutral-400 mt-2", children: [
-            t("Timer", "Temporizador"),
-            ": ",
-            question.timer,
-            "s"
+            answer,
+            index2 === question.correctAnswer && " ✓"
+          ] }, index2)) }),
+          (question.category || question.reference) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xs text-neutral-400 mt-2", children: [
+            question.category && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              t("Category", "Categoría"),
+              ": ",
+              question.category
+            ] }),
+            question.category && question.reference && " | ",
+            question.reference && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: question.reference })
           ] })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           Button,
           {
-            onClick: () => handleDeleteQuestion(index2),
+            onClick: () => handleDeleteQuestion(question.id),
             variant: "outline",
             size: "sm",
-            className: "border-red-600 text-red-400 hover:bg-red-600/20 ml-4",
+            className: "ml-4 border-red-600 text-red-400 hover:bg-red-600 hover:text-white",
             children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
           }
         )
-      ] }) }, index2)) })
+      ] }) }, question.id)) }) })
     ] })
   ] }) });
 }
@@ -30873,7 +30900,7 @@ function AdminUpload() {
           playlistStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: playlistStatus })
         ] })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SimpleTriviaAdmin, {}) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SimpleTriviaAdminPanel, {}) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(TabsContent, { value: "other", className: "space-y-4 mt-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Livestream Link", "Enlace de Transmisión en Vivo") }),
