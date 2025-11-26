@@ -39,10 +39,16 @@ export default function SimpleTriviaGame() {
 
   // Update questions when level changes
   useEffect(() => {
-    if (triviaData) {
+    if (triviaData && triviaData.levels && triviaData.levels[selectedLevel]) {
       const levelQuestions = simpleTriviaService.getQuestionsForLevel(triviaData, selectedLevel);
       setQuestions(levelQuestions.sort(() => Math.random() - 0.5)); // Shuffle
       setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
+    } else if (triviaData) {
+      // Fallback if levels structure is missing
+      console.log("Using fallback level data");
+      const fallbackLevel = { name: "Default", timeLimit: 30, passingScore: 70 };
+      setQuestions(triviaData.questions || []);
+      setTimeLeft(fallbackLevel.timeLimit);
     }
   }, [selectedLevel, triviaData]);
 
@@ -68,13 +74,15 @@ export default function SimpleTriviaGame() {
   const startGame = () => {
     if (questions.length === 0) return;
     
+    const levelData = triviaData?.levels?.[selectedLevel] || { timeLimit: 30 };
+    
     setGameStarted(true);
     setGameOver(false);
     setCurrentQuestionIndex(0);
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
-    setTimeLeft(triviaData!.levels[selectedLevel].timeLimit);
+    setTimeLeft(levelData.timeLimit);
     setTimerActive(true);
   };
 
@@ -91,10 +99,12 @@ export default function SimpleTriviaGame() {
 
   const nextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
+      const levelData = triviaData?.levels?.[selectedLevel] || { timeLimit: 30 };
+      
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setShowResult(false);
-      setTimeLeft(triviaData!.levels[selectedLevel].timeLimit);
+      setTimeLeft(levelData.timeLimit);
       setTimerActive(true);
     } else {
       setGameOver(true);
@@ -103,18 +113,20 @@ export default function SimpleTriviaGame() {
   };
 
   const resetGame = () => {
+    const levelData = triviaData?.levels?.[selectedLevel] || { timeLimit: 30 };
+    
     setGameStarted(false);
     setGameOver(false);
     setCurrentQuestionIndex(0);
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
-    setTimeLeft(triviaData!.levels[selectedLevel].timeLimit);
+    setTimeLeft(levelData.timeLimit);
     setTimerActive(false);
   };
 
   const currentQuestion = questions[currentQuestionIndex];
-  const currentLevel = triviaData?.levels[selectedLevel];
+  const currentLevel = triviaData?.levels?.[selectedLevel] || { name: "Default", timeLimit: 30, passingScore: 70 };
 
   if (loading) {
     return (
@@ -153,19 +165,31 @@ export default function SimpleTriviaGame() {
                   <SelectValue placeholder={t("Choose a level...", "Elige un nivel...")} />
                 </SelectTrigger>
                 <SelectContent className="bg-neutral-800 border-neutral-700">
-                  {Object.entries(triviaData!.levels).map(([key, level]) => (
-                    <SelectItem key={key} value={key} className="text-white">
-                      <div className="flex flex-col">
-                        <span>{language === 'es' ? 
-                          (key === 'kids' ? 'Niños' : key === 'youth' ? 'Jóvenes' : 'Adultos') : 
-                          level.name}</span>
-                        <span className="text-xs text-neutral-400">
-                          {t("Time:", "Tiempo:")} {level.timeLimit}s | 
-                          {t("Passing:", "Para Aprobar:")} {level.passingScore}%
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {triviaData?.levels ? 
+                    Object.entries(triviaData.levels).map(([key, level]) => (
+                      <SelectItem key={key} value={key} className="text-white">
+                        <div className="flex flex-col">
+                          <span>{language === 'es' ? 
+                            (key === 'kids' ? 'Niños' : key === 'youth' ? 'Jóvenes' : 'Adultos') : 
+                            level.name}</span>
+                          <span className="text-xs text-neutral-400">
+                            {t("Time:", "Tiempo:")} {level.timeLimit}s | 
+                            {t("Passing:", "Para Aprobar:")} {level.passingScore}%
+                          </span>
+                        </div>
+                      </SelectItem>
+                    )) : (
+                      <SelectItem value="kids" className="text-white">
+                        <div className="flex flex-col">
+                          <span>{language === 'es' ? 'Niños' : 'Kids'}</span>
+                          <span className="text-xs text-neutral-400">
+                            {t("Time:", "Tiempo:")} 30s | 
+                            {t("Passing:", "Para Aprobar:")} 70%
+                          </span>
+                        </div>
+                      </SelectItem>
+                    )
+                  }
                 </SelectContent>
               </Select>
             </div>

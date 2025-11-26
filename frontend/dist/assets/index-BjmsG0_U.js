@@ -29476,6 +29476,7 @@ const simpleTriviaService = {
   }
 };
 function SimpleTriviaGame() {
+  var _a2;
   const { t, language } = useLanguage();
   const [triviaData, setTriviaData] = reactExports.useState(null);
   const [selectedLevel, setSelectedLevel] = reactExports.useState("kids");
@@ -29503,10 +29504,15 @@ function SimpleTriviaGame() {
     loadTrivia();
   }, []);
   reactExports.useEffect(() => {
-    if (triviaData) {
+    if (triviaData && triviaData.levels && triviaData.levels[selectedLevel]) {
       const levelQuestions = simpleTriviaService.getQuestionsForLevel(triviaData, selectedLevel);
       setQuestions(levelQuestions.sort(() => Math.random() - 0.5));
       setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
+    } else if (triviaData) {
+      console.log("Using fallback level data");
+      const fallbackLevel = { timeLimit: 30 };
+      setQuestions(triviaData.questions || []);
+      setTimeLeft(fallbackLevel.timeLimit);
     }
   }, [selectedLevel, triviaData]);
   reactExports.useEffect(() => {
@@ -29522,14 +29528,16 @@ function SimpleTriviaGame() {
     return () => clearInterval(interval);
   }, [timerActive, timeLeft]);
   const startGame = () => {
+    var _a3;
     if (questions.length === 0) return;
+    const levelData = ((_a3 = triviaData == null ? void 0 : triviaData.levels) == null ? void 0 : _a3[selectedLevel]) || { timeLimit: 30 };
     setGameStarted(true);
     setGameOver(false);
     setCurrentQuestionIndex(0);
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
-    setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
+    setTimeLeft(levelData.timeLimit);
     setTimerActive(true);
   };
   const handleAnswerSelect = (answerIndex) => {
@@ -29542,11 +29550,13 @@ function SimpleTriviaGame() {
     }
   };
   const nextQuestion = () => {
+    var _a3;
     if (currentQuestionIndex < questions.length - 1) {
+      const levelData = ((_a3 = triviaData == null ? void 0 : triviaData.levels) == null ? void 0 : _a3[selectedLevel]) || { timeLimit: 30 };
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setShowResult(false);
-      setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
+      setTimeLeft(levelData.timeLimit);
       setTimerActive(true);
     } else {
       setGameOver(true);
@@ -29554,17 +29564,19 @@ function SimpleTriviaGame() {
     }
   };
   const resetGame = () => {
+    var _a3;
+    const levelData = ((_a3 = triviaData == null ? void 0 : triviaData.levels) == null ? void 0 : _a3[selectedLevel]) || { timeLimit: 30 };
     setGameStarted(false);
     setGameOver(false);
     setCurrentQuestionIndex(0);
     setScore(0);
     setSelectedAnswer(null);
     setShowResult(false);
-    setTimeLeft(triviaData.levels[selectedLevel].timeLimit);
+    setTimeLeft(levelData.timeLimit);
     setTimerActive(false);
   };
   const currentQuestion = questions[currentQuestionIndex];
-  const currentLevel = triviaData == null ? void 0 : triviaData.levels[selectedLevel];
+  const currentLevel = ((_a2 = triviaData == null ? void 0 : triviaData.levels) == null ? void 0 : _a2[selectedLevel]) || { name: "Default", timeLimit: 30, passingScore: 70 };
   if (loading) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-black text-white p-4 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "w-full max-w-2xl bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "text-center p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xl", children: t("Loading trivia...", "Cargando trivia...") }) }) }) });
   }
@@ -29579,7 +29591,7 @@ function SimpleTriviaGame() {
           /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-sm font-medium", children: t("Select Level", "Seleccionar Nivel") }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedLevel, onValueChange: (value) => setSelectedLevel(value), children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "bg-neutral-800 border-neutral-700 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose a level...", "Elige un nivel...") }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "bg-neutral-800 border-neutral-700", children: Object.entries(triviaData.levels).map(([key, level]) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: key, className: "text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "bg-neutral-800 border-neutral-700", children: (triviaData == null ? void 0 : triviaData.levels) ? Object.entries(triviaData.levels).map(([key, level]) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: key, className: "text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: language === "es" ? key === "kids" ? "Niños" : key === "youth" ? "Jóvenes" : "Adultos" : level.name }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-neutral-400", children: [
                 t("Time:", "Tiempo:"),
@@ -29591,7 +29603,15 @@ function SimpleTriviaGame() {
                 level.passingScore,
                 "%"
               ] })
-            ] }) }, key)) })
+            ] }) }, key)) : /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "kids", className: "text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: language === "es" ? "Niños" : "Kids" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-neutral-400", children: [
+                t("Time:", "Tiempo:"),
+                " 30s |",
+                t("Passing:", "Para Aprobar:"),
+                " 70%"
+              ] })
+            ] }) }) })
           ] })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-lg space-y-1", children: [
