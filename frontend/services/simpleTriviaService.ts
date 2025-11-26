@@ -34,6 +34,17 @@ export const simpleTriviaService = {
     try {
       const response = await fetch(SIMPLE_TRIVIA_API);
       if (!response.ok) {
+        if (response.status === 404) {
+          console.log("Simple trivia API not found, using fallback data");
+          return {
+            levels: {
+              kids: { name: "Kids", timeLimit: 30, passingScore: 70 },
+              youth: { name: "Youth", timeLimit: 20, passingScore: 80 },
+              adults: { name: "Adults", timeLimit: 15, passingScore: 85 }
+            },
+            questions: []
+          };
+        }
         throw new Error(`Failed to load trivia: ${response.status}`);
       }
       const data = await response.json();
@@ -41,7 +52,15 @@ export const simpleTriviaService = {
       return data;
     } catch (error) {
       console.error("Error loading simple trivia:", error);
-      throw error;
+      // Return fallback data if API is not available
+      return {
+        levels: {
+          kids: { name: "Kids", timeLimit: 30, passingScore: 70 },
+          youth: { name: "Youth", timeLimit: 20, passingScore: 80 },
+          adults: { name: "Adults", timeLimit: 15, passingScore: 85 }
+        },
+        questions: []
+      };
     }
   },
 
@@ -59,6 +78,9 @@ export const simpleTriviaService = {
       });
 
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Simple trivia API not deployed yet. Please deploy the backend first.");
+        }
         throw new Error(`Failed to save trivia: ${response.status}`);
       }
       console.log("Simple trivia saved successfully");
