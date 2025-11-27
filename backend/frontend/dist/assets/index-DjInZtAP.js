@@ -19130,7 +19130,7 @@ function Navigation({ currentPage, onNavigate }) {
                 {
                   onClick: () => onNavigate(item.id),
                   className: cn(
-                    "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[0.7rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm",
+                    "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[0.7rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
                     isActive ? "text-red-500" : "text-neutral-400 hover:text-neutral-200"
                   ),
                   children: [
@@ -19147,7 +19147,7 @@ function Navigation({ currentPage, onNavigate }) {
                 type: "button",
                 onClick: toggleLanguage,
                 className: cn(
-                  "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[0.7rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm",
+                  "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[0.7rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
                   "border border-transparent md:border-neutral-700 md:bg-neutral-900"
                 ),
                 "aria-label": language === "en" ? "Switch to Spanish" : "Cambiar a inglés",
@@ -20365,15 +20365,15 @@ function Home({ onNavigate }) {
         {
           src: heroImageUrl,
           alt: t("Congregation worshipping in church", "Congregación adorando en la iglesia"),
-          className: "h-[39rem] w-full object-cover md:h-[54rem]"
+          className: "hero-image w-full object-cover md:h-[54rem]"
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-neutral-950/35 backdrop-blur-[1.5px]" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-transparent via-neutral-950/30 to-neutral-950" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold uppercase tracking-[0.2em] text-red-400", children: t("Welcome to", "Bienvenidos a") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "mt-2 text-3xl font-bold text-white sm:text-4xl md:text-5xl", children: t("Center of New Hope", "Centro de Nueva Esperanza") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-4 max-w-2xl text-base text-neutral-200 md:text-lg", children: t(
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "mt-2 hero-title text-3xl font-bold text-white sm:text-4xl md:text-5xl", children: t("Center of New Hope", "Centro de Nueva Esperanza") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-4 max-w-2xl hero-subtitle text-base text-neutral-200 md:text-lg", children: t(
           "Encounter hope, serve our neighbors, and grow together in Christ each week.",
           "Encuentra esperanza, sirve a nuestros vecinos y crece juntos en Cristo cada semana."
         ) }),

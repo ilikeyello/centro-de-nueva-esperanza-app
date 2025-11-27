@@ -115,18 +115,18 @@ export function Home({ onNavigate }: HomeProps) {
         <img
           src={heroImageUrl}
           alt={t("Congregation worshipping in church", "Congregación adorando en la iglesia")}
-          className="h-[39rem] w-full object-cover md:h-[54rem]"
+          className="hero-image w-full object-cover md:h-[54rem]"
         />
         <div className="absolute inset-0 bg-neutral-950/35 backdrop-blur-[1.5px]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-950/30 to-neutral-950" />
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-400">
             {t("Welcome to", "Bienvenidos a")}
           </p>
-          <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl md:text-5xl">
+          <h2 className="mt-2 hero-title text-3xl font-bold text-white sm:text-4xl md:text-5xl">
             {t("Center of New Hope", "Centro de Nueva Esperanza")}
           </h2>
-          <p className="mt-4 max-w-2xl text-base text-neutral-200 md:text-lg">
+          <p className="mt-4 max-w-2xl hero-subtitle text-base text-neutral-200 md:text-lg">
             {t(
               "Encounter hope, serve our neighbors, and grow together in Christ each week.",
               "Encuentra esperanza, sirve a nuestros vecinos y crece juntos en Cristo cada semana."
