@@ -3792,6 +3792,16 @@
     min-width: 44px;
     min-height: 44px;
   }
+
+  nav {
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  .nav-button {
+    padding-top: .25rem !important;
+    padding-bottom: .25rem !important;
+  }
 }
 
 @media screen and (max-width: 430px) {

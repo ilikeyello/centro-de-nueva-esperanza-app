@@ -64,6 +64,17 @@
     min-height: 44px;
     min-width: 44px;
   }
+  
+  /* Reduce navbar height on mobile */
+  nav {
+    height: auto !important;
+    min-height: auto !important;
+  }
+  
+  .nav-button {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
 }
 
 /* iPhone and large phone specific fixes */
