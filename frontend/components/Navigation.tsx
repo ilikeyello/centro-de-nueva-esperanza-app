@@ -118,7 +118,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur transition-transform md:sticky md:top-0 md:border-b md:border-t-0">
       <div
-        className={cn("container mx-auto py-0")}
+        className={cn("container mx-auto py-1")}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
@@ -170,7 +170,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               </div>
             </div>
           )}
-          <div className="flex w-full items-center justify-between gap-1 px-3 py-3 md:justify-center md:gap-2">
+          <div className="flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPage === item.id;
@@ -179,7 +179,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
                   className={cn(
-                    "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[0.7rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
+                    "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1 text-[0.7rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
                     isActive
                       ? "text-red-500"
                       : "text-neutral-400 hover:text-neutral-200"
@@ -196,7 +196,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               type="button"
               onClick={toggleLanguage}
               className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[0.7rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
+                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1 text-[0.7rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
                 "border border-transparent md:border-neutral-700 md:bg-neutral-900"
               )}
               aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
