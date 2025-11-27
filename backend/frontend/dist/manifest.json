@@ -5,10 +5,16 @@
   "start_url": "/cne-app/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#dc2626",
+  "theme_color": "#000000",
   "orientation": "portrait-primary",
   "scope": "/cne-app/",
   "icons": [
+    {
+      "src": "/cne-app/cne_logo_black.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "/cne-app/icon-192x192.png",
       "sizes": "192x192",

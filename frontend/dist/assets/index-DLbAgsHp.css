@@ -3805,27 +3805,27 @@
   }
 
   .hero-image {
-    height: 28rem !important;
+    height: 40rem !important;
   }
 
   .hero-title {
     line-height: 1.2;
-    font-size: 2rem !important;
+    font-size: 2.2rem !important;
   }
 
   .hero-subtitle {
     line-height: 1.4;
-    font-size: .95rem !important;
+    font-size: 1rem !important;
   }
 }
 
 @media screen and (max-width: 390px) {
   .hero-image {
-    height: 24rem !important;
+    height: 36rem !important;
   }
 
   .hero-title {
-    font-size: 1.75rem !important;
+    font-size: 2rem !important;
   }
 
   .nav-button {
