@@ -925,10 +925,6 @@
     height: calc(var(--spacing) * 64);
   }
 
-  .h-\[39rem\] {
-    height: 39rem;
-  }
-
   .h-\[180px\] {
     height: 180px;
   }
