@@ -41,7 +41,7 @@ export function AppInner() {
   return (
     <div className="min-h-screen bg-neutral-950">
       <Navigation currentPage={currentPage} onNavigate={handleNavigate} />
-      <main className="pb-32 md:pb-24">
+      <main className="pb-24 md:pb-20">
         {currentPage === "home" && <Home onNavigate={handleNavigate} />}
         {currentPage === "bulletin" && <BulletinBoard />}
         {currentPage === "news" && <News />}
