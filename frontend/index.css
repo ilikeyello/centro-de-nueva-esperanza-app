@@ -85,11 +85,7 @@
     padding-right: 1rem;
   }
   
-  /* Better navigation spacing */
-  .nav-button {
-    padding: 0.75rem 0.5rem;
-  }
-  
+    
   /* Hero image improvements - MUCH larger */
   .hero-image {
     height: 40rem !important;
@@ -117,10 +113,7 @@
     font-size: 2rem !important;
   }
   
-  .nav-button {
-    padding: 0.5rem 0.25rem;
   }
-}
 
 /* Safe area improvements for notched iPhones */
 @supports (padding: max(0px)) {
