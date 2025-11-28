@@ -29591,7 +29591,6 @@ function TriviaGamePage({ onNavigate } = {}) {
     }));
   };
   const nextQuestion = () => {
-    var _a3;
     if (gameState.status !== "playing") return;
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const isCorrect = gameState.selectedAnswer === currentQuestion.correct_answer;
@@ -29603,7 +29602,6 @@ function TriviaGamePage({ onNavigate } = {}) {
         userAnswers: newAnswers,
         score: newScore,
         currentQuestionIndex: gameState.currentQuestionIndex + 1,
-        timeRemaining: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) || 30,
         selectedAnswer: null,
         showFeedback: false,
         isTimerActive: true
@@ -29619,7 +29617,6 @@ function TriviaGamePage({ onNavigate } = {}) {
     }
   };
   const handleTimeUp = () => {
-    var _a3;
     if (gameState.status !== "playing") return;
     const newAnswers = [...gameState.userAnswers, -1];
     if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
@@ -29627,7 +29624,6 @@ function TriviaGamePage({ onNavigate } = {}) {
         ...gameState,
         userAnswers: newAnswers,
         currentQuestionIndex: gameState.currentQuestionIndex + 1,
-        timeRemaining: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) || 30,
         selectedAnswer: null,
         showFeedback: false,
         isTimerActive: true
