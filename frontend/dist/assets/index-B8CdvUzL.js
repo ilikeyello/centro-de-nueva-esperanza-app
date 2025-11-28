@@ -30374,6 +30374,19 @@ function TriviaAdminPanel({ passcode }) {
     } catch (error) {
       console.error("Failed to load trivia data:", error);
       setStatus("Failed to load data");
+      try {
+        const setupRes = await fetch("/trivia/setup", { method: "POST" });
+        const setupResult = await setupRes.json();
+        if (setupResult.success) {
+          setStatus("Database tables created. Loading data...");
+          setTimeout(loadData, 1e3);
+        } else {
+          setStatus(`Setup failed: ${setupResult.message}`);
+        }
+      } catch (setupError) {
+        console.error("Setup failed:", setupError);
+        setStatus("Failed to setup database tables");
+      }
     } finally {
       setLoading(false);
     }
@@ -30659,54 +30672,48 @@ function LevelForm({
 }) {
   const { t, language } = useLanguage();
   const [formData, setFormData] = reactExports.useState(level);
+  const generateId = (name) => {
+    return name.toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, "_").substring(0, 20);
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const levelToSave = {
+      ...formData,
+      id: level.id || generateId(formData.name),
+      target_group: formData.target_group || void 0
+    };
+    onSave(levelToSave);
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Level ID", "ID del Nivel") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: formData.id,
-            onChange: (e) => setFormData({ ...formData, id: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: "e.g., kids, youth, adults",
-            disabled: !!level.id
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Level Name", "Nombre del Nivel") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: formData.name,
-            onChange: (e) => setFormData({ ...formData, name: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: language === "es" ? "Niños" : "Kids"
-          }
-        )
-      ] })
-    ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Description", "Descripción") }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Level Name", "Nombre del Nivel") }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "input",
         {
           type: "text",
+          value: formData.name,
+          onChange: (e) => setFormData({ ...formData, name: e.target.value }),
+          className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
+          placeholder: language === "es" ? "Niños" : "Kids",
+          required: true
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500 mt-1", children: t("ID will be automatically generated from the name", "El ID se generará automáticamente desde el nombre") })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Description (optional)", "Descripción (opcional)") }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "textarea",
+        {
           value: formData.description || "",
           onChange: (e) => setFormData({ ...formData, description: e.target.value }),
           className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-          placeholder: language === "es" ? "Para niños de 6-12 años" : "For children ages 6-12"
+          placeholder: language === "es" ? "Para niños de 6-12 años" : "For children ages 6-12",
+          rows: 2
         }
       )
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-3", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Time Limit (seconds)", "Límite de Tiempo (segundos)") }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -30732,19 +30739,6 @@ function LevelForm({
             className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
             min: "0",
             max: "100"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Target Group", "Grupo Objetivo") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: formData.target_group || "",
-            onChange: (e) => setFormData({ ...formData, target_group: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: language === "es" ? "Niños" : "Children"
           }
         )
       ] })
@@ -30805,7 +30799,8 @@ function QuestionForm({
             onChange: (e) => setFormData({ ...formData, question_en: e.target.value }),
             className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
             rows: 2,
-            placeholder: "What is the first book of the Bible?"
+            placeholder: "What is the first book of the Bible?",
+            required: true
           }
         )
       ] }),
@@ -30818,7 +30813,8 @@ function QuestionForm({
             onChange: (e) => setFormData({ ...formData, question_es: e.target.value }),
             className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
             rows: 2,
-            placeholder: "¿Cuál es el primer libro de la Biblia?"
+            placeholder: "¿Cuál es el primer libro de la Biblia?",
+            required: true
           }
         )
       ] })
@@ -30845,81 +30841,54 @@ function QuestionForm({
             value: formData.category,
             onChange: (e) => setFormData({ ...formData, category: e.target.value }),
             className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: "Old Testament, New Testament, Jesus, etc."
+            placeholder: "Old Testament, New Testament, Jesus",
+            required: true
           }
         )
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Options (English)", "Opciones (Inglés)") }),
-      formData.options_en.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
-          String.fromCharCode(65 + index2),
-          "."
+      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Answer Options (click radio for correct answer)", "Opciones de respuesta (haz clic en el radio para la respuesta correcta)") }),
+      formData.options_en.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 mb-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
+            String.fromCharCode(65 + index2),
+            "."
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "input",
+            {
+              type: "text",
+              value: option,
+              onChange: (e) => updateOption("en", index2, e.target.value),
+              className: "flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
+              placeholder: `Option ${index2 + 1} in English`,
+              required: true
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "input",
+            {
+              type: "radio",
+              name: "correct",
+              checked: formData.correct_answer === index2,
+              onChange: () => setFormData({ ...formData, correct_answer: index2 }),
+              className: "text-red-500"
+            }
+          )
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-2 ml-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "input",
           {
             type: "text",
-            value: option,
-            onChange: (e) => updateOption("en", index2, e.target.value),
-            className: "flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: `Option ${index2 + 1}`
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "radio",
-            name: "correct-en",
-            checked: formData.correct_answer === index2,
-            onChange: () => setFormData({ ...formData, correct_answer: index2 }),
-            className: "text-red-500"
-          }
-        )
-      ] }, `en-${index2}`))
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Options (Spanish)", "Opciones (Español)") }),
-      formData.options_es.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
-          String.fromCharCode(65 + index2),
-          "."
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: option,
+            value: formData.options_es[index2],
             onChange: (e) => updateOption("es", index2, e.target.value),
             className: "flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: `Opción ${index2 + 1}`
+            placeholder: `Opción ${index2 + 1} en español`,
+            required: true
           }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "radio",
-            name: "correct-es",
-            checked: formData.correct_answer === index2,
-            onChange: () => setFormData({ ...formData, correct_answer: index2 }),
-            className: "text-red-500"
-          }
-        )
-      ] }, `es-${index2}`))
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Reference (optional)", "Referencia (opcional)") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          type: "text",
-          value: formData.reference || "",
-          onChange: (e) => setFormData({ ...formData, reference: e.target.value }),
-          className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-          placeholder: "Genesis 1:1"
-        }
-      )
+        ) })
+      ] }, index2))
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700 text-white", children: [
