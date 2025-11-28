@@ -59,7 +59,10 @@ export function Games() {
               </div>
             </div>
             <Button 
-              onClick={() => window.location.hash = '#trivia-game'} 
+              onClick={() => {
+                window.location.hash = '#trivia-game';
+                window.location.reload();
+              }} 
               className="mt-4 w-full bg-red-600 hover:bg-red-700"
             >
               <Play className="h-4 w-4 mr-2" />
