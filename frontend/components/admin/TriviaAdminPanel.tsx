@@ -17,8 +17,8 @@ interface TriviaQuestion {
   id: number;
   question_en: string;
   question_es: string;
-  options_en: string[];
-  options_es: string[];
+  options_en: string | string[];
+  options_es: string | string[];
   correct_answer: number;
   category: string;
   reference?: string;
@@ -48,36 +48,14 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
 
   const loadData = async () => {
     try {
-      const [levelsRes, questionsRes] = await Promise.all([
-        fetch('/trivia/levels'),
-        fetch('/trivia/questions')
-      ]);
+      const response = await fetch('/trivia/simple');
+      const data = await response.json();
       
-      const levelsData = await levelsRes.json();
-      const questionsData = await questionsRes.json();
-      
-      setLevels(levelsData.levels || []);
-      setQuestions(questionsData.questions || []);
+      setLevels(data.levels || []);
+      setQuestions(data.questions || []);
     } catch (error) {
       console.error('Failed to load trivia data:', error);
       setStatus('Failed to load data');
-      
-      // Try to setup tables if loading fails
-      try {
-        const setupRes = await fetch('/trivia/setup', { method: 'POST' });
-        const setupResult = await setupRes.json();
-        
-        if (setupResult.success) {
-          setStatus('Database tables created. Loading data...');
-          // Try loading again after setup
-          setTimeout(loadData, 1000);
-        } else {
-          setStatus(`Setup failed: ${setupResult.message}`);
-        }
-      } catch (setupError) {
-        console.error('Setup failed:', setupError);
-        setStatus('Failed to setup database tables');
-      }
     } finally {
       setLoading(false);
     }
@@ -91,17 +69,23 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
 
     try {
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const url = editingLevel ? `/trivia/levels/${level.id}` : '/trivia/levels';
-      const method = editingLevel ? 'PUT' : 'POST';
-      
-      const response = await fetch(`${base}${url}`, {
-        method,
+      const response = await fetch(`${base}/trivia/simple/level`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(level),
+        body: JSON.stringify({
+          id: level.id,
+          name: level.name,
+          description: level.description,
+          shuffle_questions: level.shuffle_questions,
+          time_limit: level.time_limit,
+          passing_score: level.passing_score,
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to save level');
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       await loadData();
@@ -125,12 +109,14 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
 
     try {
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/levels/${id}`, {
+      const response = await fetch(`${base}/trivia/simple/level/${id}`, {
         method: 'DELETE',
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete level');
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       await loadData();
@@ -148,17 +134,24 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
 
     try {
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const url = editingQuestion ? `/trivia/questions/${question.id}` : '/trivia/questions';
-      const method = editingQuestion ? 'PUT' : 'POST';
-      
-      const response = await fetch(`${base}${url}`, {
-        method,
+      const response = await fetch(`${base}/trivia/simple/question`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(question),
+        body: JSON.stringify({
+          question_en: question.question_en,
+          question_es: question.question_es,
+          options_en: JSON.stringify(question.options_en),
+          options_es: JSON.stringify(question.options_es),
+          correct_answer: question.correct_answer,
+          category: question.category,
+          level_id: question.level_id,
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to save question');
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       await loadData();
@@ -182,12 +175,14 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
 
     try {
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/questions/${id}`, {
+      const response = await fetch(`${base}/trivia/simple/question/${id}`, {
         method: 'DELETE',
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete question');
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       await loadData();
@@ -514,7 +509,15 @@ function QuestionForm({
   onCancel: () => void; 
 }) {
   const { t, language } = useLanguage();
-  const [formData, setFormData] = useState(question);
+  
+  // Initialize formData with parsed options if they're strings
+  const initializeFormData = (q: TriviaQuestion) => ({
+    ...q,
+    options_en: typeof q.options_en === 'string' ? JSON.parse(q.options_en) : q.options_en,
+    options_es: typeof q.options_es === 'string' ? JSON.parse(q.options_es) : q.options_es,
+  });
+  
+  const [formData, setFormData] = useState(initializeFormData(question));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

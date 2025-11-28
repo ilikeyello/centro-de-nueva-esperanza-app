@@ -18,8 +18,8 @@ interface TriviaQuestion {
   id: number;
   question_en: string;
   question_es: string;
-  options_en: string[];
-  options_es: string[];
+  options_en: string | string[];
+  options_es: string | string[];
   correct_answer: number;
   category: string;
   reference?: string;
@@ -73,7 +73,7 @@ export function TriviaGame() {
 
   const loadLevels = async () => {
     try {
-      const response = await fetch('/trivia/levels');
+      const response = await fetch('/trivia/simple');
       const data = await response.json();
       setLevels(data.levels);
     } catch (error) {
@@ -85,9 +85,9 @@ export function TriviaGame() {
 
   const loadQuestions = async (levelId: string) => {
     try {
-      const response = await fetch(`/trivia/questions?level_id=${levelId}`);
+      const response = await fetch('/trivia/simple');
       const data = await response.json();
-      return data.questions;
+      return data.questions.filter(q => q.level_id === levelId);
     } catch (error) {
       console.error('Failed to load questions:', error);
       return [];
@@ -254,7 +254,9 @@ export function TriviaGame() {
   if (gameState.status === 'playing' && gameState.questions.length > 0) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const question = language === 'es' ? currentQuestion.question_es : currentQuestion.question_en;
-    const options = language === 'es' ? currentQuestion.options_es : currentQuestion.options_en;
+    const options = language === 'es' 
+      ? (typeof currentQuestion.options_es === 'string' ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es)
+      : (typeof currentQuestion.options_en === 'string' ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en);
 
     return (
       <div className="max-w-3xl mx-auto space-y-6">
