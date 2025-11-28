@@ -2347,10 +2347,6 @@
     white-space: pre-wrap;
   }
 
-  .text-blue-400 {
-    color: var(--color-blue-400);
-  }
-
   .text-blue-500 {
     color: var(--color-blue-500);
   }
@@ -2870,17 +2866,6 @@
   }
 
   @media (hover: hover) {
-    .group-hover\:scale-110:is(:where(.group):hover *) {
-      --tw-scale-x: 110%;
-      --tw-scale-y: 110%;
-      --tw-scale-z: 110%;
-      scale: var(--tw-scale-x) var(--tw-scale-y);
-    }
-
-    .group-hover\:text-red-400:is(:where(.group):hover *) {
-      color: var(--color-red-400);
-    }
-
     .group-hover\:opacity-100:is(:where(.group):hover *) {
       opacity: 1;
     }

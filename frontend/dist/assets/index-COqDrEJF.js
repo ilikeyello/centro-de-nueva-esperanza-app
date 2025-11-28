@@ -30978,7 +30978,7 @@ function LevelForm({
     name: (level == null ? void 0 : level.name) || "",
     description: (level == null ? void 0 : level.description) || "",
     shuffle_questions: (level == null ? void 0 : level.shuffle_questions) ?? true,
-    time_limit: (level == null ? void 0 : level.time_limit) || 30,
+    time_limit: (level == null ? void 0 : level.time_limit) ?? 30,
     passing_score: (level == null ? void 0 : level.passing_score) || 70,
     disable_time_limit: (level == null ? void 0 : level.time_limit) === null
   });
@@ -30986,7 +30986,7 @@ function LevelForm({
     e.preventDefault();
     const submissionData = {
       ...formData,
-      time_limit: formData.disable_time_limit ? null : formData.time_limit
+      time_limit: formData.disable_time_limit ? void 0 : formData.time_limit
     };
     onSave(submissionData);
   };
@@ -31014,7 +31014,7 @@ function LevelForm({
           Input,
           {
             type: "number",
-            value: formData.time_limit,
+            value: formData.time_limit || 30,
             onChange: (e) => setFormData({ ...formData, time_limit: parseInt(e.target.value) || 30 }),
             className: "bg-neutral-950 border-neutral-700 text-white",
             min: "10",
