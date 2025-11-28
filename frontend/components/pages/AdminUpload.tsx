@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TriviaAdminPanel } from "../admin/TriviaAdminPanel";
+import { TriviaAdminPanelImproved } from "../admin/TriviaAdminPanelImproved";
 
 export function AdminUpload() {
   const { t } = useLanguage();
@@ -511,7 +511,7 @@ export function AdminUpload() {
           </TabsContent>
           
           <TabsContent value="trivia" className="space-y-4 mt-4">
-            <TriviaAdminPanel passcode={uploadPasscode} />
+            <TriviaAdminPanelImproved passcode={uploadPasscode} />
           </TabsContent>
         </Tabs>
       </div>

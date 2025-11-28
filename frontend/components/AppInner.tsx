@@ -6,6 +6,7 @@ import { BulletinBoard } from "./pages/BulletinBoard";
 import { Donations } from "./pages/Donations";
 import { Media } from "./pages/Media";
 import { Games } from "./pages/Games";
+import { TriviaGamePage } from "./pages/TriviaGamePage";
 import { Contact } from "./pages/Contact";
 import { NewHere } from "./pages/NewHere";
 import { AdminUpload } from "./pages/AdminUpload";
@@ -19,6 +20,7 @@ type Page =
   | "donations"
   | "contact"
   | "games"
+  | "triviaGame"
   | "newHere"
   | "adminUpload";
 
@@ -35,6 +37,8 @@ export function AppInner() {
   useEffect(() => {
     if (window.location.hash === "#admin-upload") {
       setCurrentPage("adminUpload");
+    } else if (window.location.pathname === "/trivia-game" || window.location.hash === "#trivia-game") {
+      setCurrentPage("triviaGame");
     }
   }, []);
 
@@ -52,6 +56,7 @@ export function AppInner() {
         {currentPage === "adminUpload" && <AdminUpload />}
         {currentPage === "contact" && <Contact onNavigate={handleNavigate} />}
         {currentPage === "games" && <Games />}
+        {currentPage === "triviaGame" && <TriviaGamePage />}
         {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
       </main>
       <Toaster />

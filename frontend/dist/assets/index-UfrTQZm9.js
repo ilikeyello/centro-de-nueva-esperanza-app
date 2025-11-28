@@ -29439,38 +29439,77 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-function TriviaGame() {
-  var _a2, _b2, _c2, _d2;
+function Games() {
   const { language, t } = useLanguage();
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Juegos" : "Games" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl", children: language === "es" ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirado." : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment." })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 text-red-400" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades." : "Test your Bible knowledge with fun and educational questions for all ages." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
+                t("Timed Questions", "Preguntas Cronometradas")
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
+                t("Multiple Levels", "Múltiples Niveles")
+              ] })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-6 w-6 text-red-400 group-hover:scale-110 transition-transform" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-6 w-6 text-neutral-400 group-hover:text-red-400 transition-colors" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            onClick: () => window.location.href = "/trivia-game",
+            className: "mt-4 w-full bg-red-600 hover:bg-red-700",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
+              t("Play Now", "Jugar Ahora")
+            ]
+          }
+        )
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900/50 border-neutral-800 border-dashed", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-8 text-center", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-12 w-12 mx-auto mb-4 text-neutral-600" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-xl font-semibold text-white mb-2", children: t("More Games Coming Soon", "Más Juegos Pronto") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Check back for more faith-filled games and activities!", "¡Vuelve a consultar para más juegos y actividades llenas de fe!") })
+      ] }) })
+    ] })
+  ] });
+}
+function TriviaGamePage() {
+  var _a2, _b2;
+  const { t, language } = useLanguage();
+  const [levels, setLevels] = reactExports.useState([]);
+  const [loading, setLoading] = reactExports.useState(true);
   const [gameState, setGameState] = reactExports.useState({
     status: "menu",
     selectedLevel: null,
     questions: [],
     currentQuestionIndex: 0,
+    userAnswers: [],
     score: 0,
-    answers: [],
-    timeRemaining: 30,
-    isTimerActive: false
+    isTimerActive: false,
+    timeRemaining: 30
   });
-  const [levels, setLevels] = reactExports.useState([]);
-  const [loading, setLoading] = reactExports.useState(true);
-  reactExports.useEffect(() => {
-    loadLevels();
-  }, []);
-  reactExports.useEffect(() => {
-    let interval;
-    if (gameState.isTimerActive && gameState.timeRemaining > 0) {
-      interval = setInterval(() => {
-        setGameState((prev) => ({
-          ...prev,
-          timeRemaining: prev.timeRemaining - 1
-        }));
-      }, 1e3);
-    } else if (gameState.timeRemaining === 0 && gameState.isTimerActive) {
-      handleTimeUp();
-    }
-    return () => clearInterval(interval);
-  }, [gameState.isTimerActive, gameState.timeRemaining]);
   const loadLevels = async () => {
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
@@ -29506,50 +29545,56 @@ function TriviaGame() {
       selectedLevel: level,
       questions: shuffledQuestions,
       currentQuestionIndex: 0,
+      userAnswers: [],
       score: 0,
-      answers: [],
-      timeRemaining: level.time_limit,
-      isTimerActive: true
+      isTimerActive: true,
+      timeRemaining: level.time_limit
     });
   };
   const handleAnswer = (answerIndex) => {
+    var _a3;
+    if (gameState.status !== "playing") return;
+    const newAnswers = [...gameState.userAnswers, answerIndex];
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const isCorrect = answerIndex === currentQuestion.correct_answer;
-    const newAnswers = [...gameState.answers, answerIndex];
-    const newScore = isCorrect ? gameState.score + 1 : gameState.score;
+    const newScore = gameState.score + (isCorrect ? 1 : 0);
     if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
-      setGameState((prev) => ({
-        ...prev,
-        currentQuestionIndex: prev.currentQuestionIndex + 1,
-        answers: newAnswers,
+      setGameState({
+        ...gameState,
+        userAnswers: newAnswers,
         score: newScore,
-        timeRemaining: prev.selectedLevel.time_limit
-      }));
+        currentQuestionIndex: gameState.currentQuestionIndex + 1,
+        timeRemaining: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) || 30
+      });
     } else {
-      endGame(newAnswers, newScore);
+      setGameState({
+        ...gameState,
+        userAnswers: newAnswers,
+        score: newScore,
+        status: "results",
+        isTimerActive: false
+      });
     }
   };
   const handleTimeUp = () => {
-    const newAnswers = [...gameState.answers, -1];
+    var _a3;
+    if (gameState.status !== "playing") return;
+    const newAnswers = [...gameState.userAnswers, -1];
     if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
-      setGameState((prev) => ({
-        ...prev,
-        currentQuestionIndex: prev.currentQuestionIndex + 1,
-        answers: newAnswers,
-        timeRemaining: prev.selectedLevel.time_limit
-      }));
+      setGameState({
+        ...gameState,
+        userAnswers: newAnswers,
+        currentQuestionIndex: gameState.currentQuestionIndex + 1,
+        timeRemaining: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) || 30
+      });
     } else {
-      endGame(newAnswers, gameState.score);
+      setGameState({
+        ...gameState,
+        userAnswers: newAnswers,
+        status: "results",
+        isTimerActive: false
+      });
     }
-  };
-  const endGame = (finalAnswers, finalScore) => {
-    setGameState((prev) => ({
-      ...prev,
-      status: "results",
-      answers: finalAnswers,
-      score: finalScore,
-      isTimerActive: false
-    }));
   };
   const resetGame = () => {
     setGameState({
@@ -29557,79 +29602,109 @@ function TriviaGame() {
       selectedLevel: null,
       questions: [],
       currentQuestionIndex: 0,
+      userAnswers: [],
       score: 0,
-      answers: [],
-      timeRemaining: 30,
-      isTimerActive: false
+      isTimerActive: false,
+      timeRemaining: 30
     });
   };
-  const calculatePercentage = () => {
-    return Math.round(gameState.score / gameState.questions.length * 100);
-  };
-  const hasPassed = () => {
-    var _a3;
-    return calculatePercentage() >= (((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.passing_score) || 70);
-  };
+  reactExports.useEffect(() => {
+    loadLevels();
+  }, []);
+  reactExports.useEffect(() => {
+    const interval = setInterval(() => {
+      if (gameState.isTimerActive && gameState.timeRemaining > 0) {
+        setGameState((prev) => ({
+          ...prev,
+          timeRemaining: prev.timeRemaining - 1
+        }));
+      } else if (gameState.timeRemaining === 0 && gameState.isTimerActive) {
+        handleTimeUp();
+      }
+      return () => clearInterval(interval);
+    }, 1e3);
+  }, [gameState.isTimerActive, gameState.timeRemaining]);
   if (loading) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-16", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mt-4", children: t("Loading...", "Cargando...") })
-    ] });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center text-white", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-12 w-12 mx-auto mb-4 animate-pulse" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: t("Loading trivia...", "Cargando trivia...") })
+    ] }) });
   }
   if (gameState.status === "menu") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-8", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-16 w-16 text-red-500 mx-auto" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold text-white", children: t("Bible Trivia Challenge", "Desafío de Biblia Trivia") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl mx-auto", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con nuestro divertido juego de trivia. Elige tu nivel y ver cuántas preguntas puedes responder correctamente." : "Test your Bible knowledge with our fun trivia game. Choose your level and see how many questions you can answer correctly." })
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-8 px-4 py-8", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        Button,
+        {
+          onClick: () => window.location.href = "/games",
+          variant: "outline",
+          className: "mb-6 border-neutral-700 hover:bg-neutral-800",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+            t("Back to Games", "Volver a Juegos")
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center space-y-6", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-center gap-3", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 text-red-400" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl mx-auto", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades." : "Test your Bible knowledge with fun and educational questions for all ages." })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-4 md:grid-cols-2 lg:grid-cols-3", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-500 transition-colors", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-xl font-bold text-white", children: level.name }),
-          level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm mt-1", children: level.description })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 text-sm", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-neutral-300", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              level.time_limit,
-              "s ",
-              t("per question", "por pregunta")
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-6 max-w-4xl mx-auto", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group",
+          onClick: () => startGame(level),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-xl font-semibold text-white mb-2", children: language === "es" ? level.name : level.name }),
+              level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-3", children: language === "es" ? level.description : level.description }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
+                  level.time_limit,
+                  "s"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
+                  level.passing_score,
+                  "% ",
+                  t("to pass", "para aprobar")
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-5 w-5 text-red-400 group-hover:scale-110 transition-transform" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-5 w-5 text-neutral-400 group-hover:text-red-400 transition-colors" })
             ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-neutral-300", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              level.passing_score,
-              "% ",
-              t("to pass", "para aprobar")
-            ] })
-          ] }),
-          level.target_group && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-300", children: [
-            t("For", "Para"),
-            ": ",
-            level.target_group
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => startGame(level),
-            className: "w-full bg-red-600 hover:bg-red-700 text-white",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-              t("Start", "Empezar")
-            ]
-          }
-        )
-      ] }) }) }, level.id)) })
+          ] }) })
+        },
+        level.id
+      )) }),
+      levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-12", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-16 w-16 mx-auto mb-4 text-neutral-600" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("No trivia levels available yet.", "No hay niveles de trivia disponibles aún.") })
+      ] })
     ] });
   }
   if (gameState.status === "playing" && gameState.questions.length > 0) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const question = language === "es" ? currentQuestion.question_es : currentQuestion.question_en;
     const options = language === "es" ? typeof currentQuestion.options_es === "string" ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es : typeof currentQuestion.options_en === "string" ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-3xl mx-auto space-y-6", children: [
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-6 px-4 py-8 max-w-3xl", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        Button,
+        {
+          onClick: resetGame,
+          variant: "outline",
+          className: "border-neutral-700 hover:bg-neutral-800",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+            t("Exit Game", "Salir del Juego")
+          ]
+        }
+      ),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-400", children: [
           t("Question", "Pregunta"),
@@ -29675,64 +29750,44 @@ function TriviaGame() {
     ] });
   }
   if (gameState.status === "results") {
-    const percentage = calculatePercentage();
-    const passed = hasPassed();
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-2xl mx-auto space-y-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-8 text-center space-y-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `w-20 h-20 rounded-full mx-auto flex items-center justify-center ${passed ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"}`, children: passed ? /* @__PURE__ */ jsxRuntimeExports.jsx(Trophy, { className: "h-10 w-10" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-10 w-10" }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold text-white", children: passed ? language === "es" ? "¡Felicidades!" : "Congratulations!" : language === "es" ? "Inténtalo de nuevo" : "Try Again" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: passed ? language === "es" ? `Has aprobado el nivel ${(_a2 = gameState.selectedLevel) == null ? void 0 : _a2.name} con ${percentage}%` : `You passed the ${(_b2 = gameState.selectedLevel) == null ? void 0 : _b2.name} level with ${percentage}%` : language === "es" ? `Obtuviste ${percentage}% - necesitas ${(_c2 = gameState.selectedLevel) == null ? void 0 : _c2.passing_score}% para aprobar` : `You got ${percentage}% - you need ${(_d2 = gameState.selectedLevel) == null ? void 0 : _d2.passing_score}% to pass` })
+    const percentage = Math.round(gameState.score / gameState.questions.length * 100);
+    const passed = percentage >= (((_a2 = gameState.selectedLevel) == null ? void 0 : _a2.passing_score) || 70);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto space-y-6 px-4 py-8 max-w-2xl", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: `bg-neutral-900 border-2 ${passed ? "border-green-600" : "border-red-600"}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-8 text-center space-y-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `flex items-center justify-center gap-3 ${passed ? "text-green-400" : "text-red-400"}`, children: [
+        passed ? /* @__PURE__ */ jsxRuntimeExports.jsx(Trophy, { className: "h-8 w-8" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-8 w-8" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold", children: passed ? language === "es" ? "¡Aprobado!" : "Passed!" : language === "es" ? "No Aprobado" : "Not Passed" })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-4xl font-bold text-white", children: [
           gameState.score,
           " / ",
           gameState.questions.length
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-neutral-300", children: t("Correct Answers", "Respuestas Correctas") })
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xl text-neutral-400", children: [
+          percentage,
+          "% ",
+          t("correct", "correctas")
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm text-neutral-500", children: [
+          t("Required", "Requerido"),
+          ": ",
+          ((_b2 = gameState.selectedLevel) == null ? void 0 : _b2.passing_score) || 70,
+          "%"
+        ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 justify-center", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: resetGame,
-            variant: "outline",
-            className: "border-neutral-700 hover:bg-neutral-800",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
-              t("Back to Menu", "Volver al Menú")
-            ]
-          }
-        ),
-        !passed && gameState.selectedLevel && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => startGame(gameState.selectedLevel),
-            className: "bg-red-600 hover:bg-red-700 text-white",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4 mr-2" }),
-              t("Try Again", "Inténtalo de Nuevo")
-            ]
-          }
-        )
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: resetGame, className: "bg-red-600 hover:bg-red-700", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
+          t("Play Again", "Jugar de Nuevo")
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => window.location.href = "/games", variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+          t("Back to Games", "Volver a Juegos")
+        ] })
       ] })
     ] }) }) });
   }
   return null;
-}
-function Games() {
-  const { language, t } = useLanguage();
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Juegos" : "Games" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl", children: language === "es" ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirador." : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment." })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "space-y-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaGame, {}) })
-  ] });
 }
 function Contact({ onNavigate }) {
   const { language, t } = useLanguage();
@@ -30349,17 +30404,17 @@ const TabsContent = reactExports.forwardRef(({ className, ...props }, ref) => /*
   }
 ));
 TabsContent.displayName = Content.displayName;
-function TriviaAdminPanel({ passcode }) {
-  var _a2;
+function TriviaAdminPanelImproved({ passcode }) {
   const { t, language } = useLanguage();
   const [levels, setLevels] = reactExports.useState([]);
   const [questions, setQuestions] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
-  const [status, setStatus] = reactExports.useState(null);
+  const [status, setStatus] = reactExports.useState("");
   const [editingLevel, setEditingLevel] = reactExports.useState(null);
   const [editingQuestion, setEditingQuestion] = reactExports.useState(null);
   const [showNewLevelForm, setShowNewLevelForm] = reactExports.useState(false);
   const [showNewQuestionForm, setShowNewQuestionForm] = reactExports.useState(false);
+  const [expandedLevels, setExpandedLevels] = reactExports.useState(/* @__PURE__ */ new Set());
   reactExports.useEffect(() => {
     loadData();
   }, []);
@@ -30378,64 +30433,34 @@ function TriviaAdminPanel({ passcode }) {
     }
   };
   const handleSaveLevel = async (level) => {
-    if (!passcode) {
-      setStatus("Admin passcode required");
-      return;
-    }
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple/level`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: level.id,
+          id: level.id || level.name.toLowerCase().replace(/\s+/g, "-"),
           name: level.name,
-          description: level.description,
-          shuffle_questions: level.shuffle_questions,
-          time_limit: level.time_limit,
-          passing_score: level.passing_score
+          description: level.description || "",
+          shuffle_questions: level.shuffle_questions ?? true,
+          time_limit: level.time_limit || 30,
+          passing_score: level.passing_score || 70
         })
       });
       const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message);
+      if (result.success) {
+        setStatus("Level saved successfully");
+        loadData();
+        setEditingLevel(null);
+        setShowNewLevelForm(false);
+      } else {
+        setStatus(`Error: ${result.message}`);
       }
-      await loadData();
-      setEditingLevel(null);
-      setShowNewLevelForm(false);
-      setStatus("Level saved successfully");
     } catch (error) {
-      setStatus("Failed to save level");
-    }
-  };
-  const handleDeleteLevel = async (id) => {
-    if (!passcode) {
-      setStatus("Admin passcode required");
-      return;
-    }
-    if (!confirm("Are you sure you want to delete this level? All questions in this level will also be deleted.")) {
-      return;
-    }
-    try {
-      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/simple/level/${id}`, {
-        method: "DELETE"
-      });
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      await loadData();
-      setStatus("Level deleted successfully");
-    } catch (error) {
-      setStatus("Failed to delete level");
+      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
   const handleSaveQuestion = async (question) => {
-    if (!passcode) {
-      setStatus("Admin passcode required");
-      return;
-    }
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple/question`, {
@@ -30444,31 +30469,48 @@ function TriviaAdminPanel({ passcode }) {
         body: JSON.stringify({
           question_en: question.question_en,
           question_es: question.question_es,
-          options_en: JSON.stringify(question.options_en),
-          options_es: JSON.stringify(question.options_es),
+          options_en: JSON.stringify(question.options_en || []),
+          options_es: JSON.stringify(question.options_es || []),
           correct_answer: question.correct_answer,
-          category: question.category,
+          category: question.category || "General",
           level_id: question.level_id
         })
       });
       const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message);
+      if (result.success) {
+        setStatus("Question saved successfully");
+        loadData();
+        setEditingQuestion(null);
+        setShowNewQuestionForm(false);
+      } else {
+        setStatus(`Error: ${result.message}`);
       }
-      await loadData();
-      setEditingQuestion(null);
-      setShowNewQuestionForm(false);
-      setStatus("Question saved successfully");
     } catch (error) {
-      setStatus("Failed to save question");
+      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+  const handleDeleteLevel = async (id) => {
+    if (!confirm(t("Are you sure you want to delete this level and all its questions?", "¿Estás seguro de que quieres eliminar este nivel y todas sus preguntas?"))) {
+      return;
+    }
+    try {
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple/level/${id}`, {
+        method: "DELETE"
+      });
+      const result = await response.json();
+      if (result.success) {
+        setStatus("Level deleted successfully");
+        loadData();
+      } else {
+        setStatus(`Error: ${result.message}`);
+      }
+    } catch (error) {
+      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
   const handleDeleteQuestion = async (id) => {
-    if (!passcode) {
-      setStatus("Admin passcode required");
-      return;
-    }
-    if (!confirm("Are you sure you want to delete this question?")) {
+    if (!confirm(t("Are you sure you want to delete this question?", "¿Estás seguro de que quieres eliminar esta pregunta?"))) {
       return;
     }
     try {
@@ -30477,190 +30519,234 @@ function TriviaAdminPanel({ passcode }) {
         method: "DELETE"
       });
       const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message);
+      if (result.success) {
+        setStatus("Question deleted successfully");
+        loadData();
+      } else {
+        setStatus(`Error: ${result.message}`);
       }
-      await loadData();
-      setStatus("Question deleted successfully");
     } catch (error) {
-      setStatus("Failed to delete question");
+      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
+  const toggleLevelExpansion = (levelId) => {
+    const newExpanded = new Set(expandedLevels);
+    if (newExpanded.has(levelId)) {
+      newExpanded.delete(levelId);
+    } else {
+      newExpanded.add(levelId);
+    }
+    setExpandedLevels(newExpanded);
+  };
+  const questionsByLevel = questions.reduce((acc, question) => {
+    if (!acc[question.level_id]) {
+      acc[question.level_id] = [];
+    }
+    acc[question.level_id].push(question);
+    return acc;
+  }, {});
   if (loading) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-8", children: "Loading..." });
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-8", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 mx-auto mb-2 animate-pulse text-red-400" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Loading trivia data...", "Cargando datos de trivia...") })
+    ] });
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-5 w-5" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Trivia Management", "Gestión de Trivia") })
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-2xl font-bold text-white flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-6 w-6 text-red-400" }),
+        t("Trivia Management", "Gestión de Trivia")
+      ] }),
+      status && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `px-3 py-1 rounded text-sm ${status.includes("Error") ? "bg-red-900 text-red-200" : "bg-green-900 text-green-200"}`, children: status })
     ] }),
-    status && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `text-sm p-2 rounded ${status.includes("success") ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`, children: status }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: t("Difficulty Levels", "Niveles de Dificultad") }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-white flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Levels", "Niveles") }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
           {
             onClick: () => setShowNewLevelForm(true),
-            className: "bg-red-600 hover:bg-red-700 text-white",
-            size: "sm",
+            className: "bg-red-600 hover:bg-red-700",
             children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-1" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-2" }),
               t("Add Level", "Agregar Nivel")
             ]
           }
         )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg p-4 bg-neutral-900/40", children: (editingLevel == null ? void 0 : editingLevel.id) === level.id ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-        LevelForm,
-        {
-          level: editingLevel,
-          onSave: handleSaveLevel,
-          onCancel: () => setEditingLevel(null)
-        }
-      ) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { className: "font-semibold text-white", children: level.name }),
-          level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: level.description }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-300", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-3 w-3" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                level.time_limit,
-                "s"
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-3", children: [
+        levels.map((level) => {
+          var _a2;
+          return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
+              level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 mt-1", children: level.description }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 mt-2 text-xs text-neutral-500", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-3 w-3" }),
+                  level.time_limit,
+                  "s"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-3 w-3" }),
+                  level.passing_score,
+                  "%"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                  ((_a2 = questionsByLevel[level.id]) == null ? void 0 : _a2.length) || 0,
+                  " ",
+                  t("questions", "preguntas")
+                ] })
               ] })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-3 w-3" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                level.passing_score,
-                "%"
-              ] })
-            ] }),
-            level.target_group && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: level.target_group })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button,
-            {
-              onClick: () => setEditingLevel(level),
-              variant: "outline",
-              size: "sm",
-              className: "border-neutral-700 hover:bg-neutral-800",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button,
-            {
-              onClick: () => handleDeleteLevel(level.id),
-              variant: "outline",
-              size: "sm",
-              className: "border-red-700 hover:bg-red-700 text-red-400",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
-            }
-          )
-        ] })
-      ] }) }, level.id)) }),
-      showNewLevelForm && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg p-4 bg-neutral-900/40", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        LevelForm,
-        {
-          level: {
-            id: "",
-            name: "",
-            description: "",
-            target_group: "",
-            shuffle_questions: true,
-            time_limit: 30,
-            passing_score: 70
-          },
-          onSave: handleSaveLevel,
-          onCancel: () => setShowNewLevelForm(false)
-        }
-      ) })
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button,
+                {
+                  onClick: () => setEditingLevel(level),
+                  variant: "outline",
+                  size: "sm",
+                  className: "border-neutral-700 hover:bg-neutral-800",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button,
+                {
+                  onClick: () => handleDeleteLevel(level.id),
+                  variant: "outline",
+                  size: "sm",
+                  className: "border-red-700 hover:bg-red-700 text-red-400",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
+                }
+              )
+            ] })
+          ] }) }) }, level.id);
+        }),
+        showNewLevelForm && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50 p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          LevelForm,
+          {
+            level: null,
+            onSave: handleSaveLevel,
+            onCancel: () => setShowNewLevelForm(false)
+          }
+        ) }),
+        editingLevel && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50 p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          LevelForm,
+          {
+            level: editingLevel,
+            onSave: handleSaveLevel,
+            onCancel: () => setEditingLevel(null)
+          }
+        ) })
+      ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: t("Questions", "Preguntas") }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-white flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Questions by Level", "Preguntas por Nivel") }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
           {
             onClick: () => setShowNewQuestionForm(true),
-            className: "bg-red-600 hover:bg-red-700 text-white",
-            size: "sm",
+            className: "bg-red-600 hover:bg-red-700",
             children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-1" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-2" }),
               t("Add Question", "Agregar Pregunta")
             ]
           }
         )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 max-h-96 overflow-y-auto", children: questions.map((question) => {
-        var _a3;
-        return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg p-4 bg-neutral-900/40", children: (editingQuestion == null ? void 0 : editingQuestion.id) === question.id ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-          QuestionForm,
-          {
-            question: editingQuestion,
-            levels,
-            onSave: handleSaveQuestion,
-            onCancel: () => setEditingQuestion(null)
-          }
-        ) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-medium text-white", children: language === "es" ? question.question_es : question.question_en }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-neutral-400 mt-1", children: [
-              t("Level", "Nivel"),
-              ": ",
-              ((_a3 = levels.find((l) => l.id === question.level_id)) == null ? void 0 : _a3.name) || question.level_id
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: levels.map((level) => {
+        const levelQuestions = questionsByLevel[level.id] || [];
+        const isExpanded = expandedLevels.has(level.id);
+        return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              className: "p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors",
+              onClick: () => toggleLevelExpansion(level.id),
+              children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+                  isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400", children: [
+                    "(",
+                    levelQuestions.length,
+                    " ",
+                    t("questions", "preguntas"),
+                    ")"
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  Button,
+                  {
+                    onClick: (e) => {
+                      e.stopPropagation();
+                      setShowNewQuestionForm(true);
+                    },
+                    variant: "outline",
+                    size: "sm",
+                    className: "border-neutral-700 hover:bg-neutral-800",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-3 w-3 mr-1" }),
+                      t("Add", "Agregar")
+                    ]
+                  }
+                )
+              ] })
+            }
+          ),
+          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-700 rounded bg-neutral-800/50 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-white font-medium", children: language === "es" ? question.question_es : question.question_en }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-neutral-400 mt-1", children: [
+                t("Category", "Categoría"),
+                ": ",
+                question.category,
+                " |",
+                t("Correct Answer", "Respuesta Correcta"),
+                ": ",
+                String.fromCharCode(65 + question.correct_answer)
+              ] })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-neutral-500", children: [
-              t("Category", "Categoría"),
-              ": ",
-              question.category
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button,
+                {
+                  onClick: () => setEditingQuestion(question),
+                  variant: "outline",
+                  size: "sm",
+                  className: "border-neutral-700 hover:bg-neutral-800",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button,
+                {
+                  onClick: () => handleDeleteQuestion(question.id),
+                  variant: "outline",
+                  size: "sm",
+                  className: "border-red-700 hover:bg-red-700 text-red-400",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
+                }
+              )
             ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
-              {
-                onClick: () => setEditingQuestion(question),
-                variant: "outline",
-                size: "sm",
-                className: "border-neutral-700 hover:bg-neutral-800",
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
-              {
-                onClick: () => handleDeleteQuestion(question.id),
-                variant: "outline",
-                size: "sm",
-                className: "border-red-700 hover:bg-red-700 text-red-400",
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
-              }
-            )
-          ] })
-        ] }) }) }, question.id);
-      }) }),
-      showNewQuestionForm && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg p-4 bg-neutral-900/40", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          ] }) }, question.id)) }) })
+        ] }, level.id);
+      }) })
+    ] }),
+    (showNewQuestionForm || editingQuestion) && /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         QuestionForm,
         {
-          question: {
-            id: 0,
-            question_en: "",
-            question_es: "",
-            options_en: ["", "", "", ""],
-            options_es: ["", "", "", ""],
-            correct_answer: 0,
-            category: "",
-            reference: "",
-            level_id: ((_a2 = levels[0]) == null ? void 0 : _a2.id) || ""
-          },
+          question: editingQuestion,
           levels,
           onSave: handleSaveQuestion,
-          onCancel: () => setShowNewQuestionForm(false)
+          onCancel: () => {
+            setShowNewQuestionForm(false);
+            setEditingQuestion(null);
+          }
         }
       ) })
     ] })
@@ -30672,98 +30758,100 @@ function LevelForm({
   onCancel
 }) {
   const { t, language } = useLanguage();
-  const [formData, setFormData] = reactExports.useState(level);
-  const generateId = (name) => {
-    return name.toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, "_").substring(0, 20);
-  };
+  const [formData, setFormData] = reactExports.useState({
+    id: (level == null ? void 0 : level.id) || "",
+    name: (level == null ? void 0 : level.name) || "",
+    description: (level == null ? void 0 : level.description) || "",
+    shuffle_questions: (level == null ? void 0 : level.shuffle_questions) ?? true,
+    time_limit: (level == null ? void 0 : level.time_limit) || 30,
+    passing_score: (level == null ? void 0 : level.passing_score) || 70
+  });
   const handleSubmit = (e) => {
     e.preventDefault();
-    const levelToSave = {
-      ...formData,
-      id: level.id || generateId(formData.name),
-      target_group: formData.target_group || void 0
-    };
-    onSave(levelToSave);
+    onSave(formData);
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Level Name", "Nombre del Nivel") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          type: "text",
-          value: formData.name,
-          onChange: (e) => setFormData({ ...formData, name: e.target.value }),
-          className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-          placeholder: language === "es" ? "Niños" : "Kids",
-          required: true
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500 mt-1", children: t("ID will be automatically generated from the name", "El ID se generará automáticamente desde el nombre") })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Description (optional)", "Descripción (opcional)") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "textarea",
-        {
-          value: formData.description || "",
-          onChange: (e) => setFormData({ ...formData, description: e.target.value }),
-          className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-          placeholder: language === "es" ? "Para niños de 6-12 años" : "For children ages 6-12",
-          rows: 2
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Time Limit (seconds)", "Límite de Tiempo (segundos)") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+          t("Level Name", "Nombre del Nivel"),
+          " *"
+        ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
+          Input,
+          {
+            value: formData.name,
+            onChange: (e) => setFormData({ ...formData, name: e.target.value, id: e.target.value.toLowerCase().replace(/\s+/g, "-") }),
+            className: "bg-neutral-950 border-neutral-700 text-white",
+            placeholder: t("e.g., Kids, Youth, Adults", "ej., Niños, Jóvenes, Adultos"),
+            required: true
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Time Limit (seconds)", "Límite de Tiempo (segundos)") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Input,
           {
             type: "number",
             value: formData.time_limit,
             onChange: (e) => setFormData({ ...formData, time_limit: parseInt(e.target.value) || 30 }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            min: "5",
-            max: "120"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Passing Score (%)", "Puntuación para Aprobar (%)") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "number",
-            value: formData.passing_score,
-            onChange: (e) => setFormData({ ...formData, passing_score: parseInt(e.target.value) || 70 }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            min: "0",
-            max: "100"
+            className: "bg-neutral-950 border-neutral-700 text-white",
+            min: "10",
+            max: "300"
           }
         )
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Description", "Descripción") }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
+        Textarea,
         {
-          type: "checkbox",
-          id: "shuffle",
-          checked: formData.shuffle_questions,
-          onChange: (e) => setFormData({ ...formData, shuffle_questions: e.target.checked }),
-          className: "rounded border-neutral-700 bg-neutral-950"
+          value: formData.description,
+          onChange: (e) => setFormData({ ...formData, description: e.target.value }),
+          className: "bg-neutral-950 border-neutral-700 text-white",
+          placeholder: t("Optional description for this level", "Descripción opcional para este nivel"),
+          rows: 2
         }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "shuffle", className: "text-sm text-neutral-300", children: t("Shuffle questions", "Mezclar preguntas") })
+      )
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Passing Score (%)", "Puntuación para Aprobar (%)") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Input,
+          {
+            type: "number",
+            value: formData.passing_score,
+            onChange: (e) => setFormData({ ...formData, passing_score: parseInt(e.target.value) || 70 }),
+            className: "bg-neutral-950 border-neutral-700 text-white",
+            min: "0",
+            max: "100"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-6", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "input",
+          {
+            type: "checkbox",
+            id: "shuffle",
+            checked: formData.shuffle_questions,
+            onChange: (e) => setFormData({ ...formData, shuffle_questions: e.target.checked }),
+            className: "rounded border-neutral-700 bg-neutral-950"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "shuffle", className: "text-sm text-neutral-300", children: t("Shuffle questions", "Mezclar preguntas") })
+      ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700 text-white", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-1" }),
-        t("Save", "Guardar")
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
+        t("Save Level", "Guardar Nivel")
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", onClick: onCancel, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-1" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-2" }),
         t("Cancel", "Cancelar")
       ] })
     ] })
@@ -30776,11 +30864,19 @@ function QuestionForm({
   onCancel
 }) {
   const { t, language } = useLanguage();
-  const initializeFormData = (q) => ({
-    ...q,
-    options_en: typeof q.options_en === "string" ? JSON.parse(q.options_en) : q.options_en,
-    options_es: typeof q.options_es === "string" ? JSON.parse(q.options_es) : q.options_es
-  });
+  const initializeFormData = (q) => {
+    var _a2;
+    return {
+      id: (q == null ? void 0 : q.id) || 0,
+      question_en: (q == null ? void 0 : q.question_en) || "",
+      question_es: (q == null ? void 0 : q.question_es) || "",
+      options_en: typeof (q == null ? void 0 : q.options_en) === "string" ? JSON.parse(q.options_en) : (q == null ? void 0 : q.options_en) || ["", "", "", ""],
+      options_es: typeof (q == null ? void 0 : q.options_es) === "string" ? JSON.parse(q.options_es) : (q == null ? void 0 : q.options_es) || ["", "", "", ""],
+      correct_answer: (q == null ? void 0 : q.correct_answer) || 0,
+      category: (q == null ? void 0 : q.category) || "General",
+      level_id: (q == null ? void 0 : q.level_id) || (((_a2 = levels[0]) == null ? void 0 : _a2.id) || "")
+    };
+  };
   const [formData, setFormData] = reactExports.useState(initializeFormData(question));
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -30795,114 +30891,127 @@ function QuestionForm({
     });
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Question (English)", "Pregunta (Inglés)") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+          t("Question (English)", "Pregunta (Inglés)"),
+          " *"
+        ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "textarea",
+          Textarea,
           {
             value: formData.question_en,
             onChange: (e) => setFormData({ ...formData, question_en: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
+            className: "bg-neutral-950 border-neutral-700 text-white",
+            placeholder: t("Enter question in English", "Ingresa la pregunta en inglés"),
             rows: 2,
-            placeholder: "What is the first book of the Bible?",
             required: true
           }
         )
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Question (Spanish)", "Pregunta (Español)") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+          t("Question (Spanish)", "Pregunta (Español)"),
+          " *"
+        ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "textarea",
+          Textarea,
           {
             value: formData.question_es,
             onChange: (e) => setFormData({ ...formData, question_es: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
+            className: "bg-neutral-950 border-neutral-700 text-white",
+            placeholder: t("Enter question in Spanish", "Ingresa la pregunta en español"),
             rows: 2,
-            placeholder: "¿Cuál es el primer libro de la Biblia?",
             required: true
           }
         )
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Level", "Nivel") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "select",
-          {
-            value: formData.level_id,
-            onChange: (e) => setFormData({ ...formData, level_id: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: level.id, children: level.name }, level.id))
-          }
-        )
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+          t("Level", "Nivel"),
+          " *"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: formData.level_id, onValueChange: (value) => setFormData({ ...formData, level_id: value }), children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "bg-neutral-950 border-neutral-700 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Select a level", "Selecciona un nivel") }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: level.id, children: level.name }, level.id)) })
+        ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Category", "Categoría") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Category", "Categoría") }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
+          Input,
           {
-            type: "text",
             value: formData.category,
             onChange: (e) => setFormData({ ...formData, category: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: "Old Testament, New Testament, Jesus",
-            required: true
+            className: "bg-neutral-950 border-neutral-700 text-white",
+            placeholder: t("e.g., Old Testament, New Testament", "ej., Antiguo Testamento, Nuevo Testamento")
           }
         )
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Answer Options (click radio for correct answer)", "Opciones de respuesta (haz clic en el radio para la respuesta correcta)") }),
-      formData.options_en.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 mb-3", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
-            String.fromCharCode(65 + index2),
-            "."
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "input",
-            {
-              type: "text",
-              value: option,
-              onChange: (e) => updateOption("en", index2, e.target.value),
-              className: "flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-              placeholder: `Option ${index2 + 1} in English`,
-              required: true
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "input",
-            {
-              type: "radio",
-              name: "correct",
-              checked: formData.correct_answer === index2,
-              onChange: () => setFormData({ ...formData, correct_answer: index2 }),
-              className: "text-red-500"
-            }
-          )
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+        t("Answer Options (English)", "Opciones de Respuesta (Inglés)"),
+        " *"
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: formData.options_en.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
+          String.fromCharCode(65 + index2),
+          "."
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-2 ml-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Input,
+          {
+            value: option,
+            onChange: (e) => updateOption("en", index2, e.target.value),
+            className: "flex-1 bg-neutral-950 border-neutral-700 text-white",
+            placeholder: `Option ${index2 + 1} in English`,
+            required: true
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
           "input",
           {
-            type: "text",
-            value: formData.options_es[index2],
+            type: "radio",
+            name: "correct_answer",
+            checked: formData.correct_answer === index2,
+            onChange: () => setFormData({ ...formData, correct_answer: index2 }),
+            className: "border-neutral-700 bg-neutral-950"
+          }
+        )
+      ] }, index2)) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+        t("Answer Options (Spanish)", "Opciones de Respuesta (Español)"),
+        " *"
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: formData.options_es.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
+          String.fromCharCode(65 + index2),
+          "."
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Input,
+          {
+            value: option,
             onChange: (e) => updateOption("es", index2, e.target.value),
-            className: "flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
+            className: "flex-1 bg-neutral-950 border-neutral-700 text-white",
             placeholder: `Opción ${index2 + 1} en español`,
             required: true
           }
-        ) })
-      ] }, index2))
+        )
+      ] }, index2)) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700 text-white", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-1" }),
-        t("Save", "Guardar")
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
+        t("Save Question", "Guardar Pregunta")
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", onClick: onCancel, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-1" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-2" }),
         t("Cancel", "Cancelar")
       ] })
     ] })
@@ -31334,7 +31443,7 @@ function AdminUpload() {
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "space-y-4 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaAdminPanel, { passcode: uploadPasscode }) })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "space-y-4 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaAdminPanelImproved, { passcode: uploadPasscode }) })
     ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
       "Tip: Bookmark this URL. It is not linked from the main site.",
@@ -32062,6 +32171,8 @@ function AppInner() {
   reactExports.useEffect(() => {
     if (window.location.hash === "#admin-upload") {
       setCurrentPage("adminUpload");
+    } else if (window.location.pathname === "/trivia-game" || window.location.hash === "#trivia-game") {
+      setCurrentPage("triviaGame");
     }
   }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen bg-neutral-950", children: [
@@ -32075,6 +32186,7 @@ function AppInner() {
       currentPage === "adminUpload" && /* @__PURE__ */ jsxRuntimeExports.jsx(AdminUpload, {}),
       currentPage === "contact" && /* @__PURE__ */ jsxRuntimeExports.jsx(Contact, { onNavigate: handleNavigate }),
       currentPage === "games" && /* @__PURE__ */ jsxRuntimeExports.jsx(Games, {}),
+      currentPage === "triviaGame" && /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaGamePage, {}),
       currentPage === "newHere" && /* @__PURE__ */ jsxRuntimeExports.jsx(NewHere, { onNavigate: handleNavigate })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Toaster, {})
