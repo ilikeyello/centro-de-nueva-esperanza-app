@@ -14,7 +14,11 @@ export const setupTriviaTables = api(
         );
       `;
 
-      const levelsExists = await levelsCheck[0];
+      const levelsRows = [];
+      for await (const row of levelsCheck) {
+        levelsRows.push(row);
+      }
+      const levelsExists = levelsRows[0];
       const levelsTableExists = levelsExists?.exists || false;
 
       // Create trivia_levels table if it doesn't exist
@@ -43,7 +47,11 @@ export const setupTriviaTables = api(
         );
       `;
 
-      const questionsExists = await questionsCheck[0];
+      const questionsRows = [];
+      for await (const row of questionsCheck) {
+        questionsRows.push(row);
+      }
+      const questionsExists = questionsRows[0];
       const questionsTableExists = questionsExists?.exists || false;
 
       // Create trivia_questions table if it doesn't exist
@@ -67,7 +75,11 @@ export const setupTriviaTables = api(
 
       // Check if we have any data, if not insert sample data
       const levelsCount = await database.query`SELECT COUNT(*) as count FROM trivia_levels`;
-      const countResult = await levelsCount[0];
+      const countRows = [];
+      for await (const row of levelsCount) {
+        countRows.push(row);
+      }
+      const countResult = countRows[0];
       const hasLevels = countResult?.count > 0;
 
       if (!hasLevels) {
