@@ -160,7 +160,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
             name: level.name,
             description: level.description || '',
             shuffle_questions: level.shuffle_questions ?? true,
-            time_limit: level.time_limit || 30,
+            time_limit: level.time_limit,
             passing_score: level.passing_score || 70
           })
         });
@@ -179,7 +179,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
             name: level.name,
             description: level.description || '',
             shuffle_questions: level.shuffle_questions ?? true,
-            time_limit: level.time_limit || 30,
+            time_limit: level.time_limit,
             passing_score: level.passing_score || 70
           })
         });
@@ -194,8 +194,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           body: JSON.stringify({
             question_en: question.question_en,
             question_es: question.question_es,
-            options_en: JSON.stringify(question.options_en || []),
-            options_es: JSON.stringify(question.options_es || []),
+            options_en: question.options_en,
+            options_es: question.options_es,
             correct_answer: question.correct_answer,
             category: question.category || 'General',
             level_id: question.level_id
@@ -214,8 +214,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           body: JSON.stringify({
             question_en: question.question_en,
             question_es: question.question_es,
-            options_en: JSON.stringify(question.options_en || []),
-            options_es: JSON.stringify(question.options_es || []),
+            options_en: question.options_en,
+            options_es: question.options_es,
             correct_answer: question.correct_answer,
             category: question.category || 'General',
             level_id: question.level_id
@@ -718,7 +718,7 @@ function QuestionForm({
 
   useEffect(() => {
     setFormData(initializeFormData(question));
-  }, [question]);
+  }, [question, levels]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

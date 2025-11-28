@@ -30609,7 +30609,7 @@ function TriviaAdminPanelFinal({ passcode }) {
             name: level.name,
             description: level.description || "",
             shuffle_questions: level.shuffle_questions ?? true,
-            time_limit: level.time_limit || 30,
+            time_limit: level.time_limit,
             passing_score: level.passing_score || 70
           })
         });
@@ -30625,7 +30625,7 @@ function TriviaAdminPanelFinal({ passcode }) {
             name: level.name,
             description: level.description || "",
             shuffle_questions: level.shuffle_questions ?? true,
-            time_limit: level.time_limit || 30,
+            time_limit: level.time_limit,
             passing_score: level.passing_score || 70
           })
         });
@@ -30638,8 +30638,8 @@ function TriviaAdminPanelFinal({ passcode }) {
           body: JSON.stringify({
             question_en: question.question_en,
             question_es: question.question_es,
-            options_en: JSON.stringify(question.options_en || []),
-            options_es: JSON.stringify(question.options_es || []),
+            options_en: question.options_en,
+            options_es: question.options_es,
             correct_answer: question.correct_answer,
             category: question.category || "General",
             level_id: question.level_id
@@ -30655,8 +30655,8 @@ function TriviaAdminPanelFinal({ passcode }) {
           body: JSON.stringify({
             question_en: question.question_en,
             question_es: question.question_es,
-            options_en: JSON.stringify(question.options_en || []),
-            options_es: JSON.stringify(question.options_es || []),
+            options_en: question.options_en,
+            options_es: question.options_es,
             correct_answer: question.correct_answer,
             category: question.category || "General",
             level_id: question.level_id
@@ -31111,7 +31111,7 @@ function QuestionForm({
   const [formData, setFormData] = reactExports.useState(initializeFormData(question));
   reactExports.useEffect(() => {
     setFormData(initializeFormData(question));
-  }, [question]);
+  }, [question, levels]);
   const handleSubmit = (e) => {
     e.preventDefault();
     const submissionData = {
