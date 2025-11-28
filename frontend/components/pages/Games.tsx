@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Sparkles, Brain, Play, Clock, Target, ChevronRight } from "lucide-react";
 
-export function Games() {
+export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const { language, t } = useLanguage();
 
   return (
@@ -59,7 +59,7 @@ export function Games() {
               </div>
             </div>
             <Button 
-              onClick={() => window.location.hash = '#trivia-game'} 
+              onClick={() => onNavigate?.("triviaGame")}
               className="mt-4 w-full bg-red-600 hover:bg-red-700"
             >
               <Play className="h-4 w-4 mr-2" />

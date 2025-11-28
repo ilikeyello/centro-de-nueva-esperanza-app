@@ -55,8 +55,8 @@ export function AppInner() {
         </div>
         {currentPage === "adminUpload" && <AdminUpload />}
         {currentPage === "contact" && <Contact onNavigate={handleNavigate} />}
-        {currentPage === "games" && <Games />}
-        {currentPage === "triviaGame" && <TriviaGamePage />}
+        {currentPage === "games" && <Games onNavigate={handleNavigate} />}
+        {currentPage === "triviaGame" && <TriviaGamePage onNavigate={handleNavigate} />}
         {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
       </main>
       <Toaster />

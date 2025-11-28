@@ -29439,7 +29439,7 @@ function Media({ onStartMusic }) {
     ] }) })
   ] });
 }
-function Games() {
+function Games({ onNavigate }) {
   const { language, t } = useLanguage();
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
@@ -29478,7 +29478,7 @@ function Games() {
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
           {
-            onClick: () => window.location.hash = "#trivia-game",
+            onClick: () => onNavigate == null ? void 0 : onNavigate("triviaGame"),
             className: "mt-4 w-full bg-red-600 hover:bg-red-700",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
@@ -29495,7 +29495,7 @@ function Games() {
     ] })
   ] });
 }
-function TriviaGamePage() {
+function TriviaGamePage({ onNavigate } = {}) {
   var _a2, _b2;
   const { t, language } = useLanguage();
   const [levels, setLevels] = reactExports.useState([]);
@@ -29635,7 +29635,7 @@ function TriviaGamePage() {
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
         {
-          onClick: () => window.location.hash = "#games",
+          onClick: () => onNavigate == null ? void 0 : onNavigate("games"),
           variant: "outline",
           className: "mb-6 border-neutral-700 hover:bg-neutral-800",
           children: [
@@ -29780,7 +29780,7 @@ function TriviaGamePage() {
           /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
           t("Play Again", "Jugar de Nuevo")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => window.location.hash = "#games", variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => onNavigate == null ? void 0 : onNavigate("games"), variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
           t("Back to Games", "Volver a Juegos")
         ] })
@@ -32367,8 +32367,8 @@ function AppInner() {
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: currentPage === "media" ? "block" : "hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Media, {}) }),
       currentPage === "adminUpload" && /* @__PURE__ */ jsxRuntimeExports.jsx(AdminUpload, {}),
       currentPage === "contact" && /* @__PURE__ */ jsxRuntimeExports.jsx(Contact, { onNavigate: handleNavigate }),
-      currentPage === "games" && /* @__PURE__ */ jsxRuntimeExports.jsx(Games, {}),
-      currentPage === "triviaGame" && /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaGamePage, {}),
+      currentPage === "games" && /* @__PURE__ */ jsxRuntimeExports.jsx(Games, { onNavigate: handleNavigate }),
+      currentPage === "triviaGame" && /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaGamePage, { onNavigate: handleNavigate }),
       currentPage === "newHere" && /* @__PURE__ */ jsxRuntimeExports.jsx(NewHere, { onNavigate: handleNavigate })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Toaster, {})
