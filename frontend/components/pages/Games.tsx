@@ -59,7 +59,7 @@ export function Games() {
               </div>
             </div>
             <Button 
-              onClick={() => window.location.href = '/cne-app/trivia-game-standalone.html'} 
+              onClick={() => window.location.hash = '#trivia-game'} 
               className="mt-4 w-full bg-red-600 hover:bg-red-700"
             >
               <Play className="h-4 w-4 mr-2" />

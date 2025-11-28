@@ -29478,7 +29478,7 @@ function Games() {
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
           {
-            onClick: () => window.location.href = "/cne-app/trivia-game-standalone.html",
+            onClick: () => window.location.hash = "#trivia-game",
             className: "mt-4 w-full bg-red-600 hover:bg-red-700",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
@@ -29635,7 +29635,7 @@ function TriviaGamePage() {
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
         {
-          onClick: () => window.location.href = "/cne-app/#games",
+          onClick: () => window.location.hash = "#games",
           variant: "outline",
           className: "mb-6 border-neutral-700 hover:bg-neutral-800",
           children: [
@@ -29780,7 +29780,7 @@ function TriviaGamePage() {
           /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
           t("Play Again", "Jugar de Nuevo")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => window.location.href = "/cne-app/#games", variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => window.location.hash = "#games", variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
           t("Back to Games", "Volver a Juegos")
         ] })
