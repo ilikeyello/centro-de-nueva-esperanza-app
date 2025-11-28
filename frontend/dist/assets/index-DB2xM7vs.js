@@ -30597,6 +30597,7 @@ function TriviaAdminPanelFinal({ passcode }) {
       return;
     }
     setStatus("Saving changes...");
+    console.log("Pending operations:", pendingOperations);
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const results = [];
@@ -30665,18 +30666,26 @@ function TriviaAdminPanelFinal({ passcode }) {
         results.push(await response.json());
       }
       for (const id of pendingOperations.levelsToDelete) {
+        console.log("Deleting level:", id);
         const response = await fetch(`${base}/trivia/simple/level/${id}`, { method: "DELETE" });
+        console.log("Delete level response status:", response.status);
         if (!response.ok) {
+          console.error("Delete level failed:", response.status);
           results.push({ success: false, error: `HTTP ${response.status}` });
         } else {
+          console.log("Delete level succeeded");
           results.push({ success: true });
         }
       }
       for (const id of pendingOperations.questionsToDelete) {
+        console.log("Deleting question:", id);
         const response = await fetch(`${base}/trivia/simple/question/${id}`, { method: "DELETE" });
+        console.log("Delete question response status:", response.status);
         if (!response.ok) {
+          console.error("Delete question failed:", response.status);
           results.push({ success: false, error: `HTTP ${response.status}` });
         } else {
+          console.log("Delete question succeeded");
           results.push({ success: true });
         }
       }
