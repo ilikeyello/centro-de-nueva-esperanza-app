@@ -96,10 +96,40 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       ? [...questions].sort(() => Math.random() - 0.5)
       : questions;
 
+    // Shuffle options for each question if shuffle is enabled
+    const processedQuestions = shuffledQuestions.map(question => {
+      if (!level.shuffle_questions) return question;
+      
+      const options_en = typeof question.options_en === 'string' 
+        ? JSON.parse(question.options_en) 
+        : question.options_en;
+      const options_es = typeof question.options_es === 'string' 
+        ? JSON.parse(question.options_es) 
+        : question.options_es;
+      
+      // Create array of option indices and shuffle them
+      const optionIndices = Array.from({ length: options_en.length }, (_, i) => i);
+      const shuffledIndices = [...optionIndices].sort(() => Math.random() - 0.5);
+      
+      // Reorder options based on shuffled indices
+      const shuffledOptions_en = shuffledIndices.map(i => options_en[i]);
+      const shuffledOptions_es = shuffledIndices.map(i => options_es[i]);
+      
+      // Update correct answer index
+      const newCorrectIndex = shuffledIndices.indexOf(question.correct_answer);
+      
+      return {
+        ...question,
+        options_en: JSON.stringify(shuffledOptions_en),
+        options_es: JSON.stringify(shuffledOptions_es),
+        correct_answer: newCorrectIndex
+      };
+    });
+
     setGameState({
       status: 'playing',
       selectedLevel: level,
-      questions: shuffledQuestions,
+      questions: processedQuestions,
       currentQuestionIndex: 0,
       userAnswers: [],
       score: 0,
@@ -211,10 +241,40 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       ? [...questions].sort(() => Math.random() - 0.5)
       : questions;
 
+    // Shuffle options for each question if shuffle is enabled
+    const processedQuestions = shuffledQuestions.map(question => {
+      if (!gameState.selectedLevel?.shuffle_questions) return question;
+      
+      const options_en = typeof question.options_en === 'string' 
+        ? JSON.parse(question.options_en) 
+        : question.options_en;
+      const options_es = typeof question.options_es === 'string' 
+        ? JSON.parse(question.options_es) 
+        : question.options_es;
+      
+      // Create array of option indices and shuffle them
+      const optionIndices = Array.from({ length: options_en.length }, (_, i) => i);
+      const shuffledIndices = [...optionIndices].sort(() => Math.random() - 0.5);
+      
+      // Reorder options based on shuffled indices
+      const shuffledOptions_en = shuffledIndices.map(i => options_en[i]);
+      const shuffledOptions_es = shuffledIndices.map(i => options_es[i]);
+      
+      // Update correct answer index
+      const newCorrectIndex = shuffledIndices.indexOf(question.correct_answer);
+      
+      return {
+        ...question,
+        options_en: JSON.stringify(shuffledOptions_en),
+        options_es: JSON.stringify(shuffledOptions_es),
+        correct_answer: newCorrectIndex
+      };
+    });
+
     setGameState({
       status: 'playing',
       selectedLevel: gameState.selectedLevel,
-      questions: shuffledQuestions,
+      questions: processedQuestions,
       currentQuestionIndex: 0,
       userAnswers: [],
       score: 0,
@@ -402,22 +462,22 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                       onClick={() => selectAnswer(index)}
                       variant="outline"
                       disabled={gameState.showFeedback}
-                      className={`justify-start h-auto p-3 md:p-4 text-left transition-all text-sm md:text-base ${
+                      className={`justify-start h-auto p-3 md:p-4 text-left transition-all text-sm md:text-base relative ${
                         gameState.showFeedback
                           ? isCorrect
-                            ? 'bg-green-600 border-green-500 text-white'
+                            ? 'bg-green-600 border-green-400 text-white ring-2 ring-green-400/50'
                             : isSelected
-                            ? 'bg-red-600 border-red-500 text-white'
-                            : 'bg-neutral-800 border-neutral-700 text-neutral-400'
+                            ? 'bg-red-600 border-red-400 text-white ring-2 ring-red-400/50'
+                            : 'bg-neutral-800 border-neutral-600 text-neutral-400'
                           : isSelected
-                          ? 'bg-red-600 border-red-600 text-white'
-                          : 'bg-neutral-800 border-neutral-700 hover:bg-red-600 hover:border-red-600 hover:text-white'
+                          ? 'bg-red-600 border-red-400 text-white ring-2 ring-red-400/50'
+                          : 'bg-neutral-800 border-neutral-600 hover:bg-red-600 hover:border-red-400 hover:text-white'
                       }`}
                     >
                       <span className="font-medium mr-3">{String.fromCharCode(65 + index)}.</span>
                       <span>{option}</span>
-                      {showCorrect && <span className="ml-auto">✓</span>}
-                      {showWrong && <span className="ml-auto">✗</span>}
+                      {showCorrect && <span className="ml-auto text-green-300">✓</span>}
+                      {showWrong && <span className="ml-auto text-red-300">✗</span>}
                     </Button>
                   );
                 })}

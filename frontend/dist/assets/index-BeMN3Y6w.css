@@ -119,6 +119,7 @@
     --color-yellow-600: oklch(68.1% .162 75.834);
     --color-yellow-900: oklch(42.1% .095 57.708);
     --color-green-200: oklch(92.5% .084 155.995);
+    --color-green-300: oklch(87.1% .15 154.449);
     --color-green-400: oklch(79.2% .209 151.711);
     --color-green-500: oklch(72.3% .219 149.579);
     --color-green-600: oklch(62.7% .194 149.214);
@@ -1585,6 +1586,10 @@
     border-color: var(--color-gray-800);
   }
 
+  .border-green-400 {
+    border-color: var(--color-green-400);
+  }
+
   .border-green-500 {
     border-color: var(--color-green-500);
   }
@@ -1615,6 +1620,10 @@
 
   .border-orange-600 {
     border-color: var(--color-orange-600);
+  }
+
+  .border-red-400 {
+    border-color: var(--color-red-400);
   }
 
   .border-red-500 {
@@ -2376,6 +2385,10 @@
     color: var(--color-green-200);
   }
 
+  .text-green-300 {
+    color: var(--color-green-300);
+  }
+
   .text-green-400 {
     color: var(--color-green-400);
   }
@@ -2438,6 +2451,10 @@
 
   .text-red-200 {
     color: var(--color-red-200);
+  }
+
+  .text-red-300 {
+    color: var(--color-red-300);
   }
 
   .text-red-400 {
@@ -2635,6 +2652,26 @@
   .inset-ring {
     --tw-inset-ring-shadow: inset 0 0 0 1px var(--tw-inset-ring-color, currentcolor);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+
+  .ring-green-400\/50 {
+    --tw-ring-color: #05df7280;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .ring-green-400\/50 {
+      --tw-ring-color: color-mix(in oklab, var(--color-green-400) 50%, transparent);
+    }
+  }
+
+  .ring-red-400\/50 {
+    --tw-ring-color: #ff656880;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .ring-red-400\/50 {
+      --tw-ring-color: color-mix(in oklab, var(--color-red-400) 50%, transparent);
+    }
   }
 
   .ring-red-600 {
@@ -2948,6 +2985,10 @@
 
     .hover\:border-neutral-700:hover {
       border-color: var(--color-neutral-700);
+    }
+
+    .hover\:border-red-400:hover {
+      border-color: var(--color-red-400);
     }
 
     .hover\:border-red-500:hover {
