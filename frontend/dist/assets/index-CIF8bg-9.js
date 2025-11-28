@@ -29500,6 +29500,7 @@ function TriviaGamePage({ onNavigate } = {}) {
   const { t, language } = useLanguage();
   const [levels, setLevels] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
+  const [selectedLevelForConfirmation, setSelectedLevelForConfirmation] = reactExports.useState(null);
   const [gameState, setGameState] = reactExports.useState({
     status: "menu",
     selectedLevel: null,
@@ -29621,8 +29622,8 @@ function TriviaGamePage({ onNavigate } = {}) {
       } else if (gameState.timeRemaining === 0 && gameState.isTimerActive) {
         handleTimeUp();
       }
-      return () => clearInterval(interval);
     }, 1e3);
+    return () => clearInterval(interval);
   }, [gameState.isTimerActive, gameState.timeRemaining]);
   if (loading) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center text-white", children: [
@@ -29637,7 +29638,7 @@ function TriviaGamePage({ onNavigate } = {}) {
         {
           onClick: () => onNavigate == null ? void 0 : onNavigate("games"),
           variant: "outline",
-          className: "mb-6 border-neutral-700 hover:bg-neutral-800",
+          className: "mb-6 border-neutral-700 hover:bg-neutral-800 text-white",
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
             t("Back to Games", "Volver a Juegos")
@@ -29654,8 +29655,8 @@ function TriviaGamePage({ onNavigate } = {}) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-6 max-w-4xl mx-auto", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(
         Card,
         {
-          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group",
-          onClick: () => startGame(level),
+          className: `bg-neutral-900 border-neutral-800 transition-all cursor-pointer group ${(selectedLevelForConfirmation == null ? void 0 : selectedLevelForConfirmation.id) === level.id ? "border-red-600 ring-2 ring-red-600/50" : "hover:border-red-600"}`,
+          onClick: () => setSelectedLevelForConfirmation(level),
           children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-xl font-semibold text-white mb-2", children: language === "es" ? level.name : level.name }),
@@ -29682,6 +29683,56 @@ function TriviaGamePage({ onNavigate } = {}) {
         },
         level.id
       )) }),
+      selectedLevelForConfirmation && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-4xl mx-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-red-900/20 border-red-600 p-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("h3", { className: "text-xl font-semibold text-white mb-2", children: [
+            t("Ready to play", "Listo para jugar"),
+            ' "',
+            selectedLevelForConfirmation.name,
+            '"?'
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-300", children: selectedLevelForConfirmation.description || t("Test your knowledge with this trivia level.", "Pon a prueba tu conocimiento con este nivel de trivia.") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 mt-3 text-sm text-neutral-400", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
+              selectedLevelForConfirmation.time_limit,
+              "s ",
+              t("per question", "por pregunta")
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
+              selectedLevelForConfirmation.passing_score,
+              "% ",
+              t("to pass", "para aprobar")
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-3", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              onClick: () => setSelectedLevelForConfirmation(null),
+              variant: "outline",
+              className: "border-neutral-600 hover:bg-neutral-800 text-white",
+              children: t("Cancel", "Cancelar")
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Button,
+            {
+              onClick: () => {
+                startGame(selectedLevelForConfirmation);
+                setSelectedLevelForConfirmation(null);
+              },
+              className: "bg-red-600 hover:bg-red-700",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
+                t("Play Now", "Jugar Ahora")
+              ]
+            }
+          )
+        ] })
+      ] }) }) }),
       levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-12", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-16 w-16 mx-auto mb-4 text-neutral-600" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("No trivia levels available yet.", "No hay niveles de trivia disponibles aún.") })
@@ -29692,13 +29743,13 @@ function TriviaGamePage({ onNavigate } = {}) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const question = language === "es" ? currentQuestion.question_es : currentQuestion.question_en;
     const options = language === "es" ? typeof currentQuestion.options_es === "string" ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es : typeof currentQuestion.options_en === "string" ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-6 px-4 py-8 max-w-3xl", children: [
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-6 px-4 py-8 max-w-3xl h-screen md:h-auto flex flex-col md:block overflow-hidden", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
         {
           onClick: resetGame,
           variant: "outline",
-          className: "border-neutral-700 hover:bg-neutral-800",
+          className: "border-neutral-700 hover:bg-neutral-800 flex-shrink-0",
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
             t("Exit Game", "Salir del Juego")
@@ -29728,7 +29779,7 @@ function TriviaGamePage({ onNavigate } = {}) {
           style: { width: `${(gameState.currentQuestionIndex + 1) / gameState.questions.length * 100}%` }
         }
       ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 flex-1 overflow-hidden md:overflow-visible", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-semibold text-white", children: question }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-3", children: options.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
@@ -29780,7 +29831,7 @@ function TriviaGamePage({ onNavigate } = {}) {
           /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
           t("Play Again", "Jugar de Nuevo")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => onNavigate == null ? void 0 : onNavigate("games"), variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => onNavigate == null ? void 0 : onNavigate("games"), variant: "outline", className: "border-neutral-700 hover:bg-neutral-800 text-white", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
           t("Back to Games", "Volver a Juegos")
         ] })
