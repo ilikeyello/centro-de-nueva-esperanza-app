@@ -227,16 +227,25 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       // Delete levels
       for (const id of pendingOperations.levelsToDelete) {
         const response = await fetch(`${base}/trivia/simple/level/${id}`, { method: 'DELETE' });
-        results.push(await response.json());
+        if (!response.ok) {
+          results.push({ success: false, error: `HTTP ${response.status}` });
+        } else {
+          results.push({ success: true });
+        }
       }
 
       // Delete questions
       for (const id of pendingOperations.questionsToDelete) {
         const response = await fetch(`${base}/trivia/simple/question/${id}`, { method: 'DELETE' });
-        results.push(await response.json());
+        if (!response.ok) {
+          results.push({ success: false, error: `HTTP ${response.status}` });
+        } else {
+          results.push({ success: true });
+        }
       }
 
       const errors = results.filter(r => !r.success);
+      
       if (errors.length === 0) {
         setStatus('All changes saved successfully!');
         setPendingOperations({
