@@ -77,7 +77,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: level.id || level.name.toLowerCase().replace(/\s+/g, '-'),
+          id: level?.id || level.name?.toLowerCase().replace(/\s+/g, '-') || '',
           name: level.name,
           description: level.description || '',
           shuffle_questions: level.shuffle_questions ?? true,
@@ -639,7 +639,7 @@ function QuestionForm({
           {t("Answer Options (English)", "Opciones de Respuesta (Inglés)")} *
         </Label>
         <div className="space-y-2">
-          {formData.options_en.map((option, index) => (
+          {formData.options_en.map((option: string, index: number) => (
             <div key={index} className="flex items-center gap-2">
               <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
               <Input
@@ -666,7 +666,7 @@ function QuestionForm({
           {t("Answer Options (Spanish)", "Opciones de Respuesta (Español)")} *
         </Label>
         <div className="space-y-2">
-          {formData.options_es.map((option, index) => (
+          {formData.options_es.map((option: string, index: number) => (
             <div key={index} className="flex items-center gap-2">
               <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
               <Input
