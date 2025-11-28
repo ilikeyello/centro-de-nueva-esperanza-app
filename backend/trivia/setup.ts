@@ -5,26 +5,12 @@ export const setupTriviaTables = api(
   { expose: true, path: "/trivia/setup", method: "POST" },
   async (): Promise<{ success: boolean; message: string }> => {
     try {
-      // Check if trivia_levels table exists
-      const levelsCheck = await database.query`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = 'trivia_levels'
-        );
-      `;
-
-      const levelsRows = [];
-      for await (const row of levelsCheck) {
-        levelsRows.push(row);
-      }
-      const levelsExists = levelsRows[0];
-      const levelsTableExists = levelsExists?.exists || false;
-
-      // Create trivia_levels table if it doesn't exist
-      if (!levelsTableExists) {
+      console.log("Starting trivia database setup...");
+      
+      // Create trivia_levels table
+      try {
         await database.query`
-          CREATE TABLE trivia_levels (
+          CREATE TABLE IF NOT EXISTS trivia_levels (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             description TEXT,
@@ -36,28 +22,16 @@ export const setupTriviaTables = api(
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
           );
         `;
+        console.log("trivia_levels table created or already exists");
+      } catch (error) {
+        console.error("Error creating trivia_levels table:", error);
+        throw error;
       }
 
-      // Check if trivia_questions table exists
-      const questionsCheck = await database.query`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = 'trivia_questions'
-        );
-      `;
-
-      const questionsRows = [];
-      for await (const row of questionsCheck) {
-        questionsRows.push(row);
-      }
-      const questionsExists = questionsRows[0];
-      const questionsTableExists = questionsExists?.exists || false;
-
-      // Create trivia_questions table if it doesn't exist
-      if (!questionsTableExists) {
+      // Create trivia_questions table
+      try {
         await database.query`
-          CREATE TABLE trivia_questions (
+          CREATE TABLE IF NOT EXISTS trivia_questions (
             id BIGSERIAL PRIMARY KEY,
             question_en TEXT NOT NULL,
             question_es TEXT NOT NULL,
@@ -71,66 +45,86 @@ export const setupTriviaTables = api(
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
           );
         `;
+        console.log("trivia_questions table created or already exists");
+      } catch (error) {
+        console.error("Error creating trivia_questions table:", error);
+        throw error;
       }
 
-      // Check if we have any data, if not insert sample data
-      const levelsCount = await database.query`SELECT COUNT(*) as count FROM trivia_levels`;
-      const countRows = [];
-      for await (const row of levelsCount) {
-        countRows.push(row);
-      }
-      const countResult = countRows[0];
-      const hasLevels = countResult?.count > 0;
+      // Check if we have any levels, if not insert sample data
+      try {
+        const levelsCount = await database.query`SELECT COUNT(*) as count FROM trivia_levels`;
+        const countRows = [];
+        for await (const row of levelsCount) {
+          countRows.push(row);
+        }
+        const countResult = countRows[0];
+        const hasLevels = countResult?.count > 0;
 
-      if (!hasLevels) {
-        // Insert default trivia levels
-        await database.query`
-          INSERT INTO trivia_levels (id, name, description, target_group, shuffle_questions, time_limit, passing_score)
-          VALUES 
-            ('kids', 'Kids', 'For children ages 6-12', 'Children', TRUE, 30, 70),
-            ('youth', 'Youth', 'For teenagers and young adults', 'Youth', TRUE, 20, 80),
-            ('adults', 'Adults', 'For adult church members', 'Adults', TRUE, 15, 85);
-        `;
+        if (!hasLevels) {
+          console.log("Inserting sample trivia levels...");
+          
+          // Insert default trivia levels
+          await database.query`
+            INSERT INTO trivia_levels (id, name, description, target_group, shuffle_questions, time_limit, passing_score)
+            VALUES 
+              ('kids', 'Kids', 'For children ages 6-12', 'Children', TRUE, 30, 70),
+              ('youth', 'Youth', 'For teenagers and young adults', 'Youth', TRUE, 20, 80),
+              ('adults', 'Adults', 'For adult church members', 'Adults', TRUE, 15, 85)
+            ON CONFLICT (id) DO NOTHING;
+          `;
+          
+          console.log("Sample trivia levels inserted");
 
-        // Insert sample trivia questions
-        await database.query`
-          INSERT INTO trivia_questions (question_en, question_es, options_en, options_es, correct_answer, category, level_id, reference)
-          VALUES 
-            ('Who built the ark?', '¿Quién construyó el arca?', 
-             '["Noah", "Moses", "Abraham", "David"]', 
-             '["Noé", "Moisés", "Abraham", "David"]', 
-             0, 'Old Testament', 'kids', 'Genesis 6:14'),
-             
-            ('What was the name of the garden where Adam and Eve lived?', '¿Cuál era el nombre del jardín donde vivían Adán y Eva?', 
-             '["Garden of Eden", "Garden of Gethsemane", "Garden of Olives", "Garden of Paradise"]', 
-             '["Jardín del Edén", "Jardín de Getsemaní", "Jardín de los Olivos", "Jardín del Paraíso"]', 
-             0, 'Old Testament', 'kids', 'Genesis 2:8'),
-             
-            ('Who led the Israelites out of Egypt?', '¿Quién guio a los israelitas fuera de Egipto?', 
-             '["Moses", "Abraham", "Jacob", "Joseph"]', 
-             '["Moisés", "Abraham", "Jacob", "José"]', 
-             0, 'Old Testament', 'youth', 'Exodus 3:10'),
-             
-            ('What was the first plague in Egypt?', '¿Cuál fue la primera plaga en Egipto?', 
-             '["Water to blood", "Frogs", "Lice", "Darkness"]', 
-             '["Agua a sangre", "Ranas", "Piojos", "Oscuridad"]', 
-             0, 'Old Testament', 'youth', 'Exodus 7:19'),
-             
-            ('Who was the first king of Israel?', '¿Quién fue el primer rey de Israel?', 
-             '["Saul", "David", "Solomon", "Samuel"]', 
-             '["Saúl", "David", "Salomón", "Samuel"]', 
-             0, 'Old Testament', 'adults', '1 Samuel 10:1'),
-             
-            ('What is the shortest book in the Bible?', '¿Cuál es el libro más corto de la Biblia?', 
-             '["3 John", "2 John", "Philemon", "Jude"]', 
-             '["3 Juan", "2 Juan", "Filemón", "Judas"]', 
-             0, 'New Testament', 'adults', '2 John 1:1');
-        `;
+          // Insert sample trivia questions
+          console.log("Inserting sample trivia questions...");
+          await database.query`
+            INSERT INTO trivia_questions (question_en, question_es, options_en, options_es, correct_answer, category, level_id, reference)
+            VALUES 
+              ('Who built the ark?', '¿Quién construyó el arca?', 
+               '["Noah", "Moses", "Abraham", "David"]', 
+               '["Noé", "Moisés", "Abraham", "David"]', 
+               0, 'Old Testament', 'kids', 'Genesis 6:14'),
+               
+              ('What was the name of the garden where Adam and Eve lived?', '¿Cuál era el nombre del jardín donde vivían Adán y Eva?', 
+               '["Garden of Eden", "Garden of Gethsemane", "Garden of Olives", "Garden of Paradise"]', 
+               '["Jardín del Edén", "Jardín de Getsemaní", "Jardín de los Olivos", "Jardín del Paraíso"]', 
+               0, 'Old Testament', 'kids', 'Genesis 2:8'),
+               
+              ('Who led the Israelites out of Egypt?', '¿Quién guio a los israelitas fuera de Egipto?', 
+               '["Moses", "Abraham", "Jacob", "Joseph"]', 
+               '["Moisés", "Abraham", "Jacob", "José"]', 
+               0, 'Old Testament', 'youth', 'Exodus 3:10'),
+               
+              ('What was the first plague in Egypt?', '¿Cuál fue la primera plaga en Egipto?', 
+               '["Water to blood", "Frogs", "Lice", "Darkness"]', 
+               '["Agua a sangre", "Ranas", "Piojos", "Oscuridad"]', 
+               0, 'Old Testament', 'youth', 'Exodus 7:19'),
+               
+              ('Who was the first king of Israel?', '¿Quién fue el primer rey de Israel?', 
+               '["Saul", "David", "Solomon", "Samuel"]', 
+               '["Saúl", "David", "Salomón", "Samuel"]', 
+               0, 'Old Testament', 'adults', '1 Samuel 10:1'),
+               
+              ('What is the shortest book in the Bible?', '¿Cuál es el libro más corto de la Biblia?', 
+               '["3 John", "2 John", "Philemon", "Jude"]', 
+               '["3 Juan", "2 Juan", "Filemón", "Judas"]', 
+               0, 'New Testament', 'adults', '2 John 1:1')
+            ON CONFLICT DO NOTHING;
+          `;
+          
+          console.log("Sample trivia questions inserted");
+        } else {
+          console.log("Sample data already exists");
+        }
+      } catch (error) {
+        console.error("Error inserting sample data:", error);
+        // Don't throw here - tables might exist but sample data insertion failed
       }
 
       return { 
         success: true, 
-        message: `Tables setup complete. Levels: ${levelsTableExists ? 'existed' : 'created'}, Questions: ${questionsTableExists ? 'existed' : 'created'}, Sample data: ${hasLevels ? 'existed' : 'inserted'}` 
+        message: "Trivia database setup completed successfully!" 
       };
     } catch (error) {
       console.error('Setup error:', error);
