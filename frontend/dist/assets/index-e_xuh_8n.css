@@ -176,6 +176,7 @@
     --radius-xs: .125rem;
     --radius-2xl: 1rem;
     --ease-out: cubic-bezier(0, 0, .2, 1);
+    --animate-spin: spin 1s linear infinite;
     --animate-pulse: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
     --aspect-video: 16 / 9;
     --default-transition-duration: .15s;
@@ -736,6 +737,10 @@
     margin-left: calc(var(--spacing) * 2);
   }
 
+  .ml-3 {
+    margin-left: calc(var(--spacing) * 3);
+  }
+
   .ml-4 {
     margin-left: calc(var(--spacing) * 4);
   }
@@ -921,6 +926,10 @@
     height: calc(var(--spacing) * 16);
   }
 
+  .h-20 {
+    height: calc(var(--spacing) * 20);
+  }
+
   .h-24 {
     height: calc(var(--spacing) * 24);
   }
@@ -959,6 +968,10 @@
 
   .max-h-80 {
     max-height: calc(var(--spacing) * 80);
+  }
+
+  .max-h-96 {
+    max-height: calc(var(--spacing) * 96);
   }
 
   .max-h-screen {
@@ -1139,6 +1152,10 @@
     animation: var(--animate-pulse);
   }
 
+  .animate-spin {
+    animation: var(--animate-spin);
+  }
+
   .cursor-default {
     cursor: default;
   }
@@ -1170,6 +1187,10 @@
 
   .grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .grid-rows-\[auto_auto\] {
@@ -1494,6 +1515,11 @@
     border-bottom-width: 1px;
   }
 
+  .border-b-2 {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 2px;
+  }
+
   .border-l {
     border-left-style: var(--tw-border-style);
     border-left-width: 1px;
@@ -1560,6 +1586,10 @@
     border-color: var(--color-red-600);
   }
 
+  .border-red-700 {
+    border-color: var(--color-red-700);
+  }
+
   .border-transparent {
     border-color: #0000;
   }
@@ -1610,6 +1640,16 @@
 
   .bg-destructive {
     background-color: var(--destructive);
+  }
+
+  .bg-green-500\/20 {
+    background-color: #00c75833;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-green-500\/20 {
+      background-color: color-mix(in oklab, var(--color-green-500) 20%, transparent);
+    }
   }
 
   .bg-green-600 {
@@ -1814,6 +1854,16 @@
 
   .bg-red-500 {
     background-color: var(--color-red-500);
+  }
+
+  .bg-red-500\/20 {
+    background-color: #fb2c3633;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-red-500\/20 {
+      background-color: color-mix(in oklab, var(--color-red-500) 20%, transparent);
+    }
   }
 
   .bg-red-600 {
@@ -2086,10 +2136,6 @@
     padding-bottom: calc(var(--spacing) * 24);
   }
 
-  .pb-32 {
-    padding-bottom: calc(var(--spacing) * 32);
-  }
-
   .pl-2 {
     padding-left: calc(var(--spacing) * 2);
   }
@@ -2104,6 +2150,10 @@
 
   .text-right {
     text-align: right;
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
   }
 
   .text-2xl {
@@ -2806,6 +2856,10 @@
       border-color: var(--color-red-500);
     }
 
+    .hover\:border-red-600:hover {
+      border-color: var(--color-red-600);
+    }
+
     .hover\:bg-accent:hover {
       background-color: var(--accent);
     }
@@ -3495,10 +3549,6 @@
       padding-bottom: calc(var(--spacing) * 20);
     }
 
-    .md\:pb-24 {
-      padding-bottom: calc(var(--spacing) * 24);
-    }
-
     .md\:text-5xl {
       font-size: var(--text-5xl);
       line-height: var(--tw-leading, var(--text-5xl--line-height));
@@ -3826,10 +3876,6 @@
     padding-right: 1rem;
   }
 
-  .nav-button {
-    padding: .75rem .5rem;
-  }
-
   .hero-image {
     height: 40rem !important;
   }
@@ -3852,10 +3898,6 @@
 
   .hero-title {
     font-size: 2rem !important;
-  }
-
-  .nav-button {
-    padding: .5rem .25rem;
   }
 }
 
@@ -4402,6 +4444,12 @@
 @property --tw-ease {
   syntax: "*";
   inherits: false
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {

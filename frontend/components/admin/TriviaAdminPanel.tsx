@@ -61,6 +61,23 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
     } catch (error) {
       console.error('Failed to load trivia data:', error);
       setStatus('Failed to load data');
+      
+      // Try to setup tables if loading fails
+      try {
+        const setupRes = await fetch('/trivia/setup', { method: 'POST' });
+        const setupResult = await setupRes.json();
+        
+        if (setupResult.success) {
+          setStatus('Database tables created. Loading data...');
+          // Try loading again after setup
+          setTimeout(loadData, 1000);
+        } else {
+          setStatus(`Setup failed: ${setupResult.message}`);
+        }
+      } catch (setupError) {
+        console.error('Setup failed:', setupError);
+        setStatus('Failed to setup database tables');
+      }
     } finally {
       setLoading(false);
     }
@@ -380,55 +397,56 @@ function LevelForm({
   const { t, language } = useLanguage();
   const [formData, setFormData] = useState(level);
 
+  const generateId = (name: string) => {
+    return name.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '_')
+      .substring(0, 20);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    const levelToSave = {
+      ...formData,
+      id: level.id || generateId(formData.name),
+      target_group: formData.target_group || undefined
+    };
+    onSave(levelToSave);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
-            {t("Level ID", "ID del Nivel")}
-          </label>
-          <input
-            type="text"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
-            placeholder="e.g., kids, youth, adults"
-            disabled={!!level.id}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
-            {t("Level Name", "Nombre del Nivel")}
-          </label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
-            placeholder={language === 'es' ? 'Niños' : 'Kids'}
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-neutral-300 mb-1">
+          {t("Level Name", "Nombre del Nivel")}
+        </label>
+        <input
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+          placeholder={language === 'es' ? 'Niños' : 'Kids'}
+          required
+        />
+        <p className="text-xs text-neutral-500 mt-1">
+          {t("ID will be automatically generated from the name", "El ID se generará automáticamente desde el nombre")}
+        </p>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-neutral-300 mb-1">
-          {t("Description", "Descripción")}
+          {t("Description (optional)", "Descripción (opcional)")}
         </label>
-        <input
-          type="text"
+        <textarea
           value={formData.description || ''}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
           placeholder={language === 'es' ? 'Para niños de 6-12 años' : 'For children ages 6-12'}
+          rows={2}
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-neutral-300 mb-1">
             {t("Time Limit (seconds)", "Límite de Tiempo (segundos)")}
@@ -453,18 +471,6 @@ function LevelForm({
             className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
             min="0"
             max="100"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
-            {t("Target Group", "Grupo Objetivo")}
-          </label>
-          <input
-            type="text"
-            value={formData.target_group || ''}
-            onChange={(e) => setFormData({ ...formData, target_group: e.target.value })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
-            placeholder={language === 'es' ? 'Niños' : 'Children'}
           />
         </div>
       </div>
@@ -537,6 +543,7 @@ function QuestionForm({
             className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
             rows={2}
             placeholder="What is the first book of the Bible?"
+            required
           />
         </div>
         <div>
@@ -549,6 +556,7 @@ function QuestionForm({
             className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
             rows={2}
             placeholder="¿Cuál es el primer libro de la Biblia?"
+            required
           />
         </div>
       </div>
@@ -577,72 +585,49 @@ function QuestionForm({
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
-            placeholder="Old Testament, New Testament, Jesus, etc."
+            placeholder="Old Testament, New Testament, Jesus"
+            required
           />
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-neutral-300 mb-1">
-          {t("Options (English)", "Opciones (Inglés)")}
+          {t("Answer Options (click radio for correct answer)", "Opciones de respuesta (haz clic en el radio para la respuesta correcta)")}
         </label>
+        
         {formData.options_en.map((option, index) => (
-          <div key={`en-${index}`} className="flex items-center gap-2 mb-2">
-            <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
-            <input
-              type="text"
-              value={option}
-              onChange={(e) => updateOption('en', index, e.target.value)}
-              className="flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
-              placeholder={`Option ${index + 1}`}
-            />
-            <input
-              type="radio"
-              name="correct-en"
-              checked={formData.correct_answer === index}
-              onChange={() => setFormData({ ...formData, correct_answer: index })}
-              className="text-red-500"
-            />
+          <div key={index} className="space-y-2 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
+              <input
+                type="text"
+                value={option}
+                onChange={(e) => updateOption('en', index, e.target.value)}
+                className="flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+                placeholder={`Option ${index + 1} in English`}
+                required
+              />
+              <input
+                type="radio"
+                name="correct"
+                checked={formData.correct_answer === index}
+                onChange={() => setFormData({ ...formData, correct_answer: index })}
+                className="text-red-500"
+              />
+            </div>
+            <div className="flex items-center gap-2 ml-6">
+              <input
+                type="text"
+                value={formData.options_es[index]}
+                onChange={(e) => updateOption('es', index, e.target.value)}
+                className="flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+                placeholder={`Opción ${index + 1} en español`}
+                required
+              />
+            </div>
           </div>
         ))}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-neutral-300 mb-1">
-          {t("Options (Spanish)", "Opciones (Español)")}
-        </label>
-        {formData.options_es.map((option, index) => (
-          <div key={`es-${index}`} className="flex items-center gap-2 mb-2">
-            <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
-            <input
-              type="text"
-              value={option}
-              onChange={(e) => updateOption('es', index, e.target.value)}
-              className="flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
-              placeholder={`Opción ${index + 1}`}
-            />
-            <input
-              type="radio"
-              name="correct-es"
-              checked={formData.correct_answer === index}
-              onChange={() => setFormData({ ...formData, correct_answer: index })}
-              className="text-red-500"
-            />
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-neutral-300 mb-1">
-          {t("Reference (optional)", "Referencia (opcional)")}
-        </label>
-        <input
-          type="text"
-          value={formData.reference || ''}
-          onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-          className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
-          placeholder="Genesis 1:1"
-        />
       </div>
 
       <div className="flex gap-2">
