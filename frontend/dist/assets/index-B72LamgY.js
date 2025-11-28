@@ -30539,8 +30539,10 @@ function TriviaAdminPanelFinal({ passcode }) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
+      console.log("Loaded data:", data);
       setLevels(data.levels || []);
       setQuestions(data.questions || []);
+      console.log("Levels after load:", data.levels);
     } catch (error) {
       console.error("Failed to load trivia data:", error);
       setStatus("Failed to load data");
@@ -30692,6 +30694,7 @@ function TriviaAdminPanelFinal({ passcode }) {
       const errors = results.filter((r2) => !r2.success);
       if (errors.length === 0) {
         setStatus("All changes saved successfully!");
+        console.log("About to call loadData after successful save");
         setPendingOperations({
           levelsToAdd: [],
           levelsToEdit: [],
