@@ -97,7 +97,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       : questions;
 
     // Shuffle options for each question if shuffle is enabled
-    const processedQuestions = shuffledQuestions.map(question => {
+    const processedQuestions = shuffledQuestions.map((question: TriviaQuestion) => {
       if (!level.shuffle_questions) return question;
       
       const options_en = typeof question.options_en === 'string' 
@@ -242,7 +242,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       : questions;
 
     // Shuffle options for each question if shuffle is enabled
-    const processedQuestions = shuffledQuestions.map(question => {
+    const processedQuestions = shuffledQuestions.map((question: TriviaQuestion) => {
       if (!gameState.selectedLevel?.shuffle_questions) return question;
       
       const options_en = typeof question.options_en === 'string' 
