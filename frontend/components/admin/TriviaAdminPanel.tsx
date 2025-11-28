@@ -48,7 +48,8 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
 
   const loadData = async () => {
     try {
-      const response = await fetch('/trivia/simple');
+      const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       
       setLevels(data.levels || []);

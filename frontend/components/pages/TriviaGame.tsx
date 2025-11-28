@@ -73,7 +73,8 @@ export function TriviaGame() {
 
   const loadLevels = async () => {
     try {
-      const response = await fetch('/trivia/simple');
+      const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       setLevels(data.levels);
     } catch (error) {
@@ -85,7 +86,8 @@ export function TriviaGame() {
 
   const loadQuestions = async (levelId: string) => {
     try {
-      const response = await fetch('/trivia/simple');
+      const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       return data.questions.filter((q: TriviaQuestion) => q.level_id === levelId);
     } catch (error) {

@@ -29473,7 +29473,8 @@ function TriviaGame() {
   }, [gameState.isTimerActive, gameState.timeRemaining]);
   const loadLevels = async () => {
     try {
-      const response = await fetch("/trivia/simple");
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       setLevels(data.levels);
     } catch (error) {
@@ -29484,7 +29485,8 @@ function TriviaGame() {
   };
   const loadQuestions = async (levelId) => {
     try {
-      const response = await fetch("/trivia/simple");
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       return data.questions.filter((q) => q.level_id === levelId);
     } catch (error) {
@@ -30363,7 +30365,8 @@ function TriviaAdminPanel({ passcode }) {
   }, []);
   const loadData = async () => {
     try {
-      const response = await fetch("/trivia/simple");
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       setLevels(data.levels || []);
       setQuestions(data.questions || []);
