@@ -198,7 +198,7 @@ export function TriviaGamePage() {
       <div className="container mx-auto space-y-8 px-4 py-8">
         {/* Back Button */}
         <Button 
-          onClick={() => window.location.href = '/games'}
+          onClick={() => window.location.hash = '#games'}
           variant="outline" 
           className="mb-6 border-neutral-700 hover:bg-neutral-800"
         >
@@ -368,7 +368,7 @@ export function TriviaGamePage() {
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t("Play Again", "Jugar de Nuevo")}
               </Button>
-              <Button onClick={() => window.location.href = '/games'} variant="outline" className="border-neutral-700 hover:bg-neutral-800">
+              <Button onClick={() => window.location.hash = '#games'} variant="outline" className="border-neutral-700 hover:bg-neutral-800">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t("Back to Games", "Volver a Juegos")}
               </Button>

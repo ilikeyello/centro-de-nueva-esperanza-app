@@ -29478,7 +29478,7 @@ function Games() {
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
           {
-            onClick: () => window.location.href = "/trivia-game",
+            onClick: () => window.location.hash = "#trivia-game",
             className: "mt-4 w-full bg-red-600 hover:bg-red-700",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
@@ -29635,7 +29635,7 @@ function TriviaGamePage() {
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
         {
-          onClick: () => window.location.href = "/games",
+          onClick: () => window.location.hash = "#games",
           variant: "outline",
           className: "mb-6 border-neutral-700 hover:bg-neutral-800",
           children: [
@@ -29780,7 +29780,7 @@ function TriviaGamePage() {
           /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
           t("Play Again", "Jugar de Nuevo")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => window.location.href = "/games", variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => window.location.hash = "#games", variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
           t("Back to Games", "Volver a Juegos")
         ] })
@@ -30404,17 +30404,27 @@ const TabsContent = reactExports.forwardRef(({ className, ...props }, ref) => /*
   }
 ));
 TabsContent.displayName = Content.displayName;
-function TriviaAdminPanelImproved({ passcode }) {
+function TriviaAdminPanelFinal({ passcode }) {
   const { t, language } = useLanguage();
   const [levels, setLevels] = reactExports.useState([]);
   const [questions, setQuestions] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
   const [status, setStatus] = reactExports.useState("");
+  const [expandedLevels, setExpandedLevels] = reactExports.useState(/* @__PURE__ */ new Set());
+  const [pendingOperations, setPendingOperations] = reactExports.useState({
+    levelsToAdd: [],
+    levelsToEdit: [],
+    levelsToDelete: [],
+    questionsToAdd: [],
+    questionsToEdit: [],
+    questionsToDelete: []
+  });
+  const [showLevelDialog, setShowLevelDialog] = reactExports.useState(false);
+  const [showQuestionDialog, setShowQuestionDialog] = reactExports.useState(false);
   const [editingLevel, setEditingLevel] = reactExports.useState(null);
   const [editingQuestion, setEditingQuestion] = reactExports.useState(null);
-  const [showNewLevelForm, setShowNewLevelForm] = reactExports.useState(false);
-  const [showNewQuestionForm, setShowNewQuestionForm] = reactExports.useState(false);
-  const [expandedLevels, setExpandedLevels] = reactExports.useState(/* @__PURE__ */ new Set());
+  const [showSaveDialog, setShowSaveDialog] = reactExports.useState(false);
+  const [savePasscode, setSavePasscode] = reactExports.useState("");
   reactExports.useEffect(() => {
     loadData();
   }, []);
@@ -30432,98 +30442,146 @@ function TriviaAdminPanelImproved({ passcode }) {
       setLoading(false);
     }
   };
-  const handleSaveLevel = async (level) => {
-    try {
-      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/simple/level`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: level.id || level.name.toLowerCase().replace(/\s+/g, "-"),
-          name: level.name,
-          description: level.description || "",
-          shuffle_questions: level.shuffle_questions ?? true,
-          time_limit: level.time_limit || 30,
-          passing_score: level.passing_score || 70
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
-        setStatus("Level saved successfully");
-        loadData();
-        setEditingLevel(null);
-        setShowNewLevelForm(false);
-      } else {
-        setStatus(`Error: ${result.message}`);
-      }
-    } catch (error) {
-      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+  const addLevelToBatch = (level) => {
+    if (editingLevel) {
+      setPendingOperations((prev) => ({
+        ...prev,
+        levelsToEdit: [...prev.levelsToEdit.filter((l) => l.id !== editingLevel.id), { ...level, id: editingLevel.id }]
+      }));
+    } else {
+      setPendingOperations((prev) => ({
+        ...prev,
+        levelsToAdd: [...prev.levelsToAdd, level]
+      }));
     }
+    setShowLevelDialog(false);
+    setEditingLevel(null);
   };
-  const handleSaveQuestion = async (question) => {
-    try {
-      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/simple/question`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question_en: question.question_en,
-          question_es: question.question_es,
-          options_en: JSON.stringify(question.options_en || []),
-          options_es: JSON.stringify(question.options_es || []),
-          correct_answer: question.correct_answer,
-          category: question.category || "General",
-          level_id: question.level_id
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
-        setStatus("Question saved successfully");
-        loadData();
-        setEditingQuestion(null);
-        setShowNewQuestionForm(false);
-      } else {
-        setStatus(`Error: ${result.message}`);
-      }
-    } catch (error) {
-      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+  const addQuestionToBatch = (question) => {
+    if (editingQuestion) {
+      setPendingOperations((prev) => ({
+        ...prev,
+        questionsToEdit: [...prev.questionsToEdit.filter((q) => q.id !== editingQuestion.id), { ...question, id: editingQuestion.id }]
+      }));
+    } else {
+      setPendingOperations((prev) => ({
+        ...prev,
+        questionsToAdd: [...prev.questionsToAdd, question]
+      }));
     }
+    setShowQuestionDialog(false);
+    setEditingQuestion(null);
   };
-  const handleDeleteLevel = async (id) => {
-    if (!confirm(t("Are you sure you want to delete this level and all its questions?", "¿Estás seguro de que quieres eliminar este nivel y todas sus preguntas?"))) {
+  const deleteLevelFromBatch = (id) => {
+    setPendingOperations((prev) => ({
+      ...prev,
+      levelsToDelete: [...prev.levelsToDelete, id]
+    }));
+  };
+  const deleteQuestionFromBatch = (id) => {
+    setPendingOperations((prev) => ({
+      ...prev,
+      questionsToDelete: [...prev.questionsToDelete, id]
+    }));
+  };
+  const executeBatchOperations = async () => {
+    var _a2;
+    if (savePasscode !== passcode) {
+      setStatus("Incorrect passcode");
       return;
     }
+    setStatus("Saving changes...");
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/simple/level/${id}`, {
-        method: "DELETE"
-      });
-      const result = await response.json();
-      if (result.success) {
-        setStatus("Level deleted successfully");
-        loadData();
-      } else {
-        setStatus(`Error: ${result.message}`);
+      const results = [];
+      for (const level of pendingOperations.levelsToAdd) {
+        const response = await fetch(`${base}/trivia/simple/level`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: level.id || ((_a2 = level.name) == null ? void 0 : _a2.toLowerCase().replace(/\s+/g, "-")) || "",
+            name: level.name,
+            description: level.description || "",
+            shuffle_questions: level.shuffle_questions ?? true,
+            time_limit: level.time_limit || 30,
+            passing_score: level.passing_score || 70
+          })
+        });
+        results.push(await response.json());
       }
-    } catch (error) {
-      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
-    }
-  };
-  const handleDeleteQuestion = async (id) => {
-    if (!confirm(t("Are you sure you want to delete this question?", "¿Estás seguro de que quieres eliminar esta pregunta?"))) {
-      return;
-    }
-    try {
-      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/simple/question/${id}`, {
-        method: "DELETE"
-      });
-      const result = await response.json();
-      if (result.success) {
-        setStatus("Question deleted successfully");
+      for (const level of pendingOperations.levelsToEdit) {
+        await fetch(`${base}/trivia/simple/level/${level.id}`, { method: "DELETE" });
+        const response = await fetch(`${base}/trivia/simple/level`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: level.id,
+            name: level.name,
+            description: level.description || "",
+            shuffle_questions: level.shuffle_questions ?? true,
+            time_limit: level.time_limit || 30,
+            passing_score: level.passing_score || 70
+          })
+        });
+        results.push(await response.json());
+      }
+      for (const question of pendingOperations.questionsToAdd) {
+        const response = await fetch(`${base}/trivia/simple/question`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question_en: question.question_en,
+            question_es: question.question_es,
+            options_en: JSON.stringify(question.options_en || []),
+            options_es: JSON.stringify(question.options_es || []),
+            correct_answer: question.correct_answer,
+            category: question.category || "General",
+            level_id: question.level_id
+          })
+        });
+        results.push(await response.json());
+      }
+      for (const question of pendingOperations.questionsToEdit) {
+        await fetch(`${base}/trivia/simple/question/${question.id}`, { method: "DELETE" });
+        const response = await fetch(`${base}/trivia/simple/question`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question_en: question.question_en,
+            question_es: question.question_es,
+            options_en: JSON.stringify(question.options_en || []),
+            options_es: JSON.stringify(question.options_es || []),
+            correct_answer: question.correct_answer,
+            category: question.category || "General",
+            level_id: question.level_id
+          })
+        });
+        results.push(await response.json());
+      }
+      for (const id of pendingOperations.levelsToDelete) {
+        const response = await fetch(`${base}/trivia/simple/level/${id}`, { method: "DELETE" });
+        results.push(await response.json());
+      }
+      for (const id of pendingOperations.questionsToDelete) {
+        const response = await fetch(`${base}/trivia/simple/question/${id}`, { method: "DELETE" });
+        results.push(await response.json());
+      }
+      const errors = results.filter((r2) => !r2.success);
+      if (errors.length === 0) {
+        setStatus("All changes saved successfully!");
+        setPendingOperations({
+          levelsToAdd: [],
+          levelsToEdit: [],
+          levelsToDelete: [],
+          questionsToAdd: [],
+          questionsToEdit: [],
+          questionsToDelete: []
+        });
+        setShowSaveDialog(false);
+        setSavePasscode("");
         loadData();
       } else {
-        setStatus(`Error: ${result.message}`);
+        setStatus(`${errors.length} operations failed`);
       }
     } catch (error) {
       setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -30545,6 +30603,7 @@ function TriviaAdminPanelImproved({ passcode }) {
     acc[question.level_id].push(question);
     return acc;
   }, {});
+  const totalPendingOps = pendingOperations.levelsToAdd.length + pendingOperations.levelsToEdit.length + pendingOperations.levelsToDelete.length + pendingOperations.questionsToAdd.length + pendingOperations.questionsToEdit.length + pendingOperations.questionsToDelete.length;
   if (loading) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-8", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 mx-auto mb-2 animate-pulse text-red-400" }),
@@ -30557,50 +30616,85 @@ function TriviaAdminPanelImproved({ passcode }) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-6 w-6 text-red-400" }),
         t("Trivia Management", "Gestión de Trivia")
       ] }),
-      status && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `px-3 py-1 rounded text-sm ${status.includes("Error") ? "bg-red-900 text-red-200" : "bg-green-900 text-green-200"}`, children: status })
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4", children: [
+        status && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `px-3 py-1 rounded text-sm ${status.includes("Error") ? "bg-red-900 text-red-200" : "bg-green-900 text-green-200"}`, children: status }),
+        totalPendingOps > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            onClick: () => setShowSaveDialog(true),
+            className: "bg-green-600 hover:bg-green-700",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
+              t("Save Changes", "Guardar Cambios"),
+              " (",
+              totalPendingOps,
+              ")"
+            ]
+          }
+        )
+      ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-white flex items-center justify-between", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Levels", "Niveles") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => setShowNewLevelForm(true),
-            className: "bg-red-600 hover:bg-red-700",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-2" }),
-              t("Add Level", "Agregar Nivel")
-            ]
-          }
-        )
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showLevelDialog, onOpenChange: setShowLevelDialog, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Button,
+            {
+              onClick: () => setEditingLevel(null),
+              className: "bg-red-600 hover:bg-red-700",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-2" }),
+                t("Add Level", "Agregar Nivel")
+              ]
+            }
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-2xl", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingLevel ? t("Edit Level", "Editar Nivel") : t("Add New Level", "Agregar Nuevo Nivel") }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              LevelForm,
+              {
+                level: editingLevel,
+                onSave: addLevelToBatch,
+                onCancel: () => {
+                  setShowLevelDialog(false);
+                  setEditingLevel(null);
+                }
+              }
+            )
+          ] })
+        ] })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-3", children: [
-        levels.map((level) => {
-          var _a2;
-          return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
-              level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 mt-1", children: level.description }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 mt-2 text-xs text-neutral-500", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-3 w-3" }),
-                  level.time_limit,
-                  "s"
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-3 w-3" }),
-                  level.passing_score,
-                  "%"
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                  ((_a2 = questionsByLevel[level.id]) == null ? void 0 : _a2.length) || 0,
-                  " ",
-                  t("questions", "preguntas")
-                ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: levels.map((level) => {
+        var _a2;
+        return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
+            level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 mt-1", children: level.description }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 mt-2 text-xs text-neutral-500", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-3 w-3" }),
+                level.time_limit,
+                "s"
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-3 w-3" }),
+                level.passing_score,
+                "%"
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                ((_a2 = questionsByLevel[level.id]) == null ? void 0 : _a2.length) || 0,
+                " ",
+                t("questions", "preguntas")
               ] })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showLevelDialog && (editingLevel == null ? void 0 : editingLevel.id) === level.id, onOpenChange: (open) => {
+              setShowLevelDialog(open);
+              if (!open) setEditingLevel(null);
+            }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                 Button,
                 {
                   onClick: () => setEditingLevel(level),
@@ -30609,52 +30703,67 @@ function TriviaAdminPanelImproved({ passcode }) {
                   className: "border-neutral-700 hover:bg-neutral-800",
                   children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
                 }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Button,
-                {
-                  onClick: () => handleDeleteLevel(level.id),
-                  variant: "outline",
-                  size: "sm",
-                  className: "border-red-700 hover:bg-red-700 text-red-400",
-                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
-                }
-              )
-            ] })
-          ] }) }) }, level.id);
-        }),
-        showNewLevelForm && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50 p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LevelForm,
-          {
-            level: null,
-            onSave: handleSaveLevel,
-            onCancel: () => setShowNewLevelForm(false)
-          }
-        ) }),
-        editingLevel && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50 p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LevelForm,
-          {
-            level: editingLevel,
-            onSave: handleSaveLevel,
-            onCancel: () => setEditingLevel(null)
-          }
-        ) })
-      ] })
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-2xl", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: t("Edit Level", "Editar Nivel") }) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  LevelForm,
+                  {
+                    level,
+                    onSave: addLevelToBatch,
+                    onCancel: () => {
+                      setShowLevelDialog(false);
+                      setEditingLevel(null);
+                    }
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                onClick: () => deleteLevelFromBatch(level.id),
+                variant: "outline",
+                size: "sm",
+                className: "border-red-700 hover:bg-red-700 text-red-400",
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
+              }
+            )
+          ] })
+        ] }) }) }, level.id);
+      }) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-white flex items-center justify-between", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Questions by Level", "Preguntas por Nivel") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => setShowNewQuestionForm(true),
-            className: "bg-red-600 hover:bg-red-700",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-2" }),
-              t("Add Question", "Agregar Pregunta")
-            ]
-          }
-        )
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog, onOpenChange: setShowQuestionDialog, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Button,
+            {
+              onClick: () => setEditingQuestion(null),
+              className: "bg-red-600 hover:bg-red-700",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-2" }),
+                t("Add Question", "Agregar Pregunta")
+              ]
+            }
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              QuestionForm,
+              {
+                question: editingQuestion,
+                levels,
+                onSave: addQuestionToBatch,
+                onCancel: () => {
+                  setShowQuestionDialog(false);
+                  setEditingQuestion(null);
+                }
+              }
+            )
+          ] })
+        ] })
       ] }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: levels.map((level) => {
         const levelQuestions = questionsByLevel[level.id] || [];
@@ -30682,7 +30791,8 @@ function TriviaAdminPanelImproved({ passcode }) {
                   {
                     onClick: (e) => {
                       e.stopPropagation();
-                      setShowNewQuestionForm(true);
+                      setEditingQuestion(null);
+                      setShowQuestionDialog(true);
                     },
                     variant: "outline",
                     size: "sm",
@@ -30710,20 +30820,40 @@ function TriviaAdminPanelImproved({ passcode }) {
               ] })
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog && (editingQuestion == null ? void 0 : editingQuestion.id) === question.id, onOpenChange: (open) => {
+                setShowQuestionDialog(open);
+                if (!open) setEditingQuestion(null);
+              }, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    onClick: () => setEditingQuestion(question),
+                    variant: "outline",
+                    size: "sm",
+                    className: "border-neutral-700 hover:bg-neutral-800",
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
+                  }
+                ) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: t("Edit Question", "Editar Pregunta") }) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    QuestionForm,
+                    {
+                      question,
+                      levels,
+                      onSave: addQuestionToBatch,
+                      onCancel: () => {
+                        setShowQuestionDialog(false);
+                        setEditingQuestion(null);
+                      }
+                    }
+                  )
+                ] })
+              ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 Button,
                 {
-                  onClick: () => setEditingQuestion(question),
-                  variant: "outline",
-                  size: "sm",
-                  className: "border-neutral-700 hover:bg-neutral-800",
-                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
-                }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Button,
-                {
-                  onClick: () => handleDeleteQuestion(question.id),
+                  onClick: () => deleteQuestionFromBatch(question.id),
                   variant: "outline",
                   size: "sm",
                   className: "border-red-700 hover:bg-red-700 text-red-400",
@@ -30735,21 +30865,73 @@ function TriviaAdminPanelImproved({ passcode }) {
         ] }, level.id);
       }) })
     ] }),
-    (showNewQuestionForm || editingQuestion) && /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        QuestionForm,
-        {
-          question: editingQuestion,
-          levels,
-          onSave: handleSaveQuestion,
-          onCancel: () => {
-            setShowNewQuestionForm(false);
-            setEditingQuestion(null);
-          }
-        }
-      ) })
-    ] })
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showSaveDialog, onOpenChange: setShowSaveDialog, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogTitle, { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { className: "h-5 w-5 text-yellow-400" }),
+        t("Confirm Changes", "Confirmar Cambios")
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-300", children: t("You have pending changes. Enter the admin passcode to save all changes.", "Tienes cambios pendientes. Ingresa el código de administrador para guardar todos los cambios.") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 text-sm", children: [
+          pendingOperations.levelsToAdd.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-green-400", children: [
+            "+ ",
+            pendingOperations.levelsToAdd.length,
+            " ",
+            t("levels to add", "niveles para agregar")
+          ] }),
+          pendingOperations.levelsToEdit.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-blue-400", children: [
+            "~ ",
+            pendingOperations.levelsToEdit.length,
+            " ",
+            t("levels to edit", "niveles para editar")
+          ] }),
+          pendingOperations.levelsToDelete.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-red-400", children: [
+            "- ",
+            pendingOperations.levelsToDelete.length,
+            " ",
+            t("levels to delete", "niveles para eliminar")
+          ] }),
+          pendingOperations.questionsToAdd.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-green-400", children: [
+            "+ ",
+            pendingOperations.questionsToAdd.length,
+            " ",
+            t("questions to add", "preguntas para agregar")
+          ] }),
+          pendingOperations.questionsToEdit.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-blue-400", children: [
+            "~ ",
+            pendingOperations.questionsToEdit.length,
+            " ",
+            t("questions to edit", "preguntas para editar")
+          ] }),
+          pendingOperations.questionsToDelete.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-red-400", children: [
+            "- ",
+            pendingOperations.questionsToDelete.length,
+            " ",
+            t("questions to delete", "preguntas para eliminar")
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Admin Passcode", "Código de Administrador") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Input,
+            {
+              type: "password",
+              value: savePasscode,
+              onChange: (e) => setSavePasscode(e.target.value),
+              className: "bg-neutral-950 border-neutral-700 text-white",
+              placeholder: t("Enter passcode", "Ingresa el código")
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: executeBatchOperations, className: "bg-green-600 hover:bg-green-700", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
+            t("Save All Changes", "Guardar Todos los Cambios")
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => setShowSaveDialog(false), variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: t("Cancel", "Cancelar") })
+        ] })
+      ] })
+    ] }) })
   ] });
 }
 function LevelForm({
@@ -30848,7 +31030,7 @@ function LevelForm({
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
-        t("Save Level", "Guardar Nivel")
+        t("Add to Changes", "Agregar a Cambios")
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", onClick: onCancel, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-2" }),
@@ -31008,7 +31190,7 @@ function QuestionForm({
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
-        t("Save Question", "Guardar Pregunta")
+        t("Add to Changes", "Agregar a Cambios")
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", onClick: onCancel, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-2" }),
@@ -31443,7 +31625,7 @@ function AdminUpload() {
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "space-y-4 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaAdminPanelImproved, { passcode: uploadPasscode }) })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "space-y-4 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaAdminPanelFinal, { passcode: uploadPasscode }) })
     ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
       "Tip: Bookmark this URL. It is not linked from the main site.",

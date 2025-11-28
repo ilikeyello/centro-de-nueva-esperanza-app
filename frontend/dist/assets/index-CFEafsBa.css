@@ -984,6 +984,10 @@
     max-height: calc(var(--spacing) * 96);
   }
 
+  .max-h-\[90vh\] {
+    max-height: 90vh;
+  }
+
   .max-h-screen {
     max-height: 100vh;
   }
@@ -2312,6 +2316,10 @@
 
   .whitespace-pre-wrap {
     white-space: pre-wrap;
+  }
+
+  .text-blue-400 {
+    color: var(--color-blue-400);
   }
 
   .text-blue-500 {
