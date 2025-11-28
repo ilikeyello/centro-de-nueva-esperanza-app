@@ -232,6 +232,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         console.log('Deleting level:', id);
         const response = await fetch(`${base}/trivia/simple/level/${id}`, { method: 'DELETE' });
         console.log('Delete level response status:', response.status);
+        
+        // Check response body
+        const responseText = await response.text();
+        console.log('Delete level response body:', responseText);
+        
         if (!response.ok) {
           console.error('Delete level failed:', response.status);
           results.push({ success: false, error: `HTTP ${response.status}` });
@@ -246,6 +251,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         console.log('Deleting question:', id);
         const response = await fetch(`${base}/trivia/simple/question/${id}`, { method: 'DELETE' });
         console.log('Delete question response status:', response.status);
+        
+        // Check response body
+        const responseText = await response.text();
+        console.log('Delete question response body:', responseText);
+        
         if (!response.ok) {
           console.error('Delete question failed:', response.status);
           results.push({ success: false, error: `HTTP ${response.status}` });
