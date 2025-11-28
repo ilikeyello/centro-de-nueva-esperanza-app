@@ -255,63 +255,36 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Play className="h-5 w-5 text-red-400 group-hover:scale-110 transition-transform" />
-                    <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-red-400 transition-colors" />
-                  </div>
+                  {selectedLevelForConfirmation?.id === level.id && (
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedLevelForConfirmation(null);
+                        }}
+                        variant="outline" 
+                        className="border-neutral-600 hover:bg-neutral-800 text-white"
+                      >
+                        {t("Cancel", "Cancelar")}
+                      </Button>
+                      <Button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startGame(level);
+                          setSelectedLevelForConfirmation(null);
+                        }}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        {t("Play Now", "Jugar Ahora")}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-
-        {/* Confirmation Section */}
-        {selectedLevelForConfirmation && (
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-red-900/20 border-red-600 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {t("Ready to play", "Listo para jugar")} "{selectedLevelForConfirmation.name}"?
-                  </h3>
-                  <p className="text-neutral-300">
-                    {selectedLevelForConfirmation.description || 
-                      t("Test your knowledge with this trivia level.", "Pon a prueba tu conocimiento con este nivel de trivia.")}
-                  </p>
-                  <div className="flex gap-4 mt-3 text-sm text-neutral-400">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {selectedLevelForConfirmation.time_limit}s {t("per question", "por pregunta")}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Target className="h-4 w-4" />
-                      {selectedLevelForConfirmation.passing_score}% {t("to pass", "para aprobar")}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={() => setSelectedLevelForConfirmation(null)}
-                    variant="outline" 
-                    className="border-neutral-600 hover:bg-neutral-800 text-white"
-                  >
-                    {t("Cancel", "Cancelar")}
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      startGame(selectedLevelForConfirmation);
-                      setSelectedLevelForConfirmation(null);
-                    }}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    {t("Play Now", "Jugar Ahora")}
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </div>
-        )}
 
         {levels.length === 0 && (
           <div className="text-center py-12">
@@ -333,49 +306,49 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       : (typeof currentQuestion.options_en === 'string' ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en);
 
     return (
-      <div className="container mx-auto space-y-6 px-4 py-8 max-w-3xl h-screen md:h-auto flex flex-col md:block overflow-hidden">
+      <div className="container mx-auto space-y-4 px-3 py-4 max-w-3xl h-screen md:h-auto flex flex-col md:block overflow-hidden">
         {/* Back Button */}
         <Button 
           onClick={resetGame}
           variant="outline" 
-          className="border-neutral-700 hover:bg-neutral-800 flex-shrink-0"
+          className="border-neutral-700 hover:bg-neutral-800 text-white flex-shrink-0 mb-2"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          {t("Exit Game", "Salir del Juego")}
+          {t("Levels", "Niveles")}
         </Button>
 
-        <div className="flex items-center justify-between">
-          <div className="text-neutral-400">
+        <div className="flex items-center justify-between flex-shrink-0">
+          <div className="text-neutral-400 text-sm">
             {t("Question", "Pregunta")} {gameState.currentQuestionIndex + 1} / {gameState.questions.length}
           </div>
           <div className={`flex items-center gap-2 ${gameState.timeRemaining <= 5 ? 'text-red-500' : 'text-neutral-300'}`}>
-            <Clock className="h-5 w-5" />
+            <Clock className="h-4 w-4" />
             <span className="font-mono text-lg">{gameState.timeRemaining}s</span>
           </div>
         </div>
 
-        <div className="w-full bg-neutral-800 rounded-full h-2">
+        <div className="w-full bg-neutral-800 rounded-full h-1.5 flex-shrink-0">
           <div 
-            className="bg-red-500 h-2 rounded-full transition-all duration-300"
+            className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
             style={{ width: `${((gameState.currentQuestionIndex + 1) / gameState.questions.length) * 100}%` }}
           />
         </div>
 
         <Card className="bg-neutral-900 border-neutral-800 flex-1 overflow-hidden md:overflow-visible">
-          <CardContent className="p-8">
-            <div className="space-y-6">
-              <h3 className="text-2xl font-semibold text-white">{question}</h3>
+          <CardContent className="p-4 md:p-8 h-full flex flex-col">
+            <div className="space-y-4 flex-1 flex flex-col">
+              <h3 className="text-lg md:text-2xl font-semibold text-white flex-shrink-0">{question}</h3>
               
-              <div className="grid gap-3">
+              <div className="grid gap-2 md:gap-3 flex-1">
                 {options.map((option: string, index: number) => (
                   <Button
                     key={index}
                     onClick={() => handleAnswer(index)}
                     variant="outline"
-                    className="justify-start h-auto p-4 text-left bg-neutral-800 border-neutral-700 hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                    className="justify-start h-auto p-3 md:p-4 text-left bg-neutral-800 border-neutral-700 hover:bg-red-600 hover:border-red-600 hover:text-white transition-all text-sm md:text-base"
                   >
-                    <span className="font-medium">{String.fromCharCode(65 + index)}.</span>
-                    <span className="ml-3">{option}</span>
+                    <span className="font-medium mr-3">{String.fromCharCode(65 + index)}.</span>
+                    <span>{option}</span>
                   </Button>
                 ))}
               </div>
@@ -399,7 +372,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
               <h2 className="text-3xl font-bold">
                 {passed 
                   ? (language === 'es' ? '¡Aprobado!' : 'Passed!') 
-                  : (language === 'es' ? 'No Aprobado' : 'Not Passed')
+                  : (language === 'es' ? '¡Fracasado!' : 'Failed!')
                 }
               </h2>
             </div>
@@ -419,11 +392,11 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
             <div className="flex gap-4 justify-center">
               <Button onClick={resetGame} className="bg-red-600 hover:bg-red-700">
                 <RotateCcw className="h-4 w-4 mr-2" />
-                {t("Play Again", "Jugar de Nuevo")}
+                {t("Restart", "Reiniciar")}
               </Button>
               <Button onClick={() => onNavigate?.("games")} variant="outline" className="border-neutral-700 hover:bg-neutral-800 text-white">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                {t("Back to Games", "Volver a Juegos")}
+                {t("Back to Levels", "Volver a Niveles")}
               </Button>
             </div>
           </CardContent>
