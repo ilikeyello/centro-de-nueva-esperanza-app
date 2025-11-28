@@ -63,12 +63,29 @@ export const createLevel = api(
     passing_score?: number;
   }): Promise<{ success: boolean; message: string }> => {
     try {
-      await db.query`
+      console.log("Creating level with params:", params);
+      
+      const result = await db.query`
         INSERT INTO trivia_levels_simple (id, name, description, shuffle_questions, time_limit, passing_score)
         VALUES (${params.id}, ${params.name}, ${params.description || null}, ${params.shuffle_questions ?? true}, ${params.time_limit ?? 30}, ${params.passing_score ?? 70})
+        RETURNING id, name
       `;
-      return { success: true, message: "Level created successfully" };
+      
+      console.log("Insert result:", result);
+      
+      // Check if insert actually worked
+      const rows = [];
+      for await (const row of result) {
+        rows.push(row);
+      }
+      
+      if (rows.length > 0) {
+        return { success: true, message: "Level created successfully" };
+      } else {
+        return { success: false, message: "Failed to insert level - no rows returned" };
+      }
     } catch (error) {
+      console.error("Error creating level:", error);
       return { success: false, message: `Failed to create level: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
@@ -87,12 +104,29 @@ export const createQuestion = api(
     level_id: string;
   }): Promise<{ success: boolean; message: string }> => {
     try {
-      await db.query`
+      console.log("Creating question with params:", params);
+      
+      const result = await db.query`
         INSERT INTO trivia_questions_simple (question_en, question_es, options_en, options_es, correct_answer, category, level_id)
         VALUES (${params.question_en}, ${params.question_es}, ${params.options_en}, ${params.options_es}, ${params.correct_answer}, ${params.category}, ${params.level_id})
+        RETURNING id, question_en
       `;
-      return { success: true, message: "Question created successfully" };
+      
+      console.log("Insert result:", result);
+      
+      // Check if insert actually worked
+      const rows = [];
+      for await (const row of result) {
+        rows.push(row);
+      }
+      
+      if (rows.length > 0) {
+        return { success: true, message: "Question created successfully" };
+      } else {
+        return { success: false, message: "Failed to insert question - no rows returned" };
+      }
     } catch (error) {
+      console.error("Error creating question:", error);
       return { success: false, message: `Failed to create question: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }
