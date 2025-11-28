@@ -29609,6 +29609,22 @@ function TriviaGamePage({ onNavigate } = {}) {
       timeRemaining: 30
     });
   };
+  const restartLevel = async () => {
+    if (!gameState.selectedLevel) return;
+    const questions = await loadQuestions(gameState.selectedLevel.id);
+    if (questions.length === 0) return;
+    const shuffledQuestions = gameState.selectedLevel.shuffle_questions ? [...questions].sort(() => Math.random() - 0.5) : questions;
+    setGameState({
+      status: "playing",
+      selectedLevel: gameState.selectedLevel,
+      questions: shuffledQuestions,
+      currentQuestionIndex: 0,
+      userAnswers: [],
+      score: 0,
+      isTimerActive: true,
+      timeRemaining: gameState.selectedLevel.time_limit
+    });
+  };
   reactExports.useEffect(() => {
     loadLevels();
   }, []);
@@ -29675,35 +29691,21 @@ function TriviaGamePage({ onNavigate } = {}) {
                 ] })
               ] })
             ] }),
-            (selectedLevelForConfirmation == null ? void 0 : selectedLevelForConfirmation.id) === level.id && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Button,
-                {
-                  onClick: (e) => {
-                    e.stopPropagation();
-                    setSelectedLevelForConfirmation(null);
-                  },
-                  variant: "outline",
-                  className: "border-neutral-600 hover:bg-neutral-800 text-white",
-                  children: t("Cancel", "Cancelar")
-                }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                Button,
-                {
-                  onClick: (e) => {
-                    e.stopPropagation();
-                    startGame(level);
-                    setSelectedLevelForConfirmation(null);
-                  },
-                  className: "bg-red-600 hover:bg-red-700",
-                  children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-                    t("Play Now", "Jugar Ahora")
-                  ]
-                }
-              )
-            ] })
+            (selectedLevelForConfirmation == null ? void 0 : selectedLevelForConfirmation.id) === level.id && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-2", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Button,
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  startGame(level);
+                  setSelectedLevelForConfirmation(null);
+                },
+                className: "bg-red-600 hover:bg-red-700",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
+                  t("Play Now", "Jugar Ahora")
+                ]
+              }
+            ) })
           ] }) })
         },
         level.id
@@ -29802,11 +29804,14 @@ function TriviaGamePage({ onNavigate } = {}) {
         ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 justify-center", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: resetGame, className: "bg-red-600 hover:bg-red-700", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: restartLevel, className: "bg-red-600 hover:bg-red-700", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
           t("Restart", "Reiniciar")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => onNavigate == null ? void 0 : onNavigate("games"), variant: "outline", className: "border-neutral-700 hover:bg-neutral-800 text-white", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => {
+          resetGame();
+          onNavigate == null ? void 0 : onNavigate("games");
+        }, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800 text-white", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
           t("Back to Levels", "Volver a Niveles")
         ] })

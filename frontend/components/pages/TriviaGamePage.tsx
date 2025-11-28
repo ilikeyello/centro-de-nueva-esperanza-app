@@ -165,6 +165,28 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
     });
   };
 
+  const restartLevel = async () => {
+    if (!gameState.selectedLevel) return;
+    
+    const questions = await loadQuestions(gameState.selectedLevel.id);
+    if (questions.length === 0) return;
+
+    const shuffledQuestions = gameState.selectedLevel.shuffle_questions 
+      ? [...questions].sort(() => Math.random() - 0.5)
+      : questions;
+
+    setGameState({
+      status: 'playing',
+      selectedLevel: gameState.selectedLevel,
+      questions: shuffledQuestions,
+      currentQuestionIndex: 0,
+      userAnswers: [],
+      score: 0,
+      isTimerActive: true,
+      timeRemaining: gameState.selectedLevel.time_limit,
+    });
+  };
+
   useEffect(() => {
     loadLevels();
   }, []);
@@ -257,16 +279,6 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                   </div>
                   {selectedLevelForConfirmation?.id === level.id && (
                     <div className="flex gap-2">
-                      <Button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedLevelForConfirmation(null);
-                        }}
-                        variant="outline" 
-                        className="border-neutral-600 hover:bg-neutral-800 text-white"
-                      >
-                        {t("Cancel", "Cancelar")}
-                      </Button>
                       <Button 
                         onClick={(e) => {
                           e.stopPropagation();
@@ -390,11 +402,14 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
             </div>
 
             <div className="flex gap-4 justify-center">
-              <Button onClick={resetGame} className="bg-red-600 hover:bg-red-700">
+              <Button onClick={restartLevel} className="bg-red-600 hover:bg-red-700">
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t("Restart", "Reiniciar")}
               </Button>
-              <Button onClick={() => onNavigate?.("games")} variant="outline" className="border-neutral-700 hover:bg-neutral-800 text-white">
+              <Button onClick={() => {
+                resetGame();
+                onNavigate?.("games");
+              }} variant="outline" className="border-neutral-700 hover:bg-neutral-800 text-white">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t("Back to Levels", "Volver a Niveles")}
               </Button>

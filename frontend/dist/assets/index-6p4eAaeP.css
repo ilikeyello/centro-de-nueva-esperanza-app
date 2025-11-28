@@ -1957,16 +1957,6 @@
     background-color: var(--color-red-900);
   }
 
-  .bg-red-900\/20 {
-    background-color: #82181a33;
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-red-900\/20 {
-      background-color: color-mix(in oklab, var(--color-red-900) 20%, transparent);
-    }
-  }
-
   .bg-red-900\/50 {
     background-color: #82181a80;
   }
