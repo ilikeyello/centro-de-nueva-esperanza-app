@@ -29509,7 +29509,9 @@ function TriviaGamePage({ onNavigate } = {}) {
     userAnswers: [],
     score: 0,
     isTimerActive: false,
-    timeRemaining: 30
+    timeRemaining: 30,
+    selectedAnswer: null,
+    showFeedback: false
   });
   const loadLevels = async () => {
     try {
@@ -29549,23 +29551,46 @@ function TriviaGamePage({ onNavigate } = {}) {
       userAnswers: [],
       score: 0,
       isTimerActive: true,
-      timeRemaining: level.time_limit
+      timeRemaining: level.time_limit,
+      selectedAnswer: null,
+      showFeedback: false
     });
   };
-  const handleAnswer = (answerIndex) => {
+  const selectAnswer = (answerIndex) => {
+    if (gameState.status !== "playing" || gameState.showFeedback) return;
+    setGameState((prev) => ({
+      ...prev,
+      selectedAnswer: answerIndex
+    }));
+  };
+  const submitAnswer = () => {
+    if (gameState.selectedAnswer === null || gameState.status !== "playing") return;
+    const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
+    gameState.selectedAnswer === currentQuestion.correct_answer;
+    setGameState((prev) => ({
+      ...prev,
+      showFeedback: true,
+      isTimerActive: false
+      // Stop timer when showing feedback
+    }));
+  };
+  const nextQuestion = () => {
     var _a3;
     if (gameState.status !== "playing") return;
-    const newAnswers = [...gameState.userAnswers, answerIndex];
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
-    const isCorrect = answerIndex === currentQuestion.correct_answer;
+    const isCorrect = gameState.selectedAnswer === currentQuestion.correct_answer;
     const newScore = gameState.score + (isCorrect ? 1 : 0);
+    const newAnswers = [...gameState.userAnswers, gameState.selectedAnswer];
     if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
       setGameState({
         ...gameState,
         userAnswers: newAnswers,
         score: newScore,
         currentQuestionIndex: gameState.currentQuestionIndex + 1,
-        timeRemaining: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) || 30
+        timeRemaining: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) || 30,
+        selectedAnswer: null,
+        showFeedback: false,
+        isTimerActive: true
       });
     } else {
       setGameState({
@@ -29586,7 +29611,10 @@ function TriviaGamePage({ onNavigate } = {}) {
         ...gameState,
         userAnswers: newAnswers,
         currentQuestionIndex: gameState.currentQuestionIndex + 1,
-        timeRemaining: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) || 30
+        timeRemaining: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) || 30,
+        selectedAnswer: null,
+        showFeedback: false,
+        isTimerActive: true
       });
     } else {
       setGameState({
@@ -29606,7 +29634,9 @@ function TriviaGamePage({ onNavigate } = {}) {
       userAnswers: [],
       score: 0,
       isTimerActive: false,
-      timeRemaining: 30
+      timeRemaining: 30,
+      selectedAnswer: null,
+      showFeedback: false
     });
   };
   const restartLevel = async () => {
@@ -29622,7 +29652,9 @@ function TriviaGamePage({ onNavigate } = {}) {
       userAnswers: [],
       score: 0,
       isTimerActive: true,
-      timeRemaining: gameState.selectedLevel.time_limit
+      timeRemaining: gameState.selectedLevel.time_limit,
+      selectedAnswer: null,
+      showFeedback: false
     });
   };
   reactExports.useEffect(() => {
@@ -29758,22 +29790,47 @@ function TriviaGamePage({ onNavigate } = {}) {
       ) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 flex-1 overflow-hidden md:overflow-visible", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-4 md:p-8 h-full flex flex-col", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4 flex-1 flex flex-col", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg md:text-2xl font-semibold text-white flex-shrink-0", children: question }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-2 md:gap-3 flex-1", children: options.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-2 md:gap-3 flex-1", children: options.map((option, index2) => {
+          const isSelected = gameState.selectedAnswer === index2;
+          const isCorrect = index2 === currentQuestion.correct_answer;
+          const showCorrect = gameState.showFeedback && isCorrect;
+          const showWrong = gameState.showFeedback && isSelected && !isCorrect;
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Button,
+            {
+              onClick: () => selectAnswer(index2),
+              variant: "outline",
+              disabled: gameState.showFeedback,
+              className: `justify-start h-auto p-3 md:p-4 text-left transition-all text-sm md:text-base ${gameState.showFeedback ? isCorrect ? "bg-green-600 border-green-500 text-white" : isSelected ? "bg-red-600 border-red-500 text-white" : "bg-neutral-800 border-neutral-700 text-neutral-400" : isSelected ? "bg-red-600 border-red-600 text-white" : "bg-neutral-800 border-neutral-700 hover:bg-red-600 hover:border-red-600 hover:text-white"}`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-medium mr-3", children: [
+                  String.fromCharCode(65 + index2),
+                  "."
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: option }),
+                showCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto", children: "✓" }),
+                showWrong && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto", children: "✗" })
+              ]
+            },
+            index2
+          );
+        }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 pt-4", children: !gameState.showFeedback ? /* @__PURE__ */ jsxRuntimeExports.jsx(
           Button,
           {
-            onClick: () => handleAnswer(index2),
-            variant: "outline",
-            className: "justify-start h-auto p-3 md:p-4 text-left bg-neutral-800 border-neutral-700 hover:bg-red-600 hover:border-red-600 hover:text-white transition-all text-sm md:text-base",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-medium mr-3", children: [
-                String.fromCharCode(65 + index2),
-                "."
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: option })
-            ]
-          },
-          index2
-        )) })
+            onClick: submitAnswer,
+            disabled: gameState.selectedAnswer === null,
+            className: "w-full bg-red-600 hover:bg-red-700 disabled:bg-neutral-700 disabled:text-neutral-500",
+            children: t("Submit Answer", "Enviar Respuesta")
+          }
+        ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            onClick: nextQuestion,
+            className: "w-full bg-red-600 hover:bg-red-700",
+            children: gameState.currentQuestionIndex < gameState.questions.length - 1 ? t("Next Question", "Siguiente Pregunta") : t("See Results", "Ver Resultados")
+          }
+        ) })
       ] }) }) })
     ] });
   }
@@ -29808,10 +29865,7 @@ function TriviaGamePage({ onNavigate } = {}) {
           /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
           t("Restart", "Reiniciar")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: () => {
-          resetGame();
-          onNavigate == null ? void 0 : onNavigate("games");
-        }, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800 text-white", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: resetGame, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800 text-white", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
           t("Back to Levels", "Volver a Niveles")
         ] })

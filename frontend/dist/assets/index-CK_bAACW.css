@@ -759,6 +759,10 @@
     margin-left: calc(var(--spacing) * 6);
   }
 
+  .ml-auto {
+    margin-left: auto;
+  }
+
   .block {
     display: block;
   }
@@ -3251,6 +3255,14 @@
 
   .disabled\:cursor-not-allowed:disabled {
     cursor: not-allowed;
+  }
+
+  .disabled\:bg-neutral-700:disabled {
+    background-color: var(--color-neutral-700);
+  }
+
+  .disabled\:text-neutral-500:disabled {
+    color: var(--color-neutral-500);
   }
 
   .disabled\:opacity-50:disabled {
