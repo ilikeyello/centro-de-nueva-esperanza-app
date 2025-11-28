@@ -30771,15 +30771,14 @@ function TriviaAdminPanelFinal({ passcode }) {
       ] }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: levels.map((level) => {
         var _a2;
-        return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+        return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `border border-neutral-800 rounded-lg bg-neutral-900/50 ${pendingOperations.levelsToDelete.includes(level.id) ? "opacity-50 line-through" : ""}`, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
             level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 mt-1", children: level.description }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 mt-2 text-xs text-neutral-500", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-3 w-3" }),
-                level.time_limit,
-                "s"
+                level.time_limit ? `${level.time_limit}s` : t("No limit", "Sin límite")
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-3 w-3" }),
@@ -30891,7 +30890,7 @@ function TriviaAdminPanelFinal({ passcode }) {
               ] })
             }
           ),
-          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-700 rounded bg-neutral-800/50 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
+          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `border border-neutral-700 rounded bg-neutral-800/50 p-3 ${pendingOperations.questionsToDelete.includes(question.id) ? "opacity-50 line-through" : ""}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-white font-medium", children: language === "es" ? question.question_es : question.question_en }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-neutral-400 mt-1", children: [
@@ -30986,7 +30985,7 @@ function LevelForm({
     e.preventDefault();
     const submissionData = {
       ...formData,
-      time_limit: formData.disable_time_limit ? void 0 : formData.time_limit
+      time_limit: formData.disable_time_limit ? null : formData.time_limit
     };
     onSave(submissionData);
   };
@@ -31110,6 +31109,9 @@ function QuestionForm({
     };
   };
   const [formData, setFormData] = reactExports.useState(initializeFormData(question));
+  reactExports.useEffect(() => {
+    setFormData(initializeFormData(question));
+  }, [question]);
   const handleSubmit = (e) => {
     e.preventDefault();
     const submissionData = {

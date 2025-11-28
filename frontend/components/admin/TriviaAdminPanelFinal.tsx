@@ -15,7 +15,7 @@ interface TriviaLevel {
   description?: string;
   target_group?: string;
   shuffle_questions: boolean;
-  time_limit: number;
+  time_limit: number | null;
   passing_score: number;
   created_at: string;
   updated_at: string;
@@ -353,7 +353,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           {levels.map((level) => (
-            <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
+            <div key={level.id} className={`border border-neutral-800 rounded-lg bg-neutral-900/50 ${pendingOperations.levelsToDelete.includes(level.id) ? 'opacity-50 line-through' : ''}`}>
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -364,7 +364,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                     <div className="flex gap-4 mt-2 text-xs text-neutral-500">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {level.time_limit}s
+                        {level.time_limit ? `${level.time_limit}s` : t("No limit", "Sin límite")}
                       </span>
                       <span className="flex items-center gap-1">
                         <Target className="h-3 w-3" />
@@ -478,7 +478,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                     ) : (
                       <div className="space-y-2 p-4">
                         {levelQuestions.map((question) => (
-                          <div key={question.id} className="border border-neutral-700 rounded bg-neutral-800/50 p-3">
+                          <div key={question.id} className={`border border-neutral-700 rounded bg-neutral-800/50 p-3 ${pendingOperations.questionsToDelete.includes(question.id) ? 'opacity-50 line-through' : ''}`}>
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <p className="text-sm text-white font-medium">
@@ -579,7 +579,7 @@ function LevelForm({
     name: level?.name || '',
     description: level?.description || '',
     shuffle_questions: level?.shuffle_questions ?? true,
-    time_limit: (level?.time_limit ?? 30) as number,
+    time_limit: level?.time_limit ?? 30,
     passing_score: level?.passing_score || 70,
     disable_time_limit: level?.time_limit === null
   });
@@ -588,7 +588,7 @@ function LevelForm({
     e.preventDefault();
     const submissionData: Partial<TriviaLevel> = {
       ...formData,
-      time_limit: formData.disable_time_limit ? undefined : formData.time_limit
+      time_limit: formData.disable_time_limit ? null : formData.time_limit
     };
     onSave(submissionData);
   };
@@ -715,6 +715,10 @@ function QuestionForm({
   });
   
   const [formData, setFormData] = useState(initializeFormData(question));
+
+  useEffect(() => {
+    setFormData(initializeFormData(question));
+  }, [question]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
