@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Game - Centro de Nueva Esperanza</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .bg-neutral-950 { background: #0a0a0a; }
+        .bg-neutral-900 { background: #171717; }
+        .bg-neutral-800 { background: #262626; }
+        .bg-neutral-700 { background: #404040; }
+        .text-white { color: white; }
+        .text-neutral-400 { color: #a3a3a3; }
+        .text-neutral-500 { color: #737373; }
+        .text-neutral-300 { color: #d4d4d4; }
+        .text-red-400 { color: #f87171; }
+        .text-red-500 { color: #ef4444; }
+        .text-red-600 { color: #dc2626; }
+        .text-red-700 { color: #b91c1c; }
+        .text-green-400 { color: #4ade80; }
+        .text-green-600 { color: #16a34a; }
+        .border-neutral-800 { border-color: #262626; }
+        .border-neutral-700 { border-color: #404040; }
+        .border-red-600 { border-color: #dc2626; }
+        .border-green-600 { border-color: #16a34a; }
+        .border-red-700 { border-color: #b91c1c; }
+        .hover\\:bg-red-600:hover { background: #dc2626; }
+        .hover\\:bg-red-700:hover { background: #b91c1c; }
+        .hover\\:bg-neutral-800:hover { background: #262626; }
+        .hover\\:border-red-600:hover { border-color: #dc2626; }
+        .hover\\:border-red-700:hover { border-color: #b91c1c; }
+        .hover\\:text-red-400:hover { color: #f87171; }
+        .hover\\:text-white:hover { color: white; }
+        .transition-all { transition: all 0.3s; }
+        .transition-colors { transition: color 0.3s, background-color 0.3s, border-color 0.3s; }
+        .group:hover .group-hover\\:scale-110 { transform: scale(1.1); }
+        .group:hover .group-hover\\:text-red-400 { color: #f87171; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { Brain, Play, Clock, Target, Trophy, RotateCcw, ArrowLeft } = lucide;
+
+        // Simple language context
+        const useLanguage = () => {
+            const [language, setLanguage] = useState('en');
+            const t = (en, es) => language === 'es' ? es : en;
+            return { language, t, setLanguage };
+        };
+
+        function TriviaGamePage() {
+            const { t, language } = useLanguage();
+            const [levels, setLevels] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            const [gameState, setGameState] = useState({
+                status: 'menu',
+                selectedLevel: null,
+                questions: [],
+                currentQuestionIndex: 0,
+                userAnswers: [],
+                score: 0,
+                isTimerActive: false,
+                timeRemaining: 30,
+            });
+
+            const loadLevels = async () => {
+                try {
+                    const base = window.location.hostname === 'localhost' ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+                    const response = await fetch(`${base}/trivia/simple`);
+                    const data = await response.json();
+                    setLevels(data.levels || []);
+                } catch (error) {
+                    console.error('Failed to load levels:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const loadQuestions = async (levelId) => {
+                try {
+                    const base = window.location.hostname === 'localhost' ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+                    const response = await fetch(`${base}/trivia/simple`);
+                    const data = await response.json();
+                    return data.questions.filter(q => q.level_id === levelId);
+                } catch (error) {
+                    console.error('Failed to load questions:', error);
+                    return [];
+                }
+            };
+
+            const startGame = async (level) => {
+                const questions = await loadQuestions(level.id);
+                if (questions.length === 0) {
+                    alert(language === 'es' ? 'No hay preguntas disponibles para este nivel.' : 'No questions available for this level.');
+                    return;
+                }
+
+                const shuffledQuestions = level.shuffle_questions 
+                    ? [...questions].sort(() => Math.random() - 0.5)
+                    : questions;
+
+                setGameState({
+                    status: 'playing',
+                    selectedLevel: level,
+                    questions: shuffledQuestions,
+                    currentQuestionIndex: 0,
+                    userAnswers: [],
+                    score: 0,
+                    isTimerActive: true,
+                    timeRemaining: level.time_limit,
+                });
+            };
+
+            const handleAnswer = (answerIndex) => {
+                if (gameState.status !== 'playing') return;
+
+                const newAnswers = [...gameState.userAnswers, answerIndex];
+                const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
+                const isCorrect = answerIndex === currentQuestion.correct_answer;
+                const newScore = gameState.score + (isCorrect ? 1 : 0);
+
+                if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
+                    setGameState({
+                        ...gameState,
+                        userAnswers: newAnswers,
+                        score: newScore,
+                        currentQuestionIndex: gameState.currentQuestionIndex + 1,
+                        timeRemaining: gameState.selectedLevel?.time_limit || 30,
+                    });
+                } else {
+                    setGameState({
+                        ...gameState,
+                        userAnswers: newAnswers,
+                        score: newScore,
+                        status: 'results',
+                        isTimerActive: false,
+                    });
+                }
+            };
+
+            const handleTimeUp = () => {
+                if (gameState.status !== 'playing') return;
+                
+                const newAnswers = [...gameState.userAnswers, -1];
+                if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
+                    setGameState({
+                        ...gameState,
+                        userAnswers: newAnswers,
+                        currentQuestionIndex: gameState.currentQuestionIndex + 1,
+                        timeRemaining: gameState.selectedLevel?.time_limit || 30,
+                    });
+                } else {
+                    setGameState({
+                        ...gameState,
+                        userAnswers: newAnswers,
+                        status: 'results',
+                        isTimerActive: false,
+                    });
+                }
+            };
+
+            const resetGame = () => {
+                setGameState({
+                    status: 'menu',
+                    selectedLevel: null,
+                    questions: [],
+                    currentQuestionIndex: 0,
+                    userAnswers: [],
+                    score: 0,
+                    isTimerActive: false,
+                    timeRemaining: 30,
+                });
+            };
+
+            useEffect(() => {
+                loadLevels();
+            }, []);
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    if (gameState.isTimerActive && gameState.timeRemaining > 0) {
+                        setGameState(prev => ({
+                            ...prev,
+                            timeRemaining: prev.timeRemaining - 1
+                        }));
+                    } else if (gameState.timeRemaining === 0 && gameState.isTimerActive) {
+                        handleTimeUp();
+                    }
+                }, 1000);
+                return () => clearInterval(interval);
+            }, [gameState.isTimerActive, gameState.timeRemaining]);
+
+            if (loading) {
+                return React.createElement('div', {className: "container mx-auto px-4 py-8"}, 
+                    React.createElement('div', {className: "text-center text-white"},
+                        React.createElement(Brain, {className: "h-12 w-12 mx-auto mb-4 animate-pulse"}),
+                        React.createElement('p', {}, t("Loading trivia...", "Cargando trivia..."))
+                    )
+                );
+            }
+
+            if (gameState.status === 'menu') {
+                return React.createElement('div', {className: "container mx-auto space-y-8 px-4 py-8"}, 
+                    React.createElement('button', {
+                        onClick: () => window.location.href = '/cne-app/#games',
+                        className: "mb-6 px-4 py-2 border border-neutral-700 hover:bg-neutral-800 text-white rounded flex items-center gap-2"
+                    }, 
+                        React.createElement(ArrowLeft, {className: "h-4 w-4"}),
+                        t("Back to Games", "Volver a Juegos")
+                    ),
+                    
+                    React.createElement('div', {className: "text-center space-y-6"}, 
+                        React.createElement('div', {className: "flex items-center justify-center gap-3"},
+                            React.createElement(Brain, {className: "h-8 w-8 text-red-400"}),
+                            React.createElement('h1', {className: "text-4xl font-bold text-white"},
+                                language === 'es' ? 'Trivia Bíblica' : 'Bible Trivia'
+                            )
+                        ),
+                        React.createElement('p', {className: "text-neutral-400 max-w-2xl mx-auto"},
+                            language === 'es' 
+                                ? 'Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades.'
+                                : 'Test your Bible knowledge with fun and educational questions for all ages.'
+                        )
+                    ),
+
+                    React.createElement('div', {className: "grid gap-6 max-w-4xl mx-auto"}, 
+                        levels.map(level => 
+                            React.createElement('div', {
+                                key: level.id,
+                                onClick: () => startGame(level),
+                                className: "bg-neutral-900 border border-neutral-800 hover:border-red-600 transition-all cursor-pointer group p-6 rounded-lg"
+                            }, 
+                                React.createElement('div', {className: "flex items-center justify-between"},
+                                    React.createElement('div', {className: "flex-1"},
+                                        React.createElement('h3', {className: "text-xl font-semibold text-white mb-2"}, level.name),
+                                        level.description && React.createElement('p', {className: "text-neutral-400 mb-3"}, level.description),
+                                        React.createElement('div', {className: "flex gap-4 text-sm text-neutral-500"},
+                                            React.createElement('span', {className: "flex items-center gap-1"},
+                                                React.createElement(Clock, {className: "h-4 w-4"}),
+                                                `${level.time_limit}s`
+                                            ),
+                                            React.createElement('span', {className: "flex items-center gap-1"},
+                                                React.createElement(Target, {className: "h-4 w-4"}),
+                                                `${level.passing_score}% ${t("to pass", "para aprobar")}`
+                                            )
+                                        )
+                                    ),
+                                    React.createElement(Play, {className: "h-5 w-5 text-red-400 group-hover:scale-110 transition-transform"})
+                                )
+                            )
+                        )
+                    ),
+
+                    levels.length === 0 && React.createElement('div', {className: "text-center py-12"},
+                        React.createElement(Brain, {className: "h-16 w-16 mx-auto mb-4 text-neutral-600"}),
+                        React.createElement('p', {className: "text-neutral-400"},
+                            t("No trivia levels available yet.", "No hay niveles de trivia disponibles aún.")
+                        )
+                    )
+                );
+            }
+
+            if (gameState.status === 'playing' && gameState.questions.length > 0) {
+                const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
+                const question = language === 'es' ? currentQuestion.question_es : currentQuestion.question_en;
+                const options = language === 'es' 
+                    ? (typeof currentQuestion.options_es === 'string' ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es)
+                    : (typeof currentQuestion.options_en === 'string' ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en);
+
+                return React.createElement('div', {className: "container mx-auto space-y-6 px-4 py-8 max-w-3xl"}, 
+                    React.createElement('button', {
+                        onClick: resetGame,
+                        className: "px-4 py-2 border border-neutral-700 hover:bg-neutral-800 text-white rounded flex items-center gap-2"
+                    }, 
+                        React.createElement(ArrowLeft, {className: "h-4 w-4"}),
+                        t("Exit Game", "Salir del Juego")
+                    ),
+
+                    React.createElement('div', {className: "flex items-center justify-between"},
+                        React.createElement('div', {className: "text-neutral-400"},
+                            `${t("Question", "Pregunta")} ${gameState.currentQuestionIndex + 1} / ${gameState.questions.length}`
+                        ),
+                        React.createElement('div', {className: `flex items-center gap-2 ${gameState.timeRemaining <= 5 ? 'text-red-500' : 'text-neutral-300'}`},
+                            React.createElement(Clock, {className: "h-5 w-5"}),
+                            React.createElement('span', {className: "font-mono text-lg"}, `${gameState.timeRemaining}s`)
+                        )
+                    ),
+
+                    React.createElement('div', {className: "w-full bg-neutral-800 rounded-full h-2"},
+                        React.createElement('div', {
+                            className: "bg-red-500 h-2 rounded-full transition-all duration-300",
+                            style: { width: `${((gameState.currentQuestionIndex + 1) / gameState.questions.length) * 100}%` }
+                        })
+                    ),
+
+                    React.createElement('div', {className: "bg-neutral-900 border border-neutral-800 p-8 rounded-lg"},
+                        React.createElement('div', {className: "space-y-6"},
+                            React.createElement('h3', {className: "text-2xl font-semibold text-white"}, question),
+                            React.createElement('div', {className: "grid gap-3"},
+                                options.map((option, index) => 
+                                    React.createElement('button', {
+                                        key: index,
+                                        onClick: () => handleAnswer(index),
+                                        className: "justify-start h-auto p-4 text-left bg-neutral-800 border border-neutral-700 hover:bg-red-600 hover:border-red-600 hover:text-white transition-all rounded flex items-center gap-3"
+                                    }, 
+                                        React.createElement('span', {className: "font-medium"}, `${String.fromCharCode(65 + index)}.`),
+                                        React.createElement('span', {}, option)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                );
+            }
+
+            if (gameState.status === 'results') {
+                const percentage = Math.round((gameState.score / gameState.questions.length) * 100);
+                const passed = percentage >= (gameState.selectedLevel?.passing_score || 70);
+                
+                return React.createElement('div', {className: "container mx-auto space-y-6 px-4 py-8 max-w-2xl"}, 
+                    React.createElement('div', {className: `bg-neutral-900 border-2 ${passed ? 'border-green-600' : 'border-red-600'} p-8 rounded-lg text-center space-y-6`},
+                        React.createElement('div', {className: `flex items-center justify-center gap-3 ${passed ? 'text-green-400' : 'text-red-400'}`},
+                            passed ? React.createElement(Trophy, {className: "h-8 w-8"}) : React.createElement(RotateCcw, {className: "h-8 w-8"}),
+                            React.createElement('h2', {className: "text-3xl font-bold"},
+                                passed 
+                                    ? (language === 'es' ? '¡Aprobado!' : 'Passed!')
+                                    : (language === 'es' ? 'No Aprobado' : 'Not Passed')
+                            )
+                        ),
+
+                        React.createElement('div', {className: "space-y-2"},
+                            React.createElement('div', {className: "text-4xl font-bold text-white"},
+                                `${gameState.score} / ${gameState.questions.length}`
+                            ),
+                            React.createElement('div', {className: "text-xl text-neutral-400"},
+                                `${percentage}% ${t("correct", "correctas")}`
+                            ),
+                            React.createElement('div', {className: "text-sm text-neutral-500"},
+                                `${t("Required", "Requerido")}: ${gameState.selectedLevel?.passing_score || 70}%`
+                            )
+                        ),
+
+                        React.createElement('div', {className: "flex gap-4 justify-center"},
+                            React.createElement('button', {
+                                onClick: resetGame,
+                                className: "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded flex items-center gap-2"
+                            }, 
+                                React.createElement(RotateCcw, {className: "h-4 w-4"}),
+                                t("Play Again", "Jugar de Nuevo")
+                            ),
+                            React.createElement('button', {
+                                onClick: () => window.location.href = '/cne-app/#games',
+                                className: "px-4 py-2 border border-neutral-700 hover:bg-neutral-800 text-white rounded flex items-center gap-2"
+                            }, 
+                                React.createElement(ArrowLeft, {className: "h-4 w-4"}),
+                                t("Back to Games", "Volver a Juegos")
+                            )
+                        )
+                    )
+                );
+            }
+
+            return null;
+        }
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(TriviaGamePage));
+    </script>
+</body>
+</html>
