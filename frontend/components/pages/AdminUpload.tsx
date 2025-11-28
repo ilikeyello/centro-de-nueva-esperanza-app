@@ -4,6 +4,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TriviaAdminPanelFinal } from "../admin/TriviaAdminPanelFinal";
+import { Trash2 } from "lucide-react";
 
 export function AdminUpload() {
   const { t } = useLanguage();
@@ -500,7 +501,7 @@ export function AdminUpload() {
                       }
                     }}
                   >
-                    {t("Delete", "Eliminar")}
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </li>
               ))}

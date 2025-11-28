@@ -29452,29 +29452,23 @@ function Games({ onNavigate }) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-6", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 text-red-400" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades." : "Test your Bible knowledge with fun and educational questions for all ages." }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
-                t("Timed Questions", "Preguntas Cronometradas")
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
-                t("Multiple Levels", "Múltiples Niveles")
-              ] })
-            ] })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 text-red-400" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-6 w-6 text-red-400 group-hover:scale-110 transition-transform" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-6 w-6 text-neutral-400 group-hover:text-red-400 transition-colors" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades." : "Test your Bible knowledge with fun and educational questions for all ages." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
+              t("Timed Questions", "Preguntas Cronometradas")
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
+              t("Multiple Levels", "Múltiples Niveles")
+            ] })
           ] })
-        ] }),
+        ] }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
           {
@@ -30537,8 +30531,6 @@ function TriviaAdminPanelFinal({ passcode }) {
   const [showQuestionDialog, setShowQuestionDialog] = reactExports.useState(false);
   const [editingLevel, setEditingLevel] = reactExports.useState(null);
   const [editingQuestion, setEditingQuestion] = reactExports.useState(null);
-  const [showSaveDialog, setShowSaveDialog] = reactExports.useState(false);
-  const [savePasscode, setSavePasscode] = reactExports.useState("");
   reactExports.useEffect(() => {
     loadData();
   }, []);
@@ -30600,8 +30592,8 @@ function TriviaAdminPanelFinal({ passcode }) {
   };
   const executeBatchOperations = async () => {
     var _a2;
-    if (savePasscode !== passcode) {
-      setStatus("Incorrect passcode");
+    if (!passcode) {
+      setStatus("Admin passcode required");
       return;
     }
     setStatus("Saving changes...");
@@ -30691,8 +30683,6 @@ function TriviaAdminPanelFinal({ passcode }) {
           questionsToEdit: [],
           questionsToDelete: []
         });
-        setShowSaveDialog(false);
-        setSavePasscode("");
         loadData();
       } else {
         setStatus(`${errors.length} operations failed`);
@@ -30735,7 +30725,7 @@ function TriviaAdminPanelFinal({ passcode }) {
         totalPendingOps > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
           {
-            onClick: () => setShowSaveDialog(true),
+            onClick: executeBatchOperations,
             className: "bg-green-600 hover:bg-green-700",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
@@ -30848,37 +30838,7 @@ function TriviaAdminPanelFinal({ passcode }) {
       }) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-white flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Questions by Level", "Preguntas por Nivel") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog, onOpenChange: setShowQuestionDialog, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            Button,
-            {
-              onClick: () => setEditingQuestion(null),
-              className: "bg-red-600 hover:bg-red-700",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-2" }),
-                t("Add Question", "Agregar Pregunta")
-              ]
-            }
-          ) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              QuestionForm,
-              {
-                question: editingQuestion,
-                levels,
-                onSave: addQuestionToBatch,
-                onCancel: () => {
-                  setShowQuestionDialog(false);
-                  setEditingQuestion(null);
-                }
-              }
-            )
-          ] })
-        ] })
-      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: t("Questions by Level", "Preguntas por Nivel") }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: levels.map((level) => {
         const levelQuestions = questionsByLevel[level.id] || [];
         const isExpanded = expandedLevels.has(level.id);
@@ -30905,7 +30865,18 @@ function TriviaAdminPanelFinal({ passcode }) {
                   {
                     onClick: (e) => {
                       e.stopPropagation();
-                      setEditingQuestion(null);
+                      setEditingQuestion({
+                        id: 0,
+                        question_en: "",
+                        question_es: "",
+                        options_en: ["", "", "", ""],
+                        options_es: ["", "", "", ""],
+                        correct_answer: 0,
+                        category: "General",
+                        level_id: level.id,
+                        created_at: "",
+                        updated_at: ""
+                      });
                       setShowQuestionDialog(true);
                     },
                     variant: "outline",
@@ -30979,72 +30950,20 @@ function TriviaAdminPanelFinal({ passcode }) {
         ] }, level.id);
       }) })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showSaveDialog, onOpenChange: setShowSaveDialog, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogTitle, { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { className: "h-5 w-5 text-yellow-400" }),
-        t("Confirm Changes", "Confirmar Cambios")
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-300", children: t("You have pending changes. Enter the admin passcode to save all changes.", "Tienes cambios pendientes. Ingresa el código de administrador para guardar todos los cambios.") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 text-sm", children: [
-          pendingOperations.levelsToAdd.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-green-400", children: [
-            "+ ",
-            pendingOperations.levelsToAdd.length,
-            " ",
-            t("levels to add", "niveles para agregar")
-          ] }),
-          pendingOperations.levelsToEdit.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-blue-400", children: [
-            "~ ",
-            pendingOperations.levelsToEdit.length,
-            " ",
-            t("levels to edit", "niveles para editar")
-          ] }),
-          pendingOperations.levelsToDelete.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-red-400", children: [
-            "- ",
-            pendingOperations.levelsToDelete.length,
-            " ",
-            t("levels to delete", "niveles para eliminar")
-          ] }),
-          pendingOperations.questionsToAdd.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-green-400", children: [
-            "+ ",
-            pendingOperations.questionsToAdd.length,
-            " ",
-            t("questions to add", "preguntas para agregar")
-          ] }),
-          pendingOperations.questionsToEdit.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-blue-400", children: [
-            "~ ",
-            pendingOperations.questionsToEdit.length,
-            " ",
-            t("questions to edit", "preguntas para editar")
-          ] }),
-          pendingOperations.questionsToDelete.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-red-400", children: [
-            "- ",
-            pendingOperations.questionsToDelete.length,
-            " ",
-            t("questions to delete", "preguntas para eliminar")
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Admin Passcode", "Código de Administrador") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Input,
-            {
-              type: "password",
-              value: savePasscode,
-              onChange: (e) => setSavePasscode(e.target.value),
-              className: "bg-neutral-950 border-neutral-700 text-white",
-              placeholder: t("Enter passcode", "Ingresa el código")
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: executeBatchOperations, className: "bg-green-600 hover:bg-green-700", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
-            t("Save All Changes", "Guardar Todos los Cambios")
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => setShowSaveDialog(false), variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: t("Cancel", "Cancelar") })
-        ] })
-      ] })
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showQuestionDialog, onOpenChange: setShowQuestionDialog, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        QuestionForm,
+        {
+          question: editingQuestion,
+          levels,
+          onSave: addQuestionToBatch,
+          onCancel: () => {
+            setShowQuestionDialog(false);
+            setEditingQuestion(null);
+          }
+        }
+      )
     ] }) })
   ] });
 }
@@ -31060,11 +30979,16 @@ function LevelForm({
     description: (level == null ? void 0 : level.description) || "",
     shuffle_questions: (level == null ? void 0 : level.shuffle_questions) ?? true,
     time_limit: (level == null ? void 0 : level.time_limit) || 30,
-    passing_score: (level == null ? void 0 : level.passing_score) || 70
+    passing_score: (level == null ? void 0 : level.passing_score) || 70,
+    disable_time_limit: (level == null ? void 0 : level.time_limit) === null
   });
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const submissionData = {
+      ...formData,
+      time_limit: formData.disable_time_limit ? null : formData.time_limit
+    };
+    onSave(submissionData);
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
@@ -31094,9 +31018,23 @@ function LevelForm({
             onChange: (e) => setFormData({ ...formData, time_limit: parseInt(e.target.value) || 30 }),
             className: "bg-neutral-950 border-neutral-700 text-white",
             min: "10",
-            max: "300"
+            max: "300",
+            disabled: formData.disable_time_limit
           }
-        )
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-2 flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "input",
+            {
+              type: "checkbox",
+              id: "disable_time_limit",
+              checked: formData.disable_time_limit,
+              onChange: (e) => setFormData({ ...formData, disable_time_limit: e.target.checked, time_limit: e.target.checked ? null : formData.time_limit }),
+              className: "border-neutral-700 bg-neutral-950"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "disable_time_limit", className: "text-sm text-neutral-300", children: t("Disable time limit", "Desactivar límite de tiempo") })
+        ] })
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
@@ -31164,10 +31102,8 @@ function QuestionForm({
     var _a2;
     return {
       id: (q == null ? void 0 : q.id) || 0,
-      question_en: (q == null ? void 0 : q.question_en) || "",
-      question_es: (q == null ? void 0 : q.question_es) || "",
-      options_en: typeof (q == null ? void 0 : q.options_en) === "string" ? JSON.parse(q.options_en) : (q == null ? void 0 : q.options_en) || ["", "", "", ""],
-      options_es: typeof (q == null ? void 0 : q.options_es) === "string" ? JSON.parse(q.options_es) : (q == null ? void 0 : q.options_es) || ["", "", "", ""],
+      question: (q == null ? void 0 : q.question_en) || (q == null ? void 0 : q.question_es) || "",
+      options: typeof (q == null ? void 0 : q.options_en) === "string" ? JSON.parse(q.options_en) : (q == null ? void 0 : q.options_en) || ["", "", "", ""],
       correct_answer: (q == null ? void 0 : q.correct_answer) || 0,
       category: (q == null ? void 0 : q.category) || "General",
       level_id: (q == null ? void 0 : q.level_id) || (((_a2 = levels[0]) == null ? void 0 : _a2.id) || "")
@@ -31176,52 +31112,40 @@ function QuestionForm({
   const [formData, setFormData] = reactExports.useState(initializeFormData(question));
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const submissionData = {
+      ...formData,
+      question_en: formData.question,
+      question_es: formData.question,
+      options_en: JSON.stringify(formData.options),
+      options_es: JSON.stringify(formData.options)
+    };
+    onSave(submissionData);
   };
-  const updateOption = (lang, index2, value) => {
-    const options = lang === "en" ? [...formData.options_en] : [...formData.options_es];
+  const updateOption = (index2, value) => {
+    const options = [...formData.options];
     options[index2] = value;
     setFormData({
       ...formData,
-      [`options_${lang}`]: options
+      options
     });
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
-          t("Question (English)", "Pregunta (Inglés)"),
-          " *"
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Textarea,
-          {
-            value: formData.question_en,
-            onChange: (e) => setFormData({ ...formData, question_en: e.target.value }),
-            className: "bg-neutral-950 border-neutral-700 text-white",
-            placeholder: t("Enter question in English", "Ingresa la pregunta en inglés"),
-            rows: 2,
-            required: true
-          }
-        )
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+        t("Question", "Pregunta"),
+        " *"
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
-          t("Question (Spanish)", "Pregunta (Español)"),
-          " *"
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Textarea,
-          {
-            value: formData.question_es,
-            onChange: (e) => setFormData({ ...formData, question_es: e.target.value }),
-            className: "bg-neutral-950 border-neutral-700 text-white",
-            placeholder: t("Enter question in Spanish", "Ingresa la pregunta en español"),
-            rows: 2,
-            required: true
-          }
-        )
-      ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Textarea,
+        {
+          value: formData.question,
+          onChange: (e) => setFormData({ ...formData, question: e.target.value }),
+          className: "bg-neutral-950 border-neutral-700 text-white",
+          placeholder: t("Enter question", "Ingresa la pregunta"),
+          rows: 2,
+          required: true
+        }
+      )
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
@@ -31249,10 +31173,10 @@ function QuestionForm({
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
-        t("Answer Options (English)", "Opciones de Respuesta (Inglés)"),
+        t("Answer Options", "Opciones de Respuesta"),
         " *"
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: formData.options_en.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: formData.options.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
           String.fromCharCode(65 + index2),
           "."
@@ -31261,9 +31185,9 @@ function QuestionForm({
           Input,
           {
             value: option,
-            onChange: (e) => updateOption("en", index2, e.target.value),
+            onChange: (e) => updateOption(index2, e.target.value),
             className: "flex-1 bg-neutral-950 border-neutral-700 text-white",
-            placeholder: `Option ${index2 + 1} in English`,
+            placeholder: `Option ${index2 + 1}`,
             required: true
           }
         ),
@@ -31275,28 +31199,6 @@ function QuestionForm({
             checked: formData.correct_answer === index2,
             onChange: () => setFormData({ ...formData, correct_answer: index2 }),
             className: "border-neutral-700 bg-neutral-950"
-          }
-        )
-      ] }, index2)) })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
-        t("Answer Options (Spanish)", "Opciones de Respuesta (Español)"),
-        " *"
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: formData.options_es.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
-          String.fromCharCode(65 + index2),
-          "."
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Input,
-          {
-            value: option,
-            onChange: (e) => updateOption("es", index2, e.target.value),
-            className: "flex-1 bg-neutral-950 border-neutral-700 text-white",
-            placeholder: `Opción ${index2 + 1} en español`,
-            required: true
           }
         )
       ] }, index2)) })
@@ -31729,7 +31631,7 @@ function AdminUpload() {
                           );
                         }
                       },
-                      children: t("Delete", "Eliminar")
+                      children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
                     }
                   )
                 ]

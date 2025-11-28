@@ -46,8 +46,6 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
   const [expandedLevels, setExpandedLevels] = useState<Set<string>>(new Set());
-  
-  // Batch operations state
   const [pendingOperations, setPendingOperations] = useState<{
     levelsToAdd: Partial<TriviaLevel>[];
     levelsToEdit: Partial<TriviaLevel>[];
@@ -69,8 +67,6 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
   const [editingLevel, setEditingLevel] = useState<TriviaLevel | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<TriviaQuestion | null>(null);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [savePasscode, setSavePasscode] = useState('');
 
   useEffect(() => {
     loadData();
@@ -143,8 +139,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
   };
 
   const executeBatchOperations = async () => {
-    if (savePasscode !== passcode) {
-      setStatus('Incorrect passcode');
+    if (!passcode) {
+      setStatus('Admin passcode required');
       return;
     }
 
@@ -251,8 +247,6 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           questionsToEdit: [],
           questionsToDelete: []
         });
-        setShowSaveDialog(false);
-        setSavePasscode('');
         loadData();
       } else {
         setStatus(`${errors.length} operations failed`);
@@ -314,7 +308,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           )}
           {totalPendingOps > 0 && (
             <Button 
-              onClick={() => setShowSaveDialog(true)}
+              onClick={executeBatchOperations}
               className="bg-green-600 hover:bg-green-700"
             >
               <Save className="h-4 w-4 mr-2" />
@@ -427,35 +421,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       {/* Questions Section - Grouped by Level */}
       <Card className="bg-neutral-900 border-neutral-800">
         <CardHeader>
-          <CardTitle className="text-white flex items-center justify-between">
-            <span>{t("Questions by Level", "Preguntas por Nivel")}</span>
-            <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
-              <DialogTrigger asChild>
-                <Button 
-                  onClick={() => setEditingQuestion(null)}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("Add Question", "Agregar Pregunta")}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta")}
-                  </DialogTitle>
-                </DialogHeader>
-                <QuestionForm
-                  question={editingQuestion}
-                  levels={levels}
-                  onSave={addQuestionToBatch}
-                  onCancel={() => {
-                    setShowQuestionDialog(false);
-                    setEditingQuestion(null);
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+          <CardTitle className="text-white">
+            {t("Questions by Level", "Preguntas por Nivel")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -478,7 +445,18 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setEditingQuestion(null);
+                        setEditingQuestion({
+                          id: 0,
+                          question_en: '',
+                          question_es: '',
+                          options_en: ['', '', '', ''],
+                          options_es: ['', '', '', ''],
+                          correct_answer: 0,
+                          category: 'General',
+                          level_id: level.id,
+                          created_at: '',
+                          updated_at: ''
+                        });
                         setShowQuestionDialog(true);
                       }}
                       variant="outline"
@@ -563,64 +541,23 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         </CardContent>
       </Card>
 
-      {/* Save Confirmation Dialog */}
-      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <DialogContent className="bg-neutral-900 border-neutral-800 text-white">
+      {/* Question Dialog */}
+      <Dialog open={showQuestionDialog} onOpenChange={setShowQuestionDialog}>
+        <DialogContent className="bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-400" />
-              {t("Confirm Changes", "Confirmar Cambios")}
+            <DialogTitle>
+              {editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta")}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-neutral-300">
-              {t("You have pending changes. Enter the admin passcode to save all changes.", "Tienes cambios pendientes. Ingresa el código de administrador para guardar todos los cambios.")}
-            </p>
-            
-            <div className="space-y-2 text-sm">
-              {pendingOperations.levelsToAdd.length > 0 && (
-                <p className="text-green-400">+ {pendingOperations.levelsToAdd.length} {t("levels to add", "niveles para agregar")}</p>
-              )}
-              {pendingOperations.levelsToEdit.length > 0 && (
-                <p className="text-blue-400">~ {pendingOperations.levelsToEdit.length} {t("levels to edit", "niveles para editar")}</p>
-              )}
-              {pendingOperations.levelsToDelete.length > 0 && (
-                <p className="text-red-400">- {pendingOperations.levelsToDelete.length} {t("levels to delete", "niveles para eliminar")}</p>
-              )}
-              {pendingOperations.questionsToAdd.length > 0 && (
-                <p className="text-green-400">+ {pendingOperations.questionsToAdd.length} {t("questions to add", "preguntas para agregar")}</p>
-              )}
-              {pendingOperations.questionsToEdit.length > 0 && (
-                <p className="text-blue-400">~ {pendingOperations.questionsToEdit.length} {t("questions to edit", "preguntas para editar")}</p>
-              )}
-              {pendingOperations.questionsToDelete.length > 0 && (
-                <p className="text-red-400">- {pendingOperations.questionsToDelete.length} {t("questions to delete", "preguntas para eliminar")}</p>
-              )}
-            </div>
-
-            <div>
-              <Label className="block text-sm font-medium text-neutral-300 mb-1">
-                {t("Admin Passcode", "Código de Administrador")}
-              </Label>
-              <Input
-                type="password"
-                value={savePasscode}
-                onChange={(e) => setSavePasscode(e.target.value)}
-                className="bg-neutral-950 border-neutral-700 text-white"
-                placeholder={t("Enter passcode", "Ingresa el código")}
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <Button onClick={executeBatchOperations} className="bg-green-600 hover:bg-green-700">
-                <Save className="h-4 w-4 mr-2" />
-                {t("Save All Changes", "Guardar Todos los Cambios")}
-              </Button>
-              <Button onClick={() => setShowSaveDialog(false)} variant="outline" className="border-neutral-700 hover:bg-neutral-800">
-                {t("Cancel", "Cancelar")}
-              </Button>
-            </div>
-          </div>
+          <QuestionForm
+            question={editingQuestion}
+            levels={levels}
+            onSave={addQuestionToBatch}
+            onCancel={() => {
+              setShowQuestionDialog(false);
+              setEditingQuestion(null);
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>
@@ -643,12 +580,17 @@ function LevelForm({
     description: level?.description || '',
     shuffle_questions: level?.shuffle_questions ?? true,
     time_limit: level?.time_limit || 30,
-    passing_score: level?.passing_score || 70
+    passing_score: level?.passing_score || 70,
+    disable_time_limit: level?.time_limit === null
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    const submissionData = {
+      ...formData,
+      time_limit: formData.disable_time_limit ? null : formData.time_limit
+    };
+    onSave(submissionData);
   };
 
   return (
@@ -677,7 +619,20 @@ function LevelForm({
             className="bg-neutral-950 border-neutral-700 text-white"
             min="10"
             max="300"
+            disabled={formData.disable_time_limit}
           />
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="disable_time_limit"
+              checked={formData.disable_time_limit}
+              onChange={(e) => setFormData({ ...formData, disable_time_limit: e.target.checked, time_limit: e.target.checked ? null : formData.time_limit })}
+              className="border-neutral-700 bg-neutral-950"
+            />
+            <Label htmlFor="disable_time_limit" className="text-sm text-neutral-300">
+              {t("Disable time limit", "Desactivar límite de tiempo")}
+            </Label>
+          </div>
         </div>
       </div>
 
@@ -752,10 +707,8 @@ function QuestionForm({
   // Initialize formData with parsed options if they're strings
   const initializeFormData = (q: TriviaQuestion | null) => ({
     id: q?.id || 0,
-    question_en: q?.question_en || '',
-    question_es: q?.question_es || '',
-    options_en: typeof q?.options_en === 'string' ? JSON.parse(q.options_en) : (q?.options_en || ['', '', '', '']),
-    options_es: typeof q?.options_es === 'string' ? JSON.parse(q.options_es) : (q?.options_es || ['', '', '', '']),
+    question: q?.question_en || q?.question_es || '',
+    options: typeof q?.options_en === 'string' ? JSON.parse(q.options_en) : (q?.options_en || ['', '', '', '']),
     correct_answer: q?.correct_answer || 0,
     category: q?.category || 'General',
     level_id: q?.level_id || (levels[0]?.id || ''),
@@ -765,47 +718,40 @@ function QuestionForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    // Populate both English and Spanish fields with the same content
+    const submissionData = {
+      ...formData,
+      question_en: formData.question,
+      question_es: formData.question,
+      options_en: JSON.stringify(formData.options),
+      options_es: JSON.stringify(formData.options),
+    };
+    onSave(submissionData);
   };
 
-  const updateOption = (lang: 'en' | 'es', index: number, value: string) => {
-    const options = lang === 'en' ? [...formData.options_en] : [...formData.options_es];
+  const updateOption = (index: number, value: string) => {
+    const options = [...formData.options];
     options[index] = value;
     setFormData({ 
       ...formData, 
-      [`options_${lang}`]: options 
+      options: options 
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
-            {t("Question (English)", "Pregunta (Inglés)")} *
-          </Label>
-          <Textarea
-            value={formData.question_en}
-            onChange={(e) => setFormData({ ...formData, question_en: e.target.value })}
-            className="bg-neutral-950 border-neutral-700 text-white"
-            placeholder={t("Enter question in English", "Ingresa la pregunta en inglés")}
-            rows={2}
-            required
-          />
-        </div>
-        <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
-            {t("Question (Spanish)", "Pregunta (Español)")} *
-          </Label>
-          <Textarea
-            value={formData.question_es}
-            onChange={(e) => setFormData({ ...formData, question_es: e.target.value })}
-            className="bg-neutral-950 border-neutral-700 text-white"
-            placeholder={t("Enter question in Spanish", "Ingresa la pregunta en español")}
-            rows={2}
-            required
-          />
-        </div>
+      <div>
+        <Label className="block text-sm font-medium text-neutral-300 mb-1">
+          {t("Question", "Pregunta")} *
+        </Label>
+        <Textarea
+          value={formData.question}
+          onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+          className="bg-neutral-950 border-neutral-700 text-white"
+          placeholder={t("Enter question", "Ingresa la pregunta")}
+          rows={2}
+          required
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -841,17 +787,17 @@ function QuestionForm({
 
       <div>
         <Label className="block text-sm font-medium text-neutral-300 mb-1">
-          {t("Answer Options (English)", "Opciones de Respuesta (Inglés)")} *
+          {t("Answer Options", "Opciones de Respuesta")} *
         </Label>
         <div className="space-y-2">
-          {formData.options_en.map((option: string, index: number) => (
+          {formData.options.map((option: string, index: number) => (
             <div key={index} className="flex items-center gap-2">
               <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
               <Input
                 value={option}
-                onChange={(e) => updateOption('en', index, e.target.value)}
+                onChange={(e) => updateOption(index, e.target.value)}
                 className="flex-1 bg-neutral-950 border-neutral-700 text-white"
-                placeholder={`Option ${index + 1} in English`}
+                placeholder={`Option ${index + 1}`}
                 required
               />
               <input
@@ -860,26 +806,6 @@ function QuestionForm({
                 checked={formData.correct_answer === index}
                 onChange={() => setFormData({ ...formData, correct_answer: index })}
                 className="border-neutral-700 bg-neutral-950"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <Label className="block text-sm font-medium text-neutral-300 mb-1">
-          {t("Answer Options (Spanish)", "Opciones de Respuesta (Español)")} *
-        </Label>
-        <div className="space-y-2">
-          {formData.options_es.map((option: string, index: number) => (
-            <div key={index} className="flex items-center gap-2">
-              <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
-              <Input
-                value={option}
-                onChange={(e) => updateOption('es', index, e.target.value)}
-                className="flex-1 bg-neutral-950 border-neutral-700 text-white"
-                placeholder={`Opción ${index + 1} en español`}
-                required
               />
             </div>
           ))}

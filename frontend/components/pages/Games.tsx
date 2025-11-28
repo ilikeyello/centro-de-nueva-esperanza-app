@@ -53,10 +53,6 @@ export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Play className="h-6 w-6 text-red-400 group-hover:scale-110 transition-transform" />
-                <ChevronRight className="h-6 w-6 text-neutral-400 group-hover:text-red-400 transition-colors" />
-              </div>
             </div>
             <Button 
               onClick={() => onNavigate?.("triviaGame")}
