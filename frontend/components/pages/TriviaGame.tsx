@@ -87,7 +87,7 @@ export function TriviaGame() {
     try {
       const response = await fetch('/trivia/simple');
       const data = await response.json();
-      return data.questions.filter(q => q.level_id === levelId);
+      return data.questions.filter((q: TriviaQuestion) => q.level_id === levelId);
     } catch (error) {
       console.error('Failed to load questions:', error);
       return [];
@@ -283,7 +283,7 @@ export function TriviaGame() {
               <h3 className="text-2xl font-semibold text-white">{question}</h3>
               
               <div className="grid gap-3">
-                {options.map((option, index) => (
+                {options.map((option: string, index: number) => (
                   <Button
                     key={index}
                     onClick={() => handleAnswer(index)}

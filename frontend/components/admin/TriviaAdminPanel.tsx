@@ -599,7 +599,7 @@ function QuestionForm({
           {t("Answer Options (click radio for correct answer)", "Opciones de respuesta (haz clic en el radio para la respuesta correcta)")}
         </label>
         
-        {formData.options_en.map((option, index) => (
+        {formData.options_en.map((option: string, index: number) => (
           <div key={index} className="space-y-2 mb-3">
             <div className="flex items-center gap-2">
               <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>

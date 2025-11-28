@@ -29473,7 +29473,7 @@ function TriviaGame() {
   }, [gameState.isTimerActive, gameState.timeRemaining]);
   const loadLevels = async () => {
     try {
-      const response = await fetch("/trivia/levels");
+      const response = await fetch("/trivia/simple");
       const data = await response.json();
       setLevels(data.levels);
     } catch (error) {
@@ -29484,9 +29484,9 @@ function TriviaGame() {
   };
   const loadQuestions = async (levelId) => {
     try {
-      const response = await fetch(`/trivia/questions?level_id=${levelId}`);
+      const response = await fetch("/trivia/simple");
       const data = await response.json();
-      return data.questions;
+      return data.questions.filter((q) => q.level_id === levelId);
     } catch (error) {
       console.error("Failed to load questions:", error);
       return [];
@@ -29626,7 +29626,7 @@ function TriviaGame() {
   if (gameState.status === "playing" && gameState.questions.length > 0) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const question = language === "es" ? currentQuestion.question_es : currentQuestion.question_en;
-    const options = language === "es" ? currentQuestion.options_es : currentQuestion.options_en;
+    const options = language === "es" ? typeof currentQuestion.options_es === "string" ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es : typeof currentQuestion.options_en === "string" ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-3xl mx-auto space-y-6", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-400", children: [
@@ -30363,30 +30363,13 @@ function TriviaAdminPanel({ passcode }) {
   }, []);
   const loadData = async () => {
     try {
-      const [levelsRes, questionsRes] = await Promise.all([
-        fetch("/trivia/levels"),
-        fetch("/trivia/questions")
-      ]);
-      const levelsData = await levelsRes.json();
-      const questionsData = await questionsRes.json();
-      setLevels(levelsData.levels || []);
-      setQuestions(questionsData.questions || []);
+      const response = await fetch("/trivia/simple");
+      const data = await response.json();
+      setLevels(data.levels || []);
+      setQuestions(data.questions || []);
     } catch (error) {
       console.error("Failed to load trivia data:", error);
       setStatus("Failed to load data");
-      try {
-        const setupRes = await fetch("/trivia/setup", { method: "POST" });
-        const setupResult = await setupRes.json();
-        if (setupResult.success) {
-          setStatus("Database tables created. Loading data...");
-          setTimeout(loadData, 1e3);
-        } else {
-          setStatus(`Setup failed: ${setupResult.message}`);
-        }
-      } catch (setupError) {
-        console.error("Setup failed:", setupError);
-        setStatus("Failed to setup database tables");
-      }
     } finally {
       setLoading(false);
     }
@@ -30398,15 +30381,21 @@ function TriviaAdminPanel({ passcode }) {
     }
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const url = editingLevel ? `/trivia/levels/${level.id}` : "/trivia/levels";
-      const method = editingLevel ? "PUT" : "POST";
-      const response = await fetch(`${base}${url}`, {
-        method,
+      const response = await fetch(`${base}/trivia/simple/level`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(level)
+        body: JSON.stringify({
+          id: level.id,
+          name: level.name,
+          description: level.description,
+          shuffle_questions: level.shuffle_questions,
+          time_limit: level.time_limit,
+          passing_score: level.passing_score
+        })
       });
-      if (!response.ok) {
-        throw new Error("Failed to save level");
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message);
       }
       await loadData();
       setEditingLevel(null);
@@ -30426,11 +30415,12 @@ function TriviaAdminPanel({ passcode }) {
     }
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/levels/${id}`, {
+      const response = await fetch(`${base}/trivia/simple/level/${id}`, {
         method: "DELETE"
       });
-      if (!response.ok) {
-        throw new Error("Failed to delete level");
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message);
       }
       await loadData();
       setStatus("Level deleted successfully");
@@ -30445,15 +30435,22 @@ function TriviaAdminPanel({ passcode }) {
     }
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const url = editingQuestion ? `/trivia/questions/${question.id}` : "/trivia/questions";
-      const method = editingQuestion ? "PUT" : "POST";
-      const response = await fetch(`${base}${url}`, {
-        method,
+      const response = await fetch(`${base}/trivia/simple/question`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(question)
+        body: JSON.stringify({
+          question_en: question.question_en,
+          question_es: question.question_es,
+          options_en: JSON.stringify(question.options_en),
+          options_es: JSON.stringify(question.options_es),
+          correct_answer: question.correct_answer,
+          category: question.category,
+          level_id: question.level_id
+        })
       });
-      if (!response.ok) {
-        throw new Error("Failed to save question");
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message);
       }
       await loadData();
       setEditingQuestion(null);
@@ -30473,11 +30470,12 @@ function TriviaAdminPanel({ passcode }) {
     }
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/questions/${id}`, {
+      const response = await fetch(`${base}/trivia/simple/question/${id}`, {
         method: "DELETE"
       });
-      if (!response.ok) {
-        throw new Error("Failed to delete question");
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message);
       }
       await loadData();
       setStatus("Question deleted successfully");
@@ -30775,7 +30773,12 @@ function QuestionForm({
   onCancel
 }) {
   const { t, language } = useLanguage();
-  const [formData, setFormData] = reactExports.useState(question);
+  const initializeFormData = (q) => ({
+    ...q,
+    options_en: typeof q.options_en === "string" ? JSON.parse(q.options_en) : q.options_en,
+    options_es: typeof q.options_es === "string" ? JSON.parse(q.options_es) : q.options_es
+  });
+  const [formData, setFormData] = reactExports.useState(initializeFormData(question));
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
