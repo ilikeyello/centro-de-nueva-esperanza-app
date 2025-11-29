@@ -163,15 +163,17 @@ export const deleteLevel = api(
       
       // First delete all questions referencing this level
       console.log('Deleting questions for level:', id);
-      const questionDeleteResult = await db.query`
+      await db.exec`
         DELETE FROM trivia_questions_simple WHERE level_id = ${id}
       `;
-      console.log('Questions delete result:', questionDeleteResult);
+      console.log('Questions deleted successfully');
       
       // Then delete the level
       console.log('Deleting level:', id);
-      const result = await db.query`DELETE FROM trivia_levels_simple WHERE id = ${id}`;
-      console.log('Level delete query executed, result:', result);
+      await db.exec`
+        DELETE FROM trivia_levels_simple WHERE id = ${id}
+      `;
+      console.log('Level deleted successfully');
       
       // Verify deletion
       const deletedLevel = await db.queryRow<{ id: string }>`
@@ -203,7 +205,7 @@ export const deleteQuestion = api(
     }
 
     try {
-      await db.query`DELETE FROM trivia_questions_simple WHERE id = ${id}`;
+      await db.exec`DELETE FROM trivia_questions_simple WHERE id = ${id}`;
       return { success: true, message: "Question deleted successfully" };
     } catch (error) {
       return { success: false, message: `Failed to delete question: ${error instanceof Error ? error.message : 'Unknown error'}` };
