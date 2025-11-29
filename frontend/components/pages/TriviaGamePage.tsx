@@ -146,7 +146,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       currentQuestionIndex: 0,
       userAnswers: [],
       score: 0,
-      isTimerActive: true,
+      isTimerActive: level.time_limit > 0, // Only activate timer if time_limit > 0
       timeRemaining: level.time_limit,
       selectedAnswer: null,
       showFeedback: false,
@@ -282,18 +282,17 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       };
     });
 
-    setGameState({
+    setGameState(prev => ({
+      ...prev,
       status: 'playing',
-      selectedLevel: gameState.selectedLevel,
-      questions: processedQuestions,
       currentQuestionIndex: 0,
       userAnswers: [],
       score: 0,
-      isTimerActive: true,
-      timeRemaining: gameState.selectedLevel.time_limit,
+      isTimerActive: prev.selectedLevel.time_limit > 0, // Only activate timer if time_limit > 0
+      timeRemaining: prev.selectedLevel.time_limit,
       selectedAnswer: null,
       showFeedback: false,
-    });
+    }));
   };
 
   useEffect(() => {

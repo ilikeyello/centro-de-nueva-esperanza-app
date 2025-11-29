@@ -29565,7 +29565,8 @@ function TriviaGamePage({ onNavigate } = {}) {
       currentQuestionIndex: 0,
       userAnswers: [],
       score: 0,
-      isTimerActive: true,
+      isTimerActive: level.time_limit > 0,
+      // Only activate timer if time_limit > 0
       timeRemaining: level.time_limit,
       selectedAnswer: null,
       showFeedback: false
@@ -29655,7 +29656,7 @@ function TriviaGamePage({ onNavigate } = {}) {
     const questions = await loadQuestions(gameState.selectedLevel.id);
     if (questions.length === 0) return;
     const shuffledQuestions = gameState.selectedLevel.shuffle_questions ? [...questions].sort(() => Math.random() - 0.5) : questions;
-    const processedQuestions = shuffledQuestions.map((question) => {
+    shuffledQuestions.map((question) => {
       var _a3;
       if (!((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.shuffle_questions)) return question;
       const options_en = typeof question.options_en === "string" ? JSON.parse(question.options_en) : question.options_en;
@@ -29672,18 +29673,18 @@ function TriviaGamePage({ onNavigate } = {}) {
         correct_answer: newCorrectIndex
       };
     });
-    setGameState({
+    setGameState((prev) => ({
+      ...prev,
       status: "playing",
-      selectedLevel: gameState.selectedLevel,
-      questions: processedQuestions,
       currentQuestionIndex: 0,
       userAnswers: [],
       score: 0,
-      isTimerActive: true,
-      timeRemaining: gameState.selectedLevel.time_limit,
+      isTimerActive: prev.selectedLevel.time_limit > 0,
+      // Only activate timer if time_limit > 0
+      timeRemaining: prev.selectedLevel.time_limit,
       selectedAnswer: null,
       showFeedback: false
-    });
+    }));
   };
   reactExports.useEffect(() => {
     loadLevels();
