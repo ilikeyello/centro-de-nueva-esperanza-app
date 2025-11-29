@@ -30623,10 +30623,9 @@ function TriviaAdminPanelFinal({ passcode }) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const results = [];
       for (const level of pendingOperations.levelsToAdd) {
-        const { id, time_limit, ...levelData } = level;
         const payload = {
-          ...levelData,
-          time_limit: time_limit === null ? 0 : time_limit
+          ...level,
+          time_limit: level.time_limit === null ? 0 : level.time_limit
         };
         console.log("Original level data:", level);
         console.log("Payload being sent:", payload);

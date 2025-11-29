@@ -175,11 +175,10 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
 
       // Add levels
       for (const level of pendingOperations.levelsToAdd) {
-        // Remove temporary ID before sending to backend
-        const { id, time_limit, ...levelData } = level;
+        // Keep the temporary ID since backend expects it
         const payload = {
-          ...levelData,
-          time_limit: time_limit === null ? 0 : time_limit
+          ...level,
+          time_limit: level.time_limit === null ? 0 : level.time_limit
         };
         console.log('Original level data:', level);
         console.log('Payload being sent:', payload);
