@@ -19946,6 +19946,7 @@ class Client {
     this.donations = new donations.ServiceClient(base);
     this.events = new events.ServiceClient(base);
     this.media = new media.ServiceClient(base);
+    this.notifications = new notifications.ServiceClient(base);
     this.prayers = new prayers.ServiceClient(base);
     this.sermons = new sermons.ServiceClient(base);
   }
@@ -20038,17 +20039,10 @@ var church;
       this.createQuestion = this.createQuestion.bind(this);
       this.deleteLevel = this.deleteLevel.bind(this);
       this.deleteQuestion = this.deleteQuestion.bind(this);
-      this.getStats = this.getStats.bind(this);
       this.getTrivia = this.getTrivia.bind(this);
       this.info = this.info.bind(this);
-      this.sendAnnouncementNotification = this.sendAnnouncementNotification.bind(this);
-      this.sendLivestreamNotification = this.sendLivestreamNotification.bind(this);
-      this.sendNewsNotification = this.sendNewsNotification.bind(this);
-      this.sendToAll = this.sendToAll.bind(this);
       this.setupTriviaTables = this.setupTriviaTables.bind(this);
-      this.subscribe = this.subscribe.bind(this);
       this.testTriviaDB = this.testTriviaDB.bind(this);
-      this.unsubscribe = this.unsubscribe.bind(this);
       this.update = this.update.bind(this);
     }
     /**
@@ -20086,13 +20080,6 @@ var church;
       return await resp.json();
     }
     /**
-     * Get subscription statistics
-     */
-    async getStats() {
-      const resp = await this.baseClient.callTypedAPI("GET", `/notifications/stats`);
-      return await resp.json();
-    }
-    /**
      * Get all trivia data
      */
     async getTrivia() {
@@ -20106,54 +20093,12 @@ var church;
       const resp = await this.baseClient.callTypedAPI("GET", `/church/info`);
       return await resp.json();
     }
-    /**
-     * Send notification for announcements
-     */
-    async sendAnnouncementNotification(params) {
-      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/announcement`, JSON.stringify(params));
-      return await resp.json();
-    }
-    /**
-     * Send notification for livestream reminder
-     */
-    async sendLivestreamNotification(params) {
-      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/livestream`, JSON.stringify(params));
-      return await resp.json();
-    }
-    /**
-     * Send notification for news
-     */
-    async sendNewsNotification(params) {
-      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/news`, JSON.stringify(params));
-      return await resp.json();
-    }
-    /**
-     * Send notification to all subscribers
-     */
-    async sendToAll(params) {
-      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/send-all`, JSON.stringify(params));
-      return await resp.json();
-    }
     async setupTriviaTables() {
       const resp = await this.baseClient.callTypedAPI("POST", `/trivia/setup-tables`);
       return await resp.json();
     }
-    /**
-     * Subscribe to push notifications
-     */
-    async subscribe(params) {
-      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/subscribe`, JSON.stringify(params));
-      return await resp.json();
-    }
     async testTriviaDB() {
       const resp = await this.baseClient.callTypedAPI("GET", `/trivia/test-db`);
-      return await resp.json();
-    }
-    /**
-     * Unsubscribe from push notifications
-     */
-    async unsubscribe(params) {
-      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/unsubscribe`, JSON.stringify(params));
       return await resp.json();
     }
     /**
@@ -20306,6 +20251,23 @@ var media;
   }
   media2.ServiceClient = ServiceClient;
 })(media || (media = {}));
+var notifications;
+((notifications2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.subscribe = this.subscribe.bind(this);
+    }
+    /**
+     * Subscribe to push notifications
+     */
+    async subscribe(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/subscribe`, JSON.stringify(params));
+      return await resp.json();
+    }
+  }
+  notifications2.ServiceClient = ServiceClient;
+})(notifications || (notifications = {}));
 var prayers;
 ((prayers2) => {
   class ServiceClient {
