@@ -135,6 +135,9 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
   };
 
   const addQuestionToBatch = (question: Partial<TriviaQuestion>) => {
+    console.log('🔍 addQuestionToBatch called with:', question);
+    console.log('🔍 editingQuestion:', editingQuestion);
+    
     if (editingQuestion) {
       // Edit existing question
       setPendingOperations(prev => ({
@@ -145,10 +148,15 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       setEditingQuestion(null);
     } else {
       // Add new question - keep dialog open for multiple questions
-      setPendingOperations(prev => ({
-        ...prev,
-        questionsToAdd: [...prev.questionsToAdd, question]
-      }));
+      console.log('🔍 Adding new question to questionsToAdd');
+      setPendingOperations(prev => {
+        const newQuestions = [...prev.questionsToAdd, question];
+        console.log('🔍 New questionsToAdd array:', newQuestions);
+        return {
+          ...prev,
+          questionsToAdd: newQuestions
+        };
+      });
       // Don't close dialog - let user add multiple questions
     }
   };
@@ -922,7 +930,9 @@ function QuestionForm({
       question_es: formData.question,
       options_en: formData.options,
       options_es: formData.options,
+      level_id: formData.level_id, // Explicitly include level_id
     };
+    console.log('🔍 QuestionForm submitting:', submissionData);
     onSave(submissionData);
     
     // Reset form for next question

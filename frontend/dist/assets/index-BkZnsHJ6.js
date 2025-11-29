@@ -30576,6 +30576,8 @@ function TriviaAdminPanelFinal({ passcode }) {
     setEditingLevel(null);
   };
   const addQuestionToBatch = (question) => {
+    console.log("🔍 addQuestionToBatch called with:", question);
+    console.log("🔍 editingQuestion:", editingQuestion);
     if (editingQuestion) {
       setPendingOperations((prev) => ({
         ...prev,
@@ -30584,10 +30586,15 @@ function TriviaAdminPanelFinal({ passcode }) {
       setShowQuestionDialog(false);
       setEditingQuestion(null);
     } else {
-      setPendingOperations((prev) => ({
-        ...prev,
-        questionsToAdd: [...prev.questionsToAdd, question]
-      }));
+      console.log("🔍 Adding new question to questionsToAdd");
+      setPendingOperations((prev) => {
+        const newQuestions = [...prev.questionsToAdd, question];
+        console.log("🔍 New questionsToAdd array:", newQuestions);
+        return {
+          ...prev,
+          questionsToAdd: newQuestions
+        };
+      });
     }
   };
   const deleteLevelFromBatch = (id) => {
@@ -31272,8 +31279,11 @@ function QuestionForm({
       question_en: formData.question,
       question_es: formData.question,
       options_en: formData.options,
-      options_es: formData.options
+      options_es: formData.options,
+      level_id: formData.level_id
+      // Explicitly include level_id
     };
+    console.log("🔍 QuestionForm submitting:", submissionData);
     onSave(submissionData);
     setFormData({
       ...initializeFormData(null),
