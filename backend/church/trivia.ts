@@ -137,15 +137,48 @@ export const createQuestion = api(
 export const deleteLevel = api(
   { expose: true, method: "DELETE", path: "/trivia/simple/level/:id" },
   async ({ id, passcode }: { id: string; passcode?: Query<string> }): Promise<{ success: boolean; message: string }> => {
+    console.log('=== DELETE LEVEL REQUEST ===');
+    console.log('Level ID to delete:', id);
+    console.log('Passcode provided:', passcode);
+    
     // Check if passcode is correct
     if (!passcode || passcode !== "78598") {
+      console.log('❌ Invalid passcode');
       return { success: false, message: "Invalid passcode" };
     }
 
     try {
-      await db.query`DELETE FROM trivia_levels_simple WHERE id = ${id}`;
+      console.log('Attempting to delete level with ID:', id);
+      
+      // First check if level exists
+      const existingLevel = await db.queryRow<{ id: string }>`
+        SELECT id FROM trivia_levels_simple WHERE id = ${id}
+      `;
+      console.log('Existing level found:', existingLevel);
+      
+      if (!existingLevel) {
+        console.log('❌ Level not found in database');
+        return { success: false, message: "Level not found" };
+      }
+      
+      const result = await db.query`DELETE FROM trivia_levels_simple WHERE id = ${id}`;
+      console.log('Delete query executed, result:', result);
+      
+      // Verify deletion
+      const deletedLevel = await db.queryRow<{ id: string }>`
+        SELECT id FROM trivia_levels_simple WHERE id = ${id}
+      `;
+      console.log('Level after deletion attempt:', deletedLevel);
+      
+      if (deletedLevel) {
+        console.log('❌ Level still exists after deletion');
+        return { success: false, message: "Deletion failed - level still exists" };
+      }
+      
+      console.log('✅ Level successfully deleted');
       return { success: true, message: "Level deleted successfully" };
     } catch (error) {
+      console.error('❌ Error deleting level:', error);
       return { success: false, message: `Failed to delete level: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
   }

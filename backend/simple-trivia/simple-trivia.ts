@@ -43,9 +43,9 @@ const DEFAULT_DATA: SimpleTriviaData = {
   questions: []
 };
 
-export const get = api<void, SimpleTriviaData>(
-  { expose: true, method: "GET", path: "/simple-trivia" },
-  async () => {
+// export const get = api<void, SimpleTriviaData>(
+//   { expose: true, method: "GET", path: "/simple-trivia" },
+//   async () => {
     const result = await db.queryRow<{ trivia_data: string | null }>`
       SELECT trivia_data 
       FROM church_info 
