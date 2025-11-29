@@ -29512,20 +29512,8 @@ function TriviaGamePage({ onNavigate } = {}) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      const deletedLevelIds = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
-      const deletedQuestionIds = JSON.parse(localStorage.getItem("deletedQuestionIds") || "[]");
       console.log("Game page - loaded levels:", data.levels.length);
-      console.log("Game page - deleted level IDs:", deletedLevelIds);
-      console.log("Game page - deleted question IDs:", deletedQuestionIds);
-      const filteredLevels = data.levels.filter((level) => !deletedLevelIds.includes(level.id));
-      console.log("Game page - filtered levels:", filteredLevels.length);
-      const adminDeletedLevels = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
-      const adminDeletedQuestions = JSON.parse(localStorage.getItem("deletedQuestionIds") || "[]");
-      if (adminDeletedLevels.length !== deletedLevelIds.length || adminDeletedQuestions.length !== deletedQuestionIds.length) {
-        console.log("Game page - localStorage sync detected, reloading...");
-        window.location.reload();
-      }
-      setLevels(filteredLevels);
+      setLevels(data.levels);
     } catch (error) {
       console.error("Failed to load levels:", error);
     } finally {
@@ -29537,11 +29525,7 @@ function TriviaGamePage({ onNavigate } = {}) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      const deletedLevelIds = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
-      const deletedQuestionIds = JSON.parse(localStorage.getItem("deletedQuestionIds") || "[]");
-      return data.questions.filter(
-        (q) => q.level_id === levelId && !deletedLevelIds.includes(levelId) && !deletedQuestionIds.includes(q.id)
-      );
+      return data.questions.filter((q) => q.level_id === levelId);
     } catch (error) {
       console.error("Failed to load questions:", error);
       return [];
@@ -30529,20 +30513,6 @@ function TriviaAdminPanelFinal({ passcode }) {
     questionsToEdit: [],
     questionsToDelete: []
   });
-  const [deletedLevelIds, setDeletedLevelIds] = reactExports.useState(() => {
-    const saved = localStorage.getItem("deletedLevelIds");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [deletedQuestionIds, setDeletedQuestionIds] = reactExports.useState(() => {
-    const saved = localStorage.getItem("deletedQuestionIds");
-    return saved ? JSON.parse(saved) : [];
-  });
-  reactExports.useEffect(() => {
-    localStorage.setItem("deletedLevelIds", JSON.stringify(deletedLevelIds));
-  }, [deletedLevelIds]);
-  reactExports.useEffect(() => {
-    localStorage.setItem("deletedQuestionIds", JSON.stringify(deletedQuestionIds));
-  }, [deletedQuestionIds]);
   const [showLevelDialog, setShowLevelDialog] = reactExports.useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = reactExports.useState(false);
   const [editingLevel, setEditingLevel] = reactExports.useState(null);
@@ -30556,8 +30526,6 @@ function TriviaAdminPanelFinal({ passcode }) {
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       console.log("Admin panel - loaded levels:", data.levels.length);
-      console.log("Admin panel - deleted level IDs from localStorage:", deletedLevelIds);
-      console.log("Admin panel - deleted question IDs from localStorage:", deletedQuestionIds);
       setLevels(data.levels || []);
       setQuestions(data.questions || []);
       console.log("Levels after load:", data.levels);
@@ -30695,85 +30663,59 @@ function TriviaAdminPanelFinal({ passcode }) {
         results.push(await response.json());
       }
       for (const id of pendingOperations.levelsToDelete) {
-        console.log("Deleting level:", id);
-        const endpoints = [
-          `${base}/trivia/simple/level/${id}`,
-          `${base}/trivia/level/${id}`,
-          `${base}/level/${id}`
-        ];
-        let deleteSuccess = false;
-        for (const endpoint of endpoints) {
-          try {
-            const response = await fetch(endpoint, {
-              method: "DELETE",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ passcode })
-            });
-            console.log("Delete level endpoint:", endpoint, "status:", response.status);
-            const responseText = await response.text();
-            console.log("Delete level response body:", responseText);
-            if (response.ok && responseText.includes("deleted")) {
-              console.log("Delete level succeeded with endpoint:", endpoint);
-              deleteSuccess = true;
-              results.push({ success: true });
-              break;
+        try {
+          const response = await fetch(`${base}/trivia/simple/level/${id}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" }
+          });
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              console.log("Level deleted successfully:", id);
+              results.push({ success: true, id });
+            } else {
+              console.error("Failed to delete level:", result.message);
+              results.push({ success: false, error: result.message, id });
             }
-          } catch (error) {
-            console.log("Delete level failed with endpoint:", endpoint, error);
+          } else {
+            const errorText = await response.text();
+            console.error("Delete level failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
           }
-        }
-        if (!deleteSuccess) {
-          console.error("All delete endpoints failed for level:", id);
-          results.push({ success: false, error: "All endpoints failed" });
+        } catch (error) {
+          console.error("Error deleting level:", id, error);
+          results.push({ success: false, error: String(error), id });
         }
       }
       for (const id of pendingOperations.questionsToDelete) {
-        console.log("Deleting question:", id);
-        const endpoints = [
-          `${base}/trivia/simple/question/${id}`,
-          `${base}/trivia/question/${id}`,
-          `${base}/question/${id}`
-        ];
-        let deleteSuccess = false;
-        for (const endpoint of endpoints) {
-          try {
-            const response = await fetch(endpoint, {
-              method: "DELETE",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ passcode })
-            });
-            console.log("Delete question endpoint:", endpoint, "status:", response.status);
-            const responseText = await response.text();
-            console.log("Delete question response body:", responseText);
-            if (response.ok && responseText.includes("deleted")) {
-              console.log("Delete question succeeded with endpoint:", endpoint);
-              deleteSuccess = true;
-              results.push({ success: true });
-              break;
+        try {
+          const response = await fetch(`${base}/trivia/simple/question/${id}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" }
+          });
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              console.log("Question deleted successfully:", id);
+              results.push({ success: true, id });
+            } else {
+              console.error("Failed to delete question:", result.message);
+              results.push({ success: false, error: result.message, id });
             }
-          } catch (error) {
-            console.log("Delete question failed with endpoint:", endpoint, error);
+          } else {
+            const errorText = await response.text();
+            console.error("Delete question failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
           }
-        }
-        if (!deleteSuccess) {
-          console.error("All delete endpoints failed for question:", id);
-          results.push({ success: false, error: "All endpoints failed" });
+        } catch (error) {
+          console.error("Error deleting question:", id, error);
+          results.push({ success: false, error: String(error), id });
         }
       }
       const errors = results.filter((r2) => !r2.success);
       if (errors.length === 0) {
         setStatus("All changes saved successfully!");
         console.log("About to call loadData after successful save");
-        setDeletedLevelIds((prev) => [...prev, ...pendingOperations.levelsToDelete]);
-        setDeletedQuestionIds((prev) => [...prev, ...pendingOperations.questionsToDelete]);
-        const questionsInDeletedLevels = questions.filter(
-          (q) => pendingOperations.levelsToDelete.includes(q.level_id)
-        );
-        const questionsInDeletedLevelsIds = questionsInDeletedLevels.map((q) => q.id);
-        if (questionsInDeletedLevelsIds.length > 0) {
-          console.log("Auto-deleting questions in deleted levels:", questionsInDeletedLevelsIds);
-          setDeletedQuestionIds((prev) => [...prev, ...questionsInDeletedLevelsIds]);
-        }
         setPendingOperations({
           levelsToAdd: [],
           levelsToEdit: [],
@@ -30868,7 +30810,7 @@ function TriviaAdminPanelFinal({ passcode }) {
           ] })
         ] })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
         var _a2;
         return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
@@ -30937,8 +30879,8 @@ function TriviaAdminPanelFinal({ passcode }) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: t("Questions by Level", "Preguntas por Nivel") }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
-        const levelQuestions = (questionsByLevel[level.id] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
+        const levelQuestions = (questionsByLevel[level.id] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id));
         const isExpanded = expandedLevels.has(level.id);
         return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(

@@ -62,25 +62,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     questionsToDelete: []
   });
   
-  // Persistent deleted items tracking (since backend delete is broken)
-  const [deletedLevelIds, setDeletedLevelIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem('deletedLevelIds');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [deletedQuestionIds, setDeletedQuestionIds] = useState<number[]>(() => {
-    const saved = localStorage.getItem('deletedQuestionIds');
-    return saved ? JSON.parse(saved) : [];
-  });
 
-  // Save to localStorage whenever deleted items change
-  useEffect(() => {
-    localStorage.setItem('deletedLevelIds', JSON.stringify(deletedLevelIds));
-  }, [deletedLevelIds]);
-
-  useEffect(() => {
-    localStorage.setItem('deletedQuestionIds', JSON.stringify(deletedQuestionIds));
-  }, [deletedQuestionIds]);
-  
   // Dialog states
   const [showLevelDialog, setShowLevelDialog] = useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
@@ -97,8 +79,6 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       console.log('Admin panel - loaded levels:', data.levels.length);
-      console.log('Admin panel - deleted level IDs from localStorage:', deletedLevelIds);
-      console.log('Admin panel - deleted question IDs from localStorage:', deletedQuestionIds);
       
       setLevels(data.levels || []);
       setQuestions(data.questions || []);
@@ -260,83 +240,59 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         results.push(await response.json());
       }
 
-      // Delete levels
+      // Delete levels using correct backend endpoints
       for (const id of pendingOperations.levelsToDelete) {
-        console.log('Deleting level:', id);
-        // Try different endpoints
-        const endpoints = [
-          `${base}/trivia/simple/level/${id}`,
-          `${base}/trivia/level/${id}`,
-          `${base}/level/${id}`
-        ];
-        
-        let deleteSuccess = false;
-        for (const endpoint of endpoints) {
-          try {
-            const response = await fetch(endpoint, { 
-              method: 'DELETE',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ passcode })
-            });
-            console.log('Delete level endpoint:', endpoint, 'status:', response.status);
-            
-            const responseText = await response.text();
-            console.log('Delete level response body:', responseText);
-            
-            if (response.ok && responseText.includes('deleted')) {
-              console.log('Delete level succeeded with endpoint:', endpoint);
-              deleteSuccess = true;
-              results.push({ success: true });
-              break;
+        try {
+          const response = await fetch(`${base}/trivia/simple/level/${id}`, { 
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              console.log('Level deleted successfully:', id);
+              results.push({ success: true, id });
+            } else {
+              console.error('Failed to delete level:', result.message);
+              results.push({ success: false, error: result.message, id });
             }
-          } catch (error) {
-            console.log('Delete level failed with endpoint:', endpoint, error);
+          } else {
+            const errorText = await response.text();
+            console.error('Delete level failed:', response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
           }
-        }
-        
-        if (!deleteSuccess) {
-          console.error('All delete endpoints failed for level:', id);
-          results.push({ success: false, error: 'All endpoints failed' });
+        } catch (error) {
+          console.error('Error deleting level:', id, error);
+          results.push({ success: false, error: String(error), id });
         }
       }
 
-      // Delete questions
+      // Delete questions using correct backend endpoints
       for (const id of pendingOperations.questionsToDelete) {
-        console.log('Deleting question:', id);
-        // Try different endpoints
-        const endpoints = [
-          `${base}/trivia/simple/question/${id}`,
-          `${base}/trivia/question/${id}`,
-          `${base}/question/${id}`
-        ];
-        
-        let deleteSuccess = false;
-        for (const endpoint of endpoints) {
-          try {
-            const response = await fetch(endpoint, { 
-              method: 'DELETE',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ passcode })
-            });
-            console.log('Delete question endpoint:', endpoint, 'status:', response.status);
-            
-            const responseText = await response.text();
-            console.log('Delete question response body:', responseText);
-            
-            if (response.ok && responseText.includes('deleted')) {
-              console.log('Delete question succeeded with endpoint:', endpoint);
-              deleteSuccess = true;
-              results.push({ success: true });
-              break;
+        try {
+          const response = await fetch(`${base}/trivia/simple/question/${id}`, { 
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              console.log('Question deleted successfully:', id);
+              results.push({ success: true, id });
+            } else {
+              console.error('Failed to delete question:', result.message);
+              results.push({ success: false, error: result.message, id });
             }
-          } catch (error) {
-            console.log('Delete question failed with endpoint:', endpoint, error);
+          } else {
+            const errorText = await response.text();
+            console.error('Delete question failed:', response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
           }
-        }
-        
-        if (!deleteSuccess) {
-          console.error('All delete endpoints failed for question:', id);
-          results.push({ success: false, error: 'All endpoints failed' });
+        } catch (error) {
+          console.error('Error deleting question:', id, error);
+          results.push({ success: false, error: String(error), id });
         }
       }
 
@@ -346,21 +302,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         setStatus('All changes saved successfully!');
         console.log('About to call loadData after successful save');
         
-        // Move deleted items to persistent tracking
-        setDeletedLevelIds(prev => [...prev, ...pendingOperations.levelsToDelete]);
-        setDeletedQuestionIds(prev => [...prev, ...pendingOperations.questionsToDelete]);
-        
-        // Auto-delete questions in deleted levels
-        const questionsInDeletedLevels = questions.filter(q => 
-          pendingOperations.levelsToDelete.includes(q.level_id)
-        );
-        const questionsInDeletedLevelsIds = questionsInDeletedLevels.map(q => q.id);
-        
-        if (questionsInDeletedLevelsIds.length > 0) {
-          console.log('Auto-deleting questions in deleted levels:', questionsInDeletedLevelsIds);
-          setDeletedQuestionIds(prev => [...prev, ...questionsInDeletedLevelsIds]);
-        }
-        
+        // Clear all pending operations and reload data
         setPendingOperations({
           levelsToAdd: [],
           levelsToEdit: [],
@@ -474,7 +416,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => (
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => (
             <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
               <div className="p-4">
                 <div className="flex items-center justify-between">
@@ -548,8 +490,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
-            const levelQuestions = (questionsByLevel[level.id] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
+            const levelQuestions = (questionsByLevel[level.id] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id));
             const isExpanded = expandedLevels.has(level.id);
             
             return (
