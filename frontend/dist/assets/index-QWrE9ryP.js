@@ -15589,7 +15589,7 @@ const Calendar = createLucideIcon("calendar", __iconNode$A);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$z = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check$1 = createLucideIcon("check", __iconNode$z);
+const Check = createLucideIcon("check", __iconNode$z);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -26252,7 +26252,7 @@ function SelectItem({
       ),
       ...props,
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute right-2 flex size-3.5 items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ItemIndicator, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Check$1, { className: "size-4" }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute right-2 flex size-3.5 items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ItemIndicator, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "size-4" }) }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(ItemText, { children })
       ]
     }
@@ -30530,7 +30530,7 @@ function TriviaAdminPanelFinal({ passcode }) {
   const [showLevelDialog, setShowLevelDialog] = reactExports.useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = reactExports.useState(false);
   const [editingLevel, setEditingLevel] = reactExports.useState(null);
-  const [editingQuestion2, setEditingQuestion] = reactExports.useState(null);
+  const [editingQuestion, setEditingQuestion] = reactExports.useState(null);
   reactExports.useEffect(() => {
     loadData();
   }, []);
@@ -30572,10 +30572,10 @@ function TriviaAdminPanelFinal({ passcode }) {
     setEditingLevel(null);
   };
   const addQuestionToBatch = (question) => {
-    if (editingQuestion2) {
+    if (editingQuestion) {
       setPendingOperations((prev) => ({
         ...prev,
-        questionsToEdit: [...prev.questionsToEdit.filter((q) => q.id !== editingQuestion2.id), { ...question, id: editingQuestion2.id }]
+        questionsToEdit: [...prev.questionsToEdit.filter((q) => q.id !== editingQuestion.id), { ...question, id: editingQuestion.id }]
       }));
       setShowQuestionDialog(false);
       setEditingQuestion(null);
@@ -31049,7 +31049,7 @@ function TriviaAdminPanelFinal({ passcode }) {
                 ] })
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog && (editingQuestion2 == null ? void 0 : editingQuestion2.id) === question.id, onOpenChange: (open) => {
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog && (editingQuestion == null ? void 0 : editingQuestion.id) === question.id, onOpenChange: (open) => {
                   setShowQuestionDialog(open);
                   if (!open) setEditingQuestion(null);
                 }, children: [
@@ -31074,7 +31074,8 @@ function TriviaAdminPanelFinal({ passcode }) {
                         onCancel: () => {
                           setShowQuestionDialog(false);
                           setEditingQuestion(null);
-                        }
+                        },
+                        editingQuestion
                       }
                     )
                   ] })
@@ -31096,17 +31097,18 @@ function TriviaAdminPanelFinal({ passcode }) {
       }) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showQuestionDialog, onOpenChange: setShowQuestionDialog, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingQuestion2 ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         QuestionForm,
         {
-          question: editingQuestion2,
+          question: editingQuestion,
           levels,
           onSave: addQuestionToBatch,
           onCancel: () => {
             setShowQuestionDialog(false);
             setEditingQuestion(null);
-          }
+          },
+          editingQuestion
         }
       )
     ] }) })
@@ -31240,7 +31242,8 @@ function QuestionForm({
   question,
   levels,
   onSave,
-  onCancel
+  onCancel,
+  editingQuestion
 }) {
   const { t, language } = useLanguage();
   const initializeFormData = (q) => {

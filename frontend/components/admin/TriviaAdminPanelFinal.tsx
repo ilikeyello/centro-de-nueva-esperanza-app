@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Plus, Edit2, Trash2, Save, X, Brain, Clock, Target, ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
+import { Plus, Edit2, Trash2, Save, X, Brain, Clock, Target, ChevronDown, ChevronRight, AlertCircle, Check } from "lucide-react";
 
 interface TriviaLevel {
   id: string;
@@ -696,6 +696,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                         setShowQuestionDialog(false);
                                         setEditingQuestion(null);
                                       }}
+                                      editingQuestion={editingQuestion}
                                     />
                                   </DialogContent>
                                 </Dialog>
@@ -738,6 +739,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
               setShowQuestionDialog(false);
               setEditingQuestion(null);
             }}
+            editingQuestion={editingQuestion}
           />
         </DialogContent>
       </Dialog>
@@ -884,12 +886,14 @@ function QuestionForm({
   question, 
   levels, 
   onSave, 
-  onCancel 
+  onCancel,
+  editingQuestion 
 }: { 
   question: TriviaQuestion | null; 
   levels: TriviaLevel[];
   onSave: (question: Partial<TriviaQuestion>) => void; 
   onCancel: () => void; 
+  editingQuestion: TriviaQuestion | null;
 }) {
   const { t, language } = useLanguage();
   
