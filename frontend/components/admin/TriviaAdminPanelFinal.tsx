@@ -460,7 +460,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => (
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => (
             <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
               <div className="p-4">
                 <div className="flex items-center justify-between">
@@ -534,8 +534,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
-            const levelQuestions = (questionsByLevel[level.id] || []).filter(question => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
+            const levelQuestions = (questionsByLevel[level.id] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
             const isExpanded = expandedLevels.has(level.id);
             
             return (
