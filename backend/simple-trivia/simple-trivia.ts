@@ -57,7 +57,7 @@ const DEFAULT_DATA: SimpleTriviaData = {
         const data = JSON.parse(result.trivia_data);
         // Ensure it has the correct structure
         if (data.levels && data.questions) {
-          return data;
+        //   return data;
         }
       } catch (e) {
         console.error("Failed to parse trivia data:", e);
@@ -65,7 +65,7 @@ const DEFAULT_DATA: SimpleTriviaData = {
     }
     
     // Return default structure
-    return DEFAULT_DATA;
+    // return DEFAULT_DATA;
   // }
 // );
 
