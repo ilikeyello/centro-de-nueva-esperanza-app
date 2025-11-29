@@ -597,7 +597,13 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
-            const levelQuestions = (questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id));
+            const levelQuestions = [
+              ...(questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id)),
+              ...pendingOperations.questionsToAdd.filter(question => question.level_id === level.id),
+              ...pendingOperations.questionsToEdit.filter(question => question.level_id === level.id && question.id === 0)
+            ].filter((question, index, array) => 
+              array.findIndex(q => q.question_en === question.question_en && q.level_id === question.level_id) === index
+            );
             const isExpanded = expandedLevels.has(level.id || '');
             
             return (
@@ -647,12 +653,15 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                       </div>
                     ) : (
                       <div className="space-y-2 p-4">
-                        {levelQuestions.filter(question => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => (
-                          <div key={question.id} className="border border-neutral-700 rounded bg-neutral-800/50 p-3">
+                        {levelQuestions.filter(question => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => {
+                          const isUnsaved = question.id === 0 || !question.id;
+                          return (
+                          <div key={`${question.id || 'temp'}-${question.question_en}`} className={`border ${isUnsaved ? 'border-yellow-600 bg-yellow-900/20' : 'border-neutral-700 bg-neutral-800/50'} rounded p-3`}>
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <p className="text-sm text-white font-medium">
                                   {language === 'es' ? question.question_es : question.question_en}
+                                  {isUnsaved && <span className="ml-2 text-xs text-yellow-400">({t("Unsaved", "No guardado")})</span>}
                                 </p>
                                 <p className="text-xs text-neutral-400 mt-1">
                                   {t("Category", "Categoría")}: {question.category} | 
@@ -700,7 +709,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                               </div>
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -936,24 +946,7 @@ function QuestionForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
-            {t("Level", "Nivel")} *
-          </Label>
-          <Select value={formData.level_id} onValueChange={(value) => setFormData({ ...formData, level_id: value })}>
-            <SelectTrigger className="bg-neutral-950 border-neutral-700 text-white">
-              <SelectValue placeholder={t("Select a level", "Selecciona un nivel")} />
-            </SelectTrigger>
-            <SelectContent>
-              {levels.map((level) => (
-                <SelectItem key={level.id} value={level.id}>
-                  {level.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-4">
         <div>
           <Label className="block text-sm font-medium text-neutral-300 mb-1">
             {t("Category", "Categoría")}

@@ -30969,7 +30969,13 @@ function TriviaAdminPanelFinal({ passcode }) {
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: t("Questions by Level", "Preguntas por Nivel") }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
-        const levelQuestions = (questionsByLevel[level.id || ""] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id));
+        const levelQuestions = [
+          ...(questionsByLevel[level.id || ""] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id)),
+          ...pendingOperations.questionsToAdd.filter((question) => question.level_id === level.id),
+          ...pendingOperations.questionsToEdit.filter((question) => question.level_id === level.id && question.id === 0)
+        ].filter(
+          (question, index2, array) => array.findIndex((q) => q.question_en === question.question_en && q.level_id === question.level_id) === index2
+        );
         const isExpanded = expandedLevels.has(level.id || "");
         return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -31020,62 +31026,72 @@ function TriviaAdminPanelFinal({ passcode }) {
               ] })
             }
           ),
-          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.filter((question) => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-700 rounded bg-neutral-800/50 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-white font-medium", children: language === "es" ? question.question_es : question.question_en }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-neutral-400 mt-1", children: [
-                t("Category", "Categoría"),
-                ": ",
-                question.category,
-                " |",
-                t("Correct Answer", "Respuesta Correcta"),
-                ": ",
-                String.fromCharCode(65 + question.correct_answer)
-              ] })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog && (editingQuestion == null ? void 0 : editingQuestion.id) === question.id, onOpenChange: (open) => {
-                setShowQuestionDialog(open);
-                if (!open) setEditingQuestion(null);
-              }, children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  Button,
-                  {
-                    onClick: () => setEditingQuestion(question),
-                    variant: "outline",
-                    size: "sm",
-                    className: "border-neutral-700 hover:bg-neutral-800",
-                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
-                  }
-                ) }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: t("Edit Question", "Editar Pregunta") }) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    QuestionForm,
-                    {
-                      question,
-                      levels,
-                      onSave: addQuestionToBatch,
-                      onCancel: () => {
-                        setShowQuestionDialog(false);
-                        setEditingQuestion(null);
-                      }
-                    }
-                  )
+          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.filter((question) => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => {
+            const isUnsaved = question.id === 0 || !question.id;
+            return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `border ${isUnsaved ? "border-yellow-600 bg-yellow-900/20" : "border-neutral-700 bg-neutral-800/50"} rounded p-3`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-white font-medium", children: [
+                  language === "es" ? question.question_es : question.question_en,
+                  isUnsaved && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ml-2 text-xs text-yellow-400", children: [
+                    "(",
+                    t("Unsaved", "No guardado"),
+                    ")"
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-neutral-400 mt-1", children: [
+                  t("Category", "Categoría"),
+                  ": ",
+                  question.category,
+                  " |",
+                  t("Correct Answer", "Respuesta Correcta"),
+                  ": ",
+                  String.fromCharCode(65 + question.correct_answer)
                 ] })
               ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Button,
-                {
-                  onClick: () => deleteQuestionFromBatch(question.id),
-                  variant: "outline",
-                  size: "sm",
-                  className: "border-red-700 hover:bg-red-700 text-red-400",
-                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
-                }
-              )
-            ] })
-          ] }) }, question.id)) }) })
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog && (editingQuestion == null ? void 0 : editingQuestion.id) === question.id, onOpenChange: (open) => {
+                  setShowQuestionDialog(open);
+                  if (!open) setEditingQuestion(null);
+                }, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Button,
+                    {
+                      onClick: () => setEditingQuestion(question),
+                      variant: "outline",
+                      size: "sm",
+                      className: "border-neutral-700 hover:bg-neutral-800",
+                      children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
+                    }
+                  ) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: t("Edit Question", "Editar Pregunta") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      QuestionForm,
+                      {
+                        question,
+                        levels,
+                        onSave: addQuestionToBatch,
+                        onCancel: () => {
+                          setShowQuestionDialog(false);
+                          setEditingQuestion(null);
+                        }
+                      }
+                    )
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Button,
+                  {
+                    onClick: () => deleteQuestionFromBatch(question.id),
+                    variant: "outline",
+                    size: "sm",
+                    className: "border-red-700 hover:bg-red-700 text-red-400",
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
+                  }
+                )
+              ] })
+            ] }) }, `${question.id || "temp"}-${question.question_en}`);
+          }) }) })
         ] }, level.id);
       }) })
     ] }),
@@ -31279,30 +31295,18 @@ function QuestionForm({
         }
       )
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
-          t("Level", "Nivel"),
-          " *"
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: formData.level_id, onValueChange: (value) => setFormData({ ...formData, level_id: value }), children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "bg-neutral-950 border-neutral-700 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Select a level", "Selecciona un nivel") }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: level.id, children: level.name }, level.id)) })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Category", "Categoría") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Input,
-          {
-            value: formData.category,
-            onChange: (e) => setFormData({ ...formData, category: e.target.value }),
-            className: "bg-neutral-950 border-neutral-700 text-white",
-            placeholder: t("e.g., Old Testament, New Testament", "ej., Antiguo Testamento, Nuevo Testamento")
-          }
-        )
-      ] })
-    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Category", "Categoría") }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Input,
+        {
+          value: formData.category,
+          onChange: (e) => setFormData({ ...formData, category: e.target.value }),
+          className: "bg-neutral-950 border-neutral-700 text-white",
+          placeholder: t("e.g., Old Testament, New Testament", "ej., Antiguo Testamento, Nuevo Testamento")
+        }
+      )
+    ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
         t("Answer Options", "Opciones de Respuesta"),
