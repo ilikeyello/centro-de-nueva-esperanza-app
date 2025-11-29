@@ -68,11 +68,23 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       
       // Get deleted levels from localStorage
       const deletedLevelIds = JSON.parse(localStorage.getItem('deletedLevelIds') || '[]');
+      const deletedQuestionIds = JSON.parse(localStorage.getItem('deletedQuestionIds') || '[]');
       console.log('Game page - loaded levels:', data.levels.length);
       console.log('Game page - deleted level IDs:', deletedLevelIds);
+      console.log('Game page - deleted question IDs:', deletedQuestionIds);
       
       const filteredLevels = data.levels.filter((level: TriviaLevel) => !deletedLevelIds.includes(level.id));
       console.log('Game page - filtered levels:', filteredLevels.length);
+      
+      // Force localStorage sync - check if admin panel has newer deletions
+      const adminDeletedLevels = JSON.parse(localStorage.getItem('deletedLevelIds') || '[]');
+      const adminDeletedQuestions = JSON.parse(localStorage.getItem('deletedQuestionIds') || '[]');
+      
+      if (adminDeletedLevels.length !== deletedLevelIds.length || 
+          adminDeletedQuestions.length !== deletedQuestionIds.length) {
+        console.log('Game page - localStorage sync detected, reloading...');
+        window.location.reload();
+      }
       
       setLevels(filteredLevels);
     } catch (error) {
@@ -537,9 +549,6 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
             </div>
 
             <div className="space-y-2">
-              <div className="text-2xl font-bold text-white">
-                {gameState.isTimerActive ? `${gameState.timeRemaining}s` : '∞'}
-              </div>
               <div className="text-xl text-neutral-400">
                 {percentage}% {t("correct", "correctas")}
               </div>

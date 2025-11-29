@@ -29513,10 +29513,18 @@ function TriviaGamePage({ onNavigate } = {}) {
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       const deletedLevelIds = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
+      const deletedQuestionIds = JSON.parse(localStorage.getItem("deletedQuestionIds") || "[]");
       console.log("Game page - loaded levels:", data.levels.length);
       console.log("Game page - deleted level IDs:", deletedLevelIds);
+      console.log("Game page - deleted question IDs:", deletedQuestionIds);
       const filteredLevels = data.levels.filter((level) => !deletedLevelIds.includes(level.id));
       console.log("Game page - filtered levels:", filteredLevels.length);
+      const adminDeletedLevels = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
+      const adminDeletedQuestions = JSON.parse(localStorage.getItem("deletedQuestionIds") || "[]");
+      if (adminDeletedLevels.length !== deletedLevelIds.length || adminDeletedQuestions.length !== deletedQuestionIds.length) {
+        console.log("Game page - localStorage sync detected, reloading...");
+        window.location.reload();
+      }
       setLevels(filteredLevels);
     } catch (error) {
       console.error("Failed to load levels:", error);
@@ -29865,7 +29873,6 @@ function TriviaGamePage({ onNavigate } = {}) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold", children: passed ? language === "es" ? "¡Aprobado!" : "Passed!" : language === "es" ? "¡Fracasado!" : "Failed!" })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-2xl font-bold text-white", children: gameState.isTimerActive ? `${gameState.timeRemaining}s` : "∞" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xl text-neutral-400", children: [
           percentage,
           "% ",
@@ -30548,7 +30555,9 @@ function TriviaAdminPanelFinal({ passcode }) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      console.log("Loaded data:", data);
+      console.log("Admin panel - loaded levels:", data.levels.length);
+      console.log("Admin panel - deleted level IDs from localStorage:", deletedLevelIds);
+      console.log("Admin panel - deleted question IDs from localStorage:", deletedQuestionIds);
       setLevels(data.levels || []);
       setQuestions(data.questions || []);
       console.log("Levels after load:", data.levels);

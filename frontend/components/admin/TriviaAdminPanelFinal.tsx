@@ -96,7 +96,9 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      console.log('Loaded data:', data);
+      console.log('Admin panel - loaded levels:', data.levels.length);
+      console.log('Admin panel - deleted level IDs from localStorage:', deletedLevelIds);
+      console.log('Admin panel - deleted question IDs from localStorage:', deletedQuestionIds);
       
       setLevels(data.levels || []);
       setQuestions(data.questions || []);
