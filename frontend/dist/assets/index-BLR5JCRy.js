@@ -30758,6 +30758,14 @@ function TriviaAdminPanelFinal({ passcode }) {
         console.log("About to call loadData after successful save");
         setDeletedLevelIds((prev) => [...prev, ...pendingOperations.levelsToDelete]);
         setDeletedQuestionIds((prev) => [...prev, ...pendingOperations.questionsToDelete]);
+        const questionsInDeletedLevels = questions.filter(
+          (q) => pendingOperations.levelsToDelete.includes(q.level_id)
+        );
+        const questionsInDeletedLevelsIds = questionsInDeletedLevels.map((q) => q.id);
+        if (questionsInDeletedLevelsIds.length > 0) {
+          console.log("Auto-deleting questions in deleted levels:", questionsInDeletedLevelsIds);
+          setDeletedQuestionIds((prev) => [...prev, ...questionsInDeletedLevelsIds]);
+        }
         setPendingOperations({
           levelsToAdd: [],
           levelsToEdit: [],

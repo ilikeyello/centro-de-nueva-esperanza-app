@@ -336,6 +336,17 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         setDeletedLevelIds(prev => [...prev, ...pendingOperations.levelsToDelete]);
         setDeletedQuestionIds(prev => [...prev, ...pendingOperations.questionsToDelete]);
         
+        // Auto-delete questions in deleted levels
+        const questionsInDeletedLevels = questions.filter(q => 
+          pendingOperations.levelsToDelete.includes(q.level_id)
+        );
+        const questionsInDeletedLevelsIds = questionsInDeletedLevels.map(q => q.id);
+        
+        if (questionsInDeletedLevelsIds.length > 0) {
+          console.log('Auto-deleting questions in deleted levels:', questionsInDeletedLevelsIds);
+          setDeletedQuestionIds(prev => [...prev, ...questionsInDeletedLevelsIds]);
+        }
+        
         setPendingOperations({
           levelsToAdd: [],
           levelsToEdit: [],
