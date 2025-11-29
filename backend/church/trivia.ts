@@ -161,8 +161,17 @@ export const deleteLevel = api(
         return { success: false, message: "Level not found" };
       }
       
+      // First delete all questions referencing this level
+      console.log('Deleting questions for level:', id);
+      const questionDeleteResult = await db.query`
+        DELETE FROM trivia_questions_simple WHERE level_id = ${id}
+      `;
+      console.log('Questions delete result:', questionDeleteResult);
+      
+      // Then delete the level
+      console.log('Deleting level:', id);
       const result = await db.query`DELETE FROM trivia_levels_simple WHERE id = ${id}`;
-      console.log('Delete query executed, result:', result);
+      console.log('Level delete query executed, result:', result);
       
       // Verify deletion
       const deletedLevel = await db.queryRow<{ id: string }>`
@@ -175,8 +184,8 @@ export const deleteLevel = api(
         return { success: false, message: "Deletion failed - level still exists" };
       }
       
-      console.log('✅ Level successfully deleted');
-      return { success: true, message: "Level deleted successfully" };
+      console.log('✅ Level and its questions successfully deleted');
+      return { success: true, message: "Level and its questions deleted successfully" };
     } catch (error) {
       console.error('❌ Error deleting level:', error);
       return { success: false, message: `Failed to delete level: ${error instanceof Error ? error.message : 'Unknown error'}` };
