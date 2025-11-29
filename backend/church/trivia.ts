@@ -1,4 +1,5 @@
-import { api } from "encore.dev/api";
+import { api, APIError } from "encore.dev/api";
+import { Query } from "encore.dev/api";
 import db from "../db";
 
 export interface TriviaLevel {
@@ -135,7 +136,12 @@ export const createQuestion = api(
 // Delete level
 export const deleteLevel = api(
   { expose: true, method: "DELETE", path: "/trivia/simple/level/:id" },
-  async ({ id }: { id: string }): Promise<{ success: boolean; message: string }> => {
+  async ({ id, passcode }: { id: string; passcode?: Query<string> }): Promise<{ success: boolean; message: string }> => {
+    // Check if passcode is correct
+    if (!passcode || passcode !== "78598") {
+      return { success: false, message: "Invalid passcode" };
+    }
+
     try {
       await db.query`DELETE FROM trivia_levels_simple WHERE id = ${id}`;
       return { success: true, message: "Level deleted successfully" };
@@ -148,7 +154,12 @@ export const deleteLevel = api(
 // Delete question
 export const deleteQuestion = api(
   { expose: true, method: "DELETE", path: "/trivia/simple/question/:id" },
-  async ({ id }: { id: number }): Promise<{ success: boolean; message: string }> => {
+  async ({ id, passcode }: { id: number; passcode?: Query<string> }): Promise<{ success: boolean; message: string }> => {
+    // Check if passcode is correct
+    if (!passcode || passcode !== "78598") {
+      return { success: false, message: "Invalid passcode" };
+    }
+
     try {
       await db.query`DELETE FROM trivia_questions_simple WHERE id = ${id}`;
       return { success: true, message: "Question deleted successfully" };

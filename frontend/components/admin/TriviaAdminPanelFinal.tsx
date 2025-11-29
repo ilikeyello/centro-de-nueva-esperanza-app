@@ -262,7 +262,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       for (const id of pendingOperations.levelsToDelete) {
         try {
           console.log('Attempting to delete level:', id);
-          const response = await fetch(`${base}/trivia/simple/level/${id}`, { 
+          const response = await fetch(`${base}/trivia/simple/level/${id}?passcode=${passcode}`, { 
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           });
@@ -293,13 +293,17 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       // Delete questions using correct backend endpoints
       for (const id of pendingOperations.questionsToDelete) {
         try {
-          const response = await fetch(`${base}/trivia/simple/question/${id}`, { 
+          console.log('Attempting to delete question:', id);
+          const response = await fetch(`${base}/trivia/simple/question/${id}?passcode=${passcode}`, { 
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           });
           
+          console.log('Delete question response status:', response.status);
+          
           if (response.ok) {
             const result = await response.json();
+            console.log('Delete question response body:', result);
             if (result.success) {
               console.log('Question deleted successfully:', id);
               results.push({ success: true, id });
