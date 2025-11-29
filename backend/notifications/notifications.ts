@@ -1,6 +1,6 @@
 import { api } from "encore.dev/api";
 import { secret } from "encore.dev/config";
-import db from "./db";
+import db from "../db";
 
 // VAPID keys for push notifications - declare but don't initialize yet
 const publicVapidKey = secret("PUBLIC_VAPID_KEY");
