@@ -1,6 +1,6 @@
 import { api } from "encore.dev/api";
 import { secret } from "encore.dev/config";
-import { db } from "./church/db";
+import db from "./db";
 
 // Note: web-push will be imported dynamically when needed
 
@@ -37,8 +37,8 @@ const initializeWebPush = async () => {
   
   webpush.setVapidDetails(
     'mailto:contact@centrodnuevaesperanza.org',
-    vapidKeys.PUBLIC_VAPID_KEY as string,
-    vapidKeys.PRIVATE_VAPID_KEY as string
+    (vapidKeys as any).PUBLIC_VAPID_KEY,
+    (vapidKeys as any).PRIVATE_VAPID_KEY
   );
   
   return webpush;

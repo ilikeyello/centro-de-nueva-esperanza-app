@@ -711,7 +711,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                   </DialogContent>
                                 </Dialog>
                                 <Button
-                                  onClick={() => deleteQuestionFromBatch(question.id || 0)}
+                                  onClick={() => deleteQuestionFromBatch(question.id ?? 0)}
                                   variant="outline"
                                   size="sm"
                                   className="border-red-700 hover:bg-red-700 text-red-400"
