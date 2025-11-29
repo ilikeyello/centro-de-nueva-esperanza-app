@@ -136,7 +136,7 @@ export function News() {
 
   const deleteEvent = useMutation({
     mutationFn: async (data: { id: number; passcode: string }) => backend.events.remove(data as any),
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.setQueryData(["events"], (oldData?: { events: Event[] }) => {
         if (!oldData) return oldData;
         return {
@@ -294,7 +294,7 @@ export function News() {
 
   const deleteAnnouncement = useMutation({
     mutationFn: async (data: { id: number; passcode: string }) => backend.announcements.remove(data as any),
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.setQueryData(["announcements"], (oldData?: { announcements: Announcement[] }) => {
         if (!oldData) return oldData;
         return {

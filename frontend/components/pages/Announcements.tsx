@@ -34,6 +34,7 @@ export function Announcements() {
       contentEn: string;
       contentEs: string;
       priority: "low" | "normal" | "high" | "urgent";
+      passcode: string;
     }) => {
       return backend.announcements.create(data);
     },
@@ -65,6 +66,7 @@ export function Announcements() {
       contentEn: formData.get("contentEn") as string,
       contentEs: formData.get("contentEs") as string,
       priority,
+      passcode: formData.get("passcode") as string,
     });
   };
 
@@ -177,6 +179,19 @@ export function Announcements() {
                     <SelectItem value="urgent">{t("Urgent", "Urgente")}</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label htmlFor="passcode" className="text-neutral-200">
+                  {t("Passcode", "Contraseña")}
+                </Label>
+                <Input
+                  id="passcode"
+                  name="passcode"
+                  type="password"
+                  required
+                  placeholder={t("Enter a passcode for editing/deleting", "Ingrese una contraseña para editar/eliminar")}
+                  className="border-neutral-700 bg-neutral-800 text-white"
+                />
               </div>
               <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
                 {t("Create Announcement", "Crear Anuncio")}

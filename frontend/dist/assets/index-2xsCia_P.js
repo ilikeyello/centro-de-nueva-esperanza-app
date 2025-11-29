@@ -26983,7 +26983,7 @@ function News() {
   };
   const deleteEvent = useMutation({
     mutationFn: async (data) => backend2.events.remove(data),
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         if (!oldData) return oldData;
         return {
@@ -27113,7 +27113,7 @@ function News() {
   });
   const deleteAnnouncement = useMutation({
     mutationFn: async (data) => backend2.announcements.remove(data),
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) return oldData;
         return {

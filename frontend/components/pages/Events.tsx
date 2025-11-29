@@ -35,6 +35,7 @@ export function Events() {
       eventDate: Date;
       location: string;
       maxAttendees: number;
+      passcode: string;
     }) => {
       return backend.events.create(data);
     },
@@ -89,6 +90,7 @@ export function Events() {
       eventDate: new Date(formData.get("eventDate") as string),
       location: formData.get("location") as string,
       maxAttendees: parseInt(formData.get("maxAttendees") as string) || 0,
+      passcode: formData.get("passcode") as string,
     });
   };
 
@@ -196,6 +198,19 @@ export function Events() {
                   name="maxAttendees"
                   type="number"
                   min="1"
+                  className="border-neutral-700 bg-neutral-800 text-white"
+                />
+              </div>
+              <div>
+                <Label htmlFor="passcode" className="text-neutral-200">
+                  {t("Passcode", "Contraseña")}
+                </Label>
+                <Input
+                  id="passcode"
+                  name="passcode"
+                  type="password"
+                  required
+                  placeholder={t("Enter a passcode for editing/deleting", "Ingrese una contraseña para editar/eliminar")}
                   className="border-neutral-700 bg-neutral-800 text-white"
                 />
               </div>
