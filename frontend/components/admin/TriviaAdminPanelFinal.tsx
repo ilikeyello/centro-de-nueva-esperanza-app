@@ -147,7 +147,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       setShowQuestionDialog(false);
       setEditingQuestion(null);
     } else {
-      // Add new question - keep dialog open for multiple questions
+      // Add new question - close dialog and let user click add again
       console.log('🔍 Adding new question to questionsToAdd');
       setPendingOperations(prev => {
         const newQuestions = [...prev.questionsToAdd, question];
@@ -157,7 +157,9 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           questionsToAdd: newQuestions
         };
       });
-      // Don't close dialog - let user add multiple questions
+      // Close dialog - user can click "Add Question" again for another
+      setShowQuestionDialog(false);
+      setEditingQuestion(null);
     }
   };
 
@@ -1011,14 +1013,8 @@ function QuestionForm({
       <div className="flex gap-2">
         <Button type="submit" className="bg-red-600 hover:bg-red-700">
           <Save className="h-4 w-4 mr-2" />
-          {editingQuestion ? t("Update", "Actualizar") : t("Add Another", "Agregar Otro")}
+          {editingQuestion ? t("Update", "Actualizar") : t("Add Question", "Agregar Pregunta")}
         </Button>
-        {!editingQuestion && (
-          <Button type="button" onClick={onCancel} variant="outline" className="border-green-700 hover:bg-green-800 text-green-400">
-            <Check className="h-4 w-4 mr-2" />
-            {t("Done", "Hecho")}
-          </Button>
-        )}
         <Button type="button" onClick={onCancel} variant="outline" className="border-neutral-700 hover:bg-neutral-800">
           <X className="h-4 w-4 mr-2" />
           {t("Cancel", "Cancelar")}
