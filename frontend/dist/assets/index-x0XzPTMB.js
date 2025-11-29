@@ -30631,9 +30631,15 @@ function TriviaAdminPanelFinal({ passcode }) {
           body: JSON.stringify(levelData)
         });
         console.log("Add level response status:", response.status);
-        const responseText = await response.text();
-        console.log("Add level response body:", responseText);
-        results.push(await response.json());
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log("Add level error response:", errorText);
+          results.push({ success: false, error: errorText });
+        } else {
+          const result = await response.json();
+          console.log("Add level success response:", result);
+          results.push(result);
+        }
       }
       for (const level of pendingOperations.levelsToEdit) {
         await fetch(`${base}/trivia/simple/level/${level.id}`, { method: "DELETE" });
