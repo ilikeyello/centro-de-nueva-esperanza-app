@@ -72,28 +72,28 @@ const DEFAULT_DATA: SimpleTriviaData = {
 // export const save = api<SaveRequest, void>(
 //   { expose: true, method: "POST", path: "/simple-trivia" },
 //   async (req) => {
-    if (req.passcode !== "78598") {
-      throw APIError.permissionDenied("Invalid passcode");
-    }
+//     if (req.passcode !== "78598") {
+//       throw APIError.permissionDenied("Invalid passcode");
+//     }
 
-    // Validate data structure
-    if (!req.data.levels || !req.data.questions) {
-      throw APIError.invalidArgument("Invalid data structure");
-    }
+//     // Validate data structure
+//     if (!req.data.levels || !req.data.questions) {
+//       throw APIError.invalidArgument("Invalid data structure");
+//     }
 
-    // Ensure all required levels exist
-    const requiredLevels = ['kids', 'youth', 'adults'] as const;
-    for (const level of requiredLevels) {
-      if (!req.data.levels[level]) {
-        req.data.levels[level] = DEFAULT_DATA.levels[level];
-      }
-    }
+//     // Ensure all required levels exist
+//     const requiredLevels = ['kids', 'youth', 'adults'] as const;
+//     for (const level of requiredLevels) {
+//       if (!req.data.levels[level]) {
+//         req.data.levels[level] = DEFAULT_DATA.levels[level];
+//       }
+//     }
 
-    // Save to database
-    await db.exec`
-      UPDATE church_info 
-      SET trivia_data = ${JSON.stringify(req.data)}
-      WHERE id = 1
-    `;
-  // }
+//     // Save to database
+//     await db.exec`
+//       UPDATE church_info 
+//       SET trivia_data = ${JSON.stringify(req.data)}
+//       WHERE id = 1
+//     `;
+//   }
 // );
