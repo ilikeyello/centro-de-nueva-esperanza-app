@@ -1,6 +1,6 @@
 import { api } from "encore.dev/api";
 import { secret } from "encore.dev/config";
-import db from "./db";
+import db from "../db";
 
 // Note: web-push will be imported dynamically when needed
 
