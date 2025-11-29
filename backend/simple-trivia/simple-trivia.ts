@@ -67,7 +67,7 @@ const DEFAULT_DATA: SimpleTriviaData = {
     // Return default structure
     return DEFAULT_DATA;
   // }
-);
+// );
 
 // export const save = api<SaveRequest, void>(
 //   { expose: true, method: "POST", path: "/simple-trivia" },
