@@ -138,8 +138,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     console.log('🔍 addQuestionToBatch called with:', question);
     console.log('🔍 editingQuestion:', editingQuestion);
     
-    if (editingQuestion) {
-      // Edit existing question
+    if (editingQuestion && editingQuestion.id !== 0) {
+      // Edit existing question (only if id is not 0)
       setPendingOperations(prev => ({
         ...prev,
         questionsToEdit: [...prev.questionsToEdit.filter(q => q.id !== editingQuestion.id), { ...question, id: editingQuestion.id }]

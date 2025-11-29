@@ -30578,7 +30578,7 @@ function TriviaAdminPanelFinal({ passcode }) {
   const addQuestionToBatch = (question) => {
     console.log("🔍 addQuestionToBatch called with:", question);
     console.log("🔍 editingQuestion:", editingQuestion);
-    if (editingQuestion) {
+    if (editingQuestion && editingQuestion.id !== 0) {
       setPendingOperations((prev) => ({
         ...prev,
         questionsToEdit: [...prev.questionsToEdit.filter((q) => q.id !== editingQuestion.id), { ...question, id: editingQuestion.id }]
