@@ -30680,6 +30680,44 @@ function TriviaAdminPanelFinal({ passcode }) {
           results.push({ success: false, error: String(error), id });
         }
       }
+      for (const question of pendingOperations.questionsToAdd) {
+        try {
+          const payload = {
+            question_en: question.question_en,
+            question_es: question.question_es || null,
+            options_en: JSON.stringify(question.options_en),
+            options_es: JSON.stringify(question.options_es || question.options_en),
+            correct_answer: question.correct_answer,
+            category: question.category || "General",
+            level_id: question.level_id
+          };
+          console.log("Creating question with payload:", payload);
+          const response = await fetch(`${base}/trivia/simple/question`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          console.log("Create question response status:", response.status);
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Create question response body:", result);
+            if (result.success) {
+              console.log("✅ Question created successfully");
+              results.push({ success: true });
+            } else {
+              console.error("❌ Failed to create question:", result.message);
+              results.push({ success: false, error: result.message });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Create question failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}` });
+          }
+        } catch (error) {
+          console.error("❌ Error creating question:", error);
+          results.push({ success: false, error: String(error) });
+        }
+      }
       for (const id of pendingOperations.questionsToDelete) {
         try {
           const deleteUrl = `${base}/trivia/simple/question/${id}?passcode=${passcode}`;
