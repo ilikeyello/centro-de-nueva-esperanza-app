@@ -29601,9 +29601,9 @@ function TriviaGamePage({ onNavigate } = {}) {
         currentQuestionIndex: gameState.currentQuestionIndex + 1,
         selectedAnswer: null,
         showFeedback: false,
-        isTimerActive: ((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) > 0,
+        isTimerActive: (((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) ?? 0) > 0,
         // Preserve timer state based on level
-        timeRemaining: ((_b3 = gameState.selectedLevel) == null ? void 0 : _b3.time_limit) > 0 ? gameState.selectedLevel.time_limit : gameState.timeRemaining
+        timeRemaining: (((_b3 = gameState.selectedLevel) == null ? void 0 : _b3.time_limit) ?? 0) > 0 ? gameState.selectedLevel.time_limit : gameState.timeRemaining
         // Reset time for timed levels, preserve for infinite
       });
     } else {
