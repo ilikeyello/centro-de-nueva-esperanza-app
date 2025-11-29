@@ -230,7 +230,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       // Delete levels
       for (const id of pendingOperations.levelsToDelete) {
         console.log('Deleting level:', id);
-        const response = await fetch(`${base}/trivia/simple/level/${id}`, { method: 'DELETE' });
+        const response = await fetch(`${base}/trivia/simple/level/${id}`, { 
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passcode })
+        });
         console.log('Delete level response status:', response.status);
         
         // Check response body
@@ -249,7 +253,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       // Delete questions
       for (const id of pendingOperations.questionsToDelete) {
         console.log('Deleting question:', id);
-        const response = await fetch(`${base}/trivia/simple/question/${id}`, { method: 'DELETE' });
+        const response = await fetch(`${base}/trivia/simple/question/${id}`, { 
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passcode })
+        });
         console.log('Delete question response status:', response.status);
         
         // Check response body

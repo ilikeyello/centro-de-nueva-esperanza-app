@@ -30669,7 +30669,11 @@ function TriviaAdminPanelFinal({ passcode }) {
       }
       for (const id of pendingOperations.levelsToDelete) {
         console.log("Deleting level:", id);
-        const response = await fetch(`${base}/trivia/simple/level/${id}`, { method: "DELETE" });
+        const response = await fetch(`${base}/trivia/simple/level/${id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ passcode })
+        });
         console.log("Delete level response status:", response.status);
         const responseText = await response.text();
         console.log("Delete level response body:", responseText);
@@ -30683,7 +30687,11 @@ function TriviaAdminPanelFinal({ passcode }) {
       }
       for (const id of pendingOperations.questionsToDelete) {
         console.log("Deleting question:", id);
-        const response = await fetch(`${base}/trivia/simple/question/${id}`, { method: "DELETE" });
+        const response = await fetch(`${base}/trivia/simple/question/${id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ passcode })
+        });
         console.log("Delete question response status:", response.status);
         const responseText = await response.text();
         console.log("Delete question response body:", responseText);
