@@ -926,7 +926,10 @@ function QuestionForm({
     onSave(submissionData);
     
     // Reset form for next question
-    setFormData(initializeFormData(null));
+    setFormData({
+      ...initializeFormData(null),
+      level_id: formData.level_id // Preserve the level_id
+    });
   };
 
   const updateOption = (index: number, value: string) => {

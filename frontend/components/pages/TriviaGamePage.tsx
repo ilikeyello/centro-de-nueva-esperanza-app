@@ -182,7 +182,8 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
         currentQuestionIndex: gameState.currentQuestionIndex + 1,
         selectedAnswer: null,
         showFeedback: false,
-        isTimerActive: true,
+        isTimerActive: gameState.selectedLevel?.time_limit > 0, // Preserve timer state based on level
+        timeRemaining: gameState.selectedLevel?.time_limit > 0 ? gameState.selectedLevel.time_limit : gameState.timeRemaining, // Reset time for timed levels, preserve for infinite
       });
     } else {
       setGameState({
