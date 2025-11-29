@@ -288,8 +288,8 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       currentQuestionIndex: 0,
       userAnswers: [],
       score: 0,
-      isTimerActive: prev.selectedLevel.time_limit > 0, // Only activate timer if time_limit > 0
-      timeRemaining: prev.selectedLevel.time_limit,
+      isTimerActive: prev.selectedLevel?.time_limit ? prev.selectedLevel.time_limit > 0 : false,
+      timeRemaining: prev.selectedLevel?.time_limit || 0,
       selectedAnswer: null,
       showFeedback: false,
     }));

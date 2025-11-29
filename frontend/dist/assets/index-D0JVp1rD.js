@@ -29673,18 +29673,20 @@ function TriviaGamePage({ onNavigate } = {}) {
         correct_answer: newCorrectIndex
       };
     });
-    setGameState((prev) => ({
-      ...prev,
-      status: "playing",
-      currentQuestionIndex: 0,
-      userAnswers: [],
-      score: 0,
-      isTimerActive: prev.selectedLevel.time_limit > 0,
-      // Only activate timer if time_limit > 0
-      timeRemaining: prev.selectedLevel.time_limit,
-      selectedAnswer: null,
-      showFeedback: false
-    }));
+    setGameState((prev) => {
+      var _a3, _b3;
+      return {
+        ...prev,
+        status: "playing",
+        currentQuestionIndex: 0,
+        userAnswers: [],
+        score: 0,
+        isTimerActive: ((_a3 = prev.selectedLevel) == null ? void 0 : _a3.time_limit) ? prev.selectedLevel.time_limit > 0 : false,
+        timeRemaining: ((_b3 = prev.selectedLevel) == null ? void 0 : _b3.time_limit) || 0,
+        selectedAnswer: null,
+        showFeedback: false
+      };
+    });
   };
   reactExports.useEffect(() => {
     loadLevels();
