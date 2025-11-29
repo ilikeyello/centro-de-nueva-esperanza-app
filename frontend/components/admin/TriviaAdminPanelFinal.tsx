@@ -534,7 +534,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {levels.map((level) => {
+          {levels.filter(level => !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
             const levelQuestions = (questionsByLevel[level.id] || []).filter(question => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
             const isExpanded = expandedLevels.has(level.id);
             

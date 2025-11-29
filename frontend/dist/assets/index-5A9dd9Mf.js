@@ -30929,7 +30929,7 @@ function TriviaAdminPanelFinal({ passcode }) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: t("Questions by Level", "Preguntas por Nivel") }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: levels.map((level) => {
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: levels.filter((level) => !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
         const levelQuestions = (questionsByLevel[level.id] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
         const isExpanded = expandedLevels.has(level.id);
         return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
