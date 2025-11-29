@@ -30685,8 +30685,8 @@ function TriviaAdminPanelFinal({ passcode }) {
           const payload = {
             question_en: question.question_en,
             question_es: question.question_es || null,
-            options_en: JSON.stringify(question.options_en),
-            options_es: JSON.stringify(question.options_es || question.options_en),
+            options_en: question.options_en,
+            options_es: question.options_es || question.options_en,
             correct_answer: question.correct_answer,
             category: question.category || "General",
             level_id: question.level_id
@@ -30723,8 +30723,8 @@ function TriviaAdminPanelFinal({ passcode }) {
           const payload = {
             question_en: question.question_en,
             question_es: question.question_es || null,
-            options_en: JSON.stringify(question.options_en),
-            options_es: JSON.stringify(question.options_es || question.options_en),
+            options_en: question.options_en,
+            options_es: question.options_es || question.options_en,
             correct_answer: question.correct_answer,
             category: question.category || "General",
             level_id: question.level_id

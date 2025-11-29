@@ -86,8 +86,8 @@ export const createQuestion = api(
   async (params: {
     question_en: string;
     question_es: string;
-    options_en: string;
-    options_es: string;
+    options_en: string[];
+    options_es: string[];
     correct_answer: number;
     category: string;
     level_id: string;
@@ -97,7 +97,7 @@ export const createQuestion = api(
       
       await db.exec`
         INSERT INTO trivia_questions_simple (question_en, question_es, options_en, options_es, correct_answer, category, level_id)
-        VALUES (${params.question_en}, ${params.question_es}, ${params.options_en}, ${params.options_es}, ${params.correct_answer}, ${params.category}, ${params.level_id})
+        VALUES (${params.question_en}, ${params.question_es}, ${JSON.stringify(params.options_en)}, ${JSON.stringify(params.options_es)}, ${params.correct_answer}, ${params.category}, ${params.level_id})
       `;
       
       console.log("✅ Question inserted successfully");
