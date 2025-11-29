@@ -4698,8 +4698,8 @@ function requireReactDomClient_production() {
     if (null === componentUpdateQueue)
       componentUpdateQueue = createFunctionComponentUpdateQueue(), currentlyRenderingFiber.updateQueue = componentUpdateQueue, componentUpdateQueue.events = [payload];
     else {
-      var events2 = componentUpdateQueue.events;
-      null === events2 ? componentUpdateQueue.events = [payload] : events2.push(payload);
+      var events = componentUpdateQueue.events;
+      null === events ? componentUpdateQueue.events = [payload] : events.push(payload);
     }
   }
   function updateEvent(callback) {
@@ -19931,13 +19931,7 @@ class Client {
   constructor(target, options) {
     this.target = target;
     this.options = options ?? {};
-    const base = new BaseClient(this.target, this.options);
-    this.announcements = new announcements.ServiceClient(base);
-    this.church = new church.ServiceClient(base);
-    this.donations = new donations.ServiceClient(base);
-    this.events = new events.ServiceClient(base);
-    this.media = new media.ServiceClient(base);
-    this.prayers = new prayers.ServiceClient(base);
+    new BaseClient(this.target, this.options);
   }
   /**
    * Creates a new Encore client with the given client options set.
@@ -19951,246 +19945,6 @@ class Client {
     });
   }
 }
-var announcements;
-((announcements2) => {
-  class ServiceClient {
-    constructor(baseClient) {
-      this.baseClient = baseClient;
-      this.create = this.create.bind(this);
-      this.list = this.list.bind(this);
-      this.remove = this.remove.bind(this);
-    }
-    /**
-     * Creates a new church announcement.
-     */
-    async create(params) {
-      const resp = await this.baseClient.callTypedAPI(`/announcements`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Lists church announcements, ordered by priority and date.
-     */
-    async list(params) {
-      const query = makeRecord({
-        limit: String(params.limit)
-      });
-      const resp = await this.baseClient.callTypedAPI(`/announcements`, { query, method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Deletes an announcement.
-     */
-    async remove(params) {
-      const query = makeRecord({
-        passcode: params.passcode
-      });
-      const resp = await this.baseClient.callTypedAPI(`/announcements/${encodeURIComponent(params.id)}`, {
-        method: "DELETE",
-        query,
-        body: void 0
-      });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-  }
-  announcements2.ServiceClient = ServiceClient;
-})(announcements || (announcements = {}));
-var church;
-((church2) => {
-  class ServiceClient {
-    constructor(baseClient) {
-      this.baseClient = baseClient;
-      this.info = this.info.bind(this);
-      this.update = this.update.bind(this);
-    }
-    /**
-     * Retrieves church contact information and location.
-     */
-    async info() {
-      const resp = await this.baseClient.callTypedAPI(`/church/info`, { method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Updates church information.
-     */
-    async update(params) {
-      const resp = await this.baseClient.callTypedAPI(`/church/info`, { method: "PUT", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-  }
-  church2.ServiceClient = ServiceClient;
-})(church || (church = {}));
-var donations;
-((donations2) => {
-  class ServiceClient {
-    constructor(baseClient) {
-      this.baseClient = baseClient;
-      this.confirm = this.confirm.bind(this);
-      this.create = this.create.bind(this);
-      this.list = this.list.bind(this);
-    }
-    /**
-     * Confirms a donation payment status.
-     */
-    async confirm(params) {
-      const body = {
-        success: params.success
-      };
-      const resp = await this.baseClient.callTypedAPI(`/donations/${encodeURIComponent(params.donationId)}/confirm`, { method: "POST", body: JSON.stringify(body) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Creates a new donation and returns a payment intent.
-     */
-    async create(params) {
-      const resp = await this.baseClient.callTypedAPI(`/donations`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Lists completed donations.
-     */
-    async list(params) {
-      const query = makeRecord({
-        limit: String(params.limit)
-      });
-      const resp = await this.baseClient.callTypedAPI(`/donations`, { query, method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-  }
-  donations2.ServiceClient = ServiceClient;
-})(donations || (donations = {}));
-var events;
-((events2) => {
-  class ServiceClient {
-    constructor(baseClient) {
-      this.baseClient = baseClient;
-      this.cancelRsvp = this.cancelRsvp.bind(this);
-      this.create = this.create.bind(this);
-      this.remove = this.remove.bind(this);
-      this.list = this.list.bind(this);
-      this.rsvp = this.rsvp.bind(this);
-    }
-    /**
-     * Cancels an RSVP for an event.
-     */
-    async cancelRsvp(params) {
-      const resp = await this.baseClient.callTypedAPI(`/events/${encodeURIComponent(params.eventId)}/rsvp`, { method: "DELETE", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Creates a new church event.
-     */
-    async create(params) {
-      const resp = await this.baseClient.callTypedAPI(`/events`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Deletes an event.
-     */
-    async remove(params) {
-      const query = makeRecord({
-        passcode: params.passcode
-      });
-      const resp = await this.baseClient.callTypedAPI(`/events/${encodeURIComponent(params.id)}`, {
-        method: "DELETE",
-        query,
-        body: void 0
-      });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Lists all church events.
-     */
-    async list(params) {
-      const query = makeRecord({
-        upcoming: String(params.upcoming)
-      });
-      const resp = await this.baseClient.callTypedAPI(`/events`, { query, method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Creates or updates an RSVP for an event.
-     */
-    async rsvp(params) {
-      const body = {
-        attendees: params.attendees
-      };
-      const resp = await this.baseClient.callTypedAPI(`/events/${encodeURIComponent(params.eventId)}/rsvp`, { method: "POST", body: JSON.stringify(body) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-  }
-  events2.ServiceClient = ServiceClient;
-})(events || (events = {}));
-var media;
-((media2) => {
-  class ServiceClient {
-    constructor(baseClient) {
-      this.baseClient = baseClient;
-      this.list = this.list.bind(this);
-      this.uploadUrl = this.uploadUrl.bind(this);
-    }
-    /**
-     * Lists all media files in the gallery.
-     */
-    async list() {
-      const resp = await this.baseClient.callTypedAPI(`/media`, { method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Generates a signed URL for uploading media files.
-     */
-    async uploadUrl(params) {
-      const resp = await this.baseClient.callTypedAPI(`/media/upload-url`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-  }
-  media2.ServiceClient = ServiceClient;
-})(media || (media = {}));
-var prayers;
-((prayers2) => {
-  class ServiceClient {
-    constructor(baseClient) {
-      this.baseClient = baseClient;
-      this.create = this.create.bind(this);
-      this.list = this.list.bind(this);
-      this.pray = this.pray.bind(this);
-    }
-    /**
-     * Submits a new prayer request.
-     */
-    async create(params) {
-      const resp = await this.baseClient.callTypedAPI(`/prayers`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Lists prayer requests, ordered by most recent.
-     */
-    async list(params) {
-      const query = makeRecord({
-        limit: String(params.limit)
-      });
-      const resp = await this.baseClient.callTypedAPI(`/prayers`, { query, method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Records that a user has prayed for a request.
-     */
-    async pray(params) {
-      const resp = await this.baseClient.callTypedAPI(`/prayers/${encodeURIComponent(params.prayerId)}/pray`, { method: "POST", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-  }
-  prayers2.ServiceClient = ServiceClient;
-})(prayers || (prayers = {}));
-function dateReviver(key, value) {
-  if (typeof value === "string" && value.length >= 10 && value.charCodeAt(0) >= 48 && // '0'
-  value.charCodeAt(0) <= 57) {
-    const parsedDate = new Date(value);
-    if (!isNaN(parsedDate.getTime())) {
-      return parsedDate;
-    }
-  }
-  return value;
-}
 function encodeQuery(parts) {
   const pairs = [];
   for (const key in parts) {
@@ -20200,14 +19954,6 @@ function encodeQuery(parts) {
     }
   }
   return pairs.join("&");
-}
-function makeRecord(record) {
-  for (const key in record) {
-    if (record[key] === void 0) {
-      delete record[key];
-    }
-  }
-  return record;
 }
 function encodeWebSocketHeaders(headers) {
   const base64encoded = btoa(JSON.stringify(headers)).replaceAll("=", "").replaceAll("+", "-").replaceAll("/", "_");
@@ -20255,7 +20001,7 @@ class StreamInOut {
     this.buffer = [];
     this.socket = new WebSocketConnection(url, headers);
     this.socket.on("message", (event) => {
-      this.buffer.push(JSON.parse(event.data, dateReviver));
+      this.buffer.push(JSON.parse(event.data));
       this.socket.resolveHasUpdateHandlers();
     });
   }
@@ -20290,7 +20036,7 @@ class StreamIn {
     this.buffer = [];
     this.socket = new WebSocketConnection(url, headers);
     this.socket.on("message", (event) => {
-      this.buffer.push(JSON.parse(event.data, dateReviver));
+      this.buffer.push(JSON.parse(event.data));
       this.socket.resolveHasUpdateHandlers();
     });
   }
@@ -20318,7 +20064,7 @@ class StreamOut {
     this.responseValue = new Promise((resolve) => responseResolver = resolve);
     this.socket = new WebSocketConnection(url, headers);
     this.socket.on("message", (event) => {
-      responseResolver(JSON.parse(event.data, dateReviver));
+      responseResolver(JSON.parse(event.data));
     });
   }
   async response() {
@@ -20342,7 +20088,7 @@ class BaseClient {
     this.baseURL = baseURL;
     this.headers = {};
     if (!BROWSER) {
-      this.headers["User-Agent"] = "-Generated-TS-Client (Encore/1.50.6)";
+      this.headers["User-Agent"] = "bilingual-church-community-app-8dn2-Generated-TS-Client (Encore/v1.51.10)";
     }
     this.requestInit = options.requestInit ?? {};
     if (options.fetcher !== void 0) {
@@ -20350,32 +20096,8 @@ class BaseClient {
     } else {
       this.fetcher = boundFetch;
     }
-    if (options.auth !== void 0) {
-      const auth = options.auth;
-      if (typeof auth === "function") {
-        this.authGenerator = auth;
-      } else {
-        this.authGenerator = () => auth;
-      }
-    }
   }
   async getAuthData() {
-    let authData;
-    if (this.authGenerator) {
-      const mayBePromise = this.authGenerator();
-      if (mayBePromise instanceof Promise) {
-        authData = await mayBePromise;
-      } else {
-        authData = mayBePromise;
-      }
-    }
-    if (authData) {
-      const data = {};
-      data.headers = makeRecord({
-        authorization: authData.authorization
-      });
-      return data;
-    }
     return void 0;
   }
   // createStreamInOut sets up a stream to a streaming API endpoint.
@@ -20424,18 +20146,20 @@ class BaseClient {
     return new StreamOut(this.baseURL + path + queryString, headers);
   }
   // callTypedAPI makes an API call, defaulting content type to "application/json"
-  async callTypedAPI(path, params) {
-    return this.callAPI(path, {
+  async callTypedAPI(method, path, body, params) {
+    return this.callAPI(method, path, body, {
       ...params,
       headers: { "Content-Type": "application/json", ...params == null ? void 0 : params.headers }
     });
   }
   // callAPI is used by each generated API method to actually make the request
-  async callAPI(path, params) {
+  async callAPI(method, path, body, params) {
     let { query, headers, ...rest } = params ?? {};
     const init = {
       ...this.requestInit,
-      ...rest
+      ...rest,
+      method,
+      body: body ?? null
     };
     init.headers = { ...this.headers, ...init.headers, ...headers };
     const authData = await this.getAuthData();
@@ -20450,23 +20174,23 @@ class BaseClient {
     const queryString = query ? "?" + encodeQuery(query) : "";
     const response = await this.fetcher(this.baseURL + path + queryString, init);
     if (!response.ok) {
-      let body = { code: "unknown", message: `request failed: status ${response.status}` };
+      let body2 = { code: "unknown", message: `request failed: status ${response.status}` };
       try {
         const text = await response.text();
         try {
           const jsonBody = JSON.parse(text);
           if (isAPIErrorResponse(jsonBody)) {
-            body = jsonBody;
+            body2 = jsonBody;
           } else {
-            body.message += ": " + JSON.stringify(jsonBody);
+            body2.message += ": " + JSON.stringify(jsonBody);
           }
         } catch {
-          body.message += ": " + text;
+          body2.message += ": " + text;
         }
       } catch (e) {
-        body.message += ": " + String(e);
+        body2.message += ": " + String(e);
       }
-      throw new APIError(response.status, body);
+      throw new APIError(response.status, body2);
     }
     return response;
   }
@@ -20518,16 +20242,14 @@ var ErrCode = /* @__PURE__ */ ((ErrCode2) => {
   ErrCode2["Unauthenticated"] = "unauthenticated";
   return ErrCode2;
 })(ErrCode || {});
-const resolvedTarget = "https://prod-cne-sh82.encr.app";
-const backend = new Client(resolvedTarget, { requestInit: { credentials: "include" } });
 function useBackend() {
-  return backend;
+  return Client;
 }
 const NEWS_DEFAULT_TAB_KEY$1 = "cne-news-default-tab";
 function Home({ onNavigate }) {
   var _a2;
   const { t, language } = useLanguage();
-  const backend2 = useBackend();
+  const backend = useBackend();
   const queryClient2 = useQueryClient();
   const { toast: toast2 } = useToast();
   const [prayerTitle, setPrayerTitle] = reactExports.useState("");
@@ -20540,7 +20262,7 @@ function Home({ onNavigate }) {
     isError: eventsError
   } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend2.events.list({ upcoming: true })
+    queryFn: () => backend.events.list({ upcoming: true })
   });
   const nextEvent = (_a2 = eventsData == null ? void 0 : eventsData.events) == null ? void 0 : _a2[0];
   const formattedDate = nextEvent ? new Date(nextEvent.eventDate).toLocaleString(
@@ -20579,7 +20301,7 @@ function Home({ onNavigate }) {
   const createPrayerMutation = useMutation({
     mutationFn: async () => {
       const trimmedName = prayerName.trim();
-      return backend2.prayers.create({
+      return backend.prayers.create({
         title: prayerTitle.trim(),
         description: prayerDescription.trim(),
         isAnonymous: prayerName.trim().length === 0,
@@ -26711,13 +26433,13 @@ function SelectScrollDownButton({
     }
   );
 }
-const API_BASE$1 = "https://prod-cne-sh82.encr.app";
+const API_BASE$2 = "https://prod-cne-sh82.encr.app";
 const RSVP_PARTICIPANT_ID_KEY = "cne-event-participant-id";
 const RSVP_EVENTS_KEY = "cne-rsvped-event-ids";
 const RSVP_NAME_KEY = "cne-rsvp-name";
 const NEWS_DEFAULT_TAB_KEY = "cne-news-default-tab";
 const postEventRsvp = async (data) => {
-  const response = await fetch(`${API_BASE$1}/events/${data.eventId}/rsvp`, {
+  const response = await fetch(`${API_BASE$2}/events/${data.eventId}/rsvp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -26736,7 +26458,7 @@ const postEventRsvp = async (data) => {
   return response.json();
 };
 function News() {
-  const backend2 = useBackend();
+  const backend = useBackend();
   const { language, t } = useLanguage();
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
@@ -26769,7 +26491,7 @@ function News() {
   });
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => backend2.announcements.list({ limit: 50 })
+    queryFn: () => backend.announcements.list({ limit: 50 })
   });
   reactExports.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -26806,7 +26528,7 @@ function News() {
     return storedId;
   };
   const deleteEvent = useMutation({
-    mutationFn: async (data) => backend2.events.remove(data),
+    mutationFn: async (data) => backend.events.remove(data),
     onSuccess: (_, variables) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         if (!oldData) return oldData;
@@ -26835,7 +26557,7 @@ function News() {
   });
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend2.events.list({ upcoming: false })
+    queryFn: () => backend.events.list({ upcoming: false })
   });
   const upcomingEvents = reactExports.useMemo(() => {
     if (!(eventsData == null ? void 0 : eventsData.events)) return [];
@@ -26843,7 +26565,7 @@ function News() {
     return [...eventsData.events].filter((eventItem) => new Date(eventItem.eventDate).getTime() >= now).sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
   }, [eventsData]);
   const createAnnouncement = useMutation({
-    mutationFn: async (data) => backend2.announcements.create(data),
+    mutationFn: async (data) => backend.announcements.create(data),
     onSuccess: (newAnnouncement) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) {
@@ -26875,7 +26597,7 @@ function News() {
     }
   });
   const createEvent = useMutation({
-    mutationFn: async (data) => backend2.events.create(data),
+    mutationFn: async (data) => backend.events.create(data),
     onSuccess: (newEvent) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         const existing = (oldData == null ? void 0 : oldData.events) ?? [];
@@ -26936,7 +26658,7 @@ function News() {
     }
   });
   const deleteAnnouncement = useMutation({
-    mutationFn: async (data) => backend2.announcements.remove(data),
+    mutationFn: async (data) => backend.announcements.remove(data),
     onSuccess: (_, variables) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) return oldData;
@@ -27546,11 +27268,11 @@ function News() {
     )
   ] });
 }
-const API_BASE = "https://prod-cne-sh82.encr.app";
+const API_BASE$1 = "https://prod-cne-sh82.encr.app";
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
 const fetchBoard = async () => {
-  const response = await fetch(`${API_BASE}/bulletin/board`, {
+  const response = await fetch(`${API_BASE$1}/bulletin/board`, {
     credentials: "include"
   });
   if (!response.ok) {
@@ -27559,7 +27281,7 @@ const fetchBoard = async () => {
   return response.json();
 };
 const postComment = async (data) => {
-  const response = await fetch(`${API_BASE}/bulletin/comments`, {
+  const response = await fetch(`${API_BASE$1}/bulletin/comments`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27574,7 +27296,7 @@ const postComment = async (data) => {
   return response.json();
 };
 const createPost = async (data) => {
-  const response = await fetch(`${API_BASE}/bulletin/posts`, {
+  const response = await fetch(`${API_BASE$1}/bulletin/posts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27589,7 +27311,7 @@ const createPost = async (data) => {
   return response.json();
 };
 const deletePost = async (data) => {
-  const response = await fetch(`${API_BASE}/bulletin/posts/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
+  const response = await fetch(`${API_BASE$1}/bulletin/posts/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
     method: "DELETE",
     credentials: "include"
   });
@@ -27600,7 +27322,7 @@ const deletePost = async (data) => {
   return response.json();
 };
 const deletePrayer = async (data) => {
-  const response = await fetch(`${API_BASE}/prayers/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
+  const response = await fetch(`${API_BASE$1}/prayers/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
     method: "DELETE",
     credentials: "include"
   });
@@ -27611,7 +27333,7 @@ const deletePrayer = async (data) => {
   return response.json();
 };
 const prayForPrayer = async (data) => {
-  const response = await fetch(`${API_BASE}/prayers/${data.prayerId}/pray`, {
+  const response = await fetch(`${API_BASE$1}/prayers/${data.prayerId}/pray`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27638,7 +27360,7 @@ const formatDate = (date) => {
   }
 };
 function BulletinBoard() {
-  const backend2 = useBackend();
+  const backend = useBackend();
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
@@ -27822,7 +27544,7 @@ function BulletinBoard() {
     }
   });
   const createPrayerMutation = useMutation({
-    mutationFn: (data2) => backend2.prayers.create(data2),
+    mutationFn: (data2) => backend.prayers.create(data2),
     onSuccess: () => {
       setNewPrayer({ title: "", description: "", authorName: "" });
       setPrayerDialogOpen(false);
@@ -27857,7 +27579,7 @@ function BulletinBoard() {
       });
     }
   });
-  const prayers2 = reactExports.useMemo(() => (data == null ? void 0 : data.prayers) ?? [], [data]);
+  const prayers = reactExports.useMemo(() => (data == null ? void 0 : data.prayers) ?? [], [data]);
   const posts = reactExports.useMemo(() => (data == null ? void 0 : data.posts) ?? [], [data]);
   const handleSubmitPost = (event) => {
     event.preventDefault();
@@ -28109,7 +27831,7 @@ function BulletinBoard() {
             ) })
           ] }),
           isLoading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: t("Loading prayers...", "Cargando oraciones...") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-6 md:grid-cols-2", children: prayers2.map((prayer) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "border-neutral-800 bg-neutral-900/60", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-6 md:grid-cols-2", children: prayers.map((prayer) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "border-neutral-800 bg-neutral-900/60", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between gap-3", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: prayer.title }),
@@ -29061,7 +28783,7 @@ createElementComponent("afterpayClearpayMessage", isServer);
 createElementComponent("taxId", isServer);
 const stripePromise = loadStripe("pk_test_placeholder");
 function DonationForm({ onNavigate }) {
-  const backend2 = useBackend();
+  const backend = useBackend();
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const stripe = useStripe();
@@ -29072,12 +28794,12 @@ function DonationForm({ onNavigate }) {
   const [processing, setProcessing] = reactExports.useState(false);
   const createDonationMutation = useMutation({
     mutationFn: (data) => {
-      return backend2.donations.create(data);
+      return backend.donations.create(data);
     }
   });
   const confirmDonationMutation = useMutation({
     mutationFn: (data) => {
-      return backend2.donations.confirm(data);
+      return backend.donations.confirm(data);
     }
   });
   const handleSubmit = async (e) => {
@@ -30306,11 +30028,15 @@ function TriviaGamePage({ onNavigate } = {}) {
   }
   return null;
 }
+const API_BASE = "https://prod-cne-sh82.encr.app";
 function Contact({ onNavigate }) {
   const { language, t } = useLanguage();
   const { data: churchInfo } = useQuery({
     queryKey: ["churchInfo"],
-    queryFn: () => backend.church.info()
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE}/church/info`);
+      return response.json();
+    }
   });
   if (!churchInfo) {
     return null;

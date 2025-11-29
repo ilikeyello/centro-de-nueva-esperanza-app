@@ -1,4 +1,4 @@
-import backend from "~backend/client";
+import backend from "../client";
 
 export function useBackend() {
   return backend;
