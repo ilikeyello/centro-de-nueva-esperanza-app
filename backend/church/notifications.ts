@@ -5,7 +5,8 @@ import db from "../db";
 // Note: web-push will be imported dynamically when needed
 
 // VAPID keys for push notifications
-const vapidKeys = secret("VapidKeys");
+const publicKey = secret("PUBLIC_VAPID_KEY");
+const privateKey = secret("PRIVATE_VAPID_KEY");
 
 // Types
 interface NotificationSubscription {
@@ -37,8 +38,8 @@ const initializeWebPush = async () => {
   
   webpush.setVapidDetails(
     'mailto:contact@centrodnuevaesperanza.org',
-    (vapidKeys as any).PUBLIC_VAPID_KEY,
-    (vapidKeys as any).PRIVATE_VAPID_KEY
+    publicKey,
+    privateKey
   );
   
   return webpush;
