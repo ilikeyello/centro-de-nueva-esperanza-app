@@ -234,46 +234,80 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       // Delete levels
       for (const id of pendingOperations.levelsToDelete) {
         console.log('Deleting level:', id);
-        const response = await fetch(`${base}/trivia/simple/level/${id}`, { 
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ passcode })
-        });
-        console.log('Delete level response status:', response.status);
+        // Try different endpoints
+        const endpoints = [
+          `${base}/trivia/simple/level/${id}`,
+          `${base}/trivia/level/${id}`,
+          `${base}/level/${id}`
+        ];
         
-        // Check response body
-        const responseText = await response.text();
-        console.log('Delete level response body:', responseText);
+        let deleteSuccess = false;
+        for (const endpoint of endpoints) {
+          try {
+            const response = await fetch(endpoint, { 
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ passcode })
+            });
+            console.log('Delete level endpoint:', endpoint, 'status:', response.status);
+            
+            const responseText = await response.text();
+            console.log('Delete level response body:', responseText);
+            
+            if (response.ok && responseText.includes('deleted')) {
+              console.log('Delete level succeeded with endpoint:', endpoint);
+              deleteSuccess = true;
+              results.push({ success: true });
+              break;
+            }
+          } catch (error) {
+            console.log('Delete level failed with endpoint:', endpoint, error);
+          }
+        }
         
-        if (!response.ok) {
-          console.error('Delete level failed:', response.status);
-          results.push({ success: false, error: `HTTP ${response.status}` });
-        } else {
-          console.log('Delete level succeeded');
-          results.push({ success: true });
+        if (!deleteSuccess) {
+          console.error('All delete endpoints failed for level:', id);
+          results.push({ success: false, error: 'All endpoints failed' });
         }
       }
 
       // Delete questions
       for (const id of pendingOperations.questionsToDelete) {
         console.log('Deleting question:', id);
-        const response = await fetch(`${base}/trivia/simple/question/${id}`, { 
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ passcode })
-        });
-        console.log('Delete question response status:', response.status);
+        // Try different endpoints
+        const endpoints = [
+          `${base}/trivia/simple/question/${id}`,
+          `${base}/trivia/question/${id}`,
+          `${base}/question/${id}`
+        ];
         
-        // Check response body
-        const responseText = await response.text();
-        console.log('Delete question response body:', responseText);
+        let deleteSuccess = false;
+        for (const endpoint of endpoints) {
+          try {
+            const response = await fetch(endpoint, { 
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ passcode })
+            });
+            console.log('Delete question endpoint:', endpoint, 'status:', response.status);
+            
+            const responseText = await response.text();
+            console.log('Delete question response body:', responseText);
+            
+            if (response.ok && responseText.includes('deleted')) {
+              console.log('Delete question succeeded with endpoint:', endpoint);
+              deleteSuccess = true;
+              results.push({ success: true });
+              break;
+            }
+          } catch (error) {
+            console.log('Delete question failed with endpoint:', endpoint, error);
+          }
+        }
         
-        if (!response.ok) {
-          console.error('Delete question failed:', response.status);
-          results.push({ success: false, error: `HTTP ${response.status}` });
-        } else {
-          console.log('Delete question succeeded');
-          results.push({ success: true });
+        if (!deleteSuccess) {
+          console.error('All delete endpoints failed for question:', id);
+          results.push({ success: false, error: 'All endpoints failed' });
         }
       }
 
