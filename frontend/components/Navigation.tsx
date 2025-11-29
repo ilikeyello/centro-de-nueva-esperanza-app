@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Minimize2,
   Maximize2,
+  Bell,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
@@ -113,6 +114,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     { id: "news", icon: Megaphone, labelEn: "News", labelEs: "Noticias" },
     { id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" },
     { id: "games", icon: Gamepad2, labelEn: "Games", labelEs: "Juegos" },
+    { id: "notifications", icon: Bell, labelEn: "Notifications", labelEs: "Notificaciones" },
   ];
 
   return (

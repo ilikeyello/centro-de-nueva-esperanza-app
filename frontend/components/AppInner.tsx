@@ -10,6 +10,7 @@ import { TriviaGamePage } from "./pages/TriviaGamePage";
 import { Contact } from "./pages/Contact";
 import { NewHere } from "./pages/NewHere";
 import { AdminUpload } from "./pages/AdminUpload";
+import { NotificationSettings } from "./notifications/NotificationSettings";
 import { Toaster } from "@/components/ui/toaster";
 
 type Page =
@@ -22,7 +23,8 @@ type Page =
   | "games"
   | "triviaGame"
   | "newHere"
-  | "adminUpload";
+  | "adminUpload"
+  | "notifications";
 
 export function AppInner() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
@@ -58,6 +60,7 @@ export function AppInner() {
         {currentPage === "games" && <Games onNavigate={handleNavigate} />}
         {currentPage === "triviaGame" && <TriviaGamePage onNavigate={handleNavigate} />}
         {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
+        {currentPage === "notifications" && <NotificationSettings />}
       </main>
       <Toaster />
     </div>
