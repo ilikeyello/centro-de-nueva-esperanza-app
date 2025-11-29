@@ -177,14 +177,17 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       for (const level of pendingOperations.levelsToAdd) {
         // Remove temporary ID before sending to backend
         const { id, time_limit, ...levelData } = level;
-        console.log('Adding level with data:', level);
+        const payload = {
+          ...levelData,
+          time_limit: time_limit === null ? 0 : time_limit
+        };
+        console.log('Original level data:', level);
+        console.log('Payload being sent:', payload);
+        console.log('Payload JSON:', JSON.stringify(payload));
         const response = await fetch(`${base}/trivia/simple/level`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...levelData,
-            time_limit: time_limit === null ? 0 : time_limit
-          })
+          body: JSON.stringify(payload)
         });
         console.log('Add level response status:', response.status);
         
