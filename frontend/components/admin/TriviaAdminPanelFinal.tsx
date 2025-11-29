@@ -93,14 +93,20 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
 
   const loadData = async () => {
     try {
+      console.log('=== LOADING DATA ===');
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
+      
       console.log('Admin panel - loaded levels:', data.levels.length);
+      console.log('Admin panel - loaded questions:', data.questions.length);
+      console.log('Admin panel - level IDs:', data.levels.map((l: any) => l.id));
+      console.log('Admin panel - question IDs:', data.questions.map((q: any) => q.id));
       
       setLevels(data.levels || []);
       setQuestions(data.questions || []);
       console.log('Levels after load:', data.levels);
+      console.log('=== DATA LOAD COMPLETE ===');
     } catch (error) {
       console.error('Failed to load trivia data:', error);
       setStatus('Failed to load data');
@@ -167,125 +173,49 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     }
 
     setStatus('Saving changes...');
-    console.log('Pending operations:', pendingOperations);
+    console.log('=== STARTING BATCH OPERATIONS ===');
+    console.log('Pending operations:', JSON.stringify(pendingOperations, null, 2));
+    console.log('Passcode:', passcode);
     
     try {
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const results: { success: boolean; id?: string | number; error?: string }[] = [];
 
-      // Add levels
-      for (const level of pendingOperations.levelsToAdd) {
-        // Keep the temporary ID since backend expects it
-        const payload = {
-          ...level,
-          time_limit: level.time_limit === null ? 0 : level.time_limit
-        };
-        console.log('Original level data:', level);
-        console.log('Payload being sent:', payload);
-        console.log('Payload JSON:', JSON.stringify(payload));
-        const response = await fetch(`${base}/trivia/simple/level`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        console.log('Add level response status:', response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.log('Add level error response:', errorText);
-          results.push({ success: false, error: errorText });
-        } else {
-          const result = await response.json();
-          console.log('Add level success response:', result);
-          results.push(result);
-        }
-      }
-
-      // Edit levels
-      for (const level of pendingOperations.levelsToEdit) {
-        // Delete then recreate (simpler approach)
-        await fetch(`${base}/trivia/simple/level/${level.id}`, { method: 'DELETE' });
-        const response = await fetch(`${base}/trivia/simple/level`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: level.name,
-            description: level.description,
-            target_group: level.target_group,
-            shuffle_questions: level.shuffle_questions,
-            time_limit: level.time_limit === null ? 0 : level.time_limit,
-            passing_score: level.passing_score
-          })
-        });
-        results.push(await response.json());
-      }
-
-      // Add questions
-      for (const question of pendingOperations.questionsToAdd) {
-        const response = await fetch(`${base}/trivia/simple/question`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            question_en: question.question_en,
-            question_es: question.question_es,
-            options_en: question.options_en,
-            options_es: question.options_es,
-            correct_answer: question.correct_answer,
-            category: question.category || 'General',
-            level_id: question.level_id
-          })
-        });
-        results.push(await response.json());
-      }
-
-      // Edit questions
-      for (const question of pendingOperations.questionsToEdit) {
-        // Delete then recreate
-        await fetch(`${base}/trivia/simple/question/${question.id}`, { method: 'DELETE' });
-        const response = await fetch(`${base}/trivia/simple/question`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            question_en: question.question_en,
-            question_es: question.question_es,
-            options_en: question.options_en,
-            options_es: question.options_es,
-            correct_answer: question.correct_answer,
-            category: question.category || 'General',
-            level_id: question.level_id
-          })
-        });
-        results.push(await response.json());
-      }
+      console.log('Levels to delete:', pendingOperations.levelsToDelete);
+      console.log('Questions to delete:', pendingOperations.questionsToDelete);
 
       // Delete levels using correct backend endpoints
       for (const id of pendingOperations.levelsToDelete) {
         try {
+          const deleteUrl = `${base}/trivia/simple/level/${id}?passcode=${passcode}`;
           console.log('Attempting to delete level:', id);
-          const response = await fetch(`${base}/trivia/simple/level/${id}?passcode=${passcode}`, { 
+          console.log('Full delete URL:', deleteUrl);
+          
+          const response = await fetch(deleteUrl, { 
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           });
           
           console.log('Delete level response status:', response.status);
+          console.log('Delete level response headers:', Object.fromEntries(response.headers.entries()));
           
           if (response.ok) {
             const result = await response.json();
             console.log('Delete level response body:', result);
             if (result.success) {
-              console.log('Level deleted successfully:', id);
+              console.log('✅ Level deleted successfully:', id);
               results.push({ success: true, id });
             } else {
-              console.error('Failed to delete level:', result.message);
+              console.error('❌ Failed to delete level:', result.message);
               results.push({ success: false, error: result.message, id });
             }
           } else {
             const errorText = await response.text();
-            console.error('Delete level failed:', response.status, errorText);
+            console.error('❌ Delete level failed:', response.status, errorText);
             results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
           }
         } catch (error) {
-          console.error('Error deleting level:', id, error);
+          console.error('❌ Error deleting level:', id, error);
           results.push({ success: false, error: String(error), id });
         }
       }
@@ -293,38 +223,48 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       // Delete questions using correct backend endpoints
       for (const id of pendingOperations.questionsToDelete) {
         try {
+          const deleteUrl = `${base}/trivia/simple/question/${id}?passcode=${passcode}`;
           console.log('Attempting to delete question:', id);
-          const response = await fetch(`${base}/trivia/simple/question/${id}?passcode=${passcode}`, { 
+          console.log('Full delete question URL:', deleteUrl);
+          
+          const response = await fetch(deleteUrl, { 
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           });
           
           console.log('Delete question response status:', response.status);
+          console.log('Delete question response headers:', Object.fromEntries(response.headers.entries()));
           
           if (response.ok) {
             const result = await response.json();
             console.log('Delete question response body:', result);
             if (result.success) {
-              console.log('Question deleted successfully:', id);
+              console.log('✅ Question deleted successfully:', id);
               results.push({ success: true, id });
             } else {
-              console.error('Failed to delete question:', result.message);
+              console.error('❌ Failed to delete question:', result.message);
               results.push({ success: false, error: result.message, id });
             }
           } else {
             const errorText = await response.text();
-            console.error('Delete question failed:', response.status, errorText);
+            console.error('❌ Delete question failed:', response.status, errorText);
             results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
           }
         } catch (error) {
-          console.error('Error deleting question:', id, error);
+          console.error('❌ Error deleting question:', id, error);
           results.push({ success: false, error: String(error), id });
         }
       }
 
+      console.log('=== ALL DELETION RESULTS ===');
+      console.log('Results:', JSON.stringify(results, null, 2));
+
       const errors = results.filter(r => !r.success);
+      console.log('Errors found:', errors.length);
+      console.log('Error details:', JSON.stringify(errors, null, 2));
       
       if (errors.length === 0) {
+        console.log('✅ All operations successful!');
         setStatus('All changes saved successfully!');
         console.log('About to call loadData after successful save');
         
@@ -337,8 +277,10 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           questionsToEdit: [],
           questionsToDelete: []
         });
+        console.log('Calling loadData...');
         loadData();
       } else {
+        console.log('❌ Some operations failed');
         setStatus(`${errors.length} operations failed`);
       }
     } catch (error) {
