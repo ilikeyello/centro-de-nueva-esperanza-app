@@ -31041,11 +31041,11 @@ function TriviaAdminPanelFinal({ passcode }) {
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-neutral-400 mt-1", children: [
                   t("Category", "Categoría"),
                   ": ",
-                  question.category,
+                  question.category || "General",
                   " |",
                   t("Correct Answer", "Respuesta Correcta"),
                   ": ",
-                  String.fromCharCode(65 + question.correct_answer)
+                  String.fromCharCode(65 + (question.correct_answer || 0))
                 ] })
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
@@ -31082,7 +31082,7 @@ function TriviaAdminPanelFinal({ passcode }) {
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Button,
                   {
-                    onClick: () => deleteQuestionFromBatch(question.id),
+                    onClick: () => deleteQuestionFromBatch(question.id || 0),
                     variant: "outline",
                     size: "sm",
                     className: "border-red-700 hover:bg-red-700 text-red-400",

@@ -664,8 +664,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                   {isUnsaved && <span className="ml-2 text-xs text-yellow-400">({t("Unsaved", "No guardado")})</span>}
                                 </p>
                                 <p className="text-xs text-neutral-400 mt-1">
-                                  {t("Category", "Categoría")}: {question.category} | 
-                                  {t("Correct Answer", "Respuesta Correcta")}: {String.fromCharCode(65 + question.correct_answer)}
+                                  {t("Category", "Categoría")}: {question.category || 'General'} | 
+                                  {t("Correct Answer", "Respuesta Correcta")}: {String.fromCharCode(65 + (question.correct_answer || 0))}
                                 </p>
                               </div>
                               <div className="flex gap-2">
@@ -675,7 +675,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                 }}>
                                   <DialogTrigger asChild>
                                     <Button
-                                      onClick={() => setEditingQuestion(question)}
+                                      onClick={() => setEditingQuestion(question as TriviaQuestion)}
                                       variant="outline"
                                       size="sm"
                                       className="border-neutral-700 hover:bg-neutral-800"
@@ -688,7 +688,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                       <DialogTitle>{t("Edit Question", "Editar Pregunta")}</DialogTitle>
                                     </DialogHeader>
                                     <QuestionForm
-                                      question={question}
+                                      question={question as TriviaQuestion}
                                       levels={levels}
                                       onSave={addQuestionToBatch}
                                       onCancel={() => {
@@ -699,7 +699,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                   </DialogContent>
                                 </Dialog>
                                 <Button
-                                  onClick={() => deleteQuestionFromBatch(question.id)}
+                                  onClick={() => deleteQuestionFromBatch(question.id || 0)}
                                   variant="outline"
                                   size="sm"
                                   className="border-red-700 hover:bg-red-700 text-red-400"
