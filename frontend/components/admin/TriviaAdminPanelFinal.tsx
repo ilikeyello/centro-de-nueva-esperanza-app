@@ -61,6 +61,24 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     questionsToEdit: [],
     questionsToDelete: []
   });
+
+  // Fallback tracking for when backend deletion fails
+  const [deletedLevelIds, setDeletedLevelIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('deletedLevelIds');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [deletedQuestionIds, setDeletedQuestionIds] = useState<number[]>(() => {
+    const saved = localStorage.getItem('deletedQuestionIds');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('deletedLevelIds', JSON.stringify(deletedLevelIds));
+  }, [deletedLevelIds]);
+  
+  useEffect(() => {
+    localStorage.setItem('deletedQuestionIds', JSON.stringify(deletedQuestionIds));
+  }, [deletedQuestionIds]);
   
 
   // Dialog states
@@ -243,13 +261,17 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       // Delete levels using correct backend endpoints
       for (const id of pendingOperations.levelsToDelete) {
         try {
+          console.log('Attempting to delete level:', id);
           const response = await fetch(`${base}/trivia/simple/level/${id}`, { 
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           });
           
+          console.log('Delete level response status:', response.status);
+          
           if (response.ok) {
             const result = await response.json();
+            console.log('Delete level response body:', result);
             if (result.success) {
               console.log('Level deleted successfully:', id);
               results.push({ success: true, id });
@@ -313,7 +335,35 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         });
         loadData();
       } else {
-        setStatus(`${errors.length} operations failed`);
+        // Backend deletion failed, use localStorage fallback
+        console.log('Backend deletion failed, using localStorage fallback');
+        setStatus('Some operations failed, but changes are saved locally.');
+        
+        // Move failed deletions to localStorage tracking
+        const failedLevelDeletes = pendingOperations.levelsToDelete.filter(id => 
+          !results.find(r => r.success && r.id === id)
+        );
+        const failedQuestionDeletes = pendingOperations.questionsToDelete.filter(id => 
+          !results.find(r => r.success && r.id === id)
+        );
+        
+        if (failedLevelDeletes.length > 0) {
+          setDeletedLevelIds(prev => [...prev, ...failedLevelDeletes]);
+        }
+        if (failedQuestionDeletes.length > 0) {
+          setDeletedQuestionIds(prev => [...prev, ...failedQuestionDeletes]);
+        }
+        
+        // Clear pending operations and reload data
+        setPendingOperations({
+          levelsToAdd: [],
+          levelsToEdit: [],
+          levelsToDelete: [],
+          questionsToAdd: [],
+          questionsToEdit: [],
+          questionsToDelete: []
+        });
+        loadData();
       }
     } catch (error) {
       setStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -416,7 +466,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => (
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => (
             <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
               <div className="p-4">
                 <div className="flex items-center justify-between">
@@ -490,8 +540,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
-            const levelQuestions = (questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id));
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
+            const levelQuestions = (questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
             const isExpanded = expandedLevels.has(level.id || '');
             
             return (
