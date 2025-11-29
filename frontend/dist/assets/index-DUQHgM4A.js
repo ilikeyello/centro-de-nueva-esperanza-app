@@ -19920,336 +19920,125 @@ function useToast() {
     dismiss: (toastId) => dispatch({ type: "DISMISS_TOAST", toastId })
   };
 }
-const BROWSER = typeof globalThis === "object" && "window" in globalThis;
-class Client {
-  /**
-   * Creates a Client for calling the public and authenticated APIs of your Encore application.
-   *
-   * @param target  The target which the client should be configured to use. See Local and Environment for options.
-   * @param options Options for the client
-   */
-  constructor(target, options) {
-    this.target = target;
-    this.options = options ?? {};
-    new BaseClient(this.target, this.options);
-  }
-  /**
-   * Creates a new Encore client with the given client options set.
-   *
-   * @param options Client options to set. They are merged with existing options.
-   **/
-  with(options) {
-    return new Client(this.target, {
-      ...this.options,
-      ...options
-    });
-  }
-}
-function encodeQuery(parts) {
-  const pairs = [];
-  for (const key in parts) {
-    const val = Array.isArray(parts[key]) ? parts[key] : [parts[key]];
-    for (const v of val) {
-      pairs.push(`${key}=${encodeURIComponent(v)}`);
-    }
-  }
-  return pairs.join("&");
-}
-function encodeWebSocketHeaders(headers) {
-  const base64encoded = btoa(JSON.stringify(headers)).replaceAll("=", "").replaceAll("+", "-").replaceAll("/", "_");
-  return "encore.dev.headers." + base64encoded;
-}
-class WebSocketConnection {
-  constructor(url, headers) {
-    this.hasUpdateHandlers = [];
-    let protocols = ["encore-ws"];
-    if (headers) {
-      protocols.push(encodeWebSocketHeaders(headers));
-    }
-    this.ws = new WebSocket(url, protocols);
-    this.on("error", () => {
-      this.resolveHasUpdateHandlers();
-    });
-    this.on("close", () => {
-      this.resolveHasUpdateHandlers();
-    });
-  }
-  resolveHasUpdateHandlers() {
-    const handlers = this.hasUpdateHandlers;
-    this.hasUpdateHandlers = [];
-    for (const handler of handlers) {
-      handler();
-    }
-  }
-  async hasUpdate() {
-    await new Promise((resolve) => {
-      this.hasUpdateHandlers.push(() => resolve(null));
-    });
-  }
-  on(type, handler) {
-    this.ws.addEventListener(type, handler);
-  }
-  off(type, handler) {
-    this.ws.removeEventListener(type, handler);
-  }
-  close() {
-    this.ws.close();
-  }
-}
-class StreamInOut {
-  constructor(url, headers) {
-    this.buffer = [];
-    this.socket = new WebSocketConnection(url, headers);
-    this.socket.on("message", (event) => {
-      this.buffer.push(JSON.parse(event.data));
-      this.socket.resolveHasUpdateHandlers();
-    });
-  }
-  close() {
-    this.socket.close();
-  }
-  async send(msg) {
-    if (this.socket.ws.readyState === WebSocket.CONNECTING) {
-      await new Promise((resolve) => {
-        this.socket.ws.addEventListener("open", resolve, { once: true });
+const API_BASE$3 = "https://prod-cne-sh82.encr.app";
+const backend = {
+  announcements: {
+    create: async (data) => {
+      const response = await fetch(`${API_BASE$3}/announcements`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
       });
-    }
-    return this.socket.ws.send(JSON.stringify(msg));
-  }
-  async next() {
-    for await (const next of this) return next;
-    return void 0;
-  }
-  async *[Symbol.asyncIterator]() {
-    while (true) {
-      if (this.buffer.length > 0) {
-        yield this.buffer.shift();
-      } else {
-        if (this.socket.ws.readyState === WebSocket.CLOSED) return;
-        await this.socket.hasUpdate();
-      }
-    }
-  }
-}
-class StreamIn {
-  constructor(url, headers) {
-    this.buffer = [];
-    this.socket = new WebSocketConnection(url, headers);
-    this.socket.on("message", (event) => {
-      this.buffer.push(JSON.parse(event.data));
-      this.socket.resolveHasUpdateHandlers();
-    });
-  }
-  close() {
-    this.socket.close();
-  }
-  async next() {
-    for await (const next of this) return next;
-    return void 0;
-  }
-  async *[Symbol.asyncIterator]() {
-    while (true) {
-      if (this.buffer.length > 0) {
-        yield this.buffer.shift();
-      } else {
-        if (this.socket.ws.readyState === WebSocket.CLOSED) return;
-        await this.socket.hasUpdate();
-      }
-    }
-  }
-}
-class StreamOut {
-  constructor(url, headers) {
-    let responseResolver;
-    this.responseValue = new Promise((resolve) => responseResolver = resolve);
-    this.socket = new WebSocketConnection(url, headers);
-    this.socket.on("message", (event) => {
-      responseResolver(JSON.parse(event.data));
-    });
-  }
-  async response() {
-    return this.responseValue;
-  }
-  close() {
-    this.socket.close();
-  }
-  async send(msg) {
-    if (this.socket.ws.readyState === WebSocket.CONNECTING) {
-      await new Promise((resolve) => {
-        this.socket.ws.addEventListener("open", resolve, { once: true });
+      return response.json();
+    },
+    list: async (params) => {
+      const response = await fetch(`${API_BASE$3}/announcements?limit=${params.limit}`);
+      return response.json();
+    },
+    remove: async (params) => {
+      const response = await fetch(`${API_BASE$3}/announcements/${params.id}?passcode=${params.passcode}`, {
+        method: "DELETE"
       });
+      return response.json();
     }
-    return this.socket.ws.send(JSON.stringify(msg));
+  },
+  events: {
+    create: async (data) => {
+      const response = await fetch(`${API_BASE$3}/events`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      return response.json();
+    },
+    list: async (params) => {
+      const response = await fetch(`${API_BASE$3}/events?upcoming=${params.upcoming}`);
+      return response.json();
+    },
+    remove: async (params) => {
+      const response = await fetch(`${API_BASE$3}/events/${params.id}?passcode=${params.passcode}`, {
+        method: "DELETE"
+      });
+      return response.json();
+    },
+    rsvp: async (params) => {
+      const response = await fetch(`${API_BASE$3}/events/${params.eventId}/rsvp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attendees: params.attendees })
+      });
+      return response.json();
+    },
+    cancelRsvp: async (params) => {
+      const response = await fetch(`${API_BASE$3}/events/${params.eventId}/rsvp`, {
+        method: "DELETE"
+      });
+      return response.json();
+    }
+  },
+  prayers: {
+    create: async (data) => {
+      const response = await fetch(`${API_BASE$3}/prayers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      return response.json();
+    },
+    list: async (params) => {
+      const response = await fetch(`${API_BASE$3}/prayers?limit=${params.limit}`);
+      return response.json();
+    },
+    pray: async (params) => {
+      const response = await fetch(`${API_BASE$3}/prayers/${params.prayerId}/pray`, {
+        method: "POST"
+      });
+      return response.json();
+    }
+  },
+  church: {
+    info: async () => {
+      const response = await fetch(`${API_BASE$3}/church/info`);
+      return response.json();
+    }
+  },
+  donations: {
+    create: async (data) => {
+      const response = await fetch(`${API_BASE$3}/donations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      return response.json();
+    },
+    list: async (params) => {
+      const response = await fetch(`${API_BASE$3}/donations?limit=${params.limit}`);
+      return response.json();
+    }
+  },
+  media: {
+    list: async () => {
+      const response = await fetch(`${API_BASE$3}/media`);
+      return response.json();
+    },
+    uploadUrl: async (params) => {
+      const response = await fetch(`${API_BASE$3}/media/upload-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params)
+      });
+      return response.json();
+    }
   }
-}
-const boundFetch = fetch.bind(void 0);
-class BaseClient {
-  constructor(baseURL, options) {
-    this.baseURL = baseURL;
-    this.headers = {};
-    if (!BROWSER) {
-      this.headers["User-Agent"] = "bilingual-church-community-app-8dn2-Generated-TS-Client (Encore/v1.51.10)";
-    }
-    this.requestInit = options.requestInit ?? {};
-    if (options.fetcher !== void 0) {
-      this.fetcher = options.fetcher;
-    } else {
-      this.fetcher = boundFetch;
-    }
-  }
-  async getAuthData() {
-    return void 0;
-  }
-  // createStreamInOut sets up a stream to a streaming API endpoint.
-  async createStreamInOut(path, params) {
-    let { query, headers } = params ?? {};
-    const authData = await this.getAuthData();
-    if (authData) {
-      if (authData.query) {
-        query = { ...query, ...authData.query };
-      }
-      if (authData.headers) {
-        headers = { ...headers, ...authData.headers };
-      }
-    }
-    const queryString = query ? "?" + encodeQuery(query) : "";
-    return new StreamInOut(this.baseURL + path + queryString, headers);
-  }
-  // createStreamIn sets up a stream to a streaming API endpoint.
-  async createStreamIn(path, params) {
-    let { query, headers } = params ?? {};
-    const authData = await this.getAuthData();
-    if (authData) {
-      if (authData.query) {
-        query = { ...query, ...authData.query };
-      }
-      if (authData.headers) {
-        headers = { ...headers, ...authData.headers };
-      }
-    }
-    const queryString = query ? "?" + encodeQuery(query) : "";
-    return new StreamIn(this.baseURL + path + queryString, headers);
-  }
-  // createStreamOut sets up a stream to a streaming API endpoint.
-  async createStreamOut(path, params) {
-    let { query, headers } = params ?? {};
-    const authData = await this.getAuthData();
-    if (authData) {
-      if (authData.query) {
-        query = { ...query, ...authData.query };
-      }
-      if (authData.headers) {
-        headers = { ...headers, ...authData.headers };
-      }
-    }
-    const queryString = query ? "?" + encodeQuery(query) : "";
-    return new StreamOut(this.baseURL + path + queryString, headers);
-  }
-  // callTypedAPI makes an API call, defaulting content type to "application/json"
-  async callTypedAPI(method, path, body, params) {
-    return this.callAPI(method, path, body, {
-      ...params,
-      headers: { "Content-Type": "application/json", ...params == null ? void 0 : params.headers }
-    });
-  }
-  // callAPI is used by each generated API method to actually make the request
-  async callAPI(method, path, body, params) {
-    let { query, headers, ...rest } = params ?? {};
-    const init = {
-      ...this.requestInit,
-      ...rest,
-      method,
-      body: body ?? null
-    };
-    init.headers = { ...this.headers, ...init.headers, ...headers };
-    const authData = await this.getAuthData();
-    if (authData) {
-      if (authData.query) {
-        query = { ...query, ...authData.query };
-      }
-      if (authData.headers) {
-        init.headers = { ...init.headers, ...authData.headers };
-      }
-    }
-    const queryString = query ? "?" + encodeQuery(query) : "";
-    const response = await this.fetcher(this.baseURL + path + queryString, init);
-    if (!response.ok) {
-      let body2 = { code: "unknown", message: `request failed: status ${response.status}` };
-      try {
-        const text = await response.text();
-        try {
-          const jsonBody = JSON.parse(text);
-          if (isAPIErrorResponse(jsonBody)) {
-            body2 = jsonBody;
-          } else {
-            body2.message += ": " + JSON.stringify(jsonBody);
-          }
-        } catch {
-          body2.message += ": " + text;
-        }
-      } catch (e) {
-        body2.message += ": " + String(e);
-      }
-      throw new APIError(response.status, body2);
-    }
-    return response;
-  }
-}
-function isAPIErrorResponse(err) {
-  return err !== void 0 && err !== null && isErrCode(err.code) && typeof err.message === "string" && (err.details === void 0 || err.details === null || typeof err.details === "object");
-}
-function isErrCode(code) {
-  return code !== void 0 && Object.values(ErrCode).includes(code);
-}
-class APIError extends Error {
-  constructor(status, response) {
-    super(response.message);
-    Object.defineProperty(this, "name", {
-      value: "APIError",
-      enumerable: false,
-      configurable: true
-    });
-    if (Object.setPrototypeOf == void 0) {
-      this.__proto__ = APIError.prototype;
-    } else {
-      Object.setPrototypeOf(this, APIError.prototype);
-    }
-    if (Error.captureStackTrace !== void 0) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-    this.status = status;
-    this.code = response.code;
-    this.details = response.details;
-  }
-}
-var ErrCode = /* @__PURE__ */ ((ErrCode2) => {
-  ErrCode2["OK"] = "ok";
-  ErrCode2["Canceled"] = "canceled";
-  ErrCode2["Unknown"] = "unknown";
-  ErrCode2["InvalidArgument"] = "invalid_argument";
-  ErrCode2["DeadlineExceeded"] = "deadline_exceeded";
-  ErrCode2["NotFound"] = "not_found";
-  ErrCode2["AlreadyExists"] = "already_exists";
-  ErrCode2["PermissionDenied"] = "permission_denied";
-  ErrCode2["ResourceExhausted"] = "resource_exhausted";
-  ErrCode2["FailedPrecondition"] = "failed_precondition";
-  ErrCode2["Aborted"] = "aborted";
-  ErrCode2["OutOfRange"] = "out_of_range";
-  ErrCode2["Unimplemented"] = "unimplemented";
-  ErrCode2["Internal"] = "internal";
-  ErrCode2["Unavailable"] = "unavailable";
-  ErrCode2["DataLoss"] = "data_loss";
-  ErrCode2["Unauthenticated"] = "unauthenticated";
-  return ErrCode2;
-})(ErrCode || {});
+};
 function useBackend() {
-  return Client;
+  return backend;
 }
 const NEWS_DEFAULT_TAB_KEY$1 = "cne-news-default-tab";
 function Home({ onNavigate }) {
   var _a2;
   const { t, language } = useLanguage();
-  const backend = useBackend();
+  const backend2 = useBackend();
   const queryClient2 = useQueryClient();
   const { toast: toast2 } = useToast();
   const [prayerTitle, setPrayerTitle] = reactExports.useState("");
@@ -20262,7 +20051,7 @@ function Home({ onNavigate }) {
     isError: eventsError
   } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend.events.list({ upcoming: true })
+    queryFn: () => backend2.events.list({ upcoming: true })
   });
   const nextEvent = (_a2 = eventsData == null ? void 0 : eventsData.events) == null ? void 0 : _a2[0];
   const formattedDate = nextEvent ? new Date(nextEvent.eventDate).toLocaleString(
@@ -20301,7 +20090,7 @@ function Home({ onNavigate }) {
   const createPrayerMutation = useMutation({
     mutationFn: async () => {
       const trimmedName = prayerName.trim();
-      return backend.prayers.create({
+      return backend2.prayers.create({
         title: prayerTitle.trim(),
         description: prayerDescription.trim(),
         isAnonymous: prayerName.trim().length === 0,
@@ -26458,7 +26247,7 @@ const postEventRsvp = async (data) => {
   return response.json();
 };
 function News() {
-  const backend = useBackend();
+  const backend2 = useBackend();
   const { language, t } = useLanguage();
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
@@ -26491,7 +26280,7 @@ function News() {
   });
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => backend.announcements.list({ limit: 50 })
+    queryFn: () => backend2.announcements.list({ limit: 50 })
   });
   reactExports.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -26528,7 +26317,7 @@ function News() {
     return storedId;
   };
   const deleteEvent = useMutation({
-    mutationFn: async (data) => backend.events.remove(data),
+    mutationFn: async (data) => backend2.events.remove(data),
     onSuccess: (_, variables) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         if (!oldData) return oldData;
@@ -26557,7 +26346,7 @@ function News() {
   });
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend.events.list({ upcoming: false })
+    queryFn: () => backend2.events.list({ upcoming: false })
   });
   const upcomingEvents = reactExports.useMemo(() => {
     if (!(eventsData == null ? void 0 : eventsData.events)) return [];
@@ -26565,7 +26354,7 @@ function News() {
     return [...eventsData.events].filter((eventItem) => new Date(eventItem.eventDate).getTime() >= now).sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
   }, [eventsData]);
   const createAnnouncement = useMutation({
-    mutationFn: async (data) => backend.announcements.create(data),
+    mutationFn: async (data) => backend2.announcements.create(data),
     onSuccess: (newAnnouncement) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) {
@@ -26597,7 +26386,7 @@ function News() {
     }
   });
   const createEvent = useMutation({
-    mutationFn: async (data) => backend.events.create(data),
+    mutationFn: async (data) => backend2.events.create(data),
     onSuccess: (newEvent) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         const existing = (oldData == null ? void 0 : oldData.events) ?? [];
@@ -26658,7 +26447,7 @@ function News() {
     }
   });
   const deleteAnnouncement = useMutation({
-    mutationFn: async (data) => backend.announcements.remove(data),
+    mutationFn: async (data) => backend2.announcements.remove(data),
     onSuccess: (_, variables) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) return oldData;
@@ -27360,7 +27149,7 @@ const formatDate = (date) => {
   }
 };
 function BulletinBoard() {
-  const backend = useBackend();
+  const backend2 = useBackend();
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
@@ -27544,7 +27333,7 @@ function BulletinBoard() {
     }
   });
   const createPrayerMutation = useMutation({
-    mutationFn: (data2) => backend.prayers.create(data2),
+    mutationFn: (data2) => backend2.prayers.create(data2),
     onSuccess: () => {
       setNewPrayer({ title: "", description: "", authorName: "" });
       setPrayerDialogOpen(false);
@@ -28783,7 +28572,7 @@ createElementComponent("afterpayClearpayMessage", isServer);
 createElementComponent("taxId", isServer);
 const stripePromise = loadStripe("pk_test_placeholder");
 function DonationForm({ onNavigate }) {
-  const backend = useBackend();
+  const backend2 = useBackend();
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const stripe = useStripe();
@@ -28794,12 +28583,12 @@ function DonationForm({ onNavigate }) {
   const [processing, setProcessing] = reactExports.useState(false);
   const createDonationMutation = useMutation({
     mutationFn: (data) => {
-      return backend.donations.create(data);
+      return backend2.donations.create(data);
     }
   });
   const confirmDonationMutation = useMutation({
     mutationFn: (data) => {
-      return backend.donations.confirm(data);
+      return backend2.donations.confirm(data);
     }
   });
   const handleSubmit = async (e) => {
