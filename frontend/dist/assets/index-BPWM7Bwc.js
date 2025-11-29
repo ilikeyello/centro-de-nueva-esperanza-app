@@ -15589,7 +15589,7 @@ const Calendar = createLucideIcon("calendar", __iconNode$A);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$z = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$z);
+const Check$1 = createLucideIcon("check", __iconNode$z);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -26252,7 +26252,7 @@ function SelectItem({
       ),
       ...props,
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute right-2 flex size-3.5 items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ItemIndicator, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "size-4" }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute right-2 flex size-3.5 items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ItemIndicator, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Check$1, { className: "size-4" }) }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(ItemText, { children })
       ]
     }
@@ -29591,7 +29591,7 @@ function TriviaGamePage({ onNavigate } = {}) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const isCorrect = gameState.selectedAnswer === currentQuestion.correct_answer;
     const newScore = gameState.score + (isCorrect ? 1 : 0);
-    const newAnswers = [...gameState.userAnswers, gameState.selectedAnswer];
+    const newAnswers = [...gameState.userAnswers, gameState.selectedAnswer !== null ? gameState.selectedAnswer : -1];
     if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
       setGameState({
         ...gameState,
@@ -30530,7 +30530,7 @@ function TriviaAdminPanelFinal({ passcode }) {
   const [showLevelDialog, setShowLevelDialog] = reactExports.useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = reactExports.useState(false);
   const [editingLevel, setEditingLevel] = reactExports.useState(null);
-  const [editingQuestion, setEditingQuestion] = reactExports.useState(null);
+  const [editingQuestion2, setEditingQuestion] = reactExports.useState(null);
   reactExports.useEffect(() => {
     loadData();
   }, []);
@@ -30572,19 +30572,19 @@ function TriviaAdminPanelFinal({ passcode }) {
     setEditingLevel(null);
   };
   const addQuestionToBatch = (question) => {
-    if (editingQuestion) {
+    if (editingQuestion2) {
       setPendingOperations((prev) => ({
         ...prev,
-        questionsToEdit: [...prev.questionsToEdit.filter((q) => q.id !== editingQuestion.id), { ...question, id: editingQuestion.id }]
+        questionsToEdit: [...prev.questionsToEdit.filter((q) => q.id !== editingQuestion2.id), { ...question, id: editingQuestion2.id }]
       }));
+      setShowQuestionDialog(false);
+      setEditingQuestion(null);
     } else {
       setPendingOperations((prev) => ({
         ...prev,
         questionsToAdd: [...prev.questionsToAdd, question]
       }));
     }
-    setShowQuestionDialog(false);
-    setEditingQuestion(null);
   };
   const deleteLevelFromBatch = (id) => {
     setPendingOperations((prev) => ({
@@ -31049,7 +31049,7 @@ function TriviaAdminPanelFinal({ passcode }) {
                 ] })
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog && (editingQuestion == null ? void 0 : editingQuestion.id) === question.id, onOpenChange: (open) => {
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showQuestionDialog && (editingQuestion2 == null ? void 0 : editingQuestion2.id) === question.id, onOpenChange: (open) => {
                   setShowQuestionDialog(open);
                   if (!open) setEditingQuestion(null);
                 }, children: [
@@ -31096,11 +31096,11 @@ function TriviaAdminPanelFinal({ passcode }) {
       }) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showQuestionDialog, onOpenChange: setShowQuestionDialog, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingQuestion2 ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         QuestionForm,
         {
-          question: editingQuestion,
+          question: editingQuestion2,
           levels,
           onSave: addQuestionToBatch,
           onCancel: () => {
@@ -31268,6 +31268,7 @@ function QuestionForm({
       options_es: formData.options
     };
     onSave(submissionData);
+    setFormData(initializeFormData(null));
   };
   const updateOption = (index2, value) => {
     const options = [...formData.options];
@@ -31342,7 +31343,11 @@ function QuestionForm({
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
-        t("Add to Changes", "Agregar a Cambios")
+        editingQuestion ? t("Update", "Actualizar") : t("Add Another", "Agregar Otro")
+      ] }),
+      !editingQuestion && /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", onClick: onCancel, variant: "outline", className: "border-green-700 hover:bg-green-800 text-green-400", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "h-4 w-4 mr-2" }),
+        t("Done", "Hecho")
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", onClick: onCancel, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-2" }),

@@ -172,7 +172,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const isCorrect = gameState.selectedAnswer === currentQuestion.correct_answer;
     const newScore = gameState.score + (isCorrect ? 1 : 0);
-    const newAnswers = [...gameState.userAnswers, gameState.selectedAnswer!];
+    const newAnswers = [...gameState.userAnswers, gameState.selectedAnswer !== null ? gameState.selectedAnswer : -1];
 
     if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
       setGameState({
