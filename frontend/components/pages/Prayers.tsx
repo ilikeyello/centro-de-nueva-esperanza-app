@@ -61,7 +61,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
     mutationFn: (prayerId: number) => {
       return backend.prayers.pray({ prayerId });
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["prayers"] });
       toast({
         title: t("Thank you", "Gracias"),

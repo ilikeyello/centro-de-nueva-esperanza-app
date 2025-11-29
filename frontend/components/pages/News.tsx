@@ -705,7 +705,7 @@ export function News() {
                         size="icon"
                         className="text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
                         onClick={() => {
-                          setAnnouncementToDelete(announcement);
+                          setAnnouncementToDelete(announcement as any);
                           setDeletePasscode("");
                           setDeleteDialogOpen(true);
                         }}
@@ -800,7 +800,7 @@ export function News() {
                         size="icon"
                         className="text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
                         onClick={() => {
-                          setEventToDelete(eventItem);
+                          setEventToDelete(eventItem as any);
                           setEventDeletePasscode("");
                           setEventDeleteDialogOpen(true);
                         }}
@@ -841,7 +841,7 @@ export function News() {
                     </div>
                     <Button
                       onClick={() => {
-                        setSelectedEvent(eventItem);
+                        setSelectedEvent(eventItem as any);
                         setRsvpDialogOpen(true);
                       }}
                       disabled={rsvpedEventIds.has(eventItem.id)}

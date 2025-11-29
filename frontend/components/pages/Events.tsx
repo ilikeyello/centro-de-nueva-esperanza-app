@@ -87,7 +87,7 @@ export function Events() {
       titleEs: formData.get("titleEs") as string,
       descriptionEn: formData.get("descriptionEn") as string,
       descriptionEs: formData.get("descriptionEs") as string,
-      eventDate: new Date(formData.get("eventDate") as string),
+      eventDate: new Date(formData.get("eventDate") as string).toISOString(),
       location: formData.get("location") as string,
       maxAttendees: parseInt(formData.get("maxAttendees") as string) || 0,
       passcode: formData.get("passcode") as string,
@@ -253,7 +253,7 @@ export function Events() {
               </div>
               <Button
                 onClick={() => {
-                  setSelectedEvent(event);
+                  setSelectedEvent(event as any);
                   setShowRsvpDialog(true);
                 }}
                 className="w-full bg-red-600 hover:bg-red-700"
