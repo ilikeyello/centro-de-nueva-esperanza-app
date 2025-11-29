@@ -31248,8 +31248,8 @@ function QuestionForm({
       ...formData,
       question_en: formData.question,
       question_es: formData.question,
-      options_en: JSON.stringify(formData.options),
-      options_es: JSON.stringify(formData.options)
+      options_en: formData.options,
+      options_es: formData.options
     };
     onSave(submissionData);
   };
