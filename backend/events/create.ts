@@ -51,7 +51,8 @@ export const create = api<CreateEventRequest, Event>(
         weekday: 'short', 
         month: 'short', 
         day: 'numeric',
-        time: 'short'
+        hour: 'numeric',
+        minute: '2-digit'
       });
       
       await notifications.sendNotification({
