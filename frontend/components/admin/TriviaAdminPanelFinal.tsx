@@ -62,6 +62,10 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     questionsToDelete: []
   });
   
+  // Persistent deleted items tracking (since backend delete is broken)
+  const [deletedLevelIds, setDeletedLevelIds] = useState<string[]>([]);
+  const [deletedQuestionIds, setDeletedQuestionIds] = useState<number[]>([]);
+  
   // Dialog states
   const [showLevelDialog, setShowLevelDialog] = useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
@@ -278,6 +282,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       if (errors.length === 0) {
         setStatus('All changes saved successfully!');
         console.log('About to call loadData after successful save');
+        
+        // Move deleted items to persistent tracking
+        setDeletedLevelIds(prev => [...prev, ...pendingOperations.levelsToDelete]);
+        setDeletedQuestionIds(prev => [...prev, ...pendingOperations.questionsToDelete]);
+        
         setPendingOperations({
           levelsToAdd: [],
           levelsToEdit: [],
@@ -391,7 +400,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {levels.filter(level => !pendingOperations.levelsToDelete.includes(level.id)).map((level) => (
+          {levels.filter(level => !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => (
             <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
               <div className="p-4">
                 <div className="flex items-center justify-between">
@@ -466,7 +475,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {levels.map((level) => {
-            const levelQuestions = (questionsByLevel[level.id] || []).filter(question => !pendingOperations.questionsToDelete.includes(question.id));
+            const levelQuestions = (questionsByLevel[level.id] || []).filter(question => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
             const isExpanded = expandedLevels.has(level.id);
             
             return (
@@ -516,7 +525,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                       </div>
                     ) : (
                       <div className="space-y-2 p-4">
-                        {levelQuestions.filter(question => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => (
+                        {levelQuestions.filter(question => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id)).map((question) => (
                           <div key={question.id} className="border border-neutral-700 rounded bg-neutral-800/50 p-3">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">

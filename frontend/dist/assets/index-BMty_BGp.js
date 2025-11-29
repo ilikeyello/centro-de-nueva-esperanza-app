@@ -30527,6 +30527,8 @@ function TriviaAdminPanelFinal({ passcode }) {
     questionsToEdit: [],
     questionsToDelete: []
   });
+  const [deletedLevelIds, setDeletedLevelIds] = reactExports.useState([]);
+  const [deletedQuestionIds, setDeletedQuestionIds] = reactExports.useState([]);
   const [showLevelDialog, setShowLevelDialog] = reactExports.useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = reactExports.useState(false);
   const [editingLevel, setEditingLevel] = reactExports.useState(null);
@@ -30707,6 +30709,8 @@ function TriviaAdminPanelFinal({ passcode }) {
       if (errors.length === 0) {
         setStatus("All changes saved successfully!");
         console.log("About to call loadData after successful save");
+        setDeletedLevelIds((prev) => [...prev, ...pendingOperations.levelsToDelete]);
+        setDeletedQuestionIds((prev) => [...prev, ...pendingOperations.questionsToDelete]);
         setPendingOperations({
           levelsToAdd: [],
           levelsToEdit: [],
@@ -30801,7 +30805,7 @@ function TriviaAdminPanelFinal({ passcode }) {
           ] })
         ] })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: levels.filter((level) => !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: levels.filter((level) => !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
         var _a2;
         return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
@@ -30871,7 +30875,7 @@ function TriviaAdminPanelFinal({ passcode }) {
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: t("Questions by Level", "Preguntas por Nivel") }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: levels.map((level) => {
-        const levelQuestions = (questionsByLevel[level.id] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id));
+        const levelQuestions = (questionsByLevel[level.id] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
         const isExpanded = expandedLevels.has(level.id);
         return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -30922,7 +30926,7 @@ function TriviaAdminPanelFinal({ passcode }) {
               ] })
             }
           ),
-          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.filter((question) => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-700 rounded bg-neutral-800/50 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
+          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.filter((question) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id)).map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-700 rounded bg-neutral-800/50 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-white font-medium", children: language === "es" ? question.question_es : question.question_en }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-neutral-400 mt-1", children: [
