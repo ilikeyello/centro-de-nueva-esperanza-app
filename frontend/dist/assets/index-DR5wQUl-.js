@@ -30718,6 +30718,51 @@ function TriviaAdminPanelFinal({ passcode }) {
           results.push({ success: false, error: String(error) });
         }
       }
+      for (const question of pendingOperations.questionsToEdit) {
+        try {
+          const payload = {
+            question_en: question.question_en,
+            question_es: question.question_es || null,
+            options_en: JSON.stringify(question.options_en),
+            options_es: JSON.stringify(question.options_es || question.options_en),
+            correct_answer: question.correct_answer,
+            category: question.category || "General",
+            level_id: question.level_id
+          };
+          console.log("Updating question with payload:", payload);
+          if (question.id === 0) {
+            console.log("Creating new question (id=0):", payload);
+            const response = await fetch(`${base}/trivia/simple/question`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            console.log("Create question response status:", response.status);
+            if (response.ok) {
+              const result = await response.json();
+              console.log("Create question response body:", result);
+              if (result.success) {
+                console.log("✅ Question created successfully");
+                results.push({ success: true });
+              } else {
+                console.error("❌ Failed to create question:", result.message);
+                results.push({ success: false, error: result.message });
+              }
+            } else {
+              const errorText = await response.text();
+              console.error("❌ Create question failed:", response.status, errorText);
+              results.push({ success: false, error: `HTTP ${response.status}: ${errorText}` });
+            }
+          } else {
+            console.log("Updating existing question:", question.id);
+            console.log("❌ Question update not implemented yet");
+            results.push({ success: false, error: "Question update not implemented" });
+          }
+        } catch (error) {
+          console.error("❌ Error editing question:", error);
+          results.push({ success: false, error: String(error) });
+        }
+      }
       for (const id of pendingOperations.questionsToDelete) {
         try {
           const deleteUrl = `${base}/trivia/simple/question/${id}?passcode=${passcode}`;
