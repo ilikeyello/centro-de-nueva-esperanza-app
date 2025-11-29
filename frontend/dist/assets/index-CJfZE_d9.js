@@ -29512,12 +29512,8 @@ function TriviaGamePage({ onNavigate } = {}) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      const deletedLevelIds = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
       console.log("Game page - loaded levels:", data.levels.length);
-      console.log("Game page - deleted level IDs:", deletedLevelIds);
-      const filteredLevels = data.levels.filter((level) => !deletedLevelIds.includes(level.id));
-      console.log("Game page - filtered levels:", filteredLevels.length);
-      setLevels(filteredLevels);
+      setLevels(data.levels);
     } catch (error) {
       console.error("Failed to load levels:", error);
     } finally {
@@ -29529,11 +29525,7 @@ function TriviaGamePage({ onNavigate } = {}) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      const deletedLevelIds = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
-      const deletedQuestionIds = JSON.parse(localStorage.getItem("deletedQuestionIds") || "[]");
-      return data.questions.filter(
-        (q) => q.level_id === levelId && !deletedLevelIds.includes(levelId) && !deletedQuestionIds.includes(q.id)
-      );
+      return data.questions.filter((q) => q.level_id === levelId);
     } catch (error) {
       console.error("Failed to load questions:", error);
       return [];
@@ -30754,29 +30746,7 @@ function TriviaAdminPanelFinal({ passcode }) {
         });
         loadData();
       } else {
-        console.log("Backend deletion failed, using localStorage fallback");
-        setStatus("Some operations failed, but changes are saved locally.");
-        const failedLevelDeletes = pendingOperations.levelsToDelete.filter(
-          (id) => !results.find((r2) => r2.success && r2.id === id)
-        );
-        const failedQuestionDeletes = pendingOperations.questionsToDelete.filter(
-          (id) => !results.find((r2) => r2.success && r2.id === id)
-        );
-        if (failedLevelDeletes.length > 0) {
-          setDeletedLevelIds((prev) => [...prev, ...failedLevelDeletes]);
-        }
-        if (failedQuestionDeletes.length > 0) {
-          setDeletedQuestionIds((prev) => [...prev, ...failedQuestionDeletes]);
-        }
-        setPendingOperations({
-          levelsToAdd: [],
-          levelsToEdit: [],
-          levelsToDelete: [],
-          questionsToAdd: [],
-          questionsToEdit: [],
-          questionsToDelete: []
-        });
-        loadData();
+        setStatus(`${errors.length} operations failed`);
       }
     } catch (error) {
       setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -30860,7 +30830,7 @@ function TriviaAdminPanelFinal({ passcode }) {
           ] })
         ] })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
         var _a2;
         return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
@@ -30929,8 +30899,8 @@ function TriviaAdminPanelFinal({ passcode }) {
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: t("Questions by Level", "Preguntas por Nivel") }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
-        const levelQuestions = (questionsByLevel[level.id || ""] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
+        const levelQuestions = (questionsByLevel[level.id || ""] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id));
         const isExpanded = expandedLevels.has(level.id || "");
         return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(

@@ -339,35 +339,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         });
         loadData();
       } else {
-        // Backend deletion failed, use localStorage fallback
-        console.log('Backend deletion failed, using localStorage fallback');
-        setStatus('Some operations failed, but changes are saved locally.');
-        
-        // Move failed deletions to localStorage tracking
-        const failedLevelDeletes = pendingOperations.levelsToDelete.filter(id => 
-          !results.find(r => r.success && r.id === id)
-        );
-        const failedQuestionDeletes = pendingOperations.questionsToDelete.filter(id => 
-          !results.find(r => r.success && r.id === id)
-        );
-        
-        if (failedLevelDeletes.length > 0) {
-          setDeletedLevelIds(prev => [...prev, ...failedLevelDeletes]);
-        }
-        if (failedQuestionDeletes.length > 0) {
-          setDeletedQuestionIds(prev => [...prev, ...failedQuestionDeletes]);
-        }
-        
-        // Clear pending operations and reload data
-        setPendingOperations({
-          levelsToAdd: [],
-          levelsToEdit: [],
-          levelsToDelete: [],
-          questionsToAdd: [],
-          questionsToEdit: [],
-          questionsToDelete: []
-        });
-        loadData();
+        setStatus(`${errors.length} operations failed`);
       }
     } catch (error) {
       setStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -470,7 +442,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => (
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => (
             <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
               <div className="p-4">
                 <div className="flex items-center justify-between">
@@ -544,8 +516,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id) && !deletedLevelIds.includes(level.id)).map((level) => {
-            const levelQuestions = (questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id));
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
+            const levelQuestions = (questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id));
             const isExpanded = expandedLevels.has(level.id || '');
             
             return (
