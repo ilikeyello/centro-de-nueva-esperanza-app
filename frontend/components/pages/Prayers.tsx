@@ -59,7 +59,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
 
   const prayMutation = useMutation({
     mutationFn: (prayerId: number) => {
-      return backend.prayers.pray({ prayerId });
+      return backend.prayers.pray({ prayerId, participantId: null });
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["prayers"] });
