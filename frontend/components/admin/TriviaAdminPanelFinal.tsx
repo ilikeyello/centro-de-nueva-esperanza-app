@@ -391,8 +391,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {levels.map((level) => (
-            <div key={level.id} className={`border border-neutral-800 rounded-lg bg-neutral-900/50 ${pendingOperations.levelsToDelete.includes(level.id) ? 'opacity-50 line-through' : ''}`}>
+          {levels.filter(level => !pendingOperations.levelsToDelete.includes(level.id)).map((level) => (
+            <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -466,7 +466,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {levels.map((level) => {
-            const levelQuestions = questionsByLevel[level.id] || [];
+            const levelQuestions = (questionsByLevel[level.id] || []).filter(question => !pendingOperations.questionsToDelete.includes(question.id));
             const isExpanded = expandedLevels.has(level.id);
             
             return (
@@ -516,8 +516,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                       </div>
                     ) : (
                       <div className="space-y-2 p-4">
-                        {levelQuestions.map((question) => (
-                          <div key={question.id} className={`border border-neutral-700 rounded bg-neutral-800/50 p-3 ${pendingOperations.questionsToDelete.includes(question.id) ? 'opacity-50 line-through' : ''}`}>
+                        {levelQuestions.filter(question => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => (
+                          <div key={question.id} className="border border-neutral-700 rounded bg-neutral-800/50 p-3">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <p className="text-sm text-white font-medium">
