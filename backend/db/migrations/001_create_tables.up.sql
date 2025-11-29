@@ -98,16 +98,3 @@ VALUES (
   'Sunday Service: 10:00 AM | Wednesday Bible Study: 7:00 PM',
   'Servicio Dominical: 10:00 AM | Estudio Bíblico Miércoles: 7:00 PM'
 );
-
--- Push subscriptions table
-CREATE TABLE push_subscriptions (
-  id SERIAL PRIMARY KEY,
-  endpoint VARCHAR(500) UNIQUE NOT NULL,
-  p256dh_key VARCHAR(255) NOT NULL,
-  auth_key VARCHAR(255) NOT NULL,
-  user_agent TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_push_subscriptions_endpoint ON push_subscriptions(endpoint);
