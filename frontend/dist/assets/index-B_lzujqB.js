@@ -30623,12 +30623,15 @@ function TriviaAdminPanelFinal({ passcode }) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const results = [];
       for (const level of pendingOperations.levelsToAdd) {
-        const { id, ...levelData } = level;
-        console.log("Adding level with data:", levelData);
+        const { id, time_limit, ...levelData } = level;
+        console.log("Adding level with data:", level);
         const response = await fetch(`${base}/trivia/simple/level`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(levelData)
+          body: JSON.stringify({
+            ...levelData,
+            time_limit: time_limit === null ? 0 : time_limit
+          })
         });
         console.log("Add level response status:", response.status);
         if (!response.ok) {
@@ -30647,12 +30650,12 @@ function TriviaAdminPanelFinal({ passcode }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: level.id,
             name: level.name,
-            description: level.description || "",
-            shuffle_questions: level.shuffle_questions ?? true,
-            time_limit: level.time_limit,
-            passing_score: level.passing_score || 70
+            description: level.description,
+            target_group: level.target_group,
+            shuffle_questions: level.shuffle_questions,
+            time_limit: level.time_limit === null ? 0 : level.time_limit,
+            passing_score: level.passing_score
           })
         });
         results.push(await response.json());
