@@ -1,13 +1,8 @@
 import { api } from "encore.dev/api";
-import { SQLDatabase } from "encore.dev/storage/sqldb";
 import { secret } from "encore.dev/config";
+import { db } from "./church/db";
 
 // Note: web-push will be imported dynamically when needed
-
-// Database for storing push notification subscriptions
-const db = new SQLDatabase("notifications", {
-  migrations: "./migrations",
-});
 
 // VAPID keys for push notifications
 const vapidKeys = secret("VapidKeys");

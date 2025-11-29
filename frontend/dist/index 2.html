@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>CNE</title>
+    <meta name="theme-color" content="#000000" />
+    <meta name="msapplication-TileColor" content="#dc2626" />
+    <meta name="msapplication-config" content="/cne-app/browserconfig.xml" />
+    
+    <!-- PWA Manifest for Android -->
+    <link rel="manifest" href="/cne-app/manifest.json" />
+    <link rel="apple-touch-icon" href="/cne-app/icon-192x192.png" />
+    
+    <!-- Mobile Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CNE App" />
+    
+    <!-- Android fixes -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="CNE App" />
+    
+    <!-- Force cache clearing -->
+    <script>
+      // Force unregister service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(reg => reg.unregister());
+        });
+      }
+      
+      // Clear all caches
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name));
+        });
+      }
+    </script>
+    
+    <!-- Safe area insets for notched devices -->
+    <style>
+      /* Core styles */
+      * {
+        box-sizing: border-box;
+      }
+      
+      html {
+        height: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background-color: #000000;
+        overflow-x: hidden;
+      }
+      
+      #root {
+        min-height: 100vh;
+        /* Safe area support */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+      
+      /* Splash screen */
+      .app-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        background-color: #000000;
+        color: #f9fafb;
+        z-index: 50;
+        /* Safe area support */
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+      
+      .app-splash-logo {
+        width: min(150px, 30vw);
+        max-height: 150px;
+        height: auto;
+        display: block;
+        opacity: 1;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
+      }
+      
+      .app-splash-spinner {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 9999px;
+        border: 2px solid rgba(249, 250, 251, 0.15);
+        border-top-color: #ef4444;
+        animation: app-splash-spin 0.9s linear infinite;
+      }
+      
+      @keyframes app-splash-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      
+      /* Hide splash when app loads */
+      .app-loaded .app-splash {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease-out;
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-BzXwdvMp.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-B7dY6y-_.css">
+  </head>
+  <body>
+    <div id="root">
+      <div class="app-splash">
+        <img
+          src="./cne_logo_black.svg"
+          alt="Centro de Nueva Esperanza"
+          class="app-splash-logo"
+          style="filter: invert(1);"
+        />
+        <div class="app-splash-spinner" aria-hidden="true"></div>
+      </div>
+    </div>
+  </body>
+</html>
