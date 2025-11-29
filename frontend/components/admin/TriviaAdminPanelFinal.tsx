@@ -619,7 +619,7 @@ function LevelForm({
     name: string;
     description: string;
     shuffle_questions: boolean;
-    time_limit: number;
+    time_limit: number | null;
     passing_score: number;
     disable_time_limit: boolean;
   });

@@ -66,12 +66,12 @@ const DEFAULT_DATA: SimpleTriviaData = {
     
     // Return default structure
     return DEFAULT_DATA;
-  }
+  // }
 );
 
-export const save = api<SaveRequest, void>(
-  { expose: true, method: "POST", path: "/simple-trivia" },
-  async (req) => {
+// export const save = api<SaveRequest, void>(
+//   { expose: true, method: "POST", path: "/simple-trivia" },
+//   async (req) => {
     if (req.passcode !== "78598") {
       throw APIError.permissionDenied("Invalid passcode");
     }
@@ -95,5 +95,5 @@ export const save = api<SaveRequest, void>(
       SET trivia_data = ${JSON.stringify(req.data)}
       WHERE id = 1
     `;
-  }
-);
+  // }
+// );
