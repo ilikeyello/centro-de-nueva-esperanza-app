@@ -1,4 +1,6 @@
-import { database } from "encore.dev/storage/sqldb";
+import { SQLDatabase } from "encore.dev/storage/sqldb";
 
 // Reuse the main database connection
-export default database("main");
+export default new SQLDatabase("notifications", {
+  migrations: "./migrations",
+});

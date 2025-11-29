@@ -143,13 +143,13 @@ export const sendNotification = api(
             console.error("Failed to send notification to:", subscription.endpoint, error);
             
             // If subscription is no longer valid, remove it
-            if (error.statusCode === 410 || error.statusCode === 404) {
+            if ((error as any).statusCode === 410 || (error as any).statusCode === 404) {
               await db.exec`
                 DELETE FROM push_subscriptions WHERE endpoint = ${subscription.endpoint}
               `;
             }
             
-            return { success: false, error: error.message };
+            return { success: false, error: (error as any).message };
           }
         })
       );
@@ -173,7 +173,7 @@ export const sendNotification = api(
         success: false,
         sentCount: 0,
         failedCount: 0,
-        errors: [error.message]
+        errors: [(error as any).message]
       };
     }
   }
