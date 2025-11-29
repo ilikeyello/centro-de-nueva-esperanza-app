@@ -38,8 +38,8 @@ const initializeWebPush = async () => {
   
   webpush.setVapidDetails(
     'mailto:contact@centrodnuevaesperanza.org',
-    publicKey,
-    privateKey
+    publicKey as unknown as string,
+    privateKey as unknown as string
   );
   
   return webpush;
