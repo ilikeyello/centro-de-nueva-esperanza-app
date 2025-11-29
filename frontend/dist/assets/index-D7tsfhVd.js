@@ -15640,18 +15640,18 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$G = [
+const __iconNode$H = [
   ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
   ["path", { d: "M19 12H5", key: "x3x0zl" }]
 ];
-const ArrowLeft = createLucideIcon("arrow-left", __iconNode$G);
+const ArrowLeft = createLucideIcon("arrow-left", __iconNode$H);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$F = [
+const __iconNode$G = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -15663,14 +15663,14 @@ const __iconNode$F = [
   ["path", { d: "m2 2 20 20", key: "1ooewy" }],
   ["path", { d: "M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05", key: "1hqiys" }]
 ];
-const BellOff = createLucideIcon("bell-off", __iconNode$F);
+const BellOff = createLucideIcon("bell-off", __iconNode$G);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$E = [
+const __iconNode$F = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -15680,14 +15680,14 @@ const __iconNode$E = [
     }
   ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$E);
+const Bell = createLucideIcon("bell", __iconNode$F);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$D = [
+const __iconNode$E = [
   [
     "path",
     {
@@ -15710,14 +15710,14 @@ const __iconNode$D = [
   ["path", { d: "M6 18a4 4 0 0 1-1.967-.516", key: "2e4loj" }],
   ["path", { d: "M19.967 17.484A4 4 0 0 1 18 18", key: "159ez6" }]
 ];
-const Brain = createLucideIcon("brain", __iconNode$D);
+const Brain = createLucideIcon("brain", __iconNode$E);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$C = [
+const __iconNode$D = [
   ["path", { d: "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z", key: "1b4qmf" }],
   ["path", { d: "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2", key: "i71pzd" }],
   ["path", { d: "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2", key: "10jefs" }],
@@ -15726,52 +15726,64 @@ const __iconNode$C = [
   ["path", { d: "M10 14h4", key: "kelpxr" }],
   ["path", { d: "M10 18h4", key: "1ulq68" }]
 ];
-const Building2 = createLucideIcon("building-2", __iconNode$C);
+const Building2 = createLucideIcon("building-2", __iconNode$D);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$B = [
+const __iconNode$C = [
   ["path", { d: "M8 2v4", key: "1cmpym" }],
   ["path", { d: "M16 2v4", key: "4m81vk" }],
   ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
   ["path", { d: "M3 10h18", key: "8toen8" }]
 ];
-const Calendar = createLucideIcon("calendar", __iconNode$B);
+const Calendar = createLucideIcon("calendar", __iconNode$C);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$A = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$A);
+const __iconNode$B = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$B);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$z = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$z);
+const __iconNode$A = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$A);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$y = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$y);
+const __iconNode$z = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$z);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$x = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$x);
+const __iconNode$y = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$y);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$x = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
+  ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
+];
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$x);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15780,10 +15792,9 @@ const ChevronUp = createLucideIcon("chevron-up", __iconNode$x);
  */
 const __iconNode$w = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
-  ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
+  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
 ];
-const CircleAlert = createLucideIcon("circle-alert", __iconNode$w);
+const Clock = createLucideIcon("clock", __iconNode$w);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15791,17 +15802,6 @@ const CircleAlert = createLucideIcon("circle-alert", __iconNode$w);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$v = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
-];
-const Clock = createLucideIcon("clock", __iconNode$v);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$u = [
   ["path", { d: "M10 2v2", key: "7u0qdc" }],
   ["path", { d: "M14 2v2", key: "6buw04" }],
   [
@@ -15813,7 +15813,18 @@ const __iconNode$u = [
   ],
   ["path", { d: "M6 2v2", key: "colzsn" }]
 ];
-const Coffee = createLucideIcon("coffee", __iconNode$u);
+const Coffee = createLucideIcon("coffee", __iconNode$v);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$u = [
+  ["line", { x1: "12", x2: "12", y1: "2", y2: "22", key: "7eqyqh" }],
+  ["path", { d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6", key: "1b0p4s" }]
+];
+const DollarSign = createLucideIcon("dollar-sign", __iconNode$u);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15821,10 +15832,12 @@ const Coffee = createLucideIcon("coffee", __iconNode$u);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$t = [
-  ["line", { x1: "12", x2: "12", y1: "2", y2: "22", key: "7eqyqh" }],
-  ["path", { d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6", key: "1b0p4s" }]
+  [
+    "path",
+    { d: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z", key: "1jg4f8" }
+  ]
 ];
-const DollarSign = createLucideIcon("dollar-sign", __iconNode$t);
+const Facebook = createLucideIcon("facebook", __iconNode$t);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15832,19 +15845,6 @@ const DollarSign = createLucideIcon("dollar-sign", __iconNode$t);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$s = [
-  [
-    "path",
-    { d: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z", key: "1jg4f8" }
-  ]
-];
-const Facebook = createLucideIcon("facebook", __iconNode$s);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$r = [
   ["line", { x1: "6", x2: "10", y1: "11", y2: "11", key: "1gktln" }],
   ["line", { x1: "8", x2: "8", y1: "9", y2: "13", key: "qnk9ow" }],
   ["line", { x1: "15", x2: "15.01", y1: "12", y2: "12", key: "krot7o" }],
@@ -15857,7 +15857,19 @@ const __iconNode$r = [
     }
   ]
 ];
-const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$r);
+const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$s);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$r = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
+  ["path", { d: "M2 12h20", key: "9i4pu4" }]
+];
+const Globe = createLucideIcon("globe", __iconNode$r);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15865,18 +15877,6 @@ const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$r);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$q = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
-  ["path", { d: "M2 12h20", key: "9i4pu4" }]
-];
-const Globe = createLucideIcon("globe", __iconNode$q);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$p = [
   [
     "path",
     {
@@ -15885,14 +15885,14 @@ const __iconNode$p = [
     }
   ]
 ];
-const Heart = createLucideIcon("heart", __iconNode$p);
+const Heart = createLucideIcon("heart", __iconNode$q);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [
+const __iconNode$p = [
   ["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", key: "5wwlr5" }],
   [
     "path",
@@ -15902,7 +15902,19 @@ const __iconNode$o = [
     }
   ]
 ];
-const House = createLucideIcon("house", __iconNode$o);
+const House = createLucideIcon("house", __iconNode$p);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$o = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "M12 16v-4", key: "1dtifu" }],
+  ["path", { d: "M12 8h.01", key: "e9boi3" }]
+];
+const Info = createLucideIcon("info", __iconNode$o);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15910,18 +15922,6 @@ const House = createLucideIcon("house", __iconNode$o);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$n = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "M12 16v-4", key: "1dtifu" }],
-  ["path", { d: "M12 8h.01", key: "e9boi3" }]
-];
-const Info = createLucideIcon("info", __iconNode$n);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$m = [
   ["path", { d: "m5 8 6 6", key: "1wu5hv" }],
   ["path", { d: "m4 14 6-6 2-3", key: "1k1g8d" }],
   ["path", { d: "M2 5h12", key: "or177f" }],
@@ -15929,7 +15929,15 @@ const __iconNode$m = [
   ["path", { d: "m22 22-5-10-5 10", key: "don7ne" }],
   ["path", { d: "M14 18h6", key: "1m8k6r" }]
 ];
-const Languages = createLucideIcon("languages", __iconNode$m);
+const Languages = createLucideIcon("languages", __iconNode$n);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$m = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
+const LoaderCircle = createLucideIcon("loader-circle", __iconNode$m);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -20994,6 +21002,16 @@ function CardTitle({ className, ...props }) {
     {
       "data-slot": "card-title",
       className: cn("leading-none font-semibold", className),
+      ...props
+    }
+  );
+}
+function CardDescription({ className, ...props }) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      "data-slot": "card-description",
+      className: cn("text-muted-foreground text-sm", className),
       ...props
     }
   );
@@ -32548,6 +32566,193 @@ const NotificationSettings = () => {
     ] })
   ] });
 };
+const usePushNotifications = () => {
+  const [isSupported, setIsSupported] = reactExports.useState(false);
+  const [isSubscribed, setIsSubscribed] = reactExports.useState(false);
+  const [permission, setPermission] = reactExports.useState("default");
+  const [isLoading, setIsLoading] = reactExports.useState(false);
+  const [error, setError] = reactExports.useState(null);
+  const VAPID_PUBLIC_KEY = "BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E";
+  reactExports.useEffect(() => {
+    const supported = "serviceWorker" in navigator && "PushManager" in window;
+    setIsSupported(supported);
+    if (supported) {
+      setPermission(Notification.permission);
+      checkSubscriptionStatus();
+    }
+  }, []);
+  const checkSubscriptionStatus = async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      setIsSubscribed(!!subscription);
+    } catch (err) {
+      console.error("Error checking subscription status:", err);
+    }
+  };
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = "=".repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+  const subscribe = async () => {
+    if (!isSupported) {
+      setError("Push notifications are not supported in this browser");
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const permissionResult = await Notification.requestPermission();
+      setPermission(permissionResult);
+      if (permissionResult !== "granted") {
+        setError("Permission denied for notifications");
+        setIsLoading(false);
+        return;
+      }
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+      const subscriptionData = {
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: subscription.getKey("p256dh") ? btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("p256dh")))) : "",
+          auth: subscription.getKey("auth") ? btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("auth")))) : ""
+        }
+      };
+      await Client.notifications.subscribe({
+        ...subscriptionData,
+        userAgent: navigator.userAgent
+      });
+      setIsSubscribed(true);
+      console.log("Successfully subscribed to push notifications");
+    } catch (err) {
+      console.error("Error subscribing to push notifications:", err);
+      setError("Failed to subscribe to notifications");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const unsubscribe = async () => {
+    if (!isSupported || !isSubscribed) {
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (subscription) {
+        await subscription.unsubscribe();
+        setIsSubscribed(false);
+        console.log("Successfully unsubscribed from push notifications");
+      }
+    } catch (err) {
+      console.error("Error unsubscribing from push notifications:", err);
+      setError("Failed to unsubscribe from notifications");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return {
+    isSupported,
+    isSubscribed,
+    permission,
+    isLoading,
+    error,
+    subscribe,
+    unsubscribe
+  };
+};
+const PushNotificationPrompt = ({ className }) => {
+  const [showPrompt, setShowPrompt] = reactExports.useState(true);
+  const [dismissed, setDismissed] = reactExports.useState(false);
+  const { isSupported, isSubscribed, permission, isLoading, error, subscribe, unsubscribe } = usePushNotifications();
+  if (!isSupported || dismissed || !showPrompt) {
+    return null;
+  }
+  if (isSubscribed) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: `bg-green-50 border-green-200 ${className}`, children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-4 w-4 text-green-600" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-green-800", children: "Notifications enabled" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Button,
+        {
+          variant: "outline",
+          size: "sm",
+          onClick: unsubscribe,
+          disabled: isLoading,
+          className: "text-red-600 border-red-200 hover:bg-red-50",
+          children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(BellOff, { className: "h-4 w-4" })
+        }
+      )
+    ] }) }) });
+  }
+  if (permission === "denied") {
+    return null;
+  }
+  const handleSubscribe = async () => {
+    await subscribe();
+    if (!error) {
+      setShowPrompt(false);
+    }
+  };
+  const handleDismiss = () => {
+    setDismissed(true);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: `bg-blue-50 border-blue-200 ${className}`, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "pb-3", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-sm text-blue-800 flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-4 w-4" }),
+        "Stay Updated"
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardDescription, { className: "text-xs text-blue-600", children: "Get notified about new announcements and when livestream starts" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "pt-0", children: [
+      error && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-3 p-2 bg-red-50 rounded text-red-700 text-xs", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { className: "h-3 w-3" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: error })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            size: "sm",
+            onClick: handleSubscribe,
+            disabled: isLoading,
+            className: "bg-blue-600 hover:bg-blue-700 text-white",
+            children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-4 w-4 animate-spin mr-2" }),
+              "Enabling..."
+            ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-4 w-4 mr-2" }),
+              "Enable Notifications"
+            ] })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            variant: "ghost",
+            size: "sm",
+            onClick: handleDismiss,
+            className: "text-blue-600 hover:bg-blue-100",
+            children: "Maybe Later"
+          }
+        )
+      ] })
+    ] })
+  ] });
+};
 var PROVIDER_NAME = "ToastProvider";
 var [Collection, useCollection, createCollectionScope] = createCollection("Toast");
 var [createToastContext] = createContextScope("Toast", [createCollectionScope]);
@@ -33287,6 +33492,7 @@ function AppInner() {
       currentPage === "newHere" && /* @__PURE__ */ jsxRuntimeExports.jsx(NewHere, { onNavigate: handleNavigate }),
       currentPage === "notifications" && /* @__PURE__ */ jsxRuntimeExports.jsx(NotificationSettings, {})
     ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40", children: /* @__PURE__ */ jsxRuntimeExports.jsx(PushNotificationPrompt, {}) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Toaster, {})
   ] });
 }

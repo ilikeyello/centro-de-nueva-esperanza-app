@@ -11,6 +11,7 @@ import { Contact } from "./pages/Contact";
 import { NewHere } from "./pages/NewHere";
 import { AdminUpload } from "./pages/AdminUpload";
 import { NotificationSettings } from "./notifications/NotificationSettings";
+import { PushNotificationPrompt } from "./PushNotificationPrompt";
 import { Toaster } from "@/components/ui/toaster";
 
 type Page =
@@ -62,6 +63,9 @@ export function AppInner() {
         {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
         {currentPage === "notifications" && <NotificationSettings />}
       </main>
+      <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40">
+        <PushNotificationPrompt />
+      </div>
       <Toaster />
     </div>
   );
