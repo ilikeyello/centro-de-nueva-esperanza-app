@@ -4698,8 +4698,8 @@ function requireReactDomClient_production() {
     if (null === componentUpdateQueue)
       componentUpdateQueue = createFunctionComponentUpdateQueue(), currentlyRenderingFiber.updateQueue = componentUpdateQueue, componentUpdateQueue.events = [payload];
     else {
-      var events = componentUpdateQueue.events;
-      null === events ? componentUpdateQueue.events = [payload] : events.push(payload);
+      var events2 = componentUpdateQueue.events;
+      null === events2 ? componentUpdateQueue.events = [payload] : events2.push(payload);
     }
   }
   function updateEvent(callback) {
@@ -19920,125 +19920,788 @@ function useToast() {
     dismiss: (toastId) => dispatch({ type: "DISMISS_TOAST", toastId })
   };
 }
-const API_BASE$3 = "https://prod-cne-sh82.encr.app";
-const backend = {
-  announcements: {
-    create: async (data) => {
-      const response = await fetch(`${API_BASE$3}/announcements`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      return response.json();
-    },
-    list: async (params) => {
-      const response = await fetch(`${API_BASE$3}/announcements?limit=${params.limit}`);
-      return response.json();
-    },
-    remove: async (params) => {
-      const response = await fetch(`${API_BASE$3}/announcements/${params.id}?passcode=${params.passcode}`, {
-        method: "DELETE"
-      });
-      return response.json();
+const BROWSER = typeof globalThis === "object" && "window" in globalThis;
+class Client {
+  /**
+   * Creates a Client for calling the public and authenticated APIs of your Encore application.
+   *
+   * @param target  The target which the client should be configured to use. See Local and Environment for options.
+   * @param options Options for the client
+   */
+  constructor(target, options) {
+    this.target = target;
+    this.options = options ?? {};
+    const base = new BaseClient(this.target, this.options);
+    this.announcements = new announcements.ServiceClient(base);
+    this.bulletin = new bulletin.ServiceClient(base);
+    this.church = new church.ServiceClient(base);
+    this.donations = new donations.ServiceClient(base);
+    this.events = new events.ServiceClient(base);
+    this.media = new media.ServiceClient(base);
+    this.prayers = new prayers.ServiceClient(base);
+    this.sermons = new sermons.ServiceClient(base);
+  }
+  /**
+   * Creates a new Encore client with the given client options set.
+   *
+   * @param options Client options to set. They are merged with existing options.
+   **/
+  with(options) {
+    return new Client(this.target, {
+      ...this.options,
+      ...options
+    });
+  }
+}
+var announcements;
+((announcements2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.create = this.create.bind(this);
+      this.list = this.list.bind(this);
+      this.remove = this.remove.bind(this);
     }
-  },
-  events: {
-    create: async (data) => {
-      const response = await fetch(`${API_BASE$3}/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      return response.json();
-    },
-    list: async (params) => {
-      const response = await fetch(`${API_BASE$3}/events?upcoming=${params.upcoming}`);
-      return response.json();
-    },
-    remove: async (params) => {
-      const response = await fetch(`${API_BASE$3}/events/${params.id}?passcode=${params.passcode}`, {
-        method: "DELETE"
-      });
-      return response.json();
-    },
-    rsvp: async (params) => {
-      const response = await fetch(`${API_BASE$3}/events/${params.eventId}/rsvp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attendees: params.attendees })
-      });
-      return response.json();
-    },
-    cancelRsvp: async (params) => {
-      const response = await fetch(`${API_BASE$3}/events/${params.eventId}/rsvp`, {
-        method: "DELETE"
-      });
-      return response.json();
+    /**
+     * Creates a new church announcement.
+     */
+    async create(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/announcements`, JSON.stringify(params));
+      return await resp.json();
     }
-  },
-  prayers: {
-    create: async (data) => {
-      const response = await fetch(`${API_BASE$3}/prayers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+    /**
+     * Lists church announcements, ordered by priority and date.
+     */
+    async list(params) {
+      const query = makeRecord({
+        limit: String(params.limit)
       });
-      return response.json();
-    },
-    list: async (params) => {
-      const response = await fetch(`${API_BASE$3}/prayers?limit=${params.limit}`);
-      return response.json();
-    },
-    pray: async (params) => {
-      const response = await fetch(`${API_BASE$3}/prayers/${params.prayerId}/pray`, {
-        method: "POST"
-      });
-      return response.json();
+      const resp = await this.baseClient.callTypedAPI("GET", `/announcements`, void 0, { query });
+      return await resp.json();
     }
-  },
-  church: {
-    info: async () => {
-      const response = await fetch(`${API_BASE$3}/church/info`);
-      return response.json();
-    }
-  },
-  donations: {
-    create: async (data) => {
-      const response = await fetch(`${API_BASE$3}/donations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+    async remove(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
       });
-      return response.json();
-    },
-    list: async (params) => {
-      const response = await fetch(`${API_BASE$3}/donations?limit=${params.limit}`);
-      return response.json();
-    }
-  },
-  media: {
-    list: async () => {
-      const response = await fetch(`${API_BASE$3}/media`);
-      return response.json();
-    },
-    uploadUrl: async (params) => {
-      const response = await fetch(`${API_BASE$3}/media/upload-url`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params)
-      });
-      return response.json();
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/announcements/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
     }
   }
-};
+  announcements2.ServiceClient = ServiceClient;
+})(announcements || (announcements = {}));
+var bulletin;
+((bulletin2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.board = this.board.bind(this);
+      this.createComment = this.createComment.bind(this);
+      this.createPost = this.createPost.bind(this);
+      this.removePost = this.removePost.bind(this);
+    }
+    async board() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/bulletin/board`);
+      return await resp.json();
+    }
+    async createComment(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/bulletin/comments`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async createPost(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/bulletin/posts`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async removePost(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/bulletin/posts/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
+    }
+  }
+  bulletin2.ServiceClient = ServiceClient;
+})(bulletin || (bulletin = {}));
+var church;
+((church2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.createLevel = this.createLevel.bind(this);
+      this.createQuestion = this.createQuestion.bind(this);
+      this.deleteLevel = this.deleteLevel.bind(this);
+      this.deleteQuestion = this.deleteQuestion.bind(this);
+      this.getStats = this.getStats.bind(this);
+      this.getTrivia = this.getTrivia.bind(this);
+      this.info = this.info.bind(this);
+      this.sendAnnouncementNotification = this.sendAnnouncementNotification.bind(this);
+      this.sendLivestreamNotification = this.sendLivestreamNotification.bind(this);
+      this.sendNewsNotification = this.sendNewsNotification.bind(this);
+      this.sendToAll = this.sendToAll.bind(this);
+      this.setupTriviaTables = this.setupTriviaTables.bind(this);
+      this.subscribe = this.subscribe.bind(this);
+      this.testTriviaDB = this.testTriviaDB.bind(this);
+      this.unsubscribe = this.unsubscribe.bind(this);
+      this.update = this.update.bind(this);
+    }
+    /**
+     * Create level
+     */
+    async createLevel(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/trivia/simple/level`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Create question
+     */
+    async createQuestion(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/trivia/simple/question`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Delete level
+     */
+    async deleteLevel(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/trivia/simple/level/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
+    }
+    /**
+     * Delete question
+     */
+    async deleteQuestion(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/trivia/simple/question/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
+    }
+    /**
+     * Get subscription statistics
+     */
+    async getStats() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/notifications/stats`);
+      return await resp.json();
+    }
+    /**
+     * Get all trivia data
+     */
+    async getTrivia() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/trivia/simple`);
+      return await resp.json();
+    }
+    /**
+     * Retrieves church contact information and location.
+     */
+    async info() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/church/info`);
+      return await resp.json();
+    }
+    /**
+     * Send notification for announcements
+     */
+    async sendAnnouncementNotification(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/announcement`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Send notification for livestream reminder
+     */
+    async sendLivestreamNotification(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/livestream`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Send notification for news
+     */
+    async sendNewsNotification(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/news`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Send notification to all subscribers
+     */
+    async sendToAll(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/send-all`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async setupTriviaTables() {
+      const resp = await this.baseClient.callTypedAPI("POST", `/trivia/setup-tables`);
+      return await resp.json();
+    }
+    /**
+     * Subscribe to push notifications
+     */
+    async subscribe(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/subscribe`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async testTriviaDB() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/trivia/test-db`);
+      return await resp.json();
+    }
+    /**
+     * Unsubscribe from push notifications
+     */
+    async unsubscribe(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/unsubscribe`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Updates church information.
+     */
+    async update(params) {
+      const resp = await this.baseClient.callTypedAPI("PUT", `/church/info`, JSON.stringify(params));
+      return await resp.json();
+    }
+  }
+  church2.ServiceClient = ServiceClient;
+})(church || (church = {}));
+var donations;
+((donations2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.confirm = this.confirm.bind(this);
+      this.create = this.create.bind(this);
+      this.list = this.list.bind(this);
+    }
+    /**
+     * Confirms a donation payment status.
+     */
+    async confirm(donationId, params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/donations/${encodeURIComponent(donationId)}/confirm`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Creates a new donation and returns a payment intent.
+     */
+    async create(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/donations`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Lists completed donations.
+     */
+    async list(params) {
+      const query = makeRecord({
+        limit: String(params.limit)
+      });
+      const resp = await this.baseClient.callTypedAPI("GET", `/donations`, void 0, { query });
+      return await resp.json();
+    }
+  }
+  donations2.ServiceClient = ServiceClient;
+})(donations || (donations = {}));
+var events;
+((events2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.cancelRsvp = this.cancelRsvp.bind(this);
+      this.create = this.create.bind(this);
+      this.list = this.list.bind(this);
+      this.remove = this.remove.bind(this);
+      this.rsvp = this.rsvp.bind(this);
+    }
+    /**
+     * Cancels an RSVP for an event.
+     */
+    async cancelRsvp(eventId) {
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/events/${encodeURIComponent(eventId)}/rsvp`);
+      return await resp.json();
+    }
+    /**
+     * Creates a new church event.
+     */
+    async create(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/events`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Lists all church events.
+     */
+    async list(params) {
+      const query = makeRecord({
+        upcoming: String(params.upcoming)
+      });
+      const resp = await this.baseClient.callTypedAPI("GET", `/events`, void 0, { query });
+      return await resp.json();
+    }
+    async remove(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/events/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
+    }
+    /**
+     * Creates or updates an RSVP for an event.
+     */
+    async rsvp(eventId, params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/events/${encodeURIComponent(eventId)}/rsvp`, JSON.stringify(params));
+      return await resp.json();
+    }
+  }
+  events2.ServiceClient = ServiceClient;
+})(events || (events = {}));
+var media;
+((media2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.browserUpload = this.browserUpload.bind(this);
+      this.deleteMedia = this.deleteMedia.bind(this);
+      this.get = this.get.bind(this);
+      this.list = this.list.bind(this);
+      this.listTracks = this.listTracks.bind(this);
+      this.save = this.save.bind(this);
+      this.uploadUrl = this.uploadUrl.bind(this);
+    }
+    async browserUpload(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/media/upload-browser`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async deleteMedia(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/media/delete`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async get() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/playlist`);
+      return await resp.json();
+    }
+    /**
+     * Lists all media files in the gallery.
+     */
+    async list() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/media`);
+      return await resp.json();
+    }
+    /**
+     * Lists all audio tracks stored in the media bucket.
+     */
+    async listTracks() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/media/tracks`);
+      return await resp.json();
+    }
+    async save(params) {
+      await this.baseClient.callTypedAPI("POST", `/playlist`, JSON.stringify(params));
+    }
+    /**
+     * Generates a signed URL for uploading media files.
+     */
+    async uploadUrl(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/media/upload-url`, JSON.stringify(params));
+      return await resp.json();
+    }
+  }
+  media2.ServiceClient = ServiceClient;
+})(media || (media = {}));
+var prayers;
+((prayers2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.create = this.create.bind(this);
+      this.list = this.list.bind(this);
+      this.pray = this.pray.bind(this);
+      this.remove = this.remove.bind(this);
+    }
+    /**
+     * Submits a new prayer request.
+     */
+    async create(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/prayers`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Lists prayer requests, ordered by most recent.
+     */
+    async list(params) {
+      const query = makeRecord({
+        limit: String(params.limit)
+      });
+      const resp = await this.baseClient.callTypedAPI("GET", `/prayers`, void 0, { query });
+      return await resp.json();
+    }
+    /**
+     * Records that a user has prayed for a request.
+     */
+    async pray(prayerId, params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/prayers/${encodeURIComponent(prayerId)}/pray`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async remove(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/prayers/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
+    }
+  }
+  prayers2.ServiceClient = ServiceClient;
+})(prayers || (prayers = {}));
+var sermons;
+((sermons2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.create = this.create.bind(this);
+      this.list = this.list.bind(this);
+      this.remove = this.remove.bind(this);
+    }
+    async create(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/sermons`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async list() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/sermons/recent`);
+      return await resp.json();
+    }
+    async remove(params) {
+      await this.baseClient.callTypedAPI("POST", `/sermons/delete`, JSON.stringify(params));
+    }
+  }
+  sermons2.ServiceClient = ServiceClient;
+})(sermons || (sermons = {}));
+function encodeQuery(parts) {
+  const pairs = [];
+  for (const key in parts) {
+    const val = Array.isArray(parts[key]) ? parts[key] : [parts[key]];
+    for (const v of val) {
+      pairs.push(`${key}=${encodeURIComponent(v)}`);
+    }
+  }
+  return pairs.join("&");
+}
+function makeRecord(record) {
+  for (const key in record) {
+    if (record[key] === void 0) {
+      delete record[key];
+    }
+  }
+  return record;
+}
+function encodeWebSocketHeaders(headers) {
+  const base64encoded = btoa(JSON.stringify(headers)).replaceAll("=", "").replaceAll("+", "-").replaceAll("/", "_");
+  return "encore.dev.headers." + base64encoded;
+}
+class WebSocketConnection {
+  constructor(url, headers) {
+    this.hasUpdateHandlers = [];
+    let protocols = ["encore-ws"];
+    if (headers) {
+      protocols.push(encodeWebSocketHeaders(headers));
+    }
+    this.ws = new WebSocket(url, protocols);
+    this.on("error", () => {
+      this.resolveHasUpdateHandlers();
+    });
+    this.on("close", () => {
+      this.resolveHasUpdateHandlers();
+    });
+  }
+  resolveHasUpdateHandlers() {
+    const handlers = this.hasUpdateHandlers;
+    this.hasUpdateHandlers = [];
+    for (const handler of handlers) {
+      handler();
+    }
+  }
+  async hasUpdate() {
+    await new Promise((resolve) => {
+      this.hasUpdateHandlers.push(() => resolve(null));
+    });
+  }
+  on(type, handler) {
+    this.ws.addEventListener(type, handler);
+  }
+  off(type, handler) {
+    this.ws.removeEventListener(type, handler);
+  }
+  close() {
+    this.ws.close();
+  }
+}
+class StreamInOut {
+  constructor(url, headers) {
+    this.buffer = [];
+    this.socket = new WebSocketConnection(url, headers);
+    this.socket.on("message", (event) => {
+      this.buffer.push(JSON.parse(event.data));
+      this.socket.resolveHasUpdateHandlers();
+    });
+  }
+  close() {
+    this.socket.close();
+  }
+  async send(msg) {
+    if (this.socket.ws.readyState === WebSocket.CONNECTING) {
+      await new Promise((resolve) => {
+        this.socket.ws.addEventListener("open", resolve, { once: true });
+      });
+    }
+    return this.socket.ws.send(JSON.stringify(msg));
+  }
+  async next() {
+    for await (const next of this) return next;
+    return void 0;
+  }
+  async *[Symbol.asyncIterator]() {
+    while (true) {
+      if (this.buffer.length > 0) {
+        yield this.buffer.shift();
+      } else {
+        if (this.socket.ws.readyState === WebSocket.CLOSED) return;
+        await this.socket.hasUpdate();
+      }
+    }
+  }
+}
+class StreamIn {
+  constructor(url, headers) {
+    this.buffer = [];
+    this.socket = new WebSocketConnection(url, headers);
+    this.socket.on("message", (event) => {
+      this.buffer.push(JSON.parse(event.data));
+      this.socket.resolveHasUpdateHandlers();
+    });
+  }
+  close() {
+    this.socket.close();
+  }
+  async next() {
+    for await (const next of this) return next;
+    return void 0;
+  }
+  async *[Symbol.asyncIterator]() {
+    while (true) {
+      if (this.buffer.length > 0) {
+        yield this.buffer.shift();
+      } else {
+        if (this.socket.ws.readyState === WebSocket.CLOSED) return;
+        await this.socket.hasUpdate();
+      }
+    }
+  }
+}
+class StreamOut {
+  constructor(url, headers) {
+    let responseResolver;
+    this.responseValue = new Promise((resolve) => responseResolver = resolve);
+    this.socket = new WebSocketConnection(url, headers);
+    this.socket.on("message", (event) => {
+      responseResolver(JSON.parse(event.data));
+    });
+  }
+  async response() {
+    return this.responseValue;
+  }
+  close() {
+    this.socket.close();
+  }
+  async send(msg) {
+    if (this.socket.ws.readyState === WebSocket.CONNECTING) {
+      await new Promise((resolve) => {
+        this.socket.ws.addEventListener("open", resolve, { once: true });
+      });
+    }
+    return this.socket.ws.send(JSON.stringify(msg));
+  }
+}
+const boundFetch = fetch.bind(void 0);
+class BaseClient {
+  constructor(baseURL, options) {
+    this.baseURL = baseURL;
+    this.headers = {};
+    if (!BROWSER) {
+      this.headers["User-Agent"] = "bilingual-church-community-app-8dn2-Generated-TS-Client (Encore/v1.51.10)";
+    }
+    this.requestInit = options.requestInit ?? {};
+    if (options.fetcher !== void 0) {
+      this.fetcher = options.fetcher;
+    } else {
+      this.fetcher = boundFetch;
+    }
+    if (options.auth !== void 0) {
+      const auth = options.auth;
+      if (typeof auth === "function") {
+        this.authGenerator = auth;
+      } else {
+        this.authGenerator = () => auth;
+      }
+    }
+  }
+  async getAuthData() {
+    let authData;
+    if (this.authGenerator) {
+      const mayBePromise = this.authGenerator();
+      if (mayBePromise instanceof Promise) {
+        authData = await mayBePromise;
+      } else {
+        authData = mayBePromise;
+      }
+    }
+    if (authData) {
+      const data = {};
+      data.headers = makeRecord({
+        authorization: authData.authorization
+      });
+      return data;
+    }
+    return void 0;
+  }
+  // createStreamInOut sets up a stream to a streaming API endpoint.
+  async createStreamInOut(path, params) {
+    let { query, headers } = params ?? {};
+    const authData = await this.getAuthData();
+    if (authData) {
+      if (authData.query) {
+        query = { ...query, ...authData.query };
+      }
+      if (authData.headers) {
+        headers = { ...headers, ...authData.headers };
+      }
+    }
+    const queryString = query ? "?" + encodeQuery(query) : "";
+    return new StreamInOut(this.baseURL + path + queryString, headers);
+  }
+  // createStreamIn sets up a stream to a streaming API endpoint.
+  async createStreamIn(path, params) {
+    let { query, headers } = params ?? {};
+    const authData = await this.getAuthData();
+    if (authData) {
+      if (authData.query) {
+        query = { ...query, ...authData.query };
+      }
+      if (authData.headers) {
+        headers = { ...headers, ...authData.headers };
+      }
+    }
+    const queryString = query ? "?" + encodeQuery(query) : "";
+    return new StreamIn(this.baseURL + path + queryString, headers);
+  }
+  // createStreamOut sets up a stream to a streaming API endpoint.
+  async createStreamOut(path, params) {
+    let { query, headers } = params ?? {};
+    const authData = await this.getAuthData();
+    if (authData) {
+      if (authData.query) {
+        query = { ...query, ...authData.query };
+      }
+      if (authData.headers) {
+        headers = { ...headers, ...authData.headers };
+      }
+    }
+    const queryString = query ? "?" + encodeQuery(query) : "";
+    return new StreamOut(this.baseURL + path + queryString, headers);
+  }
+  // callTypedAPI makes an API call, defaulting content type to "application/json"
+  async callTypedAPI(method, path, body, params) {
+    return this.callAPI(method, path, body, {
+      ...params,
+      headers: { "Content-Type": "application/json", ...params == null ? void 0 : params.headers }
+    });
+  }
+  // callAPI is used by each generated API method to actually make the request
+  async callAPI(method, path, body, params) {
+    let { query, headers, ...rest } = params ?? {};
+    const init = {
+      ...this.requestInit,
+      ...rest,
+      method,
+      body: body ?? null
+    };
+    init.headers = { ...this.headers, ...init.headers, ...headers };
+    const authData = await this.getAuthData();
+    if (authData) {
+      if (authData.query) {
+        query = { ...query, ...authData.query };
+      }
+      if (authData.headers) {
+        init.headers = { ...init.headers, ...authData.headers };
+      }
+    }
+    const queryString = query ? "?" + encodeQuery(query) : "";
+    const response = await this.fetcher(this.baseURL + path + queryString, init);
+    if (!response.ok) {
+      let body2 = { code: "unknown", message: `request failed: status ${response.status}` };
+      try {
+        const text = await response.text();
+        try {
+          const jsonBody = JSON.parse(text);
+          if (isAPIErrorResponse(jsonBody)) {
+            body2 = jsonBody;
+          } else {
+            body2.message += ": " + JSON.stringify(jsonBody);
+          }
+        } catch {
+          body2.message += ": " + text;
+        }
+      } catch (e) {
+        body2.message += ": " + String(e);
+      }
+      throw new APIError(response.status, body2);
+    }
+    return response;
+  }
+}
+function isAPIErrorResponse(err) {
+  return err !== void 0 && err !== null && isErrCode(err.code) && typeof err.message === "string" && (err.details === void 0 || err.details === null || typeof err.details === "object");
+}
+function isErrCode(code) {
+  return code !== void 0 && Object.values(ErrCode).includes(code);
+}
+class APIError extends Error {
+  constructor(status, response) {
+    super(response.message);
+    Object.defineProperty(this, "name", {
+      value: "APIError",
+      enumerable: false,
+      configurable: true
+    });
+    if (Object.setPrototypeOf == void 0) {
+      this.__proto__ = APIError.prototype;
+    } else {
+      Object.setPrototypeOf(this, APIError.prototype);
+    }
+    if (Error.captureStackTrace !== void 0) {
+      Error.captureStackTrace(this, this.constructor);
+    }
+    this.status = status;
+    this.code = response.code;
+    this.details = response.details;
+  }
+}
+var ErrCode = /* @__PURE__ */ ((ErrCode2) => {
+  ErrCode2["OK"] = "ok";
+  ErrCode2["Canceled"] = "canceled";
+  ErrCode2["Unknown"] = "unknown";
+  ErrCode2["InvalidArgument"] = "invalid_argument";
+  ErrCode2["DeadlineExceeded"] = "deadline_exceeded";
+  ErrCode2["NotFound"] = "not_found";
+  ErrCode2["AlreadyExists"] = "already_exists";
+  ErrCode2["PermissionDenied"] = "permission_denied";
+  ErrCode2["ResourceExhausted"] = "resource_exhausted";
+  ErrCode2["FailedPrecondition"] = "failed_precondition";
+  ErrCode2["Aborted"] = "aborted";
+  ErrCode2["OutOfRange"] = "out_of_range";
+  ErrCode2["Unimplemented"] = "unimplemented";
+  ErrCode2["Internal"] = "internal";
+  ErrCode2["Unavailable"] = "unavailable";
+  ErrCode2["DataLoss"] = "data_loss";
+  ErrCode2["Unauthenticated"] = "unauthenticated";
+  return ErrCode2;
+})(ErrCode || {});
 function useBackend() {
-  return backend;
+  return Client;
 }
 const NEWS_DEFAULT_TAB_KEY$1 = "cne-news-default-tab";
 function Home({ onNavigate }) {
   var _a2;
   const { t, language } = useLanguage();
-  const backend2 = useBackend();
+  const backend = useBackend();
   const queryClient2 = useQueryClient();
   const { toast: toast2 } = useToast();
   const [prayerTitle, setPrayerTitle] = reactExports.useState("");
@@ -20051,7 +20714,7 @@ function Home({ onNavigate }) {
     isError: eventsError
   } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend2.events.list({ upcoming: true })
+    queryFn: () => backend.events.list({ upcoming: true })
   });
   const nextEvent = (_a2 = eventsData == null ? void 0 : eventsData.events) == null ? void 0 : _a2[0];
   const formattedDate = nextEvent ? new Date(nextEvent.eventDate).toLocaleString(
@@ -20090,7 +20753,7 @@ function Home({ onNavigate }) {
   const createPrayerMutation = useMutation({
     mutationFn: async () => {
       const trimmedName = prayerName.trim();
-      return backend2.prayers.create({
+      return backend.prayers.create({
         title: prayerTitle.trim(),
         description: prayerDescription.trim(),
         isAnonymous: prayerName.trim().length === 0,
@@ -26222,13 +26885,13 @@ function SelectScrollDownButton({
     }
   );
 }
-const API_BASE$2 = "https://prod-cne-sh82.encr.app";
+const API_BASE$1 = "https://prod-cne-sh82.encr.app";
 const RSVP_PARTICIPANT_ID_KEY = "cne-event-participant-id";
 const RSVP_EVENTS_KEY = "cne-rsvped-event-ids";
 const RSVP_NAME_KEY = "cne-rsvp-name";
 const NEWS_DEFAULT_TAB_KEY = "cne-news-default-tab";
 const postEventRsvp = async (data) => {
-  const response = await fetch(`${API_BASE$2}/events/${data.eventId}/rsvp`, {
+  const response = await fetch(`${API_BASE$1}/events/${data.eventId}/rsvp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -26247,7 +26910,7 @@ const postEventRsvp = async (data) => {
   return response.json();
 };
 function News() {
-  const backend2 = useBackend();
+  const backend = useBackend();
   const { language, t } = useLanguage();
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
@@ -26280,7 +26943,7 @@ function News() {
   });
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => backend2.announcements.list({ limit: 50 })
+    queryFn: () => backend.announcements.list({ limit: 50 })
   });
   reactExports.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -26317,7 +26980,7 @@ function News() {
     return storedId;
   };
   const deleteEvent = useMutation({
-    mutationFn: async (data) => backend2.events.remove(data),
+    mutationFn: async (data) => backend.events.remove(data),
     onSuccess: (_, variables) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         if (!oldData) return oldData;
@@ -26346,7 +27009,7 @@ function News() {
   });
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend2.events.list({ upcoming: false })
+    queryFn: () => backend.events.list({ upcoming: false })
   });
   const upcomingEvents = reactExports.useMemo(() => {
     if (!(eventsData == null ? void 0 : eventsData.events)) return [];
@@ -26354,7 +27017,7 @@ function News() {
     return [...eventsData.events].filter((eventItem) => new Date(eventItem.eventDate).getTime() >= now).sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
   }, [eventsData]);
   const createAnnouncement = useMutation({
-    mutationFn: async (data) => backend2.announcements.create(data),
+    mutationFn: async (data) => backend.announcements.create(data),
     onSuccess: (newAnnouncement) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) {
@@ -26386,7 +27049,7 @@ function News() {
     }
   });
   const createEvent = useMutation({
-    mutationFn: async (data) => backend2.events.create(data),
+    mutationFn: async (data) => backend.events.create(data),
     onSuccess: (newEvent) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         const existing = (oldData == null ? void 0 : oldData.events) ?? [];
@@ -26447,7 +27110,7 @@ function News() {
     }
   });
   const deleteAnnouncement = useMutation({
-    mutationFn: async (data) => backend2.announcements.remove(data),
+    mutationFn: async (data) => backend.announcements.remove(data),
     onSuccess: (_, variables) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) return oldData;
@@ -27057,11 +27720,11 @@ function News() {
     )
   ] });
 }
-const API_BASE$1 = "https://prod-cne-sh82.encr.app";
+const API_BASE = "https://prod-cne-sh82.encr.app";
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
 const fetchBoard = async () => {
-  const response = await fetch(`${API_BASE$1}/bulletin/board`, {
+  const response = await fetch(`${API_BASE}/bulletin/board`, {
     credentials: "include"
   });
   if (!response.ok) {
@@ -27070,7 +27733,7 @@ const fetchBoard = async () => {
   return response.json();
 };
 const postComment = async (data) => {
-  const response = await fetch(`${API_BASE$1}/bulletin/comments`, {
+  const response = await fetch(`${API_BASE}/bulletin/comments`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27085,7 +27748,7 @@ const postComment = async (data) => {
   return response.json();
 };
 const createPost = async (data) => {
-  const response = await fetch(`${API_BASE$1}/bulletin/posts`, {
+  const response = await fetch(`${API_BASE}/bulletin/posts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27100,7 +27763,7 @@ const createPost = async (data) => {
   return response.json();
 };
 const deletePost = async (data) => {
-  const response = await fetch(`${API_BASE$1}/bulletin/posts/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
+  const response = await fetch(`${API_BASE}/bulletin/posts/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
     method: "DELETE",
     credentials: "include"
   });
@@ -27111,7 +27774,7 @@ const deletePost = async (data) => {
   return response.json();
 };
 const deletePrayer = async (data) => {
-  const response = await fetch(`${API_BASE$1}/prayers/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
+  const response = await fetch(`${API_BASE}/prayers/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
     method: "DELETE",
     credentials: "include"
   });
@@ -27122,7 +27785,7 @@ const deletePrayer = async (data) => {
   return response.json();
 };
 const prayForPrayer = async (data) => {
-  const response = await fetch(`${API_BASE$1}/prayers/${data.prayerId}/pray`, {
+  const response = await fetch(`${API_BASE}/prayers/${data.prayerId}/pray`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27149,7 +27812,7 @@ const formatDate = (date) => {
   }
 };
 function BulletinBoard() {
-  const backend2 = useBackend();
+  const backend = useBackend();
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
@@ -27333,7 +27996,7 @@ function BulletinBoard() {
     }
   });
   const createPrayerMutation = useMutation({
-    mutationFn: (data2) => backend2.prayers.create(data2),
+    mutationFn: (data2) => backend.prayers.create(data2),
     onSuccess: () => {
       setNewPrayer({ title: "", description: "", authorName: "" });
       setPrayerDialogOpen(false);
@@ -27368,7 +28031,7 @@ function BulletinBoard() {
       });
     }
   });
-  const prayers = reactExports.useMemo(() => (data == null ? void 0 : data.prayers) ?? [], [data]);
+  const prayers2 = reactExports.useMemo(() => (data == null ? void 0 : data.prayers) ?? [], [data]);
   const posts = reactExports.useMemo(() => (data == null ? void 0 : data.posts) ?? [], [data]);
   const handleSubmitPost = (event) => {
     event.preventDefault();
@@ -27620,7 +28283,7 @@ function BulletinBoard() {
             ) })
           ] }),
           isLoading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: t("Loading prayers...", "Cargando oraciones...") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-6 md:grid-cols-2", children: prayers.map((prayer) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "border-neutral-800 bg-neutral-900/60", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-6 md:grid-cols-2", children: prayers2.map((prayer) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "border-neutral-800 bg-neutral-900/60", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between gap-3", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: prayer.title }),
@@ -28572,7 +29235,7 @@ createElementComponent("afterpayClearpayMessage", isServer);
 createElementComponent("taxId", isServer);
 const stripePromise = loadStripe("pk_test_placeholder");
 function DonationForm({ onNavigate }) {
-  const backend2 = useBackend();
+  const backend = useBackend();
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const stripe = useStripe();
@@ -28583,12 +29246,12 @@ function DonationForm({ onNavigate }) {
   const [processing, setProcessing] = reactExports.useState(false);
   const createDonationMutation = useMutation({
     mutationFn: (data) => {
-      return backend2.donations.create(data);
+      return backend.donations.create(data);
     }
   });
   const confirmDonationMutation = useMutation({
     mutationFn: (data) => {
-      return backend2.donations.confirm(data);
+      return backend.donations.confirm(data);
     }
   });
   const handleSubmit = async (e) => {
@@ -28808,7 +29471,7 @@ function formatCountdown(milliseconds) {
 function Media({ onStartMusic }) {
   const { language, t } = useLanguage();
   const [now, setNow] = reactExports.useState(() => /* @__PURE__ */ new Date());
-  const [sermons, setSermons] = reactExports.useState([]);
+  const [sermons2, setSermons] = reactExports.useState([]);
   const [selectedSermonId, setSelectedSermonId] = reactExports.useState(null);
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
   const { playTrack, playlistUrl, livestreamUrl } = usePlayer();
@@ -28898,10 +29561,10 @@ function Media({ onStartMusic }) {
     };
   }, []);
   const selectedSermon = reactExports.useMemo(() => {
-    if (!Array.isArray(sermons) || sermons.length === 0) return null;
-    if (selectedSermonId == null) return sermons[0];
-    return sermons.find((s) => s.id === selectedSermonId) ?? sermons[0];
-  }, [sermons, selectedSermonId]);
+    if (!Array.isArray(sermons2) || sermons2.length === 0) return null;
+    if (selectedSermonId == null) return sermons2[0];
+    return sermons2.find((s) => s.id === selectedSermonId) ?? sermons2[0];
+  }, [sermons2, selectedSermonId]);
   const devSampleSermon = null;
   const effectiveSelectedSermon = selectedSermon ?? devSampleSermon;
   const getEmbedUrl = (url) => {
@@ -29321,8 +29984,8 @@ function Media({ onStartMusic }) {
           /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-sm font-semibold text-white", children: t("All Devotionals", "Todos los Devocionales") }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-h-80 space-y-1 overflow-y-auto text-xs", children: [
             loadingSermons && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-500", children: t("Loading sermons...", "Cargando sermones...") }),
-            !loadingSermons && sermons.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-500", children: t("No devotionals available yet.", "Todavía no hay devocionales disponibles.") }),
-            !loadingSermons && sermons.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons.map((sermon) => {
+            !loadingSermons && sermons2.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-500", children: t("No devotionals available yet.", "Todavía no hay devocionales disponibles.") }),
+            !loadingSermons && sermons2.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons2.map((sermon) => {
               const isActive = (selectedSermon == null ? void 0 : selectedSermon.id) === sermon.id;
               return /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 "button",
@@ -29817,15 +30480,11 @@ function TriviaGamePage({ onNavigate } = {}) {
   }
   return null;
 }
-const API_BASE = "https://prod-cne-sh82.encr.app";
 function Contact({ onNavigate }) {
   const { language, t } = useLanguage();
   const { data: churchInfo } = useQuery({
     queryKey: ["churchInfo"],
-    queryFn: async () => {
-      const response = await fetch(`${API_BASE}/church/info`);
-      return response.json();
-    }
+    queryFn: () => Client.church.info()
   });
   if (!churchInfo) {
     return null;
@@ -31314,7 +31973,7 @@ function AdminUpload() {
   const { playlistUrl, setPlaylistUrl, livestreamUrl, setLivestreamUrl } = usePlayer();
   const [uploadPasscode, setUploadPasscode] = reactExports.useState("");
   const [playlistStatus, setPlaylistStatus] = reactExports.useState(null);
-  const [sermons, setSermons] = reactExports.useState([]);
+  const [sermons2, setSermons] = reactExports.useState([]);
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
   const [sermonTitle, setSermonTitle] = reactExports.useState("");
   const [sermonUrl, setSermonUrl] = reactExports.useState("");
@@ -31654,8 +32313,8 @@ function AdminUpload() {
           sermonStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.7rem] text-neutral-400", children: sermonStatus }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950/40 p-2", children: [
             loadingSermons && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading devotionals...", "Cargando devocionales...") }),
-            !loadingSermons && sermons.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No devotionals found.", "No se encontraron devocionales.") }),
-            !loadingSermons && sermons.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons.map((sermon) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            !loadingSermons && sermons2.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No devotionals found.", "No se encontraron devocionales.") }),
+            !loadingSermons && sermons2.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons2.map((sermon) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
               "li",
               {
                 className: "flex items-center justify-between rounded-md bg-neutral-900/80 px-2 py-1.5",

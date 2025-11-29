@@ -25,37 +25,10 @@
       "@/*": [
         "./*"
       ],
-      "~announcements/*": [
-        "../announcements/*"
+      "~backend/*": [
+        "../backend/*"
       ],
-      "~auth/*": [
-        "../auth/*"
-      ],
-      "~church/*": [
-        "../church/*"
-      ],
-      "~donations/*": [
-        "../donations/*"
-      ],
-      "~events/*": [
-        "../events/*"
-      ],
-      "~livestream/*": [
-        "../livestream/*"
-      ],
-      "~media/*": [
-        "../media/*"
-      ],
-      "~prayers/*": [
-        "../prayers/*"
-      ],
-      "~sermons/*": [
-        "../sermons/*"
-      ],
-      "~bulletin/*": [
-        "../bulletin/*"
-      ],
-      "~client": [
+      "~backend/client": [
         "./client.ts"
       ],
       "~encore/*": [

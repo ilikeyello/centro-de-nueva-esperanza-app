@@ -1,12 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MapPin, Phone, Mail, Clock, Facebook } from "lucide-react";
+import backend from "~backend/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
-
-const API_BASE =
-  import.meta.env.VITE_CLIENT_TARGET ??
-  (import.meta.env.DEV ? "http://localhost:4000" : "https://prod-cne-sh82.encr.app");
 
 interface ContactProps {
   onNavigate?: (page: string) => void;
@@ -17,10 +14,7 @@ export function Contact({ onNavigate }: ContactProps) {
 
   const { data: churchInfo } = useQuery({
     queryKey: ["churchInfo"],
-    queryFn: async () => {
-      const response = await fetch(`${API_BASE}/church/info`);
-      return response.json();
-    },
+    queryFn: () => backend.church.info(),
   });
 
   if (!churchInfo) {

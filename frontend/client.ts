@@ -32,6 +32,14 @@ const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
  * Client is an API client for the bilingual-church-community-app-8dn2 Encore application.
  */
 export default class Client {
+    public readonly announcements: announcements.ServiceClient
+    public readonly bulletin: bulletin.ServiceClient
+    public readonly church: church.ServiceClient
+    public readonly donations: donations.ServiceClient
+    public readonly events: events.ServiceClient
+    public readonly media: media.ServiceClient
+    public readonly prayers: prayers.ServiceClient
+    public readonly sermons: sermons.ServiceClient
     private readonly options: ClientOptions
     private readonly target: string
 
@@ -46,6 +54,14 @@ export default class Client {
         this.target = target
         this.options = options ?? {}
         const base = new BaseClient(this.target, this.options)
+        this.announcements = new announcements.ServiceClient(base)
+        this.bulletin = new bulletin.ServiceClient(base)
+        this.church = new church.ServiceClient(base)
+        this.donations = new donations.ServiceClient(base)
+        this.events = new events.ServiceClient(base)
+        this.media = new media.ServiceClient(base)
+        this.prayers = new prayers.ServiceClient(base)
+        this.sermons = new sermons.ServiceClient(base)
     }
 
     /**
@@ -74,6 +90,1137 @@ export interface ClientOptions {
 
     /** Default RequestInit to be used for the client */
     requestInit?: Omit<RequestInit, "headers"> & { headers?: Record<string, string> }
+
+    /**
+     * Allows you to set the authentication data to be used for each
+     * request either by passing in a static object or by passing in
+     * a function which returns a new object for each request.
+     */
+    auth?: auth.AuthParams | AuthDataGenerator
+}
+
+export namespace announcements {
+    export interface Announcement {
+        id: number
+        titleEn: string
+        titleEs: string
+        contentEn: string
+        contentEs: string
+        priority: string
+        createdAt: string
+        createdBy: string
+    }
+
+    export interface Announcement {
+        id: number
+        titleEn: string
+        titleEs: string
+        contentEn: string
+        contentEs: string
+        priority: string
+        createdAt: string
+        createdBy: string
+    }
+
+    export interface CreateAnnouncementRequest {
+        titleEn: string
+        titleEs: string
+        contentEn: string
+        contentEs: string
+        priority: "low" | "normal" | "high" | "urgent"
+        passcode: string
+    }
+
+    export interface DeleteAnnouncementRequest {
+        passcode: string
+    }
+
+    export interface DeleteAnnouncementResponse {
+        success: true
+    }
+
+    export interface ListAnnouncementsRequest {
+        limit: number
+    }
+
+    export interface ListAnnouncementsResponse {
+        announcements: Announcement[]
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.create = this.create.bind(this)
+            this.list = this.list.bind(this)
+            this.remove = this.remove.bind(this)
+        }
+
+        /**
+         * Creates a new church announcement.
+         */
+        public async create(params: CreateAnnouncementRequest): Promise<Announcement> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/announcements`, JSON.stringify(params))
+            return await resp.json() as Announcement
+        }
+
+        /**
+         * Lists church announcements, ordered by priority and date.
+         */
+        public async list(params: ListAnnouncementsRequest): Promise<ListAnnouncementsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                limit: String(params.limit),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/announcements`, undefined, {query})
+            return await resp.json() as ListAnnouncementsResponse
+        }
+
+        public async remove(id: number, params: DeleteAnnouncementRequest): Promise<DeleteAnnouncementResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                passcode: params.passcode,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("DELETE", `/announcements/${encodeURIComponent(id)}`, undefined, {query})
+            return await resp.json() as DeleteAnnouncementResponse
+        }
+    }
+}
+
+export namespace auth {
+    export interface AuthParams {
+        authorization?: string
+    }
+}
+
+export namespace bulletin {
+    export interface BoardResponse {
+        prayers: PrayerWithComments[]
+        posts: BulletinPost[]
+    }
+
+    export interface BulletinComment {
+        id: number
+        authorName: string
+        content: string
+        createdAt: string
+    }
+
+    export interface BulletinComment {
+        id: number
+        postId: number | null
+        prayerId: number | null
+        authorName: string
+        content: string
+        createdAt: string
+    }
+
+    export interface BulletinPost {
+        id: number
+        title: string
+        content: string
+        authorName: string
+        createdAt: string
+        comments: BulletinComment[]
+    }
+
+    export interface BulletinPost {
+        id: number
+        title: string
+        content: string
+        authorName: string
+        createdAt: string
+    }
+
+    export interface CreateCommentRequest {
+        targetType: "post" | "prayer"
+        targetId: number
+        authorName: string
+        content: string
+    }
+
+    export interface CreatePostRequest {
+        title: string
+        content: string
+        authorName: string
+    }
+
+    export interface DeletePostRequest {
+        passcode: string
+    }
+
+    export interface DeletePostResponse {
+        success: true
+    }
+
+    export interface PrayerWithComments {
+        id: number
+        title: string
+        description: string
+        isAnonymous: boolean
+        userId: string
+        userName: string | null
+        prayerCount: number
+        createdAt: string
+        comments: BulletinComment[]
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.board = this.board.bind(this)
+            this.createComment = this.createComment.bind(this)
+            this.createPost = this.createPost.bind(this)
+            this.removePost = this.removePost.bind(this)
+        }
+
+        public async board(): Promise<BoardResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/bulletin/board`)
+            return await resp.json() as BoardResponse
+        }
+
+        public async createComment(params: CreateCommentRequest): Promise<BulletinComment> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/bulletin/comments`, JSON.stringify(params))
+            return await resp.json() as BulletinComment
+        }
+
+        public async createPost(params: CreatePostRequest): Promise<BulletinPost> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/bulletin/posts`, JSON.stringify(params))
+            return await resp.json() as BulletinPost
+        }
+
+        public async removePost(id: number, params: DeletePostRequest): Promise<DeletePostResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                passcode: params.passcode,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("DELETE", `/bulletin/posts/${encodeURIComponent(id)}`, undefined, {query})
+            return await resp.json() as DeletePostResponse
+        }
+    }
+}
+
+export namespace church {
+    export interface ChurchInfo {
+        nameEn: string
+        nameEs: string
+        address: string
+        phone: string
+        email: string
+        serviceTimesEn: string
+        serviceTimesEs: string
+        descriptionEn: string | null
+        descriptionEs: string | null
+        facebookPageUrl: string | null
+        latitude: number | null
+        longitude: number | null
+    }
+
+    export interface ChurchInfo {
+        nameEn: string
+        nameEs: string
+        address: string
+        phone: string
+        email: string
+        serviceTimesEn: string
+        serviceTimesEs: string
+        descriptionEn: string | null
+        descriptionEs: string | null
+        facebookPageUrl: string | null
+        latitude: number | null
+        longitude: number | null
+    }
+
+    export interface SendNotificationRequest {
+        title: string
+        body: string
+        icon?: string
+        badge?: string
+        tag?: string
+        data?: any
+        actions?: {
+            action: string
+            title: string
+            icon?: string
+        }[]
+    }
+
+    export interface TriviaLevel {
+        id: string
+        name: string
+        description: string | null
+        "shuffle_questions": boolean
+        "time_limit": number
+        "passing_score": number
+        "created_at": string
+    }
+
+    export interface TriviaQuestion {
+        id: number
+        "question_en": string
+        "question_es": string
+        "options_en": string
+        "options_es": string
+        "correct_answer": number
+        category: string
+        "level_id": string
+        "created_at": string
+    }
+
+    export interface TriviaResponse {
+        levels: TriviaLevel[]
+        questions: TriviaQuestion[]
+    }
+
+    export interface UpdateChurchInfoRequest {
+        nameEn?: string
+        nameEs?: string
+        address?: string
+        phone?: string
+        email?: string
+        serviceTimesEn?: string
+        serviceTimesEs?: string
+        descriptionEn?: string
+        descriptionEs?: string
+        facebookPageUrl?: string
+        latitude?: number
+        longitude?: number
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.createLevel = this.createLevel.bind(this)
+            this.createQuestion = this.createQuestion.bind(this)
+            this.deleteLevel = this.deleteLevel.bind(this)
+            this.deleteQuestion = this.deleteQuestion.bind(this)
+            this.getStats = this.getStats.bind(this)
+            this.getTrivia = this.getTrivia.bind(this)
+            this.info = this.info.bind(this)
+            this.sendAnnouncementNotification = this.sendAnnouncementNotification.bind(this)
+            this.sendLivestreamNotification = this.sendLivestreamNotification.bind(this)
+            this.sendNewsNotification = this.sendNewsNotification.bind(this)
+            this.sendToAll = this.sendToAll.bind(this)
+            this.setupTriviaTables = this.setupTriviaTables.bind(this)
+            this.subscribe = this.subscribe.bind(this)
+            this.testTriviaDB = this.testTriviaDB.bind(this)
+            this.unsubscribe = this.unsubscribe.bind(this)
+            this.update = this.update.bind(this)
+        }
+
+        /**
+         * Create level
+         */
+        public async createLevel(params: {
+    id: string
+    name: string
+    description?: string
+    "shuffle_questions"?: boolean
+    "time_limit"?: number
+    "passing_score"?: number
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/trivia/simple/level`, JSON.stringify(params))
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Create question
+         */
+        public async createQuestion(params: {
+    "question_en": string
+    "question_es": string
+    "options_en": string[]
+    "options_es": string[]
+    "correct_answer": number
+    category: string
+    "level_id": string
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/trivia/simple/question`, JSON.stringify(params))
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Delete level
+         */
+        public async deleteLevel(id: string, params: {
+    passcode?: string
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                passcode: params.passcode,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("DELETE", `/trivia/simple/level/${encodeURIComponent(id)}`, undefined, {query})
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Delete question
+         */
+        public async deleteQuestion(id: number, params: {
+    passcode?: string
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                passcode: params.passcode,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("DELETE", `/trivia/simple/question/${encodeURIComponent(id)}`, undefined, {query})
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Get subscription statistics
+         */
+        public async getStats(): Promise<{
+    totalSubscribers: number
+    activeSubscriptions: number
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/notifications/stats`)
+            return await resp.json() as {
+    totalSubscribers: number
+    activeSubscriptions: number
+}
+        }
+
+        /**
+         * Get all trivia data
+         */
+        public async getTrivia(): Promise<TriviaResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/trivia/simple`)
+            return await resp.json() as TriviaResponse
+        }
+
+        /**
+         * Retrieves church contact information and location.
+         */
+        public async info(): Promise<ChurchInfo> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/church/info`)
+            return await resp.json() as ChurchInfo
+        }
+
+        /**
+         * Send notification for announcements
+         */
+        public async sendAnnouncementNotification(params: {
+    title: string
+    body: string
+    announcementId?: string
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/announcement`, JSON.stringify(params))
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Send notification for livestream reminder
+         */
+        public async sendLivestreamNotification(params: {
+    title?: string
+    body?: string
+    streamTime?: string
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/livestream`, JSON.stringify(params))
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Send notification for news
+         */
+        public async sendNewsNotification(params: {
+    title: string
+    body: string
+    newsId?: string
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/news`, JSON.stringify(params))
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Send notification to all subscribers
+         */
+        public async sendToAll(params: SendNotificationRequest): Promise<{
+    success: boolean
+    message: string
+    sent: number
+    failed: number
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/send-all`, JSON.stringify(params))
+            return await resp.json() as {
+    success: boolean
+    message: string
+    sent: number
+    failed: number
+}
+        }
+
+        public async setupTriviaTables(): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/trivia/setup-tables`)
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Subscribe to push notifications
+         */
+        public async subscribe(params: {
+    endpoint: string
+    keys: {
+        p256dh: string
+        auth: string
+    }
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/subscribe`, JSON.stringify(params))
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        public async testTriviaDB(): Promise<{
+    success: boolean
+    message: string
+    tablesExist: boolean
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/trivia/test-db`)
+            return await resp.json() as {
+    success: boolean
+    message: string
+    tablesExist: boolean
+}
+        }
+
+        /**
+         * Unsubscribe from push notifications
+         */
+        public async unsubscribe(params: {
+    endpoint: string
+}): Promise<{
+    success: boolean
+    message: string
+}> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/unsubscribe`, JSON.stringify(params))
+            return await resp.json() as {
+    success: boolean
+    message: string
+}
+        }
+
+        /**
+         * Updates church information.
+         */
+        public async update(params: UpdateChurchInfoRequest): Promise<ChurchInfo> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("PUT", `/church/info`, JSON.stringify(params))
+            return await resp.json() as ChurchInfo
+        }
+    }
+}
+
+export namespace donations {
+    export interface ConfirmDonationRequest {
+        success: boolean
+    }
+
+    export interface ConfirmDonationResponse {
+        success: boolean
+    }
+
+    export interface CreateDonationRequest {
+        amount: number
+        donationType: "general" | "missions" | "building" | "other"
+        message?: string
+    }
+
+    export interface Donation {
+        id: number
+        userId: string
+        userName: string | null
+        amount: number
+        currency: string
+        status: string
+        donationType: string
+        message: string | null
+        createdAt: string
+        clientSecret: string
+    }
+
+    export interface Donation {
+        id: number
+        userId: string
+        userName: string | null
+        amount: number
+        currency: string
+        status: string
+        donationType: string
+        message: string | null
+        createdAt: string
+    }
+
+    export interface ListDonationsRequest {
+        limit: number
+    }
+
+    export interface ListDonationsResponse {
+        donations: Donation[]
+        total: number
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.confirm = this.confirm.bind(this)
+            this.create = this.create.bind(this)
+            this.list = this.list.bind(this)
+        }
+
+        /**
+         * Confirms a donation payment status.
+         */
+        public async confirm(donationId: number, params: ConfirmDonationRequest): Promise<ConfirmDonationResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/donations/${encodeURIComponent(donationId)}/confirm`, JSON.stringify(params))
+            return await resp.json() as ConfirmDonationResponse
+        }
+
+        /**
+         * Creates a new donation and returns a payment intent.
+         */
+        public async create(params: CreateDonationRequest): Promise<Donation> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/donations`, JSON.stringify(params))
+            return await resp.json() as Donation
+        }
+
+        /**
+         * Lists completed donations.
+         */
+        public async list(params: ListDonationsRequest): Promise<ListDonationsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                limit: String(params.limit),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/donations`, undefined, {query})
+            return await resp.json() as ListDonationsResponse
+        }
+    }
+}
+
+export namespace events {
+    export interface CancelRSVPResponse {
+        success: boolean
+    }
+
+    export interface CreateEventRequest {
+        titleEn: string
+        titleEs: string
+        descriptionEn?: string
+        descriptionEs?: string
+        eventDate: string
+        location: string
+        maxAttendees?: number
+        passcode: string
+    }
+
+    export interface DeleteEventRequest {
+        passcode: string
+    }
+
+    export interface DeleteEventResponse {
+        success: true
+    }
+
+    export interface Event {
+        id: number
+        titleEn: string
+        titleEs: string
+        descriptionEn: string | null
+        descriptionEs: string | null
+        eventDate: string
+        location: string
+        maxAttendees: number | null
+        createdAt: string
+        createdBy: string
+        rsvpCount: number
+    }
+
+    export interface Event {
+        id: number
+        titleEn: string
+        titleEs: string
+        descriptionEn: string | null
+        descriptionEs: string | null
+        eventDate: string
+        location: string
+        maxAttendees: number | null
+        createdAt: string
+        createdBy: string
+        rsvpCount: number
+    }
+
+    export interface ListEventsRequest {
+        upcoming: boolean
+    }
+
+    export interface ListEventsResponse {
+        events: Event[]
+    }
+
+    export interface RSVPRequest {
+        attendees: number
+        participantId?: string | null
+        name?: string | null
+    }
+
+    export interface RSVPResponse {
+        success: boolean
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.cancelRsvp = this.cancelRsvp.bind(this)
+            this.create = this.create.bind(this)
+            this.list = this.list.bind(this)
+            this.remove = this.remove.bind(this)
+            this.rsvp = this.rsvp.bind(this)
+        }
+
+        /**
+         * Cancels an RSVP for an event.
+         */
+        public async cancelRsvp(eventId: number): Promise<CancelRSVPResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("DELETE", `/events/${encodeURIComponent(eventId)}/rsvp`)
+            return await resp.json() as CancelRSVPResponse
+        }
+
+        /**
+         * Creates a new church event.
+         */
+        public async create(params: CreateEventRequest): Promise<Event> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/events`, JSON.stringify(params))
+            return await resp.json() as Event
+        }
+
+        /**
+         * Lists all church events.
+         */
+        public async list(params: ListEventsRequest): Promise<ListEventsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                upcoming: String(params.upcoming),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/events`, undefined, {query})
+            return await resp.json() as ListEventsResponse
+        }
+
+        public async remove(id: number, params: DeleteEventRequest): Promise<DeleteEventResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                passcode: params.passcode,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("DELETE", `/events/${encodeURIComponent(id)}`, undefined, {query})
+            return await resp.json() as DeleteEventResponse
+        }
+
+        /**
+         * Creates or updates an RSVP for an event.
+         */
+        public async rsvp(eventId: number, params: RSVPRequest): Promise<RSVPResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/events/${encodeURIComponent(eventId)}/rsvp`, JSON.stringify(params))
+            return await resp.json() as RSVPResponse
+        }
+    }
+}
+
+export namespace media {
+    export interface BrowserUploadRequest {
+        fileName: string
+        contentType: string
+        base64Data: string
+        passcode: string
+    }
+
+    export interface BrowserUploadResponse {
+        publicUrl: string
+        name: string
+    }
+
+    export interface DeleteRequest {
+        name: string
+        passcode: string
+    }
+
+    export interface DeleteResponse {
+        success: boolean
+        message: string
+    }
+
+    export interface GetPlaylistResponse {
+        url: string | null
+    }
+
+    export interface ListMediaResponse {
+        items: MediaItem[]
+    }
+
+    export interface ListTracksResponse {
+        tracks: TrackItem[]
+    }
+
+    export interface MediaItem {
+        name: string
+        size: number
+        url: string
+        etag: string
+    }
+
+    export interface TrackItem {
+        id: string
+        name: string
+        title: string
+        artist: string
+        url: string
+    }
+
+    export interface UpdatePlaylistRequest {
+        passcode: string
+        url: string
+    }
+
+    export interface UploadUrlRequest {
+        fileName: string
+        contentType: string
+        passcode: string
+    }
+
+    export interface UploadUrlResponse {
+        uploadUrl: string
+        publicUrl: string
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.browserUpload = this.browserUpload.bind(this)
+            this.deleteMedia = this.deleteMedia.bind(this)
+            this.get = this.get.bind(this)
+            this.list = this.list.bind(this)
+            this.listTracks = this.listTracks.bind(this)
+            this.save = this.save.bind(this)
+            this.uploadUrl = this.uploadUrl.bind(this)
+        }
+
+        public async browserUpload(params: BrowserUploadRequest): Promise<BrowserUploadResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/media/upload-browser`, JSON.stringify(params))
+            return await resp.json() as BrowserUploadResponse
+        }
+
+        public async deleteMedia(params: DeleteRequest): Promise<DeleteResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/media/delete`, JSON.stringify(params))
+            return await resp.json() as DeleteResponse
+        }
+
+        public async get(): Promise<GetPlaylistResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/playlist`)
+            return await resp.json() as GetPlaylistResponse
+        }
+
+        /**
+         * Lists all media files in the gallery.
+         */
+        public async list(): Promise<ListMediaResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/media`)
+            return await resp.json() as ListMediaResponse
+        }
+
+        /**
+         * Lists all audio tracks stored in the media bucket.
+         */
+        public async listTracks(): Promise<ListTracksResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/media/tracks`)
+            return await resp.json() as ListTracksResponse
+        }
+
+        public async save(params: UpdatePlaylistRequest): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/playlist`, JSON.stringify(params))
+        }
+
+        /**
+         * Generates a signed URL for uploading media files.
+         */
+        public async uploadUrl(params: UploadUrlRequest): Promise<UploadUrlResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/media/upload-url`, JSON.stringify(params))
+            return await resp.json() as UploadUrlResponse
+        }
+    }
+}
+
+export namespace prayers {
+    export interface CreatePrayerRequest {
+        title: string
+        description: string
+        isAnonymous: boolean
+        authorName?: string | null
+    }
+
+    export interface DeletePrayerRequest {
+        passcode: string
+    }
+
+    export interface DeletePrayerResponse {
+        success: true
+    }
+
+    export interface ListPrayersRequest {
+        limit: number
+    }
+
+    export interface ListPrayersResponse {
+        prayers: Prayer[]
+    }
+
+    export interface PrayRequest {
+        participantId?: string | null
+    }
+
+    export interface PrayResponse {
+        success: boolean
+        prayerCount: number
+    }
+
+    export interface Prayer {
+        id: number
+        title: string
+        description: string
+        isAnonymous: boolean
+        userId: string
+        userName: string | null
+        prayerCount: number
+        createdAt: string
+    }
+
+    export interface Prayer {
+        id: number
+        title: string
+        description: string
+        isAnonymous: boolean
+        userId: string
+        userName: string | null
+        prayerCount: number
+        createdAt: string
+        userPrayed: boolean
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.create = this.create.bind(this)
+            this.list = this.list.bind(this)
+            this.pray = this.pray.bind(this)
+            this.remove = this.remove.bind(this)
+        }
+
+        /**
+         * Submits a new prayer request.
+         */
+        public async create(params: CreatePrayerRequest): Promise<Prayer> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/prayers`, JSON.stringify(params))
+            return await resp.json() as Prayer
+        }
+
+        /**
+         * Lists prayer requests, ordered by most recent.
+         */
+        public async list(params: ListPrayersRequest): Promise<ListPrayersResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                limit: String(params.limit),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/prayers`, undefined, {query})
+            return await resp.json() as ListPrayersResponse
+        }
+
+        /**
+         * Records that a user has prayed for a request.
+         */
+        public async pray(prayerId: number, params: PrayRequest): Promise<PrayResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/prayers/${encodeURIComponent(prayerId)}/pray`, JSON.stringify(params))
+            return await resp.json() as PrayResponse
+        }
+
+        public async remove(id: number, params: DeletePrayerRequest): Promise<DeletePrayerResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                passcode: params.passcode,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("DELETE", `/prayers/${encodeURIComponent(id)}`, undefined, {query})
+            return await resp.json() as DeletePrayerResponse
+        }
+    }
+}
+
+export namespace sermons {
+    export interface CreateSermonRequest {
+        passcode: string
+        title: string
+        youtubeUrl: string
+    }
+
+    export interface CreateSermonResponse {
+        id: number
+    }
+
+    export interface DeleteSermonRequest {
+        passcode: string
+        id: number
+    }
+
+    export interface ListSermonsResponse {
+        sermons: Sermon[]
+    }
+
+    export interface Sermon {
+        id: number
+        title: string
+        youtubeUrl: string
+        createdAt: string
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.create = this.create.bind(this)
+            this.list = this.list.bind(this)
+            this.remove = this.remove.bind(this)
+        }
+
+        public async create(params: CreateSermonRequest): Promise<CreateSermonResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/sermons`, JSON.stringify(params))
+            return await resp.json() as CreateSermonResponse
+        }
+
+        public async list(): Promise<ListSermonsResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/sermons/recent`)
+            return await resp.json() as ListSermonsResponse
+        }
+
+        public async remove(params: DeleteSermonRequest): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/sermons/delete`, JSON.stringify(params))
+        }
+    }
 }
 
 
@@ -280,6 +1427,11 @@ type CallParameters = Omit<RequestInit, "method" | "body" | "headers"> & {
     query?: Record<string, string | string[]>
 }
 
+// AuthDataGenerator is a function that returns a new instance of the authentication data required by this API
+export type AuthDataGenerator = () =>
+  | auth.AuthParams
+  | Promise<auth.AuthParams | undefined>
+  | undefined;
 
 // A fetcher is the prototype for the inbuilt Fetch function
 export type Fetcher = typeof fetch;
@@ -291,6 +1443,7 @@ class BaseClient {
     readonly fetcher: Fetcher
     readonly headers: Record<string, string>
     readonly requestInit: Omit<RequestInit, "headers"> & { headers?: Record<string, string> }
+    readonly authGenerator?: AuthDataGenerator
 
     constructor(baseURL: string, options: ClientOptions) {
         this.baseURL = baseURL
@@ -310,9 +1463,41 @@ class BaseClient {
         } else {
             this.fetcher = boundFetch
         }
+
+        // Setup an authentication data generator using the auth data token option
+        if (options.auth !== undefined) {
+            const auth = options.auth
+            if (typeof auth === "function") {
+                this.authGenerator = auth
+            } else {
+                this.authGenerator = () => auth
+            }
+        }
     }
 
     async getAuthData(): Promise<CallParameters | undefined> {
+        let authData: auth.AuthParams | undefined;
+
+        // If authorization data generator is present, call it and add the returned data to the request
+        if (this.authGenerator) {
+            const mayBePromise = this.authGenerator();
+            if (mayBePromise instanceof Promise) {
+                authData = await mayBePromise;
+            } else {
+                authData = mayBePromise;
+            }
+        }
+
+        if (authData) {
+            const data: CallParameters = {};
+
+            data.headers = makeRecord<string, string>({
+                authorization: authData.authorization,
+            });
+
+            return data;
+        }
+
         return undefined;
     }
 
