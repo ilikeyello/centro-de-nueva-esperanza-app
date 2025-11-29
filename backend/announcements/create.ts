@@ -1,6 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "~encore/auth";
 import db from "../db";
+import * as notifications from "../notifications/notifications";
 
 interface CreateAnnouncementRequest {
   titleEn: string;
@@ -37,6 +38,25 @@ export const create = api<CreateAnnouncementRequest, Announcement>(
       RETURNING id, title_en as "titleEn", title_es as "titleEs", content_en as "contentEn", content_es as "contentEs", 
                 priority, created_at as "createdAt", created_by as "createdBy"
     `;
+
+    // Send push notification (non-blocking)
+    try {
+      await notifications.sendNotification({
+        title: req.titleEn,
+        body: req.priority === "urgent" ? "🚨 URGENT: " + req.contentEn.substring(0, 100) + "..." : req.contentEn.substring(0, 100) + "...",
+        icon: "/cne-app/icon-192x192.png",
+        tag: `announcement-${announcement!.id}`,
+        data: {
+          type: "announcement",
+          id: announcement!.id,
+          priority: req.priority
+        }
+      });
+    } catch (error) {
+      // Non-blocking - don't fail the announcement creation if notification fails
+      console.error("Failed to send push notification for announcement:", error);
+    }
+
     return announcement!;
   }
 );

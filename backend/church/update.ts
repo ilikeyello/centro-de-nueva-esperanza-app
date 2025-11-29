@@ -1,5 +1,6 @@
 import { api } from "encore.dev/api";
 import db from "../db";
+import * as notifications from "../notifications/notifications";
 
 interface UpdateChurchInfoRequest {
   nameEn?: string;
@@ -14,6 +15,8 @@ interface UpdateChurchInfoRequest {
   facebookPageUrl?: string;
   latitude?: number;
   longitude?: number;
+  livestreamStatus?: "offline" | "starting" | "live" | "ending";
+  livestreamUrl?: string;
 }
 
 interface ChurchInfo {
@@ -29,6 +32,9 @@ interface ChurchInfo {
   facebookPageUrl: string | null;
   latitude: number | null;
   longitude: number | null;
+  livestreamStatus: string;
+  livestreamUrl: string | null;
+  livestreamStartedAt: Date | null;
 }
 
 // Updates church information.
@@ -87,6 +93,20 @@ export const update = api<UpdateChurchInfoRequest, ChurchInfo>(
       updates.push(`longitude = $${paramIndex++}`);
       params.push(req.longitude);
     }
+    if (req.livestreamStatus !== undefined) {
+      updates.push(`livestream_status = $${paramIndex++}`);
+      params.push(req.livestreamStatus);
+      
+      // Set livestream started time when going live
+      if (req.livestreamStatus === "live") {
+        updates.push(`livestream_started_at = $${paramIndex++}`);
+        params.push(new Date());
+      }
+    }
+    if (req.livestreamUrl !== undefined) {
+      updates.push(`livestream_url = $${paramIndex++}`);
+      params.push(req.livestreamUrl);
+    }
 
     const query = `
       UPDATE church_info
@@ -104,10 +124,34 @@ export const update = api<UpdateChurchInfoRequest, ChurchInfo>(
         description_es as "descriptionEs",
         facebook_page_url as "facebookPageUrl",
         latitude,
-        longitude
+        longitude,
+        livestream_status as "livestreamStatus",
+        livestream_url as "livestreamUrl",
+        livestream_started_at as "livestreamStartedAt"
     `;
 
     const info = await db.rawQueryRow<ChurchInfo>(query, ...params);
+
+    // Send push notification when livestream status changes to "live"
+    if (req.livestreamStatus === "live") {
+      try {
+        await notifications.sendNotification({
+          title: "🔴 We're Live!",
+          body: "Join our livestream now - we're broadcasting live!",
+          icon: "/cne-app/icon-192x192.png",
+          tag: `livestream-${Date.now()}`,
+          data: {
+            type: "livestream",
+            status: "live",
+            url: req.livestreamUrl || "#"
+          }
+        });
+      } catch (error) {
+        // Non-blocking - don't fail the update if notification fails
+        console.error("Failed to send push notification for livestream:", error);
+      }
+    }
+
     return info!;
   }
 );
