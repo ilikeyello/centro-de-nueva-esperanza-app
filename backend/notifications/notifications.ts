@@ -2,9 +2,9 @@ import { api } from "encore.dev/api";
 import { secret } from "encore.dev/config";
 import db from "./db";
 
-// VAPID keys for push notifications
-const publicKey = secret("PUBLIC_VAPID_KEY");
-const privateKey = secret("PRIVATE_VAPID_KEY");
+// VAPID keys for push notifications - declare but don't initialize yet
+const publicVapidKey = secret("PUBLIC_VAPID_KEY");
+const privateVapidKey = secret("PRIVATE_VAPID_KEY");
 
 // Types
 interface NotificationSubscription {
@@ -46,8 +46,8 @@ const initializeWebPush = async () => {
   
   webpush.setVapidDetails(
     'mailto:contact@centrodenuevaesperanza.org',
-    publicKey as unknown as string,
-    privateKey as unknown as string
+    publicVapidKey(),  // Call it as a function
+    privateVapidKey()  // Call it as a function
   );
   
   return webpush;
