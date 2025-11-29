@@ -117,10 +117,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         levelsToEdit: [...prev.levelsToEdit.filter(l => l.id !== editingLevel.id), { ...level, id: editingLevel.id }]
       }));
     } else {
-      // Add new level
+      // Add new level - generate temporary ID
+      const levelWithId = { ...level, id: `temp-${Date.now()}` };
       setPendingOperations(prev => ({
         ...prev,
-        levelsToAdd: [...prev.levelsToAdd, level]
+        levelsToAdd: [...prev.levelsToAdd, levelWithId]
       }));
     }
     setShowLevelDialog(false);
@@ -174,11 +175,13 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
 
       // Add levels
       for (const level of pendingOperations.levelsToAdd) {
-        console.log('Adding level with data:', level);
+        // Remove temporary ID before sending to backend
+        const { id, ...levelData } = level;
+        console.log('Adding level with data:', levelData);
         const response = await fetch(`${base}/trivia/simple/level`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(level)
+          body: JSON.stringify(levelData)
         });
         console.log('Add level response status:', response.status);
         const responseText = await response.text();
