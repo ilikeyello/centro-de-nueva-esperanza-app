@@ -1,4 +1,5 @@
 import { api, APIError } from "encore.dev/api";
+import * as notifications from "../notifications/notifications";
 
 // Simple in-memory storage to avoid database permission issues
 let playlistUrl: string | null = null;
@@ -43,6 +44,24 @@ export const save = api<UpdatePlaylistRequest, void>(
     }
 
     playlistUrl = embedUrl;
+
+    // Send push notification when livestream playlist is updated
+    try {
+      await notifications.sendNotification({
+        title: "🔴 We're Live!",
+        body: "Join our livestream now - we're broadcasting live!",
+        icon: "/cne-app/icon-192x192.png",
+        tag: `livestream-${Date.now()}`,
+        data: {
+          type: "livestream",
+          status: "live",
+          url: embedUrl
+        }
+      });
+    } catch (error) {
+      // Non-blocking - don't fail the playlist update if notification fails
+      console.error("Failed to send push notification for livestream:", error);
+    }
   }
 );
 
