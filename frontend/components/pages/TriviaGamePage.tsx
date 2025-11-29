@@ -65,7 +65,11 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      setLevels(data.levels);
+      
+      // Get deleted levels from localStorage
+      const deletedLevelIds = JSON.parse(localStorage.getItem('deletedLevelIds') || '[]');
+      
+      setLevels(data.levels.filter((level: TriviaLevel) => !deletedLevelIds.includes(level.id)));
     } catch (error) {
       console.error('Failed to load levels:', error);
     } finally {
@@ -78,7 +82,16 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      return data.questions.filter((q: TriviaQuestion) => q.level_id === levelId);
+      
+      // Get deleted items from localStorage
+      const deletedLevelIds = JSON.parse(localStorage.getItem('deletedLevelIds') || '[]');
+      const deletedQuestionIds = JSON.parse(localStorage.getItem('deletedQuestionIds') || '[]');
+      
+      return data.questions.filter((q: TriviaQuestion) => 
+        q.level_id === levelId && 
+        !deletedLevelIds.includes(levelId) &&
+        !deletedQuestionIds.includes(q.id)
+      );
     } catch (error) {
       console.error('Failed to load questions:', error);
       return [];

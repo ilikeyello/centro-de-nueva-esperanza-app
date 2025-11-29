@@ -29512,7 +29512,8 @@ function TriviaGamePage({ onNavigate } = {}) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      setLevels(data.levels);
+      const deletedLevelIds = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
+      setLevels(data.levels.filter((level) => !deletedLevelIds.includes(level.id)));
     } catch (error) {
       console.error("Failed to load levels:", error);
     } finally {
@@ -29524,7 +29525,11 @@ function TriviaGamePage({ onNavigate } = {}) {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      return data.questions.filter((q) => q.level_id === levelId);
+      const deletedLevelIds = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
+      const deletedQuestionIds = JSON.parse(localStorage.getItem("deletedQuestionIds") || "[]");
+      return data.questions.filter(
+        (q) => q.level_id === levelId && !deletedLevelIds.includes(levelId) && !deletedQuestionIds.includes(q.id)
+      );
     } catch (error) {
       console.error("Failed to load questions:", error);
       return [];
@@ -30527,8 +30532,20 @@ function TriviaAdminPanelFinal({ passcode }) {
     questionsToEdit: [],
     questionsToDelete: []
   });
-  const [deletedLevelIds, setDeletedLevelIds] = reactExports.useState([]);
-  const [deletedQuestionIds, setDeletedQuestionIds] = reactExports.useState([]);
+  const [deletedLevelIds, setDeletedLevelIds] = reactExports.useState(() => {
+    const saved = localStorage.getItem("deletedLevelIds");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [deletedQuestionIds, setDeletedQuestionIds] = reactExports.useState(() => {
+    const saved = localStorage.getItem("deletedQuestionIds");
+    return saved ? JSON.parse(saved) : [];
+  });
+  reactExports.useEffect(() => {
+    localStorage.setItem("deletedLevelIds", JSON.stringify(deletedLevelIds));
+  }, [deletedLevelIds]);
+  reactExports.useEffect(() => {
+    localStorage.setItem("deletedQuestionIds", JSON.stringify(deletedQuestionIds));
+  }, [deletedQuestionIds]);
   const [showLevelDialog, setShowLevelDialog] = reactExports.useState(false);
   const [showQuestionDialog, setShowQuestionDialog] = reactExports.useState(false);
   const [editingLevel, setEditingLevel] = reactExports.useState(null);

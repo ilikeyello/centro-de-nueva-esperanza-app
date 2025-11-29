@@ -63,8 +63,23 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
   });
   
   // Persistent deleted items tracking (since backend delete is broken)
-  const [deletedLevelIds, setDeletedLevelIds] = useState<string[]>([]);
-  const [deletedQuestionIds, setDeletedQuestionIds] = useState<number[]>([]);
+  const [deletedLevelIds, setDeletedLevelIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('deletedLevelIds');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [deletedQuestionIds, setDeletedQuestionIds] = useState<number[]>(() => {
+    const saved = localStorage.getItem('deletedQuestionIds');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Save to localStorage whenever deleted items change
+  useEffect(() => {
+    localStorage.setItem('deletedLevelIds', JSON.stringify(deletedLevelIds));
+  }, [deletedLevelIds]);
+
+  useEffect(() => {
+    localStorage.setItem('deletedQuestionIds', JSON.stringify(deletedQuestionIds));
+  }, [deletedQuestionIds]);
   
   // Dialog states
   const [showLevelDialog, setShowLevelDialog] = useState(false);
