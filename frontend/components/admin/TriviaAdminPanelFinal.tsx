@@ -184,6 +184,48 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       console.log('Levels to delete:', pendingOperations.levelsToDelete);
       console.log('Questions to delete:', pendingOperations.questionsToDelete);
 
+      // Add levels
+      for (const level of pendingOperations.levelsToAdd) {
+        try {
+          const payload = {
+            id: level.id,
+            name: level.name,
+            description: level.description || null,
+            shuffle_questions: level.shuffle_questions ?? true,
+            time_limit: level.time_limit === null ? 0 : level.time_limit,
+            passing_score: level.passing_score || 70
+          };
+          console.log('Creating level with payload:', payload);
+          
+          const response = await fetch(`${base}/trivia/simple/level`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          
+          console.log('Create level response status:', response.status);
+          
+          if (response.ok) {
+            const result = await response.json();
+            console.log('Create level response body:', result);
+            if (result.success) {
+              console.log('✅ Level created successfully:', level.id);
+              results.push({ success: true, id: level.id });
+            } else {
+              console.error('❌ Failed to create level:', result.message);
+              results.push({ success: false, error: result.message, id: level.id });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error('❌ Create level failed:', response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id: level.id });
+          }
+        } catch (error) {
+          console.error('❌ Error creating level:', level.id, error);
+          results.push({ success: false, error: String(error), id: level.id });
+        }
+      }
+
       // Delete levels using correct backend endpoints
       for (const id of pendingOperations.levelsToDelete) {
         try {
