@@ -30827,14 +30827,14 @@ function TriviaAdminPanelFinal({ passcode }) {
                 "%"
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                ((_a2 = questionsByLevel[level.id]) == null ? void 0 : _a2.length) || 0,
+                ((_a2 = questionsByLevel[level.id || ""]) == null ? void 0 : _a2.length) || 0,
                 " ",
                 t("questions", "preguntas")
               ] })
             ] })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showLevelDialog && (editingLevel == null ? void 0 : editingLevel.id) === level.id, onOpenChange: (open) => {
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showLevelDialog && (editingLevel == null ? void 0 : editingLevel.id) === (level.id || ""), onOpenChange: (open) => {
               setShowLevelDialog(open);
               if (!open) setEditingLevel(null);
             }, children: [
@@ -30866,7 +30866,7 @@ function TriviaAdminPanelFinal({ passcode }) {
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               Button,
               {
-                onClick: () => deleteLevelFromBatch(level.id),
+                onClick: () => level.id && deleteLevelFromBatch(level.id),
                 variant: "outline",
                 size: "sm",
                 className: "border-red-700 hover:bg-red-700 text-red-400",
@@ -30880,14 +30880,14 @@ function TriviaAdminPanelFinal({ passcode }) {
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white", children: t("Questions by Level", "Preguntas por Nivel") }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-4", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
-        const levelQuestions = (questionsByLevel[level.id] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id));
-        const isExpanded = expandedLevels.has(level.id);
+        const levelQuestions = (questionsByLevel[level.id || ""] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id));
+        const isExpanded = expandedLevels.has(level.id || "");
         return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             "div",
             {
               className: "p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors",
-              onClick: () => toggleLevelExpansion(level.id),
+              onClick: () => level.id && toggleLevelExpansion(level.id),
               children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
                   isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4" }),
@@ -30913,7 +30913,7 @@ function TriviaAdminPanelFinal({ passcode }) {
                         options_es: ["", "", "", ""],
                         correct_answer: 0,
                         category: "General",
-                        level_id: level.id,
+                        level_id: level.id || "",
                         created_at: "",
                         updated_at: ""
                       });
@@ -30931,7 +30931,7 @@ function TriviaAdminPanelFinal({ passcode }) {
               ] })
             }
           ),
-          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.filter((question) => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id)).map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-700 rounded bg-neutral-800/50 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
+          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border-t border-neutral-800", children: levelQuestions.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 p-4", children: levelQuestions.filter((question) => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-700 rounded bg-neutral-800/50 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-white font-medium", children: language === "es" ? question.question_es : question.question_en }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-neutral-400 mt-1", children: [

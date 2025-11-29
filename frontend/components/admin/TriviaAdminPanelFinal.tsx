@@ -434,11 +434,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                         <Target className="h-3 w-3" />
                         {level.passing_score}%
                       </span>
-                      <span>{questionsByLevel[level.id]?.length || 0} {t("questions", "preguntas")}</span>
+                      <span>{questionsByLevel[level.id || '']?.length || 0} {t("questions", "preguntas")}</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Dialog open={showLevelDialog && editingLevel?.id === level.id} onOpenChange={(open) => {
+                    <Dialog open={showLevelDialog && editingLevel?.id === (level.id || '')} onOpenChange={(open) => {
                       setShowLevelDialog(open);
                       if (!open) setEditingLevel(null);
                     }}>
@@ -467,7 +467,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                       </DialogContent>
                     </Dialog>
                     <Button
-                      onClick={() => deleteLevelFromBatch(level.id)}
+                      onClick={() => level.id && deleteLevelFromBatch(level.id)}
                       variant="outline"
                       size="sm"
                       className="border-red-700 hover:bg-red-700 text-red-400"
@@ -491,14 +491,14 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
-            const levelQuestions = (questionsByLevel[level.id] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id));
-            const isExpanded = expandedLevels.has(level.id);
+            const levelQuestions = (questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id));
+            const isExpanded = expandedLevels.has(level.id || '');
             
             return (
               <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
                 <div 
                   className="p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors"
-                  onClick={() => toggleLevelExpansion(level.id)}
+                  onClick={() => level.id && toggleLevelExpansion(level.id)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -517,7 +517,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                           options_es: ['', '', '', ''],
                           correct_answer: 0,
                           category: 'General',
-                          level_id: level.id,
+                          level_id: level.id || '',
                           created_at: '',
                           updated_at: ''
                         });
@@ -541,7 +541,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                       </div>
                     ) : (
                       <div className="space-y-2 p-4">
-                        {levelQuestions.filter(question => !pendingOperations.questionsToDelete.includes(question.id) && !deletedQuestionIds.includes(question.id)).map((question) => (
+                        {levelQuestions.filter(question => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => (
                           <div key={question.id} className="border border-neutral-700 rounded bg-neutral-800/50 p-3">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
@@ -646,6 +646,14 @@ function LevelForm({
     time_limit: level?.time_limit ?? 30,
     passing_score: level?.passing_score || 70,
     disable_time_limit: level?.time_limit === null
+  } as {
+    id: string;
+    name: string;
+    description: string;
+    shuffle_questions: boolean;
+    time_limit: number;
+    passing_score: number;
+    disable_time_limit: boolean;
   });
 
   const handleSubmit = (e: React.FormEvent) => {
