@@ -667,7 +667,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                         {levelQuestions.filter(question => !pendingOperations.questionsToDelete.includes(question.id)).map((question) => {
                           const isUnsaved = question.id === 0 || !question.id;
                           return (
-                          <div key={`${question.id || 'temp'}-${question.question_en}`} className={`border ${isUnsaved ? 'border-yellow-600 bg-yellow-900/20' : 'border-neutral-700 bg-neutral-800/50'} rounded p-3`}>
+                          <div key={`${question.id ?? 'temp'}-${question.question_en}`} className={`border ${isUnsaved ? 'border-yellow-600 bg-yellow-900/20' : 'border-neutral-700 bg-neutral-800/50'} rounded p-3`}>
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <p className="text-sm text-white font-medium">

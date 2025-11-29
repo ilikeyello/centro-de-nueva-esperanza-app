@@ -20694,14 +20694,16 @@ var ErrCode = /* @__PURE__ */ ((ErrCode2) => {
   ErrCode2["Unauthenticated"] = "unauthenticated";
   return ErrCode2;
 })(ErrCode || {});
+const API_BASE$2 = "https://prod-cne-sh82.encr.app";
+const backend = new Client(API_BASE$2);
 function useBackend() {
-  return Client;
+  return backend;
 }
 const NEWS_DEFAULT_TAB_KEY$1 = "cne-news-default-tab";
 function Home({ onNavigate }) {
   var _a2;
   const { t, language } = useLanguage();
-  const backend = useBackend();
+  const backend2 = useBackend();
   const queryClient2 = useQueryClient();
   const { toast: toast2 } = useToast();
   const [prayerTitle, setPrayerTitle] = reactExports.useState("");
@@ -20714,7 +20716,7 @@ function Home({ onNavigate }) {
     isError: eventsError
   } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend.events.list({ upcoming: true })
+    queryFn: () => backend2.events.list({ upcoming: true })
   });
   const nextEvent = (_a2 = eventsData == null ? void 0 : eventsData.events) == null ? void 0 : _a2[0];
   const formattedDate = nextEvent ? new Date(nextEvent.eventDate).toLocaleString(
@@ -20753,7 +20755,7 @@ function Home({ onNavigate }) {
   const createPrayerMutation = useMutation({
     mutationFn: async () => {
       const trimmedName = prayerName.trim();
-      return backend.prayers.create({
+      return backend2.prayers.create({
         title: prayerTitle.trim(),
         description: prayerDescription.trim(),
         isAnonymous: prayerName.trim().length === 0,
@@ -26910,7 +26912,7 @@ const postEventRsvp = async (data) => {
   return response.json();
 };
 function News() {
-  const backend = useBackend();
+  const backend2 = useBackend();
   const { language, t } = useLanguage();
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
@@ -26943,7 +26945,7 @@ function News() {
   });
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => backend.announcements.list({ limit: 50 })
+    queryFn: () => backend2.announcements.list({ limit: 50 })
   });
   reactExports.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -26980,7 +26982,7 @@ function News() {
     return storedId;
   };
   const deleteEvent = useMutation({
-    mutationFn: async (data) => backend.events.remove(data),
+    mutationFn: async (data) => backend2.events.remove(data),
     onSuccess: (_, variables) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         if (!oldData) return oldData;
@@ -27009,7 +27011,7 @@ function News() {
   });
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend.events.list({ upcoming: false })
+    queryFn: () => backend2.events.list({ upcoming: false })
   });
   const upcomingEvents = reactExports.useMemo(() => {
     if (!(eventsData == null ? void 0 : eventsData.events)) return [];
@@ -27017,7 +27019,7 @@ function News() {
     return [...eventsData.events].filter((eventItem) => new Date(eventItem.eventDate).getTime() >= now).sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
   }, [eventsData]);
   const createAnnouncement = useMutation({
-    mutationFn: async (data) => backend.announcements.create(data),
+    mutationFn: async (data) => backend2.announcements.create(data),
     onSuccess: (newAnnouncement) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) {
@@ -27049,7 +27051,7 @@ function News() {
     }
   });
   const createEvent = useMutation({
-    mutationFn: async (data) => backend.events.create(data),
+    mutationFn: async (data) => backend2.events.create(data),
     onSuccess: (newEvent) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         const existing = (oldData == null ? void 0 : oldData.events) ?? [];
@@ -27110,7 +27112,7 @@ function News() {
     }
   });
   const deleteAnnouncement = useMutation({
-    mutationFn: async (data) => backend.announcements.remove(data),
+    mutationFn: async (data) => backend2.announcements.remove(data),
     onSuccess: (_, variables) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) return oldData;
@@ -27812,7 +27814,7 @@ const formatDate = (date) => {
   }
 };
 function BulletinBoard() {
-  const backend = useBackend();
+  const backend2 = useBackend();
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
@@ -27996,7 +27998,7 @@ function BulletinBoard() {
     }
   });
   const createPrayerMutation = useMutation({
-    mutationFn: (data2) => backend.prayers.create(data2),
+    mutationFn: (data2) => backend2.prayers.create(data2),
     onSuccess: () => {
       setNewPrayer({ title: "", description: "", authorName: "" });
       setPrayerDialogOpen(false);
@@ -29235,7 +29237,7 @@ createElementComponent("afterpayClearpayMessage", isServer);
 createElementComponent("taxId", isServer);
 const stripePromise = loadStripe("pk_test_placeholder");
 function DonationForm({ onNavigate }) {
-  const backend = useBackend();
+  const backend2 = useBackend();
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const stripe = useStripe();
@@ -29246,12 +29248,12 @@ function DonationForm({ onNavigate }) {
   const [processing, setProcessing] = reactExports.useState(false);
   const createDonationMutation = useMutation({
     mutationFn: (data) => {
-      return backend.donations.create(data);
+      return backend2.donations.create(data);
     }
   });
   const confirmDonationMutation = useMutation({
     mutationFn: (data) => {
-      return backend.donations.confirm(data);
+      return backend2.donations.confirm(data);
     }
   });
   const handleSubmit = async (e) => {
@@ -30482,9 +30484,10 @@ function TriviaGamePage({ onNavigate } = {}) {
 }
 function Contact({ onNavigate }) {
   const { language, t } = useLanguage();
+  const backend2 = useBackend();
   const { data: churchInfo } = useQuery({
     queryKey: ["churchInfo"],
-    queryFn: () => Client.church.info()
+    queryFn: () => backend2.church.info()
   });
   if (!churchInfo) {
     return null;
@@ -31697,7 +31700,7 @@ function TriviaAdminPanelFinal({ passcode }) {
                   }
                 )
               ] })
-            ] }) }, `${question.id || "temp"}-${question.question_en}`);
+            ] }) }, `${question.id ?? "temp"}-${question.question_en}`);
           }) }) })
         ] }, level.id);
       }) })

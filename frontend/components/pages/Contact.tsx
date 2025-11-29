@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MapPin, Phone, Mail, Clock, Facebook } from "lucide-react";
-import backend from "~backend/client";
+import { useBackend } from "../../hooks/useBackend";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -11,6 +11,7 @@ interface ContactProps {
 
 export function Contact({ onNavigate }: ContactProps) {
   const { language, t } = useLanguage();
+  const backend = useBackend();
 
   const { data: churchInfo } = useQuery({
     queryKey: ["churchInfo"],
