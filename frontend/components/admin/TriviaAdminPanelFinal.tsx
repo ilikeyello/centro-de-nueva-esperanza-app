@@ -171,7 +171,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     
     try {
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const results = [];
+      const results: { success: boolean; id?: string | number; error?: string }[] = [];
 
       // Add levels
       for (const level of pendingOperations.levelsToAdd) {
@@ -711,7 +711,7 @@ function LevelForm({
     const submissionData: Partial<TriviaLevel> = {
       ...formData,
       time_limit: formData.disable_time_limit ? null : formData.time_limit
-    };
+    } as Partial<TriviaLevel>;
     onSave(submissionData);
   };
 
