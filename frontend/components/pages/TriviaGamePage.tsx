@@ -68,8 +68,13 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       
       // Get deleted levels from localStorage
       const deletedLevelIds = JSON.parse(localStorage.getItem('deletedLevelIds') || '[]');
+      console.log('Game page - loaded levels:', data.levels.length);
+      console.log('Game page - deleted level IDs:', deletedLevelIds);
       
-      setLevels(data.levels.filter((level: TriviaLevel) => !deletedLevelIds.includes(level.id)));
+      const filteredLevels = data.levels.filter((level: TriviaLevel) => !deletedLevelIds.includes(level.id));
+      console.log('Game page - filtered levels:', filteredLevels.length);
+      
+      setLevels(filteredLevels);
     } catch (error) {
       console.error('Failed to load levels:', error);
     } finally {
@@ -207,24 +212,16 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
   const handleTimeUp = () => {
     if (gameState.status !== 'playing') return;
     
-    const newAnswers = [...gameState.userAnswers, -1]; // -1 for unanswered
-    if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
-      setGameState({
-        ...gameState,
-        userAnswers: newAnswers,
-        currentQuestionIndex: gameState.currentQuestionIndex + 1,
-        selectedAnswer: null,
-        showFeedback: false,
-        isTimerActive: true,
-      });
-    } else {
-      setGameState({
-        ...gameState,
-        userAnswers: newAnswers,
-        status: 'results',
-        isTimerActive: false,
-      });
-    }
+    // Fill remaining questions with -1 (unanswered) and end game
+    const remainingQuestions = gameState.questions.length - gameState.currentQuestionIndex - 1;
+    const newAnswers = [...gameState.userAnswers, -1, ...Array(remainingQuestions).fill(-1)];
+    
+    setGameState({
+      ...gameState,
+      userAnswers: newAnswers,
+      status: 'results',
+      isTimerActive: false,
+    });
   };
 
   const resetGame = () => {
@@ -443,7 +440,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
           </div>
           <div className={`flex items-center gap-2 ${gameState.timeRemaining <= 5 ? 'text-red-500' : 'text-neutral-300'}`}>
             <Clock className="h-4 w-4" />
-            <span className="font-mono text-lg">{gameState.timeRemaining}s</span>
+            <span className="font-mono text-lg">{gameState.isTimerActive ? `${gameState.timeRemaining}s` : '∞'}</span>
           </div>
         </div>
 
@@ -540,8 +537,8 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
             </div>
 
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-white">
-                {gameState.score} / {gameState.questions.length}
+              <div className="text-2xl font-bold text-white">
+                {gameState.isTimerActive ? `${gameState.timeRemaining}s` : '∞'}
               </div>
               <div className="text-xl text-neutral-400">
                 {percentage}% {t("correct", "correctas")}

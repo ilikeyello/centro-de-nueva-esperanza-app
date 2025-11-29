@@ -29513,7 +29513,11 @@ function TriviaGamePage({ onNavigate } = {}) {
       const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
       const deletedLevelIds = JSON.parse(localStorage.getItem("deletedLevelIds") || "[]");
-      setLevels(data.levels.filter((level) => !deletedLevelIds.includes(level.id)));
+      console.log("Game page - loaded levels:", data.levels.length);
+      console.log("Game page - deleted level IDs:", deletedLevelIds);
+      const filteredLevels = data.levels.filter((level) => !deletedLevelIds.includes(level.id));
+      console.log("Game page - filtered levels:", filteredLevels.length);
+      setLevels(filteredLevels);
     } catch (error) {
       console.error("Failed to load levels:", error);
     } finally {
@@ -29618,24 +29622,14 @@ function TriviaGamePage({ onNavigate } = {}) {
   };
   const handleTimeUp = () => {
     if (gameState.status !== "playing") return;
-    const newAnswers = [...gameState.userAnswers, -1];
-    if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
-      setGameState({
-        ...gameState,
-        userAnswers: newAnswers,
-        currentQuestionIndex: gameState.currentQuestionIndex + 1,
-        selectedAnswer: null,
-        showFeedback: false,
-        isTimerActive: true
-      });
-    } else {
-      setGameState({
-        ...gameState,
-        userAnswers: newAnswers,
-        status: "results",
-        isTimerActive: false
-      });
-    }
+    const remainingQuestions = gameState.questions.length - gameState.currentQuestionIndex - 1;
+    const newAnswers = [...gameState.userAnswers, -1, ...Array(remainingQuestions).fill(-1)];
+    setGameState({
+      ...gameState,
+      userAnswers: newAnswers,
+      status: "results",
+      isTimerActive: false
+    });
   };
   const resetGame = () => {
     setGameState({
@@ -29806,10 +29800,7 @@ function TriviaGamePage({ onNavigate } = {}) {
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `flex items-center gap-2 ${gameState.timeRemaining <= 5 ? "text-red-500" : "text-neutral-300"}`, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-mono text-lg", children: [
-            gameState.timeRemaining,
-            "s"
-          ] })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono text-lg", children: gameState.isTimerActive ? `${gameState.timeRemaining}s` : "∞" })
         ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full bg-neutral-800 rounded-full h-1.5 flex-shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -29874,11 +29865,7 @@ function TriviaGamePage({ onNavigate } = {}) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold", children: passed ? language === "es" ? "¡Aprobado!" : "Passed!" : language === "es" ? "¡Fracasado!" : "Failed!" })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-4xl font-bold text-white", children: [
-          gameState.score,
-          " / ",
-          gameState.questions.length
-        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-2xl font-bold text-white", children: gameState.isTimerActive ? `${gameState.timeRemaining}s` : "∞" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xl text-neutral-400", children: [
           percentage,
           "% ",
