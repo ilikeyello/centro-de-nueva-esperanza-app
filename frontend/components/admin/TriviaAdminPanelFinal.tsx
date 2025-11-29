@@ -174,18 +174,15 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
 
       // Add levels
       for (const level of pendingOperations.levelsToAdd) {
+        console.log('Adding level with data:', level);
         const response = await fetch(`${base}/trivia/simple/level`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: level.id || level.name?.toLowerCase().replace(/\s+/g, '-') || '',
-            name: level.name,
-            description: level.description || '',
-            shuffle_questions: level.shuffle_questions ?? true,
-            time_limit: level.time_limit,
-            passing_score: level.passing_score || 70
-          })
+          body: JSON.stringify(level)
         });
+        console.log('Add level response status:', response.status);
+        const responseText = await response.text();
+        console.log('Add level response body:', responseText);
         results.push(await response.json());
       }
 
