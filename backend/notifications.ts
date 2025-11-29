@@ -63,7 +63,10 @@ export const subscribe = api(
         WHERE endpoint = ${params.endpoint}
       `;
       
-      const existingRows = await Array.from(existing);
+      const existingRows = [];
+      for await (const row of existing) {
+        existingRows.push(row);
+      }
       
       if (existingRows.length > 0) {
         // Update existing subscription
@@ -123,7 +126,10 @@ export const sendToAll = api(
         FROM push_subscriptions
       `;
       
-      const subscriptionRows = await Array.from(subscriptions);
+      const subscriptionRows = [];
+      for await (const row of subscriptions) {
+        subscriptionRows.push(row);
+      }
 
       let sent = 0;
       let failed = 0;
@@ -281,7 +287,10 @@ export const getStats = api(
         SELECT COUNT(*) as total FROM push_subscriptions
       `;
       
-      const rows = await Array.from(result);
+      const rows = [];
+      for await (const row of result) {
+        rows.push(row);
+      }
       
       return {
         totalSubscribers: rows[0].total,
