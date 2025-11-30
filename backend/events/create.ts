@@ -1,7 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "~encore/auth";
 import db from "../db";
-import * as notifications from "../notifications/notifications";
 
 interface CreateEventRequest {
   titleEn: string;
@@ -43,33 +42,6 @@ export const create = api<CreateEventRequest, Event>(
       RETURNING id, title_en as "titleEn", title_es as "titleEs", description_en as "descriptionEn", description_es as "descriptionEs", 
                 event_date as "eventDate", location, max_attendees as "maxAttendees", created_at as "createdAt", created_by as "createdBy", 0 as "rsvpCount"
     `;
-
-    // Send push notification (non-blocking)
-    try {
-      const eventDate = new Date(req.eventDate);
-      const dateString = eventDate.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
-      });
-      
-      await notifications.sendNotification({
-        title: req.titleEn,
-        body: `📅 New Event: ${req.descriptionEn?.substring(0, 80) || 'Join us!'} - ${dateString} at ${req.location}`,
-        icon: "/cne-app/icon-192x192.png",
-        tag: `event-${event!.id}`,
-        data: {
-          type: "event",
-          id: event!.id,
-          eventDate: req.eventDate
-        }
-      });
-    } catch (error) {
-      // Non-blocking - don't fail the event creation if notification fails
-      console.error("Failed to send push notification for event:", error);
-    }
 
     return event!;
   }
