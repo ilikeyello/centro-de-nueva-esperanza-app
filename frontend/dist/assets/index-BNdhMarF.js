@@ -19945,7 +19945,7 @@ class Client {
     this.donations = new donations.ServiceClient(base);
     this.events = new events.ServiceClient(base);
     this.media = new media.ServiceClient(base);
-    this.notifications = new notifications.ServiceClient(base);
+    this.push_notifications = new push_notifications.ServiceClient(base);
     this.prayers = new prayers.ServiceClient(base);
     this.sermons = new sermons.ServiceClient(base);
   }
@@ -20250,12 +20250,13 @@ var media;
   }
   media2.ServiceClient = ServiceClient;
 })(media || (media = {}));
-var notifications;
-((notifications2) => {
+var push_notifications;
+((push_notifications2) => {
   class ServiceClient {
     constructor(baseClient) {
       this.baseClient = baseClient;
       this.checkSubscriptions = this.checkSubscriptions.bind(this);
+      this.health = this.health.bind(this);
       this.sendNotification = this.sendNotification.bind(this);
       this.subscribe = this.subscribe.bind(this);
       this.test = this.test.bind(this);
@@ -20265,37 +20266,43 @@ var notifications;
      * Check subscriptions endpoint for debugging
      */
     async checkSubscriptions() {
-      await this.baseClient.callTypedAPI("GET", `/notifications/subscriptions`);
+      await this.baseClient.callTypedAPI("GET", `/push-notifications/subscriptions`);
+    }
+    /**
+     * Simple health check endpoint
+     */
+    async health() {
+      await this.baseClient.callTypedAPI("GET", `/notifications/health`);
     }
     /**
      * Send notification to all subscribed users
      */
     async sendNotification(params) {
-      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/send`, JSON.stringify(params));
+      const resp = await this.baseClient.callTypedAPI("POST", `/push-notifications/send`, JSON.stringify(params));
       return await resp.json();
     }
     /**
      * Subscribe to push notifications
      */
     async subscribe(params) {
-      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/subscribe`, JSON.stringify(params));
+      const resp = await this.baseClient.callTypedAPI("POST", `/push-notifications/subscribe`, JSON.stringify(params));
       return await resp.json();
     }
     /**
      * Test endpoint to verify notifications service is working
      */
     async test() {
-      await this.baseClient.callTypedAPI("GET", `/notifications/test`);
+      await this.baseClient.callTypedAPI("GET", `/push-notifications/test`);
     }
     /**
      * Simple test notification endpoint
      */
     async testNotification() {
-      await this.baseClient.callTypedAPI("POST", `/notifications/test-send`);
+      await this.baseClient.callTypedAPI("POST", `/push-notifications/test-send`);
     }
   }
-  notifications2.ServiceClient = ServiceClient;
-})(notifications || (notifications = {}));
+  push_notifications2.ServiceClient = ServiceClient;
+})(push_notifications || (push_notifications = {}));
 var prayers;
 ((prayers2) => {
   class ServiceClient {
@@ -32638,7 +32645,7 @@ const usePushNotifications = () => {
         userAgent: navigator.userAgent
       };
       console.log("Sending subscription to backend:", subscriptionData);
-      await Client.notifications.subscribe(subscriptionData);
+      await Client.push_notifications.subscribe(subscriptionData);
       console.log("Subscription saved to backend successfully");
       setIsSubscribed(true);
       console.log("Successfully subscribed to push notifications");

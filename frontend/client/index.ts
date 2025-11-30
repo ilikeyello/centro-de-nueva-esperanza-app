@@ -38,7 +38,7 @@ export default class Client {
     public readonly donations: donations.ServiceClient
     public readonly events: events.ServiceClient
     public readonly media: media.ServiceClient
-    public readonly notifications: notifications.ServiceClient
+    public readonly push_notifications: push_notifications.ServiceClient
     public readonly prayers: prayers.ServiceClient
     public readonly sermons: sermons.ServiceClient
     private readonly options: ClientOptions
@@ -61,7 +61,7 @@ export default class Client {
         this.donations = new donations.ServiceClient(base)
         this.events = new events.ServiceClient(base)
         this.media = new media.ServiceClient(base)
-        this.notifications = new notifications.ServiceClient(base)
+        this.push_notifications = new push_notifications.ServiceClient(base)
         this.prayers = new prayers.ServiceClient(base)
         this.sermons = new sermons.ServiceClient(base)
     }
@@ -908,30 +908,7 @@ export namespace media {
     }
 }
 
-export namespace notifications {
-    export interface SendNotificationRequest {
-        title: string
-        body: string
-        icon?: string
-        data?: any
-        tag?: string
-    }
-
-    export interface SendNotificationResponse {
-        success: boolean
-        sentCount: number
-        failedCount: number
-        errors?: string[]
-    }
-
-    export interface SubscribeRequest {
-        endpoint: string
-        keys: {
-            p256dh: string
-            auth: string
-        }
-        userAgent?: string
-    }
+export namespace push_notifications {
 
     export class ServiceClient {
         private baseClient: BaseClient
@@ -939,6 +916,7 @@ export namespace notifications {
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.checkSubscriptions = this.checkSubscriptions.bind(this)
+            this.health = this.health.bind(this)
             this.sendNotification = this.sendNotification.bind(this)
             this.subscribe = this.subscribe.bind(this)
             this.test = this.test.bind(this)
@@ -949,27 +927,34 @@ export namespace notifications {
          * Check subscriptions endpoint for debugging
          */
         public async checkSubscriptions(): Promise<void> {
-            await this.baseClient.callTypedAPI("GET", `/notifications/subscriptions`)
+            await this.baseClient.callTypedAPI("GET", `/push-notifications/subscriptions`)
+        }
+
+        /**
+         * Simple health check endpoint
+         */
+        public async health(): Promise<void> {
+            await this.baseClient.callTypedAPI("GET", `/notifications/health`)
         }
 
         /**
          * Send notification to all subscribed users
          */
-        public async sendNotification(params: SendNotificationRequest): Promise<SendNotificationResponse> {
+        public async sendNotification(params: notifications.SendNotificationRequest): Promise<notifications.SendNotificationResponse> {
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/send`, JSON.stringify(params))
-            return await resp.json() as SendNotificationResponse
+            const resp = await this.baseClient.callTypedAPI("POST", `/push-notifications/send`, JSON.stringify(params))
+            return await resp.json() as notifications.SendNotificationResponse
         }
 
         /**
          * Subscribe to push notifications
          */
-        public async subscribe(params: SubscribeRequest): Promise<{
+        public async subscribe(params: notifications.SubscribeRequest): Promise<{
     success: boolean
     message: string
 }> {
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/subscribe`, JSON.stringify(params))
+            const resp = await this.baseClient.callTypedAPI("POST", `/push-notifications/subscribe`, JSON.stringify(params))
             return await resp.json() as {
     success: boolean
     message: string
@@ -980,14 +965,14 @@ export namespace notifications {
          * Test endpoint to verify notifications service is working
          */
         public async test(): Promise<void> {
-            await this.baseClient.callTypedAPI("GET", `/notifications/test`)
+            await this.baseClient.callTypedAPI("GET", `/push-notifications/test`)
         }
 
         /**
          * Simple test notification endpoint
          */
         public async testNotification(): Promise<void> {
-            await this.baseClient.callTypedAPI("POST", `/notifications/test-send`)
+            await this.baseClient.callTypedAPI("POST", `/push-notifications/test-send`)
         }
     }
 }
@@ -1156,6 +1141,32 @@ export namespace sermons {
         public async remove(params: DeleteSermonRequest): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/sermons/delete`, JSON.stringify(params))
         }
+    }
+}
+
+export namespace notifications {
+    export interface SendNotificationRequest {
+        title: string
+        body: string
+        icon?: string
+        data?: any
+        tag?: string
+    }
+
+    export interface SendNotificationResponse {
+        success: boolean
+        sentCount: number
+        failedCount: number
+        errors?: string[]
+    }
+
+    export interface SubscribeRequest {
+        endpoint: string
+        keys: {
+            p256dh: string
+            auth: string
+        }
+        userAgent?: string
     }
 }
 

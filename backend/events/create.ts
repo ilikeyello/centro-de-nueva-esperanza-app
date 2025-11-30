@@ -1,7 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "~encore/auth";
 import db from "../db";
-import * as notifications from "../notifications/notifications";
+import * as push_notifications from "../notifications/notifications";
 
 interface CreateEventRequest {
   titleEn: string;
@@ -53,7 +53,7 @@ export const create = api<CreateEventRequest, Event>(
         eventId: event!.id
       });
       
-      const result = await notifications.sendNotification({
+      const result = await push_notifications.sendNotification({
         title: req.titleEn,
         body: `📅 ${req.eventDate.toLocaleDateString()} at ${req.location}`,
         icon: "/cne-app/icon-192x192.png",
