@@ -32653,16 +32653,33 @@ const usePushNotifications = () => {
         hasAuth: !!subscriptionData.auth_key,
         userAgent: subscriptionData.userAgent
       });
-      await Client.notifications.subscribe(subscriptionData);
+      try {
+        await Client.notifications.subscribe(subscriptionData);
+        console.log("✅ Subscription saved via Encore client");
+      } catch (encoreError) {
+        console.warn("⚠️ Encore client failed, trying direct fetch:", encoreError);
+        const response = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(subscriptionData)
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        const result = await response.json();
+        console.log("✅ Subscription saved via direct fetch:", result);
+      }
       console.log("✅ Subscription saved to backend successfully");
       setIsSubscribed(true);
       console.log("✅ Successfully subscribed to push notifications");
     } catch (err) {
       console.error("❌ Error subscribing to push notifications:", err);
       console.error("❌ Error details:", {
-        name: err.name,
-        message: err.message,
-        stack: err.stack
+        name: err instanceof Error ? err.name : "Unknown",
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : void 0
       });
       const errorMessage = err instanceof Error ? err.message : "Failed to subscribe to notifications";
       setError(errorMessage);
