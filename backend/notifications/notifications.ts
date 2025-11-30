@@ -249,6 +249,60 @@ export const testSimpleNotification = api(
       };
     }
   }
+// Debug endpoint to check subscriptions and test sending
+export const debugSubscriptions = api(
+  { expose: true, method: "GET", path: "/notifications/debug" },
+  async () => {
+    console.log("🔍 Debug: Checking subscriptions...");
+    
+    try {
+      // Get all subscriptions from database
+      const subscriptions = [];
+      for await (const sub of db.query`
+        SELECT endpoint, p256dh_key, auth_key, user_agent, created_at 
+        FROM push_subscriptions 
+        WHERE created_at > NOW() - INTERVAL '30 days'
+      `) {
+        subscriptions.push({
+          endpoint: sub.endpoint.substring(0, 50) + "...",
+          userAgent: sub.user_agent,
+          hasP256dh: !!sub.p256dh_key,
+          hasAuth: !!sub.auth_key,
+          createdAt: sub.created_at
+        });
+      }
+      
+      console.log(`🔍 Debug: Found ${subscriptions.length} subscriptions`);
+      
+      // Test VAPID setup
+      let vapidStatus = "unknown";
+      try {
+        const testPayload = JSON.stringify({
+          title: "Debug Test",
+          body: "Testing VAPID setup"
+        });
+        vapidStatus = "configured";
+      } catch (error) {
+        vapidStatus = `error: ${String(error)}`;
+      }
+      
+      return {
+        success: true,
+        subscriptions,
+        subscriptionCount: subscriptions.length,
+        vapidStatus,
+        timestamp: new Date().toISOString()
+      };
+      
+    } catch (error) {
+      console.error("🔍 Debug error:", error);
+      return {
+        success: false,
+        error: String(error),
+        subscriptionCount: 0
+      };
+    }
+  }
 );
 
 // Send notification to all subscribed users
