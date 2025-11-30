@@ -32604,12 +32604,15 @@ const usePushNotifications = () => {
   };
   const subscribe = async () => {
     if (!isSupported) {
+      console.error("🚫 Push notifications not supported on this device");
       setError("Push notifications are not supported in this browser");
       return;
     }
     setIsLoading(true);
     setError(null);
-    console.log("Starting subscription process...");
+    console.log("🔔 Starting subscription process...");
+    console.log("🔔 User Agent:", navigator.userAgent);
+    console.log("🔔 Is PWA mode:", window.matchMedia("(display-mode: standalone)").matches);
     try {
       console.log("Requesting notification permission...");
       const permissionResult = await Notification.requestPermission();
@@ -32644,13 +32647,23 @@ const usePushNotifications = () => {
         auth_key: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : "",
         userAgent: navigator.userAgent
       };
-      console.log("Sending subscription to backend:", subscriptionData);
+      console.log("🔔 Sending subscription to backend:", {
+        endpoint: subscriptionData.endpoint.substring(0, 50) + "...",
+        hasP256dh: !!subscriptionData.p256dh_key,
+        hasAuth: !!subscriptionData.auth_key,
+        userAgent: subscriptionData.userAgent
+      });
       await Client.notifications.subscribe(subscriptionData);
-      console.log("Subscription saved to backend successfully");
+      console.log("✅ Subscription saved to backend successfully");
       setIsSubscribed(true);
-      console.log("Successfully subscribed to push notifications");
+      console.log("✅ Successfully subscribed to push notifications");
     } catch (err) {
-      console.error("Error subscribing to push notifications:", err);
+      console.error("❌ Error subscribing to push notifications:", err);
+      console.error("❌ Error details:", {
+        name: err.name,
+        message: err.message,
+        stack: err.stack
+      });
       const errorMessage = err instanceof Error ? err.message : "Failed to subscribe to notifications";
       setError(errorMessage);
     } finally {
