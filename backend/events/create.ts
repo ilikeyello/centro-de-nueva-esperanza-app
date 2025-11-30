@@ -1,7 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "~encore/auth";
 import db from "../db";
-import * as notifications from "../notifications/notifications";
+import * as notifications from "../../notifications/notifications";
 
 interface CreateEventRequest {
   titleEn: string;
