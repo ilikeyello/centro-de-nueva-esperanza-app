@@ -90,6 +90,23 @@ export const test = api(
   }
 );
 
+// Simple HTML test endpoint that should always return visible content
+export const htmlTest = api(
+  { expose: true, method: "GET", path: "/notifications/html-test" },
+  async () => {
+    return new Response(
+      `<html>
+        <body>
+          <h1>Notifications Service Working!</h1>
+          <p>Time: ${new Date().toISOString()}</p>
+          <p>If you see this, the service is responding!</p>
+        </body>
+      </html>`,
+      { headers: { 'Content-Type': 'text/html' } }
+    );
+  }
+);
+
 // VAPID validation endpoint
 export const validateVAPID = api(
   { expose: true, method: "GET", path: "/notifications/validate-vapid" },
