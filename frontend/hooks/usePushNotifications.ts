@@ -131,29 +131,23 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
           userAgent: subscriptionData.userAgent
         });
         
-        // Try to use Encore client first, fallback to direct fetch
-        try {
-          await backend.notifications.subscribe(subscriptionData);
-          console.log('✅ Existing subscription saved via Encore client');
-        } catch (encoreError) {
-          console.warn('⚠️ Encore client failed, trying direct fetch:', encoreError);
-          
-          // Fallback to direct fetch
-          const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(subscriptionData)
-          });
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-          
-          const result = await response.json();
-          console.log('✅ Existing subscription saved via direct fetch:', result);
+        // Use direct fetch since Encore client notifications service isn't available
+        console.log('🔔 Saving existing subscription via direct fetch...');
+        
+        const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(subscriptionData)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+        
+        const result = await response.json();
+        console.log('✅ Existing subscription saved via direct fetch:', result);
         
         setIsSubscribed(true);
         setIsLoading(false);
@@ -189,29 +183,23 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         userAgent: subscriptionData.userAgent
       });
       
-      // Try to use Encore client first, fallback to direct fetch
-      try {
-        await backend.notifications.subscribe(subscriptionData);
-        console.log('✅ Subscription saved via Encore client');
-      } catch (encoreError) {
-        console.warn('⚠️ Encore client failed, trying direct fetch:', encoreError);
-        
-        // Fallback to direct fetch
-        const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(subscriptionData)
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ Subscription saved via direct fetch:', result);
+      // Use direct fetch since Encore client notifications service isn't available
+      console.log('🔔 Saving new subscription via direct fetch...');
+      
+      const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(subscriptionData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+      
+      const result = await response.json();
+      console.log('✅ New subscription saved via direct fetch:', result);
       
       console.log('✅ Subscription saved to backend successfully');
 
