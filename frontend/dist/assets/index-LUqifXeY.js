@@ -32593,14 +32593,16 @@ const usePushNotifications = () => {
         const authKey = subscription.getKey ? subscription.getKey("auth") : null;
         const subscriptionData = {
           endpoint: subscription.endpoint,
-          p256dh_key: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
-          auth_key: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : "",
+          keys: {
+            p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
+            auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ""
+          },
           userAgent: navigator.userAgent
         };
         console.log("🔔 Saving existing subscription to backend:", {
           endpoint: subscriptionData.endpoint.substring(0, 50) + "...",
-          hasP256dh: !!subscriptionData.p256dh_key,
-          hasAuth: !!subscriptionData.auth_key,
+          hasP256dh: !!subscriptionData.keys.p256dh,
+          hasAuth: !!subscriptionData.keys.auth,
           userAgent: subscriptionData.userAgent
         });
         const response = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
@@ -32664,14 +32666,16 @@ const usePushNotifications = () => {
         const authKey2 = subscription2.getKey ? subscription2.getKey("auth") : null;
         const subscriptionData2 = {
           endpoint: subscription2.endpoint,
-          p256dh_key: p256dhKey2 ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey2)))) : "",
-          auth_key: authKey2 ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey2)))) : "",
+          keys: {
+            p256dh: p256dhKey2 ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey2)))) : "",
+            auth: authKey2 ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey2)))) : ""
+          },
           userAgent: navigator.userAgent
         };
         console.log("🔔 Saving existing subscription to backend:", {
           endpoint: subscriptionData2.endpoint.substring(0, 50) + "...",
-          hasP256dh: !!subscriptionData2.p256dh_key,
-          hasAuth: !!subscriptionData2.auth_key,
+          hasP256dh: !!subscriptionData2.keys.p256dh,
+          hasAuth: !!subscriptionData2.keys.auth,
           userAgent: subscriptionData2.userAgent
         });
         console.log("🔔 Saving existing subscription via direct fetch...");

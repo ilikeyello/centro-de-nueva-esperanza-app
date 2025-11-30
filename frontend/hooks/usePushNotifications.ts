@@ -63,17 +63,19 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         
         const subscriptionData = {
           endpoint: subscription.endpoint,
-          p256dh_key: p256dhKey ? 
-            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
-          auth_key: authKey ? 
-            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : '',
+          keys: {
+            p256dh: p256dhKey ? 
+              btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
+            auth: authKey ? 
+              btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ''
+          },
           userAgent: navigator.userAgent
         };
 
         console.log('🔔 Saving existing subscription to backend:', {
           endpoint: subscriptionData.endpoint.substring(0, 50) + '...',
-          hasP256dh: !!subscriptionData.p256dh_key,
-          hasAuth: !!subscriptionData.auth_key,
+          hasP256dh: !!subscriptionData.keys.p256dh,
+          hasAuth: !!subscriptionData.keys.auth,
           userAgent: subscriptionData.userAgent
         });
         
@@ -158,17 +160,19 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         
         const subscriptionData = {
           endpoint: subscription.endpoint,
-          p256dh_key: p256dhKey ? 
-            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
-          auth_key: authKey ? 
-            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : '',
+          keys: {
+            p256dh: p256dhKey ? 
+              btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
+            auth: authKey ? 
+              btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ''
+          },
           userAgent: navigator.userAgent
         };
 
         console.log('🔔 Saving existing subscription to backend:', {
           endpoint: subscriptionData.endpoint.substring(0, 50) + '...',
-          hasP256dh: !!subscriptionData.p256dh_key,
-          hasAuth: !!subscriptionData.auth_key,
+          hasP256dh: !!subscriptionData.keys.p256dh,
+          hasAuth: !!subscriptionData.keys.auth,
           userAgent: subscriptionData.userAgent
         });
         
