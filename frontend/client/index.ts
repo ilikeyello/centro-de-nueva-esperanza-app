@@ -942,6 +942,7 @@ export namespace notifications {
             this.sendNotification = this.sendNotification.bind(this)
             this.subscribe = this.subscribe.bind(this)
             this.test = this.test.bind(this)
+            this.testNotification = this.testNotification.bind(this)
         }
 
         /**
@@ -980,6 +981,13 @@ export namespace notifications {
          */
         public async test(): Promise<void> {
             await this.baseClient.callTypedAPI("GET", `/notifications/test`)
+        }
+
+        /**
+         * Simple test notification endpoint
+         */
+        public async testNotification(): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/notifications/test-send`)
         }
     }
 }

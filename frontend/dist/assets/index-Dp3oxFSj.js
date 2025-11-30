@@ -20259,6 +20259,7 @@ var notifications;
       this.sendNotification = this.sendNotification.bind(this);
       this.subscribe = this.subscribe.bind(this);
       this.test = this.test.bind(this);
+      this.testNotification = this.testNotification.bind(this);
     }
     /**
      * Check subscriptions endpoint for debugging
@@ -20285,6 +20286,12 @@ var notifications;
      */
     async test() {
       await this.baseClient.callTypedAPI("GET", `/notifications/test`);
+    }
+    /**
+     * Simple test notification endpoint
+     */
+    async testNotification() {
+      await this.baseClient.callTypedAPI("POST", `/notifications/test-send`);
     }
   }
   notifications2.ServiceClient = ServiceClient;
