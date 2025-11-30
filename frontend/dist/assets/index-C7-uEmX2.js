@@ -32583,7 +32583,21 @@ const usePushNotifications = () => {
     console.log("Starting subscription process...");
     try {
       console.log("Requesting notification permission...");
-      const permissionResult = await Notification.requestPermission();
+      let permissionResult;
+      const permissionPromise = Notification.requestPermission();
+      const timeoutPromise = new Promise(
+        (_, reject) => setTimeout(() => reject(new Error("Permission request timed out")), 1e4)
+      );
+      try {
+        permissionResult = await Promise.race([permissionPromise, timeoutPromise]);
+      } catch (error2) {
+        if (error2 instanceof Error && error2.message === "Permission request timed out") {
+          console.warn("Permission request timed out, continuing...");
+          permissionResult = "granted";
+        } else {
+          throw error2;
+        }
+      }
       console.log("Permission result:", permissionResult);
       setPermission(permissionResult);
       if (permissionResult !== "granted") {
@@ -32592,8 +32606,16 @@ const usePushNotifications = () => {
         return;
       }
       console.log("Getting service worker registration...");
-      const registration = await navigator.serviceWorker.ready;
-      console.log("Service worker registration:", registration);
+      let registration;
+      try {
+        registration = await navigator.serviceWorker.ready;
+        console.log("Service worker registration:", registration);
+      } catch (error2) {
+        console.error("Service worker not ready:", error2);
+        setError("Service worker not available");
+        setIsLoading(false);
+        return;
+      }
       const existingSubscription = await registration.pushManager.getSubscription();
       if (existingSubscription) {
         console.log("User already subscribed, using existing subscription");
@@ -32602,10 +32624,22 @@ const usePushNotifications = () => {
         return;
       }
       console.log("Subscribing to push notifications...");
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
+      let subscription;
+      try {
+        const subscriptionPromise = registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        const subscriptionTimeoutPromise = new Promise(
+          (_, reject) => setTimeout(() => reject(new Error("Subscription timed out")), 15e3)
+        );
+        subscription = await Promise.race([subscriptionPromise, subscriptionTimeoutPromise]);
+      } catch (error2) {
+        if (error2 instanceof Error && error2.message === "Subscription timed out") {
+          throw new Error("Push subscription timed out. Please try again.");
+        }
+        throw error2;
+      }
       console.log("Push subscription created:", subscription);
       const p256dhKey = subscription.getKey("p256dh");
       const authKey = subscription.getKey("auth");

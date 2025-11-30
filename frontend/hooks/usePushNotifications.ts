@@ -85,9 +85,29 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
     console.log('Starting subscription process...');
 
     try {
-      // Request permission
+      // Request permission with timeout
       console.log('Requesting notification permission...');
-      const permissionResult = await Notification.requestPermission();
+      let permissionResult: NotificationPermission;
+      
+      // Add timeout for Android permission request
+      const permissionPromise = Notification.requestPermission();
+      const timeoutPromise = new Promise<NotificationPermission>((_, reject) => 
+        setTimeout(() => reject(new Error('Permission request timed out')), 10000)
+      );
+      
+      try {
+        permissionResult = await Promise.race([permissionPromise, timeoutPromise]) as NotificationPermission;
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Permission request timed out') {
+          // On Android, sometimes the permission dialog doesn't close properly
+          // Try to continue with 'granted' status and see if subscription works
+          console.warn('Permission request timed out, continuing...');
+          permissionResult = 'granted';
+        } else {
+          throw error;
+        }
+      }
+      
       console.log('Permission result:', permissionResult);
       setPermission(permissionResult);
 
@@ -97,10 +117,19 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         return;
       }
 
-      // Get service worker registration
+      // Get service worker registration with timeout
       console.log('Getting service worker registration...');
-      const registration = await navigator.serviceWorker.ready;
-      console.log('Service worker registration:', registration);
+      let registration: ServiceWorkerRegistration;
+      
+      try {
+        registration = await navigator.serviceWorker.ready;
+        console.log('Service worker registration:', registration);
+      } catch (error) {
+        console.error('Service worker not ready:', error);
+        setError('Service worker not available');
+        setIsLoading(false);
+        return;
+      }
 
       // Check existing subscription first
       const existingSubscription = await registration.pushManager.getSubscription();
@@ -111,12 +140,28 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         return;
       }
 
-      // Subscribe to push notifications
+      // Subscribe to push notifications with timeout
       console.log('Subscribing to push notifications...');
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any
-      });
+      let subscription: PushSubscription;
+      
+      try {
+        const subscriptionPromise = registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any
+        });
+        
+        const subscriptionTimeoutPromise = new Promise<PushSubscription>((_, reject) => 
+          setTimeout(() => reject(new Error('Subscription timed out')), 15000)
+        );
+        
+        subscription = await Promise.race([subscriptionPromise, subscriptionTimeoutPromise]);
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Subscription timed out') {
+          throw new Error('Push subscription timed out. Please try again.');
+        }
+        throw error;
+      }
+      
       console.log('Push subscription created:', subscription);
 
       // Send subscription to backend

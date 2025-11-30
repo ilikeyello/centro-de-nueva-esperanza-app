@@ -66,6 +66,29 @@ export const test = api(
   }
 );
 
+// Check subscriptions endpoint for debugging
+export const checkSubscriptions = api(
+  { expose: true, method: "GET", path: "/notifications/subscriptions" },
+  async () => {
+    const subscriptions = await db.query`
+      SELECT endpoint, user_agent, created_at 
+      FROM push_subscriptions 
+      WHERE created_at > NOW() - INTERVAL '30 days'
+      ORDER BY created_at DESC
+      LIMIT 10
+    `;
+    
+    return {
+      count: subscriptions.length,
+      subscriptions: subscriptions.map(sub => ({
+        endpoint: sub.endpoint.substring(0, 50) + '...',
+        userAgent: sub.user_agent,
+        createdAt: sub.created_at
+      }))
+    };
+  }
+);
+
 // Subscribe to push notifications
 export const subscribe = api(
   { expose: true, method: "POST", path: "/notifications/subscribe" },
@@ -108,84 +131,88 @@ export const subscribe = api(
   }
 );
 
-// Send push notifications (internal API, not exposed)
+// Send notification to all subscribed users
 export const sendNotification = api(
-  { expose: false, method: "POST", path: "/notifications/send" },
+  { expose: true, method: "POST", path: "/notifications/send" },
   async (params: SendNotificationRequest): Promise<SendNotificationResponse> => {
+    console.log("sendNotification called with:", params);
+    
     try {
-      const webpush = await initializeWebPush();
-      
-      // Get all subscriptions
+      // Get all subscriptions from database
       const subscriptions = await db.query`
-        SELECT endpoint, p256dh_key, auth_key FROM push_subscriptions
+        SELECT endpoint, p256dh_key, auth_key, user_agent 
+        FROM push_subscriptions 
+        WHERE created_at > NOW() - INTERVAL '30 days'
       `;
       
-      const subscriptionList = [];
-      for await (const sub of subscriptions) {
-        subscriptionList.push({
-          endpoint: sub.endpoint,
-          keys: {
-            p256dh: sub.p256dh_key,
-            auth: sub.auth_key
-          }
-        });
+      console.log(`Found ${subscriptions.length} subscriptions to notify`);
+
+      if (subscriptions.length === 0) {
+        return {
+          success: true,
+          sentCount: 0,
+          failedCount: 0,
+          errors: ["No active subscriptions found"]
+        };
       }
-      
-      if (subscriptionList.length === 0) {
-        return { success: true, sentCount: 0, failedCount: 0 };
-      }
-      
-      // Prepare notification payload
-      const payload = JSON.stringify({
-        title: params.title,
-        body: params.body,
-        icon: params.icon || "/cne-app/icon-192x192.png",
-        data: params.data || {},
-        tag: params.tag
-      });
-      
-      // Send notifications to all subscribers
-      const results = await Promise.allSettled(
-        subscriptionList.map(async (subscription) => {
-          try {
-            await webpush.sendNotification(subscription, payload);
-            return { success: true };
-          } catch (error) {
-            console.error("Failed to send notification to:", subscription.endpoint, error);
-            
-            // If subscription is no longer valid, remove it
-            if ((error as any).statusCode === 410 || (error as any).statusCode === 404) {
-              await db.exec`
-                DELETE FROM push_subscriptions WHERE endpoint = ${subscription.endpoint}
-              `;
-            }
-            
-            return { success: false, error: (error as any).message };
-          }
-        })
-      );
-      
-      const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
-      const failed = results.length - successful;
-      const errors = results
-        .filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success))
-        .map(r => r.status === 'rejected' ? r.reason : r.value.error);
-      
-      return {
-        success: successful > 0,
-        sentCount: successful,
-        failedCount: failed,
-        errors: errors.length > 0 ? errors : undefined
-      };
-      
-    } catch (error) {
-      console.error("Failed to send notifications:", error);
-      return {
-        success: false,
+
+      // Initialize web-push
+      const webpush = await initializeWebPush();
+      console.log("WebPush initialized with VAPID keys");
+
+      const results = {
         sentCount: 0,
         failedCount: 0,
-        errors: [(error as any).message]
+        errors: [] as string[]
       };
+
+      // Send to each subscription
+      for (const subscription of subscriptions) {
+        try {
+          const pushSubscription = {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: subscription.p256dh_key,
+              auth: subscription.auth_key
+            }
+          };
+
+          console.log(`Sending to: ${subscription.endpoint.substring(0, 50)}...`);
+
+          await webpush.sendNotification(
+            pushSubscription,
+            JSON.stringify({
+              title: params.title,
+              body: params.body,
+              icon: params.icon || "/cne-app/icon-192x192.png",
+              badge: "/cne-app/icon-192x192.png",
+              tag: params.tag,
+              data: params.data || {},
+              actions: [
+                {
+                  action: 'explore',
+                  title: 'Open App',
+                  icon: '/cne-app/icon-192x192.png'
+                }
+              ]
+            })
+          );
+
+          results.sentCount++;
+          console.log(`Successfully sent to: ${subscription.endpoint.substring(0, 50)}...`);
+        } catch (error) {
+          results.failedCount++;
+          const errorMsg = `Failed to send to ${subscription.endpoint.substring(0, 50)}...: ${error}`;
+          results.errors.push(errorMsg);
+          console.error(errorMsg);
+        }
+      }
+
+      console.log(`Notification sending complete: ${results.sentCount} sent, ${results.failedCount} failed`);
+      return results;
+    } catch (error) {
+      console.error("Error in sendNotification:", error);
+      throw error;
     }
   }
 );
