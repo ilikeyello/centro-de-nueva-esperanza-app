@@ -69,3 +69,14 @@ export const create = api<CreateAnnouncementRequest, Announcement>(
     return announcement!;
   }
 );
+
+// Test endpoint to verify deployment
+export const testDeploy = api(
+  { expose: true, method: "GET", path: "/announcements/test-deploy" },
+  async () => {
+    return { 
+      message: "Announcements service is working!",
+      timestamp: new Date().toISOString()
+    };
+  }
+);
