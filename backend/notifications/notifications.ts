@@ -112,10 +112,6 @@ export const validateVAPID = api(
     try {
       const webpush = await import('web-push');
       
-      // Test VAPID key format
-      const isValidPublicKey = webpush.validateVapidPublicKey(PUBLIC_VAPID_KEY);
-      console.log("🔑 Public key valid:", isValidPublicKey);
-      
       // Test VAPID details setup
       webpush.setVapidDetails(
         'mailto:contact@centrodenuevaesperanza.org',
@@ -123,7 +119,7 @@ export const validateVAPID = api(
         PRIVATE_VAPID_KEY
       );
       
-      // Generate a test VAPID header to verify keys work
+      // Test VAPID header generation with correct method name
       const testPayload = JSON.stringify({
         title: "VAPID Test",
         body: "Testing VAPID configuration"
@@ -135,9 +131,9 @@ export const validateVAPID = api(
         auth: "test-auth-key"
       };
       
-      // This will fail but shows if VAPID keys are properly formatted
+      // Use correct method name getVapidHeaders instead of generateVapidHeaders
       try {
-        const vapidHeaders = webpush.generateVapidHeaders(
+        const vapidHeaders = webpush.getVapidHeaders(
           testEndpoint,
           testKeys.p256dh,
           testKeys.auth,
@@ -147,16 +143,15 @@ export const validateVAPID = api(
         return { 
           success: true,
           message: "VAPID keys are valid and working",
-          publicKeyValid: isValidPublicKey,
           vapidHeadersGenerated: true,
-          subject: "contact@centrodenuevaesperanza.org"
+          subject: "contact@centrodenuevaesperanza.org",
+          headerCount: Object.keys(vapidHeaders).length
         };
       } catch (vapidError) {
         return { 
           success: false,
           message: "VAPID keys invalid or misconfigured",
-          error: String(vapidError),
-          publicKeyValid: isValidPublicKey
+          error: String(vapidError)
         };
       }
       
