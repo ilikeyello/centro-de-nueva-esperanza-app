@@ -19319,8 +19319,7 @@ function Navigation({ currentPage, onNavigate }) {
     { id: "media", icon: Play, labelEn: "Media", labelEs: "Medios" },
     { id: "news", icon: Megaphone, labelEn: "News", labelEs: "Noticias" },
     { id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" },
-    { id: "games", icon: Gamepad2, labelEn: "Games", labelEs: "Juegos" },
-    { id: "notifications", icon: Bell, labelEn: "Notifications", labelEs: "Notificaciones" }
+    { id: "games", icon: Gamepad2, labelEn: "Games", labelEs: "Juegos" }
   ];
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur transition-transform md:sticky md:top-0 md:border-b md:border-t-0", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -32582,22 +32581,21 @@ const usePushNotifications = () => {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
+      const p256dhKey = subscription.getKey("p256dh");
+      const authKey = subscription.getKey("auth");
       const subscriptionData = {
         endpoint: subscription.endpoint,
-        keys: {
-          p256dh: subscription.getKey("p256dh") ? btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("p256dh")))) : "",
-          auth: subscription.getKey("auth") ? btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("auth")))) : ""
-        }
-      };
-      await Client.notifications.subscribe({
-        ...subscriptionData,
+        p256dh_key: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
+        auth_key: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : "",
         userAgent: navigator.userAgent
-      });
+      };
+      console.log("Sending subscription to backend:", subscriptionData);
+      await Client.notifications.subscribe(subscriptionData);
       setIsSubscribed(true);
       console.log("Successfully subscribed to push notifications");
     } catch (err) {
       console.error("Error subscribing to push notifications:", err);
-      setError("Failed to subscribe to notifications");
+      setError(err instanceof Error ? err.message : "Failed to subscribe to notifications");
     } finally {
       setIsLoading(false);
     }
@@ -32634,10 +32632,18 @@ const usePushNotifications = () => {
   };
 };
 const PushNotificationPrompt = ({ className }) => {
-  const [showPrompt, setShowPrompt] = reactExports.useState(true);
+  const [showPrompt, setShowPrompt] = reactExports.useState(false);
   const [dismissed, setDismissed] = reactExports.useState(false);
   const { isSupported, isSubscribed, permission, isLoading, error, subscribe, unsubscribe } = usePushNotifications();
-  if (!isSupported || dismissed || !showPrompt) {
+  reactExports.useEffect(() => {
+    const isPWA = window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: minimal-ui)").matches || window.navigator.standalone === true;
+    if (isPWA && !isSubscribed && !dismissed && permission !== "denied") {
+      setShowPrompt(true);
+    } else {
+      setShowPrompt(false);
+    }
+  }, [isSubscribed, dismissed, permission]);
+  if (!isSupported || !showPrompt) {
     return null;
   }
   if (isSubscribed) {
@@ -32663,13 +32669,18 @@ const PushNotificationPrompt = ({ className }) => {
     return null;
   }
   const handleSubscribe = async () => {
-    await subscribe();
-    if (!error) {
-      setShowPrompt(false);
+    try {
+      await subscribe();
+      if (!error) {
+        setShowPrompt(false);
+      }
+    } catch (err) {
+      console.error("Failed to subscribe:", err);
     }
   };
   const handleDismiss = () => {
     setDismissed(true);
+    setShowPrompt(false);
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: `bg-blue-50 border-blue-200 ${className}`, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "pb-3", children: [

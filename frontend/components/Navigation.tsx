@@ -114,7 +114,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     { id: "news", icon: Megaphone, labelEn: "News", labelEs: "Noticias" },
     { id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" },
     { id: "games", icon: Gamepad2, labelEn: "Games", labelEs: "Juegos" },
-    { id: "notifications", icon: Bell, labelEn: "Notifications", labelEs: "Notificaciones" },
   ];
 
   return (

@@ -94,30 +94,31 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       // Subscribe to push notifications
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
 
       // Send subscription to backend
-      const subscriptionData: PushSubscription = {
+      const p256dhKey = subscription.getKey('p256dh');
+      const authKey = subscription.getKey('auth');
+      
+      const subscriptionData = {
         endpoint: subscription.endpoint,
-        keys: {
-          p256dh: subscription.getKey('p256dh') ? 
-            btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')!))) : '',
-          auth: subscription.getKey('auth') ? 
-            btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')!))) : ''
-        }
+        p256dh_key: p256dhKey ? 
+          btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
+        auth_key: authKey ? 
+          btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : '',
+        userAgent: navigator.userAgent
       };
 
-      await backend.notifications.subscribe({
-        ...subscriptionData,
-        userAgent: navigator.userAgent
-      });
+      console.log('Sending subscription to backend:', subscriptionData);
+      
+      await backend.notifications.subscribe(subscriptionData);
 
       setIsSubscribed(true);
       console.log('Successfully subscribed to push notifications');
     } catch (err) {
       console.error('Error subscribing to push notifications:', err);
-      setError('Failed to subscribe to notifications');
+      setError(err instanceof Error ? err.message : 'Failed to subscribe to notifications');
     } finally {
       setIsLoading(false);
     }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -9,12 +9,26 @@ interface PushNotificationPromptProps {
 }
 
 export const PushNotificationPrompt = ({ className }: PushNotificationPromptProps) => {
-  const [showPrompt, setShowPrompt] = useState(true);
+  const [showPrompt, setShowPrompt] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const { isSupported, isSubscribed, permission, isLoading, error, subscribe, unsubscribe } = usePushNotifications();
 
-  // Don't show if not supported or dismissed
-  if (!isSupported || dismissed || !showPrompt) {
+  // Check if running as PWA (installed to homepage)
+  useEffect(() => {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                 window.matchMedia('(display-mode: minimal-ui)').matches ||
+                 (window.navigator as any).standalone === true;
+    
+    // Only show prompt if in PWA mode and not already subscribed/dismissed
+    if (isPWA && !isSubscribed && !dismissed && permission !== 'denied') {
+      setShowPrompt(true);
+    } else {
+      setShowPrompt(false);
+    }
+  }, [isSubscribed, dismissed, permission]);
+
+  // Don't show if not supported or not in PWA mode
+  if (!isSupported || !showPrompt) {
     return null;
   }
 
@@ -51,14 +65,20 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
   }
 
   const handleSubscribe = async () => {
-    await subscribe();
-    if (!error) {
-      setShowPrompt(false);
+    try {
+      await subscribe();
+      // Hide prompt on successful subscription
+      if (!error) {
+        setShowPrompt(false);
+      }
+    } catch (err) {
+      console.error('Failed to subscribe:', err);
     }
   };
 
   const handleDismiss = () => {
     setDismissed(true);
+    setShowPrompt(false);
   };
 
   return (
