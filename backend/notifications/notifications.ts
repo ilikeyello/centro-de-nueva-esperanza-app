@@ -54,6 +54,18 @@ const initializeWebPush = async () => {
 
 // API Endpoints
 
+// Simple health check endpoint
+export const health = api(
+  { expose: true, method: "GET", path: "/notifications/health" },
+  async () => {
+    return { 
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      service: "notifications"
+    };
+  }
+);
+
 // Test endpoint to verify notifications service is working
 export const test = api(
   { expose: true, method: "GET", path: "/notifications/test" },
