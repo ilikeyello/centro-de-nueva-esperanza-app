@@ -1,4 +1,4 @@
-import { api } from "encore.dev/api";
+import { api, APIError } from "encore.dev/api";
 import db from "../db";
 
 // VAPID keys - using hardcoded values to avoid Encore secret infrastructure issues
@@ -144,7 +144,11 @@ export const validateVAPID = api(
 // Ultra-simple test endpoint - no database, no imports, just return POJO
 export const simpleTest = api(
   { expose: true, method: "GET", path: "/notifications/simple" },
-  async () => {
+  async (params: { passcode?: string }) => {
+    if (params.passcode !== "78598") {
+      throw APIError.permissionDenied("invalid passcode");
+    }
+    
     console.log("🚀 SIMPLE TEST ENDPOINT HIT");
     return { 
       message: "Simple test works!",
