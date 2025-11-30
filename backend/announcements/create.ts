@@ -41,7 +41,14 @@ export const create = api<CreateAnnouncementRequest, Announcement>(
 
     // Send push notification (non-blocking)
     try {
-      await notifications.sendNotification({
+      console.log("🔔 Preparing to send announcement notification:", {
+        title: req.titleEn,
+        body: req.priority === "urgent" ? "🚨 URGENT: " + req.contentEn.substring(0, 100) + "..." : req.contentEn.substring(0, 100) + "...",
+        priority: req.priority,
+        announcementId: announcement!.id
+      });
+      
+      const result = await notifications.sendNotification({
         title: req.titleEn,
         body: req.priority === "urgent" ? "🚨 URGENT: " + req.contentEn.substring(0, 100) + "..." : req.contentEn.substring(0, 100) + "...",
         icon: "/cne-app/icon-192x192.png",
@@ -52,9 +59,11 @@ export const create = api<CreateAnnouncementRequest, Announcement>(
           priority: req.priority
         }
       });
+      
+      console.log("✅ Announcement notification sent successfully:", result);
     } catch (error) {
       // Non-blocking - don't fail the announcement creation if notification fails
-      console.error("Failed to send push notification for announcement:", error);
+      console.error("❌ Failed to send push notification for announcement:", error);
     }
 
     return announcement!;

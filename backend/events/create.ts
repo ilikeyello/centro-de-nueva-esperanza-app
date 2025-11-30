@@ -46,20 +46,30 @@ export const create = api<CreateEventRequest, Event>(
 
     // Send push notification (non-blocking)
     try {
-      await notifications.sendNotification({
+      console.log("🔔 Preparing to send event notification:", {
         title: req.titleEn,
-        body: req.descriptionEn || `New event: ${req.titleEn}`,
+        date: req.eventDate.toLocaleDateString(),
+        location: req.location,
+        eventId: event!.id
+      });
+      
+      const result = await notifications.sendNotification({
+        title: req.titleEn,
+        body: `📅 ${req.eventDate.toLocaleDateString()} at ${req.location}`,
         icon: "/cne-app/icon-192x192.png",
         tag: `event-${event!.id}`,
         data: {
           type: "event",
           id: event!.id,
-          eventDate: req.eventDate
+          date: req.eventDate,
+          location: req.location
         }
       });
+      
+      console.log("✅ Event notification sent successfully:", result);
     } catch (error) {
       // Non-blocking - don't fail the event creation if notification fails
-      console.error("Failed to send push notification for event:", error);
+      console.error("❌ Failed to send push notification for event:", error);
     }
 
     return event!;
