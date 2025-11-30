@@ -90,6 +90,73 @@ export const test = api(
   }
 );
 
+// VAPID validation endpoint
+export const validateVAPID = api(
+  { expose: true, method: "GET", path: "/notifications/validate-vapid" },
+  async () => {
+    console.log("🔑 Validating VAPID keys...");
+    
+    try {
+      const webpush = await import('web-push');
+      
+      // Test VAPID key format
+      const isValidPublicKey = webpush.validateVapidPublicKey(PUBLIC_VAPID_KEY);
+      console.log("🔑 Public key valid:", isValidPublicKey);
+      
+      // Test VAPID details setup
+      webpush.setVapidDetails(
+        'mailto:contact@centrodenuevaesperanza.org',
+        PUBLIC_VAPID_KEY,
+        PRIVATE_VAPID_KEY
+      );
+      
+      // Generate a test VAPID header to verify keys work
+      const testPayload = JSON.stringify({
+        title: "VAPID Test",
+        body: "Testing VAPID configuration"
+      });
+      
+      const testEndpoint = "https://web.push.apple.com/test";
+      const testKeys = {
+        p256dh: "BMx5_e2p-zk9sXJ-nLz5h_3XJcFh7pLQJ9K8vN2xY3w",
+        auth: "test-auth-key"
+      };
+      
+      // This will fail but shows if VAPID keys are properly formatted
+      try {
+        const vapidHeaders = webpush.generateVapidHeaders(
+          testEndpoint,
+          testKeys.p256dh,
+          testKeys.auth,
+          testPayload
+        );
+        
+        return { 
+          success: true,
+          message: "VAPID keys are valid and working",
+          publicKeyValid: isValidPublicKey,
+          vapidHeadersGenerated: true,
+          subject: "contact@centrodenuevaesperanza.org"
+        };
+      } catch (vapidError) {
+        return { 
+          success: false,
+          message: "VAPID keys invalid or misconfigured",
+          error: String(vapidError),
+          publicKeyValid: isValidPublicKey
+        };
+      }
+      
+    } catch (error) {
+      return { 
+        success: false, 
+        message: "VAPID validation failed",
+        error: String(error)
+      };
+    }
+  }
+);
+
 // Simple health check that returns visible output
 export const healthCheck = api(
   { expose: true, method: "GET", path: "/notifications/health-simple" },
