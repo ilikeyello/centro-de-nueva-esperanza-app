@@ -94,16 +94,12 @@ export const test = api(
 export const htmlTest = api(
   { expose: true, method: "GET", path: "/notifications/html-test" },
   async () => {
-    return new Response(
-      `<html>
-        <body>
-          <h1>Notifications Service Working!</h1>
-          <p>Time: ${new Date().toISOString()}</p>
-          <p>If you see this, the service is responding!</p>
-        </body>
-      </html>`,
-      { headers: { 'Content-Type': 'text/html' } }
-    );
+    return {
+      html: true,
+      message: "Notifications Service Working!",
+      timestamp: new Date().toISOString(),
+      content: "If you see this, the service is responding!"
+    };
   }
 );
 
