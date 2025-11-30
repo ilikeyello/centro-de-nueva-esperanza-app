@@ -141,6 +141,19 @@ export const validateVAPID = api(
   }
 );
 
+// Ultra-simple test endpoint - no database, no imports, just return POJO
+export const simpleTest = api(
+  { expose: true, method: "GET", path: "/notifications/simple" },
+  async () => {
+    console.log("🚀 SIMPLE TEST ENDPOINT HIT");
+    return { 
+      message: "Simple test works!",
+      status: "ok",
+      timestamp: new Date().toISOString()
+    };
+  }
+);
+
 // Simple health check that returns visible output
 export const healthCheck = api(
   { expose: true, method: "GET", path: "/notifications/health-simple" },
