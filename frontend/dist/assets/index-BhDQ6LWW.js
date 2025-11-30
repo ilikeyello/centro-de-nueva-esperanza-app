@@ -20256,6 +20256,7 @@ var notifications;
     constructor(baseClient) {
       this.baseClient = baseClient;
       this.subscribe = this.subscribe.bind(this);
+      this.test = this.test.bind(this);
     }
     /**
      * Subscribe to push notifications
@@ -20263,6 +20264,12 @@ var notifications;
     async subscribe(params) {
       const resp = await this.baseClient.callTypedAPI("POST", `/notifications/subscribe`, JSON.stringify(params));
       return await resp.json();
+    }
+    /**
+     * Test endpoint to verify notifications service is working
+     */
+    async test() {
+      await this.baseClient.callTypedAPI("GET", `/notifications/test`);
     }
   }
   notifications2.ServiceClient = ServiceClient;

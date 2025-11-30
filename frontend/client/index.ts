@@ -924,6 +924,7 @@ export namespace notifications {
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.subscribe = this.subscribe.bind(this)
+            this.test = this.test.bind(this)
         }
 
         /**
@@ -939,6 +940,13 @@ export namespace notifications {
     success: boolean
     message: string
 }
+        }
+
+        /**
+         * Test endpoint to verify notifications service is working
+         */
+        public async test(): Promise<void> {
+            await this.baseClient.callTypedAPI("GET", `/notifications/test`)
         }
     }
 }
