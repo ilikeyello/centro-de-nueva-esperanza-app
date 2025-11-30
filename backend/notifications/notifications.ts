@@ -174,7 +174,11 @@ export const healthCheck = api(
 // Simple test notification endpoint
 export const testNotification = api(
   { expose: true, method: "POST", path: "/notifications/test-send" },
-  async () => {
+  async (params: { passcode?: string }) => {
+    if (params.passcode !== "78598") {
+      throw APIError.permissionDenied("invalid passcode");
+    }
+    
     console.log("🧪 Testing notification sending...");
     
     try {
