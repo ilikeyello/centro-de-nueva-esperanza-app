@@ -32537,15 +32537,20 @@ const usePushNotifications = () => {
   reactExports.useEffect(() => {
     const supported = "serviceWorker" in navigator && "PushManager" in window;
     setIsSupported(supported);
+    console.log("Push notifications supported:", supported);
     if (supported) {
       setPermission(Notification.permission);
+      console.log("Current notification permission:", Notification.permission);
       checkSubscriptionStatus();
     }
   }, []);
   const checkSubscriptionStatus = async () => {
     try {
+      console.log("Checking subscription status...");
       const registration = await navigator.serviceWorker.ready;
+      console.log("Service worker ready:", registration);
       const subscription = await registration.pushManager.getSubscription();
+      console.log("Existing subscription:", subscription);
       setIsSubscribed(!!subscription);
     } catch (err) {
       console.error("Error checking subscription status:", err);
@@ -32568,19 +32573,33 @@ const usePushNotifications = () => {
     }
     setIsLoading(true);
     setError(null);
+    console.log("Starting subscription process...");
     try {
+      console.log("Requesting notification permission...");
       const permissionResult = await Notification.requestPermission();
+      console.log("Permission result:", permissionResult);
       setPermission(permissionResult);
       if (permissionResult !== "granted") {
         setError("Permission denied for notifications");
         setIsLoading(false);
         return;
       }
+      console.log("Getting service worker registration...");
       const registration = await navigator.serviceWorker.ready;
+      console.log("Service worker registration:", registration);
+      const existingSubscription = await registration.pushManager.getSubscription();
+      if (existingSubscription) {
+        console.log("User already subscribed, using existing subscription");
+        setIsSubscribed(true);
+        setIsLoading(false);
+        return;
+      }
+      console.log("Subscribing to push notifications...");
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
+      console.log("Push subscription created:", subscription);
       const p256dhKey = subscription.getKey("p256dh");
       const authKey = subscription.getKey("auth");
       const subscriptionData = {
@@ -32591,11 +32610,13 @@ const usePushNotifications = () => {
       };
       console.log("Sending subscription to backend:", subscriptionData);
       await Client.notifications.subscribe(subscriptionData);
+      console.log("Subscription saved to backend successfully");
       setIsSubscribed(true);
       console.log("Successfully subscribed to push notifications");
     } catch (err) {
       console.error("Error subscribing to push notifications:", err);
-      setError(err instanceof Error ? err.message : "Failed to subscribe to notifications");
+      const errorMessage = err instanceof Error ? err.message : "Failed to subscribe to notifications";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

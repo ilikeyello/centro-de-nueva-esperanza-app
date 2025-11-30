@@ -30,8 +30,11 @@ self.addEventListener('fetch', event => {
 
 // Push event - handle incoming push notifications
 self.addEventListener('push', event => {
-  const options = {
-    body: event.data ? event.data.text() : 'New notification from CNE',
+  console.log('Push event received:', event);
+  
+  let notificationData = {
+    title: 'CNE - Centro de Nueva Esperanza',
+    body: 'New notification from CNE',
     icon: '/cne-app/icon-192x192.png',
     badge: '/cne-app/icon-192x192.png',
     vibrate: [100, 50, 100],
@@ -53,8 +56,31 @@ self.addEventListener('push', event => {
     ]
   };
 
+  // Try to parse the push data
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      console.log('Push data parsed:', data);
+      notificationData = {
+        ...notificationData,
+        title: data.title || notificationData.title,
+        body: data.body || notificationData.body,
+        icon: data.icon || notificationData.icon,
+        data: {
+          ...notificationData.data,
+          ...data.data
+        }
+      };
+    } catch (e) {
+      console.log('Push data is not JSON, using as text:', event.data.text());
+      notificationData.body = event.data.text() || notificationData.body;
+    }
+  }
+
+  console.log('Showing notification with data:', notificationData);
+
   event.waitUntil(
-    self.registration.showNotification('CNE - Centro de Nueva Esperanza', options)
+    self.registration.showNotification(notificationData.title, notificationData)
   );
 });
 
