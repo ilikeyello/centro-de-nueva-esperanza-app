@@ -154,7 +154,7 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
           setTimeout(() => reject(new Error('Subscription timed out')), 15000)
         );
         
-        subscription = await Promise.race([subscriptionPromise, subscriptionTimeoutPromise]);
+        subscription = await Promise.race([subscriptionPromise, subscriptionTimeoutPromise]) as PushSubscription;
       } catch (error) {
         if (error instanceof Error && error.message === 'Subscription timed out') {
           throw new Error('Push subscription timed out. Please try again.');
@@ -165,8 +165,8 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       console.log('Push subscription created:', subscription);
 
       // Send subscription to backend
-      const p256dhKey = subscription.getKey('p256dh');
-      const authKey = subscription.getKey('auth');
+      const p256dhKey = (subscription as any).getKey('p256dh');
+      const authKey = (subscription as any).getKey('auth');
       
       const subscriptionData = {
         endpoint: subscription.endpoint,

@@ -20255,8 +20255,23 @@ var notifications;
   class ServiceClient {
     constructor(baseClient) {
       this.baseClient = baseClient;
+      this.checkSubscriptions = this.checkSubscriptions.bind(this);
+      this.sendNotification = this.sendNotification.bind(this);
       this.subscribe = this.subscribe.bind(this);
       this.test = this.test.bind(this);
+    }
+    /**
+     * Check subscriptions endpoint for debugging
+     */
+    async checkSubscriptions() {
+      await this.baseClient.callTypedAPI("GET", `/notifications/subscriptions`);
+    }
+    /**
+     * Send notification to all subscribed users
+     */
+    async sendNotification(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/send`, JSON.stringify(params));
+      return await resp.json();
     }
     /**
      * Subscribe to push notifications

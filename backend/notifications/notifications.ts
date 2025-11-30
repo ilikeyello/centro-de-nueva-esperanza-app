@@ -70,17 +70,20 @@ export const test = api(
 export const checkSubscriptions = api(
   { expose: true, method: "GET", path: "/notifications/subscriptions" },
   async () => {
-    const subscriptions = await db.query`
+    const subscriptions = [];
+    for await (const sub of db.query`
       SELECT endpoint, user_agent, created_at 
       FROM push_subscriptions 
       WHERE created_at > NOW() - INTERVAL '30 days'
       ORDER BY created_at DESC
       LIMIT 10
-    `;
+    `) {
+      subscriptions.push(sub);
+    }
     
     return {
       count: subscriptions.length,
-      subscriptions: subscriptions.map(sub => ({
+      subscriptions: subscriptions.map((sub: any) => ({
         endpoint: sub.endpoint.substring(0, 50) + '...',
         userAgent: sub.user_agent,
         createdAt: sub.created_at
@@ -139,11 +142,14 @@ export const sendNotification = api(
     
     try {
       // Get all subscriptions from database
-      const subscriptions = await db.query`
+      const subscriptions = [];
+      for await (const sub of db.query`
         SELECT endpoint, p256dh_key, auth_key, user_agent 
         FROM push_subscriptions 
         WHERE created_at > NOW() - INTERVAL '30 days'
-      `;
+      `) {
+        subscriptions.push(sub);
+      }
       
       console.log(`Found ${subscriptions.length} subscriptions to notify`);
 
@@ -209,7 +215,12 @@ export const sendNotification = api(
       }
 
       console.log(`Notification sending complete: ${results.sentCount} sent, ${results.failedCount} failed`);
-      return results;
+      return {
+        success: results.sentCount > 0,
+        sentCount: results.sentCount,
+        failedCount: results.failedCount,
+        errors: results.errors.length > 0 ? results.errors : undefined
+      };
     } catch (error) {
       console.error("Error in sendNotification:", error);
       throw error;

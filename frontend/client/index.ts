@@ -909,6 +909,21 @@ export namespace media {
 }
 
 export namespace notifications {
+    export interface SendNotificationRequest {
+        title: string
+        body: string
+        icon?: string
+        data?: any
+        tag?: string
+    }
+
+    export interface SendNotificationResponse {
+        success: boolean
+        sentCount: number
+        failedCount: number
+        errors?: string[]
+    }
+
     export interface SubscribeRequest {
         endpoint: string
         keys: {
@@ -923,8 +938,26 @@ export namespace notifications {
 
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
+            this.checkSubscriptions = this.checkSubscriptions.bind(this)
+            this.sendNotification = this.sendNotification.bind(this)
             this.subscribe = this.subscribe.bind(this)
             this.test = this.test.bind(this)
+        }
+
+        /**
+         * Check subscriptions endpoint for debugging
+         */
+        public async checkSubscriptions(): Promise<void> {
+            await this.baseClient.callTypedAPI("GET", `/notifications/subscriptions`)
+        }
+
+        /**
+         * Send notification to all subscribed users
+         */
+        public async sendNotification(params: SendNotificationRequest): Promise<SendNotificationResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/notifications/send`, JSON.stringify(params))
+            return await resp.json() as SendNotificationResponse
         }
 
         /**
