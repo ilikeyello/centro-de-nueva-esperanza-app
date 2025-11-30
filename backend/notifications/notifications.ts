@@ -90,6 +90,19 @@ export const test = api(
   }
 );
 
+// Simple health check that returns visible output
+export const healthCheck = api(
+  { expose: true, method: "GET", path: "/notifications/health-simple" },
+  async () => {
+    return { 
+      status: "ok",
+      message: "Notifications service is working",
+      timestamp: new Date().toISOString(),
+      test: "If you can see this, the service is responding"
+    };
+  }
+);
+
 // Simple test notification endpoint
 export const testNotification = api(
   { expose: true, method: "POST", path: "/notifications/test-send" },
