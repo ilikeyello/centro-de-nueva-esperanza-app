@@ -58,11 +58,85 @@ const initializeWebPush = async () => {
 export const test = api(
   { expose: true, method: "GET", path: "/notifications/test" },
   async () => {
-    return { 
-      message: "Notifications service is working!",
-      timestamp: new Date().toISOString(),
-      vapidConfigured: true
-    };
+    try {
+      // Test VAPID key initialization
+      const webpush = await initializeWebPush();
+      return { 
+        message: "Notifications service is working!",
+        timestamp: new Date().toISOString(),
+        vapidConfigured: true,
+        webpushLoaded: !!webpush
+      };
+    } catch (error) {
+      return {
+        message: "Notifications service has issues",
+        timestamp: new Date().toISOString(),
+        vapidConfigured: false,
+        error: String(error)
+      };
+    }
+  }
+);
+
+// Simple test notification endpoint
+export const testNotification = api(
+  { expose: true, method: "POST", path: "/notifications/test-send" },
+  async () => {
+    console.log("Testing notification sending...");
+    
+    try {
+      // Get first subscription for testing
+      const subscriptions = [];
+      for await (const sub of db.query`
+        SELECT endpoint, p256dh_key, auth_key, user_agent 
+        FROM push_subscriptions 
+        WHERE created_at > NOW() - INTERVAL '30 days'
+        LIMIT 1
+      `) {
+        subscriptions.push(sub);
+      }
+      
+      if (subscriptions.length === 0) {
+        return { success: false, message: "No subscriptions found for testing" };
+      }
+      
+      const subscription = subscriptions[0];
+      console.log("Testing with subscription:", subscription.endpoint.substring(0, 50));
+      
+      // Initialize web-push
+      const webpush = await initializeWebPush();
+      
+      // Send test notification
+      await webpush.sendNotification(
+        {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: subscription.p256dh_key,
+            auth: subscription.auth_key
+          }
+        },
+        JSON.stringify({
+          title: "🧪 Test Notification",
+          body: "This is a test notification from CNE",
+          icon: "/cne-app/icon-192x192.png",
+          tag: "test-notification",
+          data: { type: "test", timestamp: Date.now() }
+        })
+      );
+      
+      return { 
+        success: true, 
+        message: "Test notification sent successfully",
+        endpoint: subscription.endpoint.substring(0, 50) + "..."
+      };
+    } catch (error) {
+      console.error("Test notification failed:", error);
+      return { 
+        success: false, 
+        message: "Test notification failed",
+        error: String(error)
+      };
+    }
   }
 );
 
