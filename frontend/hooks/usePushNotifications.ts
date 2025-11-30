@@ -108,9 +108,56 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       // Check existing subscription first
       const existingSubscription = await registration.pushManager.getSubscription();
       if (existingSubscription) {
-        console.log('User already subscribed, using existing subscription');
+        console.log('🔔 User already subscribed locally, saving to database...');
+        
+        // Save the existing subscription to database
+        const subscription = existingSubscription;
+        const p256dhKey = subscription.getKey ? subscription.getKey('p256dh') : null;
+        const authKey = subscription.getKey ? subscription.getKey('auth') : null;
+        
+        const subscriptionData = {
+          endpoint: subscription.endpoint,
+          p256dh_key: p256dhKey ? 
+            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
+          auth_key: authKey ? 
+            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : '',
+          userAgent: navigator.userAgent
+        };
+
+        console.log('🔔 Saving existing subscription to backend:', {
+          endpoint: subscriptionData.endpoint.substring(0, 50) + '...',
+          hasP256dh: !!subscriptionData.p256dh_key,
+          hasAuth: !!subscriptionData.auth_key,
+          userAgent: subscriptionData.userAgent
+        });
+        
+        // Try to use Encore client first, fallback to direct fetch
+        try {
+          await backend.notifications.subscribe(subscriptionData);
+          console.log('✅ Existing subscription saved via Encore client');
+        } catch (encoreError) {
+          console.warn('⚠️ Encore client failed, trying direct fetch:', encoreError);
+          
+          // Fallback to direct fetch
+          const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(subscriptionData)
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
+          const result = await response.json();
+          console.log('✅ Existing subscription saved via direct fetch:', result);
+        }
+        
         setIsSubscribed(true);
         setIsLoading(false);
+        console.log('✅ Existing subscription saved to database successfully');
         return;
       }
 

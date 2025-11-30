@@ -32628,9 +32628,43 @@ const usePushNotifications = () => {
       console.log("Service worker registration:", registration);
       const existingSubscription = await registration.pushManager.getSubscription();
       if (existingSubscription) {
-        console.log("User already subscribed, using existing subscription");
+        console.log("🔔 User already subscribed locally, saving to database...");
+        const subscription2 = existingSubscription;
+        const p256dhKey2 = subscription2.getKey ? subscription2.getKey("p256dh") : null;
+        const authKey2 = subscription2.getKey ? subscription2.getKey("auth") : null;
+        const subscriptionData2 = {
+          endpoint: subscription2.endpoint,
+          p256dh_key: p256dhKey2 ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey2)))) : "",
+          auth_key: authKey2 ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey2)))) : "",
+          userAgent: navigator.userAgent
+        };
+        console.log("🔔 Saving existing subscription to backend:", {
+          endpoint: subscriptionData2.endpoint.substring(0, 50) + "...",
+          hasP256dh: !!subscriptionData2.p256dh_key,
+          hasAuth: !!subscriptionData2.auth_key,
+          userAgent: subscriptionData2.userAgent
+        });
+        try {
+          await Client.notifications.subscribe(subscriptionData2);
+          console.log("✅ Existing subscription saved via Encore client");
+        } catch (encoreError) {
+          console.warn("⚠️ Encore client failed, trying direct fetch:", encoreError);
+          const response = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(subscriptionData2)
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          const result = await response.json();
+          console.log("✅ Existing subscription saved via direct fetch:", result);
+        }
         setIsSubscribed(true);
         setIsLoading(false);
+        console.log("✅ Existing subscription saved to database successfully");
         return;
       }
       console.log("Subscribing to push notifications...");
