@@ -1,10 +1,9 @@
 import { api } from "encore.dev/api";
-import { secret } from "encore.dev/config";
 import db from "../db";
 
-// VAPID keys for push notifications - temporarily commented for deployment
-// const PUBLIC_VAPID_KEY = secret("PUBLIC_VAPID_KEY");
-// const PRIVATE_VAPID_KEY = secret("PRIVATE_VAPID_KEY");
+// VAPID keys - using hardcoded values to avoid Encore secret infrastructure issues
+const PUBLIC_VAPID_KEY = 'BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E';
+const PRIVATE_VAPID_KEY = '9xt3gUMOgX98gaY2CcSDd1MmVYhM4s3Lx4kSSfpdpWs';
 
 // Types
 interface NotificationSubscription {
@@ -40,15 +39,14 @@ interface SendNotificationResponse {
   errors?: string[];
 }
 
-// Initialize VAPID keys dynamically - temporarily using placeholders
+// Initialize VAPID keys dynamically - using hardcoded values
 const initializeWebPush = async () => {
   const webpush = await import('web-push');
   
-  // Temporarily use placeholder values for deployment
   webpush.setVapidDetails(
     'mailto:contact@centrodenuevaesperanza.org',
-    'placeholder-public-key',
-    'placeholder-private-key'
+    PUBLIC_VAPID_KEY,
+    PRIVATE_VAPID_KEY
   );
   
   return webpush;
