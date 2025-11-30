@@ -220,6 +220,37 @@ export const subscribe = api(
   }
 );
 
+// Simple test notification endpoint (no auth required for testing)
+export const testSimpleNotification = api(
+  { expose: true, method: "POST", path: "/notifications/test-simple" },
+  async () => {
+    console.log("🧪 Testing simple notification to iPhone...");
+    
+    try {
+      const result = await sendNotification({
+        title: "🧪 Test Notification",
+        body: "This is a test to see if iPhone notifications work!",
+        icon: "/cne-app/icon-192x192.png",
+        tag: `test-${Date.now()}`,
+        data: {
+          type: "test",
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      console.log("🧪 Test notification result:", result);
+      return result;
+    } catch (error) {
+      console.error("🧪 Test notification failed:", error);
+      return { 
+        success: false, 
+        message: "Test notification failed",
+        error: String(error)
+      };
+    }
+  }
+);
+
 // Send notification to all subscribed users
 export const sendNotification = api(
   { expose: true, method: "POST", path: "/notifications/send" },
