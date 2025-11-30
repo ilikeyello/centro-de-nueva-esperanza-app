@@ -94,59 +94,97 @@ export const test = api(
 export const testNotification = api(
   { expose: true, method: "POST", path: "/notifications/test-send" },
   async () => {
-    console.log("Testing notification sending...");
+    console.log("🧪 Testing notification sending...");
     
     try {
       // Get first subscription for testing
       const subscriptions = [];
+      console.log("🧪 Querying database for subscriptions...");
+      
       for await (const sub of db.query`
-        SELECT endpoint, p256dh_key, auth_key, user_agent 
+        SELECT endpoint, p256dh_key, auth_key, user_agent, created_at 
         FROM push_subscriptions 
         WHERE created_at > NOW() - INTERVAL '30 days'
         LIMIT 1
       `) {
         subscriptions.push(sub);
+        console.log("🧪 Found subscription:", {
+          endpoint: sub.endpoint.substring(0, 50) + "...",
+          userAgent: sub.user_agent,
+          hasP256dh: !!sub.p256dh_key,
+          hasAuth: !!sub.auth_key,
+          createdAt: sub.created_at
+        });
       }
       
+      console.log(`🧪 Found ${subscriptions.length} subscriptions for testing`);
+      
       if (subscriptions.length === 0) {
+        console.log("🧪 No subscriptions found in database");
         return { success: false, message: "No subscriptions found for testing" };
       }
       
       const subscription = subscriptions[0];
-      console.log("Testing with subscription:", subscription.endpoint.substring(0, 50));
+      console.log("🧪 Testing with subscription:", subscription.endpoint.substring(0, 50) + "...");
       
-      // Initialize web-push
+      // Initialize web push
+      console.log("🧪 Initializing web push...");
       const webpush = await initializeWebPush();
+      console.log("🧪 Web push initialized successfully");
+      
+      // Prepare subscription for web push
+      const webPushSubscription = {
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: subscription.p256dh_key,
+          auth: subscription.auth_key
+        }
+      };
+      
+      console.log("🧪 Prepared web push subscription:", {
+        endpoint: webPushSubscription.endpoint.substring(0, 50) + "...",
+        hasKeys: !!webPushSubscription.keys,
+        p256dhLength: webPushSubscription.keys.p256dh?.length || 0,
+        authLength: webPushSubscription.keys.auth?.length || 0
+      });
       
       // Send test notification
-      await webpush.sendNotification(
-        {
-          endpoint: subscription.endpoint,
-          keys: {
-            p256dh: subscription.p256dh_key,
-            auth: subscription.auth_key
-          }
-        },
-        JSON.stringify({
-          title: "🧪 Test Notification",
-          body: "This is a test notification from CNE",
-          icon: "/cne-app/icon-192x192.png",
-          tag: "test-notification",
-          data: { type: "test", timestamp: Date.now() }
-        })
-      );
+      const payload = JSON.stringify({
+        title: "🧪 Test Notification",
+        body: "This is a test notification from CNE App!",
+        icon: "/cne-app/icon-192x192.png",
+        badge: "/cne-app/icon-192x192.png",
+        tag: `test-${Date.now()}`,
+        data: {
+          type: "test",
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      console.log("🧪 Sending notification with payload length:", payload.length);
+      
+      const result = await webpush.sendNotification(webPushSubscription, payload);
+      console.log("🧪 Notification sent successfully:", result);
       
       return { 
         success: true, 
         message: "Test notification sent successfully",
-        endpoint: subscription.endpoint.substring(0, 50) + "..."
+        endpoint: subscription.endpoint.substring(0, 50) + "...",
+        userAgent: subscription.user_agent
       };
+      
     } catch (error) {
-      console.error("Test notification failed:", error);
+      console.error("🧪 Test notification failed:", error);
+      console.error("🧪 Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return { 
         success: false, 
         message: "Test notification failed",
-        error: String(error)
+        error: String(error),
+        stack: error.stack
       };
     }
   }
