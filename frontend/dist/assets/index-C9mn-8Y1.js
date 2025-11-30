@@ -32587,9 +32587,39 @@ const usePushNotifications = () => {
       console.log("Service worker ready:", registration);
       const subscription = await registration.pushManager.getSubscription();
       console.log("Existing subscription:", subscription);
+      if (subscription) {
+        console.log("🔔 Found existing subscription, saving to database...");
+        const p256dhKey = subscription.getKey ? subscription.getKey("p256dh") : null;
+        const authKey = subscription.getKey ? subscription.getKey("auth") : null;
+        const subscriptionData = {
+          endpoint: subscription.endpoint,
+          p256dh_key: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
+          auth_key: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : "",
+          userAgent: navigator.userAgent
+        };
+        console.log("🔔 Saving existing subscription to backend:", {
+          endpoint: subscriptionData.endpoint.substring(0, 50) + "...",
+          hasP256dh: !!subscriptionData.p256dh_key,
+          hasAuth: !!subscriptionData.auth_key,
+          userAgent: subscriptionData.userAgent
+        });
+        const response = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(subscriptionData)
+        });
+        if (response.ok) {
+          const result = await response.json();
+          console.log("✅ Existing subscription saved to database:", result);
+        } else {
+          console.warn("⚠️ Failed to save existing subscription:", response.status);
+        }
+      }
       setIsSubscribed(!!subscription);
     } catch (err) {
-      console.error("Error checking subscription status:", err);
+      console.error("❌ Error checking subscription status:", err);
     }
   };
   const urlBase64ToUint8Array = (base64String) => {
