@@ -1,9 +1,5 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
-	"include": [
-		"**/*",
-		"../notifications/**/*"
-	],
 	"compilerOptions": {
 		/* Basic Options */
 		"lib": ["ES2022"],

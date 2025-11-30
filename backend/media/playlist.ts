@@ -1,6 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import db from "../db";
-import * as notifications from "../../notifications/notifications";
+import * as notifications from "../notifications/notifications";
 
 // Simple in-memory storage to avoid database permission issues
 let playlistUrl: string | null = null;
