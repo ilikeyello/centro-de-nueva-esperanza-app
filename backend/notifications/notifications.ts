@@ -68,20 +68,20 @@ export const health = api(
 
 // Test endpoint to verify notifications service is working
 export const test = api(
-  { expose: true, method: "GET", path: "/notifications/test" },
+  { expose: true, method: "GET", path: "/push-notifications/test" },
   async () => {
     try {
       // Test VAPID key initialization
       const webpush = await initializeWebPush();
       return { 
-        message: "Notifications service is working!",
+        message: "Push notifications service is working!",
         timestamp: new Date().toISOString(),
         vapidConfigured: true,
         webpushLoaded: !!webpush
       };
     } catch (error) {
       return {
-        message: "Notifications service has issues",
+        message: "Push notifications service has issues",
         timestamp: new Date().toISOString(),
         vapidConfigured: false,
         error: String(error)
@@ -92,7 +92,7 @@ export const test = api(
 
 // Simple test notification endpoint
 export const testNotification = api(
-  { expose: true, method: "POST", path: "/notifications/test-send" },
+  { expose: true, method: "POST", path: "/push-notifications/test-send" },
   async () => {
     console.log("Testing notification sending...");
     
@@ -154,7 +154,7 @@ export const testNotification = api(
 
 // Check subscriptions endpoint for debugging
 export const checkSubscriptions = api(
-  { expose: true, method: "GET", path: "/notifications/subscriptions" },
+  { expose: true, method: "GET", path: "/push-notifications/subscriptions" },
   async () => {
     const subscriptions = [];
     for await (const sub of db.query`
@@ -180,7 +180,7 @@ export const checkSubscriptions = api(
 
 // Subscribe to push notifications
 export const subscribe = api(
-  { expose: true, method: "POST", path: "/notifications/subscribe" },
+  { expose: true, method: "POST", path: "/push-notifications/subscribe" },
   async (params: SubscribeRequest): Promise<{ success: boolean; message: string }> => {
     try {
       // Check if subscription already exists
@@ -212,17 +212,17 @@ export const subscribe = api(
         `;
       }
       
-      return { success: true, message: "Successfully subscribed to notifications" };
+      return { success: true, message: "Successfully subscribed to push notifications" };
     } catch (error) {
-      console.error("Failed to subscribe to notifications:", error);
-      return { success: false, message: "Failed to subscribe to notifications" };
+      console.error("Failed to subscribe to push notifications:", error);
+      return { success: false, message: "Failed to subscribe to push notifications" };
     }
   }
 );
 
 // Send notification to all subscribed users
 export const sendNotification = api(
-  { expose: true, method: "POST", path: "/notifications/send" },
+  { expose: true, method: "POST", path: "/push-notifications/send" },
   async (params: SendNotificationRequest): Promise<SendNotificationResponse> => {
     console.log("sendNotification called with:", params);
     
