@@ -249,6 +249,8 @@ export const testSimpleNotification = api(
       };
     }
   }
+);
+
 // Debug endpoint to check subscriptions and test sending
 export const debugSubscriptions = api(
   { expose: true, method: "GET", path: "/notifications/debug" },
