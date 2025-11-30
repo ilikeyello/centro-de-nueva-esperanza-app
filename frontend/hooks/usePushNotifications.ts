@@ -134,7 +134,7 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
 
       console.log('Sending subscription to backend:', subscriptionData);
       
-      await backend.push_notifications.subscribe(subscriptionData);
+      await backend.notifications.subscribe(subscriptionData);
       console.log('Subscription saved to backend successfully');
 
       setIsSubscribed(true);

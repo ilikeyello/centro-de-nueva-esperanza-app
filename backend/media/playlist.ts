@@ -1,6 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import db from "../db";
-import * as push_notifications from "../notifications/notifications";
+import * as notifications from "../notifications/notifications";
 
 // Simple in-memory storage to avoid database permission issues
 let playlistUrl: string | null = null;
@@ -48,7 +48,7 @@ export const save = api<UpdatePlaylistRequest, void>(
 
     // Send push notification when livestream playlist is updated
     try {
-      await push_notifications.sendNotification({
+      await notifications.sendNotification({
         title: "🔴 We're Live!",
         body: "Join our livestream now - we're broadcasting live!",
         icon: "/cne-app/icon-192x192.png",
