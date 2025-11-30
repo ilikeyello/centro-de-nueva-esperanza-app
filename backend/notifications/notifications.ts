@@ -176,15 +176,15 @@ export const testNotification = api(
     } catch (error) {
       console.error("🧪 Test notification failed:", error);
       console.error("🧪 Error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
       });
       return { 
         success: false, 
         message: "Test notification failed",
-        error: String(error),
-        stack: error.stack
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
       };
     }
   }
