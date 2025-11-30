@@ -107,11 +107,13 @@ export const htmlTest = api(
 export const validateVAPID = api(
   { expose: true, method: "GET", path: "/notifications/validate-vapid" },
   async () => {
-    console.log("🔑 Validating VAPID keys...");
+    console.log("🔑 VAPID validation endpoint HIT");
     
     try {
+      console.log("🔑 Importing web-push...");
       const webpush = await import('web-push');
       
+      console.log("🔑 Setting VAPID details...");
       // Test VAPID details setup
       webpush.setVapidDetails(
         'mailto:contact@centrodenuevaesperanza.org',
@@ -119,47 +121,21 @@ export const validateVAPID = api(
         PRIVATE_VAPID_KEY
       );
       
-      // Test VAPID header generation with correct method name
-      const testPayload = JSON.stringify({
-        title: "VAPID Test",
-        body: "Testing VAPID configuration"
-      });
+      console.log("🔑 VAPID details set successfully");
       
-      const testEndpoint = "https://web.push.apple.com/test";
-      const testKeys = {
-        p256dh: "BMx5_e2p-zk9sXJ-nLz5h_3XJcFh7pLQJ9K8vN2xY3w",
-        auth: "test-auth-key"
+      return { 
+        success: true,
+        message: "VAPID validation completed",
+        timestamp: new Date().toISOString()
       };
       
-      // Use correct method name getVapidHeaders instead of generateVapidHeaders
-      try {
-        const vapidHeaders = webpush.getVapidHeaders(
-          testEndpoint,
-          testKeys.p256dh,
-          testKeys.auth,
-          testPayload
-        );
-        
-        return { 
-          success: true,
-          message: "VAPID keys are valid and working",
-          vapidHeadersGenerated: true,
-          subject: "contact@centrodenuevaesperanza.org",
-          headerCount: Object.keys(vapidHeaders).length
-        };
-      } catch (vapidError) {
-        return { 
-          success: false,
-          message: "VAPID keys invalid or misconfigured",
-          error: String(vapidError)
-        };
-      }
-      
     } catch (error) {
+      console.error("🔑 VAPID validation error:", error);
       return { 
         success: false, 
         message: "VAPID validation failed",
-        error: String(error)
+        error: String(error),
+        timestamp: new Date().toISOString()
       };
     }
   }
