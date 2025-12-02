@@ -15456,7 +15456,7 @@ const NotificationProvider = ({ children }) => {
       const registration = await navigator.serviceWorker.ready;
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array("BMxzFTmF3i9j9A5DhxGJ5g0Y7R8k2M3W4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9")
+        applicationServerKey: urlBase64ToUint8Array("BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E")
       });
       setSubscription(sub);
       setIsSubscribed(true);
@@ -32706,14 +32706,16 @@ const usePushNotifications = () => {
       const authKey = subscription.getKey("auth");
       const subscriptionData = {
         endpoint: subscription.endpoint,
-        p256dh_key: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
-        auth_key: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : "",
+        keys: {
+          p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
+          auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ""
+        },
         userAgent: navigator.userAgent
       };
       console.log("🔔 Sending subscription to backend:", {
         endpoint: subscriptionData.endpoint.substring(0, 50) + "...",
-        hasP256dh: !!subscriptionData.p256dh_key,
-        hasAuth: !!subscriptionData.auth_key,
+        hasP256dh: !!subscriptionData.keys.p256dh,
+        hasAuth: !!subscriptionData.keys.auth,
         userAgent: subscriptionData.userAgent
       });
       console.log("🔔 Saving new subscription via direct fetch...");

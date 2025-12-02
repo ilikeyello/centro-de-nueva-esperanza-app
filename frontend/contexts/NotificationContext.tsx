@@ -79,7 +79,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Subscribe to push notifications
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array('BMxzFTmF3i9j9A5DhxGJ5g0Y7R8k2M3W4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9')
+        applicationServerKey: urlBase64ToUint8Array('BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E')
       });
 
       setSubscription(sub);
