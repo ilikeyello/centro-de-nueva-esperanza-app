@@ -41,7 +41,9 @@ interface SendNotificationResponse {
 
 // Initialize VAPID keys dynamically - using hardcoded values
 const initializeWebPush = async () => {
-  const webpush = await import('web-push');
+  const webpushModule = await import('web-push');
+  // Handle both ESM default export and CommonJS module.exports
+  const webpush = webpushModule.default || webpushModule;
   
   webpush.setVapidDetails(
     'mailto:contact@centrodenuevaesperanza.org',
