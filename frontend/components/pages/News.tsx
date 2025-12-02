@@ -196,6 +196,7 @@ export function News() {
       contentEs: string;
       priority: Priority;
       passcode: string;
+      imageUrl?: string | null;
     }) => backend.announcements.create(data as any),
     onSuccess: (newAnnouncement) => {
       queryClient.setQueryData(["announcements"], (oldData?: { announcements: Announcement[] }) => {
@@ -344,6 +345,7 @@ export function News() {
       contentEs: formData.get("contentEs") as string,
       priority,
       passcode: announcementPasscode,
+      imageUrl: (formData.get("imageUrl") as string) || "",
     });
   };
 
@@ -389,13 +391,13 @@ export function News() {
   const getPriorityIcon = (priorityLevel: Priority) => {
     switch (priorityLevel) {
       case "urgent":
-        return <Bell className="h-5 w-5 text-red-500" />;
+        return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case "high":
         return <AlertCircle className="h-5 w-5 text-orange-500" />;
       case "normal":
         return <Info className="h-5 w-5 text-blue-500" />;
       case "low":
-        return <AlertTriangle className="h-5 w-5 text-neutral-500" />;
+        return <Bell className="h-5 w-5 text-neutral-500" />;
       default:
         return <Info className="h-5 w-5 text-blue-500" />;
     }
@@ -499,19 +501,6 @@ export function News() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="announcementPasscode" className="text-neutral-200">
-                        {t("Passcode", "Código")}
-                      </Label>
-                      <Input
-                        id="announcementPasscode"
-                        type="password"
-                        value={announcementPasscode}
-                        onChange={(event) => setAnnouncementPasscode(event.target.value)}
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
                       <Label htmlFor="contentEn" className="text-neutral-200">
                         {t("Content (English)", "Contenido (Inglés)")}
                       </Label>
@@ -534,36 +523,27 @@ export function News() {
                       />
                     </div>
                     <div>
-                      <Label className="text-neutral-200">
-                        {t("Priority", "Prioridad")}
+                      <Label htmlFor="imageUrl" className="text-neutral-200">
+                        {t("Image URL (optional)", "URL de imagen (opcional)")}
                       </Label>
-                      <Select value={priority} onValueChange={(value) => setPriority(normalizePriority(value))}>
-                        <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="border-neutral-700 bg-neutral-800">
-                          {priorityOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {t(
-                                option === "low"
-                                  ? "Low"
-                                  : option === "normal"
-                                    ? "Normal"
-                                    : option === "high"
-                                      ? "High"
-                                      : "Urgent",
-                                option === "low"
-                                  ? "Baja"
-                                  : option === "normal"
-                                    ? "Normal"
-                                    : option === "high"
-                                      ? "Alta"
-                                      : "Urgente"
-                              )}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        id="imageUrl"
+                        name="imageUrl"
+                        className="border-neutral-700 bg-neutral-800 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="announcementPasscode" className="text-neutral-200">
+                        {t("Passcode", "Código")}
+                      </Label>
+                      <Input
+                        id="announcementPasscode"
+                        type="password"
+                        value={announcementPasscode}
+                        onChange={(event) => setAnnouncementPasscode(event.target.value)}
+                        required
+                        className="border-neutral-700 bg-neutral-800 text-white"
+                      />
                     </div>
                     <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
                       {t("Create Announcement", "Crear Anuncio")}
@@ -636,19 +616,6 @@ export function News() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="eventPasscode" className="text-neutral-200">
-                        {t("Passcode", "Código")}
-                      </Label>
-                      <Input
-                        id="eventPasscode"
-                        type="password"
-                        value={eventPasscode}
-                        onChange={(event) => setEventPasscode(event.target.value)}
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
                       <Label htmlFor="eventDate" className="text-neutral-200">
                         {t("Date & Time", "Fecha y Hora")}
                       </Label>
@@ -680,6 +647,19 @@ export function News() {
                         name="maxAttendees"
                         type="number"
                         min="1"
+                        className="border-neutral-700 bg-neutral-800 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="eventPasscode" className="text-neutral-200">
+                        {t("Passcode", "Código")}
+                      </Label>
+                      <Input
+                        id="eventPasscode"
+                        type="password"
+                        value={eventPasscode}
+                        onChange={(event) => setEventPasscode(event.target.value)}
+                        required
                         className="border-neutral-700 bg-neutral-800 text-white"
                       />
                     </div>
@@ -728,6 +708,15 @@ export function News() {
                     </div>
                   </CardHeader>
                   <CardContent>
+                    {announcement.imageUrl && (
+                      <div className="mb-3 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
+                        <img
+                          src={announcement.imageUrl}
+                          alt={language === "en" ? announcement.titleEn : announcement.titleEs}
+                          className="max-h-64 w-full object-cover"
+                        />
+                      </div>
+                    )}
                     <p className="whitespace-pre-wrap text-neutral-300">
                       {language === "en" ? announcement.contentEn : announcement.contentEs}
                     </p>

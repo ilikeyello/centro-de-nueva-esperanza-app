@@ -10,6 +10,7 @@ interface CreateAnnouncementRequest {
   contentEs: string;
   priority: "low" | "normal" | "high" | "urgent";
   passcode: string;
+  imageUrl?: string | null;
 }
 
 interface Announcement {
@@ -21,6 +22,7 @@ interface Announcement {
   priority: string;
   createdAt: Date;
   createdBy: string;
+  imageUrl: string | null;
 }
 
 // Creates a new church announcement.
@@ -32,11 +34,12 @@ export const create = api<CreateAnnouncementRequest, Announcement>(
     }
     const auth = getAuthData();
     const createdBy = auth?.userID ?? "public-web";
+    const imageUrl = req.imageUrl?.trim() || null;
     const announcement = await db.queryRow<Announcement>`
-      INSERT INTO announcements (title_en, title_es, content_en, content_es, priority, created_by)
-      VALUES (${req.titleEn}, ${req.titleEs}, ${req.contentEn}, ${req.contentEs}, ${req.priority}, ${createdBy})
+      INSERT INTO announcements (title_en, title_es, content_en, content_es, priority, created_by, image_url)
+      VALUES (${req.titleEn}, ${req.titleEs}, ${req.contentEn}, ${req.contentEs}, ${req.priority}, ${createdBy}, ${imageUrl})
       RETURNING id, title_en as "titleEn", title_es as "titleEs", content_en as "contentEn", content_es as "contentEs", 
-                priority, created_at as "createdAt", created_by as "createdBy"
+                priority, created_at as "createdAt", created_by as "createdBy", image_url as "imageUrl"
     `;
 
     // Send push notification (non-blocking)

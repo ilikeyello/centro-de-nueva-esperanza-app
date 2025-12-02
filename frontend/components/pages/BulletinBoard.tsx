@@ -99,14 +99,19 @@ const postComment = async (data: {
   return response.json();
 };
 
-const createPost = async (data: { title: string; content: string; authorName: string }): Promise<BulletinPost> => {
+const createPost = async (data: { title: string; content: string; authorName: string; imageUrl?: string | null }): Promise<BulletinPost> => {
   const response = await fetch(`${API_BASE}/bulletin/posts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      title: data.title,
+      content: data.content,
+      authorName: data.authorName,
+      imageUrl: data.imageUrl ?? null,
+    }),
   });
 
   if (!response.ok) {
@@ -204,6 +209,7 @@ export function BulletinBoard() {
     title: "",
     content: "",
     authorName: "",
+    imageUrl: "",
   });
   const [newPrayer, setNewPrayer] = useState({
     title: "",
@@ -321,7 +327,7 @@ export function BulletinBoard() {
   const createPostMutation = useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      setNewPost({ title: "", content: "", authorName: "" });
+      setNewPost({ title: "", content: "", authorName: "", imageUrl: "" });
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
       setPostDialogOpen(false);
       toast({
@@ -446,6 +452,7 @@ export function BulletinBoard() {
       title: newPost.title.trim(),
       content: newPost.content.trim(),
       authorName: newPost.authorName.trim() || t("Anonymous", "Anónimo"),
+      imageUrl: newPost.imageUrl.trim() || null,
     });
   };
 
@@ -581,6 +588,15 @@ export function BulletinBoard() {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        {post.imageUrl && (
+                          <div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
+                            <img
+                              src={post.imageUrl}
+                              alt={post.title}
+                              className="max-h-64 w-full object-cover"
+                            />
+                          </div>
+                        )}
                         <p className="whitespace-pre-wrap text-sm text-neutral-300">{post.content}</p>
 
                         <div className="space-y-3">
@@ -704,6 +720,18 @@ export function BulletinBoard() {
                       value={newPost.authorName}
                       onChange={(event) => setNewPost((prev) => ({ ...prev, authorName: event.target.value }))}
                       placeholder={t("Optional", "Opcional")}
+                      className="border-neutral-700 bg-neutral-800 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bulletin-image" className="text-neutral-200">
+                      {t("Image URL (optional)", "URL de imagen (opcional)")}
+                    </Label>
+                    <Input
+                      id="bulletin-image"
+                      value={newPost.imageUrl}
+                      onChange={(event) => setNewPost((prev) => ({ ...prev, imageUrl: event.target.value }))}
+                      placeholder={t("https://example.com/image.jpg", "https://ejemplo.com/imagen.jpg")}
                       className="border-neutral-700 bg-neutral-800 text-white"
                     />
                   </div>

@@ -15,6 +15,7 @@ export interface BulletinPost {
   authorName: string;
   createdAt: Date;
   comments: BulletinComment[];
+  imageUrl: string | null;
 }
 
 export interface PrayerWithComments {
@@ -83,7 +84,8 @@ export const board = api<void, BoardResponse>(
         title,
         content,
         author_name as "authorName",
-        created_at as "createdAt"
+        created_at as "createdAt",
+        image_url as "imageUrl"
       FROM bulletin_posts
       ORDER BY created_at DESC
     `;

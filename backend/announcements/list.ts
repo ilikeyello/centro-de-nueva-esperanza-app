@@ -15,6 +15,7 @@ export interface Announcement {
   priority: string;
   createdAt: Date;
   createdBy: string;
+  imageUrl: string | null;
 }
 
 interface ListAnnouncementsResponse {
@@ -35,7 +36,8 @@ export const list = api<ListAnnouncementsRequest, ListAnnouncementsResponse>(
         content_es as "contentEs",
         priority, 
         created_at as "createdAt", 
-        created_by as "createdBy"
+        created_by as "createdBy",
+        image_url as "imageUrl"
       FROM announcements
       ORDER BY 
         CASE priority

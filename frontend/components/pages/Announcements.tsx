@@ -67,19 +67,20 @@ export function Announcements() {
       contentEs: formData.get("contentEs") as string,
       priority,
       passcode: formData.get("passcode") as string,
+      imageUrl: (formData.get("imageUrl") as string) || "",
     });
   };
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return <Bell className="h-5 w-5 text-red-500" />;
+        return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case "high":
         return <AlertCircle className="h-5 w-5 text-orange-500" />;
       case "normal":
         return <Info className="h-5 w-5 text-blue-500" />;
       case "low":
-        return <AlertTriangle className="h-5 w-5 text-neutral-500" />;
+        return <Bell className="h-5 w-5 text-neutral-500" />;
       default:
         return <Info className="h-5 w-5 text-blue-500" />;
     }
@@ -165,6 +166,18 @@ export function Announcements() {
                 />
               </div>
               <div>
+                <Label htmlFor="imageUrl" className="text-neutral-200">
+                  {t("Image URL (optional)", "URL de imagen (opcional)")}
+                </Label>
+                <Input
+                  id="imageUrl"
+                  name="imageUrl"
+                  type="url"
+                  placeholder={t("https://example.com/image.jpg", "https://ejemplo.com/imagen.jpg")}
+                  className="border-neutral-700 bg-neutral-800 text-white"
+                />
+              </div>
+              <div>
                 <Label className="text-neutral-200">
                   {t("Priority", "Prioridad")}
                 </Label>
@@ -221,6 +234,15 @@ export function Announcements() {
               </div>
             </CardHeader>
             <CardContent>
+              {announcement.imageUrl && (
+                <div className="mb-3 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
+                  <img
+                    src={announcement.imageUrl}
+                    alt={language === "en" ? announcement.titleEn : announcement.titleEs}
+                    className="max-h-64 w-full object-cover"
+                  />
+                </div>
+              )}
               <p className="whitespace-pre-wrap text-neutral-300">
                 {language === "en" ? announcement.contentEn : announcement.contentEs}
               </p>
