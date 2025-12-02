@@ -9,68 +9,51 @@ interface PushNotificationPromptProps {
 }
 
 export const PushNotificationPrompt = ({ className }: PushNotificationPromptProps) => {
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const { isSupported, isSubscribed, permission, isLoading, error, subscribe, unsubscribe } = usePushNotifications();
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('cne-notif-dismissed') === '1';
+  });
+  const [everSubscribed, setEverSubscribed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('cne-notif-ever-subscribed') === '1';
+  });
 
-  // Check if running as PWA (installed to homepage)
+  const { isSupported, isSubscribed, permission, isLoading, error, subscribe, initialized } = usePushNotifications();
+
+  // Once subscribed, remember it so the prompt never comes back on future visits
   useEffect(() => {
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
-                 window.matchMedia('(display-mode: minimal-ui)').matches ||
-                 (window.navigator as any).standalone === true;
-    
-    // Only show prompt if in PWA mode and not already subscribed/dismissed
-    if (isPWA && !isSubscribed && !dismissed && permission !== 'denied') {
-      setShowPrompt(true);
-    } else {
-      setShowPrompt(false);
+    if (isSubscribed) {
+      setEverSubscribed(true);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('cne-notif-ever-subscribed', '1');
+      }
     }
-  }, [isSubscribed, dismissed, permission]);
+  }, [isSubscribed]);
 
-  // Don't show if not supported or not in PWA mode
-  if (!isSupported || !showPrompt) {
+  // Don't show anything until we've finished the initial support/subscription check
+  if (!initialized) {
     return null;
   }
 
-  // Don't show if already subscribed
-  if (isSubscribed) {
-    return (
-      <Card className={`bg-green-50 border-green-200 ${className}`}>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-green-600" />
-              <span className="text-sm text-green-800">
-                Notifications enabled
-              </span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={unsubscribe}
-              disabled={isLoading}
-              className="text-red-600 border-red-200 hover:bg-red-50"
-            >
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellOff className="h-4 w-4" />}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
+  // Don't show if not supported, permission denied, already subscribed, or previously subscribed
+  if (!isSupported || permission === 'denied' || isSubscribed || everSubscribed) {
+    return null;
   }
 
-  // Don't show if permission was denied
-  if (permission === 'denied') {
+  // Only show inside PWA installs, not regular browser tab
+  const isPWA =
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: minimal-ui)').matches ||
+      (window.navigator as any).standalone === true);
+
+  if (!isPWA || dismissed) {
     return null;
   }
 
   const handleSubscribe = async () => {
     try {
       await subscribe();
-      // Hide prompt on successful subscription
-      if (!error) {
-        setShowPrompt(false);
-      }
     } catch (err) {
       console.error('Failed to subscribe:', err);
     }
@@ -78,7 +61,9 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
 
   const handleDismiss = () => {
     setDismissed(true);
-    setShowPrompt(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('cne-notif-dismissed', '1');
+    }
   };
 
   return (

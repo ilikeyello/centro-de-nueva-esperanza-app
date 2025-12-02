@@ -26951,6 +26951,13 @@ function News() {
   const [rsvpName, setRsvpName] = reactExports.useState("");
   const [activeTab, setActiveTab] = reactExports.useState(() => {
     if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+      if (hash === "#news-events") {
+        return "events";
+      }
+      if (hash === "#news-announcements" || hash === "#news") {
+        return "announcements";
+      }
       const stored = window.localStorage.getItem(NEWS_DEFAULT_TAB_KEY);
       if (stored === "announcements" || stored === "events") {
         return stored;
@@ -26997,7 +27004,7 @@ function News() {
     return storedId;
   };
   const deleteEvent = useMutation({
-    mutationFn: async (data) => backend2.events.remove(data),
+    mutationFn: async (data) => backend2.events.remove(data.id, { passcode: data.passcode }),
     onSuccess: (data, variables) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         if (!oldData) return oldData;
@@ -27127,7 +27134,7 @@ function News() {
     }
   });
   const deleteAnnouncement = useMutation({
-    mutationFn: async (data) => backend2.announcements.remove(data),
+    mutationFn: async (data) => backend2.announcements.remove(data.id, { passcode: data.passcode }),
     onSuccess: (data, variables) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) return oldData;
@@ -32569,16 +32576,26 @@ const usePushNotifications = () => {
   const [permission, setPermission] = reactExports.useState("default");
   const [isLoading, setIsLoading] = reactExports.useState(false);
   const [error, setError] = reactExports.useState(null);
+  const [initialized, setInitialized] = reactExports.useState(false);
   const VAPID_PUBLIC_KEY = "BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E";
   reactExports.useEffect(() => {
-    const supported = "serviceWorker" in navigator && "PushManager" in window;
-    setIsSupported(supported);
-    console.log("Push notifications supported:", supported);
-    if (supported) {
-      setPermission(Notification.permission);
-      console.log("Current notification permission:", Notification.permission);
-      checkSubscriptionStatus();
-    }
+    const init = async () => {
+      try {
+        const supported = "serviceWorker" in navigator && "PushManager" in window;
+        setIsSupported(supported);
+        console.log("Push notifications supported:", supported);
+        if (supported) {
+          setPermission(Notification.permission);
+          console.log("Current notification permission:", Notification.permission);
+          await checkSubscriptionStatus();
+        }
+      } catch (err) {
+        console.error("❌ Error during push notifications init:", err);
+      } finally {
+        setInitialized(true);
+      }
+    };
+    void init();
   }, []);
   const checkSubscriptionStatus = async () => {
     try {
@@ -32775,59 +32792,50 @@ const usePushNotifications = () => {
     isLoading,
     error,
     subscribe,
-    unsubscribe
+    unsubscribe,
+    initialized
   };
 };
 const PushNotificationPrompt = ({ className }) => {
-  const [showPrompt, setShowPrompt] = reactExports.useState(false);
-  const [dismissed, setDismissed] = reactExports.useState(false);
-  const { isSupported, isSubscribed, permission, isLoading, error, subscribe, unsubscribe } = usePushNotifications();
+  const [dismissed, setDismissed] = reactExports.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("cne-notif-dismissed") === "1";
+  });
+  const [everSubscribed, setEverSubscribed] = reactExports.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("cne-notif-ever-subscribed") === "1";
+  });
+  const { isSupported, isSubscribed, permission, isLoading, error, subscribe, initialized } = usePushNotifications();
   reactExports.useEffect(() => {
-    const isPWA = window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: minimal-ui)").matches || window.navigator.standalone === true;
-    if (isPWA && !isSubscribed && !dismissed && permission !== "denied") {
-      setShowPrompt(true);
-    } else {
-      setShowPrompt(false);
+    if (isSubscribed) {
+      setEverSubscribed(true);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("cne-notif-ever-subscribed", "1");
+      }
     }
-  }, [isSubscribed, dismissed, permission]);
-  if (!isSupported || !showPrompt) {
+  }, [isSubscribed]);
+  if (!initialized) {
     return null;
   }
-  if (isSubscribed) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: `bg-green-50 border-green-200 ${className}`, children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-4 w-4 text-green-600" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-green-800", children: "Notifications enabled" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button,
-        {
-          variant: "outline",
-          size: "sm",
-          onClick: unsubscribe,
-          disabled: isLoading,
-          className: "text-red-600 border-red-200 hover:bg-red-50",
-          children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(BellOff, { className: "h-4 w-4" })
-        }
-      )
-    ] }) }) });
+  if (!isSupported || permission === "denied" || isSubscribed || everSubscribed) {
+    return null;
   }
-  if (permission === "denied") {
+  const isPWA = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: minimal-ui)").matches || window.navigator.standalone === true);
+  if (!isPWA || dismissed) {
     return null;
   }
   const handleSubscribe = async () => {
     try {
       await subscribe();
-      if (!error) {
-        setShowPrompt(false);
-      }
     } catch (err) {
       console.error("Failed to subscribe:", err);
     }
   };
   const handleDismiss = () => {
     setDismissed(true);
-    setShowPrompt(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("cne-notif-dismissed", "1");
+    }
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: `bg-blue-50 border-blue-200 ${className}`, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "pb-3", children: [
@@ -33591,10 +33599,16 @@ function AppInner() {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
   reactExports.useEffect(() => {
-    if (window.location.hash === "#admin-upload") {
+    const hash = window.location.hash;
+    const path = window.location.pathname;
+    if (hash === "#admin-upload") {
       setCurrentPage("adminUpload");
-    } else if (window.location.pathname === "/trivia-game" || window.location.hash === "#trivia-game") {
+    } else if (path === "/trivia-game" || hash === "#trivia-game") {
       setCurrentPage("triviaGame");
+    } else if (hash === "#media") {
+      setCurrentPage("media");
+    } else if (hash === "#news" || hash === "#news-announcements" || hash === "#news-events") {
+      setCurrentPage("news");
     }
   }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen bg-neutral-950", children: [

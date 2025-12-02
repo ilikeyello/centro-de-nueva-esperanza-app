@@ -17,6 +17,7 @@ interface UsePushNotificationsReturn {
   error: string | null;
   subscribe: () => Promise<void>;
   unsubscribe: () => Promise<void>;
+  initialized: boolean;
 }
 
 export const usePushNotifications = (): UsePushNotificationsReturn => {
@@ -25,24 +26,35 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   // VAPID public key
   const VAPID_PUBLIC_KEY = 'BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E';
 
   useEffect(() => {
-    // Check if push notifications are supported
-    const supported = 'serviceWorker' in navigator && 'PushManager' in window;
-    setIsSupported(supported);
-    console.log('Push notifications supported:', supported);
+    const init = async () => {
+      try {
+        // Check if push notifications are supported
+        const supported = 'serviceWorker' in navigator && 'PushManager' in window;
+        setIsSupported(supported);
+        console.log('Push notifications supported:', supported);
 
-    if (supported) {
-      // Get current permission
-      setPermission(Notification.permission);
-      console.log('Current notification permission:', Notification.permission);
-      
-      // Check if already subscribed
-      checkSubscriptionStatus();
-    }
+        if (supported) {
+          // Get current permission
+          setPermission(Notification.permission);
+          console.log('Current notification permission:', Notification.permission);
+          
+          // Check if already subscribed
+          await checkSubscriptionStatus();
+        }
+      } catch (err) {
+        console.error('❌ Error during push notifications init:', err);
+      } finally {
+        setInitialized(true);
+      }
+    };
+
+    void init();
   }, []);
 
   const checkSubscriptionStatus = async () => {
@@ -298,6 +310,7 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
     isLoading,
     error,
     subscribe,
-    unsubscribe
+    unsubscribe,
+    initialized
   };
 };

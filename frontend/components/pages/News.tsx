@@ -80,6 +80,16 @@ export function News() {
   const [rsvpName, setRsvpName] = useState("");
   const [activeTab, setActiveTab] = useState<"announcements" | "events">(() => {
     if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+
+      // Allow deep links from notifications to control the default tab
+      if (hash === "#news-events") {
+        return "events";
+      }
+      if (hash === "#news-announcements" || hash === "#news") {
+        return "announcements";
+      }
+
       const stored = window.localStorage.getItem(NEWS_DEFAULT_TAB_KEY);
       if (stored === "announcements" || stored === "events") {
         return stored;
@@ -135,7 +145,8 @@ export function News() {
   };
 
   const deleteEvent = useMutation({
-    mutationFn: async (data: { id: number; passcode: string }) => backend.events.remove(data as any),
+    mutationFn: async (data: { id: number; passcode: string }) =>
+      backend.events.remove(data.id, { passcode: data.passcode } as any),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["events"], (oldData?: { events: Event[] }) => {
         if (!oldData) return oldData;
@@ -293,7 +304,8 @@ export function News() {
   });
 
   const deleteAnnouncement = useMutation({
-    mutationFn: async (data: { id: number; passcode: string }) => backend.announcements.remove(data as any),
+    mutationFn: async (data: { id: number; passcode: string }) =>
+      backend.announcements.remove(data.id, { passcode: data.passcode } as any),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["announcements"], (oldData?: { announcements: Announcement[] }) => {
         if (!oldData) return oldData;

@@ -89,21 +89,40 @@ self.addEventListener('notificationclick', event => {
   console.log('Notification click received.');
   
   event.notification.close();
-  
-  if (event.action === 'explore') {
-    // Open the app
-    event.waitUntil(
-      clients.openWindow('https://prod-cne-sh82.encr.app/cne-app/')
-    );
-  } else if (event.action === 'close') {
+
+  const baseUrl = 'https://emanuelavina.com/cne-app/';
+  const data = (event.notification && event.notification.data) || {};
+
+  let targetUrl = baseUrl;
+
+  // Route based on notification type so taps go to the right page
+  switch (data.type) {
+    case 'announcement':
+      // Open News page, Announcements tab
+      targetUrl = baseUrl + '#news-announcements';
+      break;
+    case 'event':
+      // Open News page, Events tab
+      targetUrl = baseUrl + '#news-events';
+      break;
+    case 'livestream':
+      // Open Media/Live page
+      targetUrl = baseUrl + '#media';
+      break;
+    default:
+      targetUrl = baseUrl;
+      break;
+  }
+
+  if (event.action === 'close') {
     // Just close the notification
     event.notification.close();
-  } else {
-    // Default: open the app
-    event.waitUntil(
-      clients.openWindow('https://prod-cne-sh82.encr.app/cne-app/')
-    );
+    return;
   }
+
+  event.waitUntil(
+    clients.openWindow(targetUrl)
+  );
 });
 
 // Notification close event

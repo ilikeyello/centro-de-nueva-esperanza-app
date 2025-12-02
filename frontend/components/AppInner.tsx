@@ -38,10 +38,19 @@ export function AppInner() {
 
   // Allow direct navigation to the hidden admin upload page via URL hash.
   useEffect(() => {
-    if (window.location.hash === "#admin-upload") {
+    const hash = window.location.hash;
+    const path = window.location.pathname;
+
+    if (hash === "#admin-upload") {
       setCurrentPage("adminUpload");
-    } else if (window.location.pathname === "/trivia-game" || window.location.hash === "#trivia-game") {
+    } else if (path === "/trivia-game" || hash === "#trivia-game") {
       setCurrentPage("triviaGame");
+    } else if (hash === "#media") {
+      // Open Media (livestream) page from notification
+      setCurrentPage("media");
+    } else if (hash === "#news" || hash === "#news-announcements" || hash === "#news-events") {
+      // Open News page from notification; tab selection is handled inside News.tsx
+      setCurrentPage("news");
     }
   }, []);
 
