@@ -533,6 +533,38 @@ export function News() {
                       />
                     </div>
                     <div>
+                      <Label className="text-neutral-200">
+                        {t("Priority", "Prioridad")}
+                      </Label>
+                      <Select value={priority} onValueChange={(value) => setPriority(normalizePriority(value))}>
+                        <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="border-neutral-700 bg-neutral-800">
+                          {priorityOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {t(
+                                option === "low"
+                                  ? "Low"
+                                  : option === "normal"
+                                    ? "Normal"
+                                    : option === "high"
+                                      ? "High"
+                                      : "Urgent",
+                                option === "low"
+                                  ? "Baja"
+                                  : option === "normal"
+                                    ? "Normal"
+                                    : option === "high"
+                                      ? "Alta"
+                                      : "Urgente"
+                              )}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
                       <Label htmlFor="announcementPasscode" className="text-neutral-200">
                         {t("Passcode", "Código")}
                       </Label>

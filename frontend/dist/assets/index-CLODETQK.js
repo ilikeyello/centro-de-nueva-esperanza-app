@@ -27170,7 +27170,8 @@ function News() {
       contentEn: formData.get("contentEn"),
       contentEs: formData.get("contentEs"),
       priority,
-      passcode: announcementPasscode
+      passcode: announcementPasscode,
+      imageUrl: formData.get("imageUrl") || ""
     });
   };
   const handleCreateEvent = (e) => {
@@ -27211,13 +27212,13 @@ function News() {
   const getPriorityIcon = (priorityLevel) => {
     switch (priorityLevel) {
       case "urgent":
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-5 w-5 text-red-500" });
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "h-5 w-5 text-red-500" });
       case "high":
         return /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { className: "h-5 w-5 text-orange-500" });
       case "normal":
         return /* @__PURE__ */ jsxRuntimeExports.jsx(Info, { className: "h-5 w-5 text-blue-500" });
       case "low":
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "h-5 w-5 text-neutral-500" });
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-5 w-5 text-neutral-500" });
       default:
         return /* @__PURE__ */ jsxRuntimeExports.jsx(Info, { className: "h-5 w-5 text-blue-500" });
     }
@@ -27309,20 +27310,6 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "announcementPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      id: "announcementPasscode",
-                      type: "password",
-                      value: announcementPasscode,
-                      onChange: (event) => setAnnouncementPasscode(event.target.value),
-                      required: true,
-                      className: "border-neutral-700 bg-neutral-800 text-white"
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "contentEn", className: "text-neutral-200", children: t("Content (English)", "Contenido (Inglés)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Textarea,
@@ -27347,6 +27334,17 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "imageUrl", className: "text-neutral-200", children: t("Image URL (optional)", "URL de imagen (opcional)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      id: "imageUrl",
+                      name: "imageUrl",
+                      className: "border-neutral-700 bg-neutral-800 text-white"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-200", children: t("Priority", "Prioridad") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: priority, onValueChange: (value) => setPriority(normalizePriority(value)), children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, {}) }),
@@ -27355,6 +27353,20 @@ function News() {
                       option === "low" ? "Baja" : option === "normal" ? "Normal" : option === "high" ? "Alta" : "Urgente"
                     ) }, option)) })
                   ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "announcementPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      id: "announcementPasscode",
+                      type: "password",
+                      value: announcementPasscode,
+                      onChange: (event) => setAnnouncementPasscode(event.target.value),
+                      required: true,
+                      className: "border-neutral-700 bg-neutral-800 text-white"
+                    }
+                  )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { type: "submit", className: "w-full bg-red-600 hover:bg-red-700", children: t("Create Announcement", "Crear Anuncio") })
               ] })
@@ -27423,20 +27435,6 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      id: "eventPasscode",
-                      type: "password",
-                      value: eventPasscode,
-                      onChange: (event) => setEventPasscode(event.target.value),
-                      required: true,
-                      className: "border-neutral-700 bg-neutral-800 text-white"
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventDate", className: "text-neutral-200", children: t("Date & Time", "Fecha y Hora") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
@@ -27470,6 +27468,20 @@ function News() {
                       name: "maxAttendees",
                       type: "number",
                       min: "1",
+                      className: "border-neutral-700 bg-neutral-800 text-white"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      id: "eventPasscode",
+                      type: "password",
+                      value: eventPasscode,
+                      onChange: (event) => setEventPasscode(event.target.value),
+                      required: true,
                       className: "border-neutral-700 bg-neutral-800 text-white"
                     }
                   )
@@ -27510,7 +27522,17 @@ function News() {
                   }
                 )
               ] }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "whitespace-pre-wrap text-neutral-300", children: language === "en" ? announcement.contentEn : announcement.contentEs }) })
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { children: [
+                announcement.imageUrl && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mb-3 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "img",
+                  {
+                    src: announcement.imageUrl,
+                    alt: language === "en" ? announcement.titleEn : announcement.titleEs,
+                    className: "max-h-64 w-full object-cover"
+                  }
+                ) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "whitespace-pre-wrap text-neutral-300", children: language === "en" ? announcement.contentEn : announcement.contentEs })
+              ] })
             ]
           },
           announcement.id
@@ -27778,7 +27800,12 @@ const createPost = async (data) => {
       "Content-Type": "application/json"
     },
     credentials: "include",
-    body: JSON.stringify(data)
+    body: JSON.stringify({
+      title: data.title,
+      content: data.content,
+      authorName: data.authorName,
+      imageUrl: data.imageUrl ?? null
+    })
   });
   if (!response.ok) {
     const message = await response.text();
@@ -27846,7 +27873,8 @@ function BulletinBoard() {
   const [newPost, setNewPost] = reactExports.useState({
     title: "",
     content: "",
-    authorName: ""
+    authorName: "",
+    imageUrl: ""
   });
   const [newPrayer, setNewPrayer] = reactExports.useState({
     title: "",
@@ -27951,7 +27979,7 @@ function BulletinBoard() {
   const createPostMutation = useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      setNewPost({ title: "", content: "", authorName: "" });
+      setNewPost({ title: "", content: "", authorName: "", imageUrl: "" });
       queryClient2.invalidateQueries({ queryKey: ["bulletin-board"] });
       setPostDialogOpen(false);
       toast2({
@@ -28062,7 +28090,8 @@ function BulletinBoard() {
     createPostMutation.mutate({
       title: newPost.title.trim(),
       content: newPost.content.trim(),
-      authorName: newPost.authorName.trim() || t("Anonymous", "Anónimo")
+      authorName: newPost.authorName.trim() || t("Anonymous", "Anónimo"),
+      imageUrl: newPost.imageUrl.trim() || null
     });
   };
   const handleSubmitPrayer = (event) => {
@@ -28177,6 +28206,14 @@ function BulletinBoard() {
                 )
               ] }) }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4", children: [
+                post.imageUrl && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "img",
+                  {
+                    src: post.imageUrl,
+                    alt: post.title,
+                    className: "max-h-64 w-full object-cover"
+                  }
+                ) }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "whitespace-pre-wrap text-sm text-neutral-300", children: post.content }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", children: post.comments.length > 0 ? post.comments.map((comment) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-lg border border-neutral-800 bg-neutral-950/60 p-3 text-sm", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-1 flex items-center justify-between text-xs text-neutral-400", children: [
@@ -28281,6 +28318,19 @@ function BulletinBoard() {
                     value: newPost.authorName,
                     onChange: (event) => setNewPost((prev) => ({ ...prev, authorName: event.target.value })),
                     placeholder: t("Optional", "Opcional"),
+                    className: "border-neutral-700 bg-neutral-800 text-white"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "bulletin-image", className: "text-neutral-200", children: t("Image URL (optional)", "URL de imagen (opcional)") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Input,
+                  {
+                    id: "bulletin-image",
+                    value: newPost.imageUrl,
+                    onChange: (event) => setNewPost((prev) => ({ ...prev, imageUrl: event.target.value })),
+                    placeholder: t("https://example.com/image.jpg", "https://ejemplo.com/imagen.jpg"),
                     className: "border-neutral-700 bg-neutral-800 text-white"
                   }
                 )
