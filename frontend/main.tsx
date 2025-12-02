@@ -3,57 +3,50 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Enhanced loading screen that waits for all resources
+// Splash screen handling: keep visible for at least a couple seconds
+// and only hide after the full window load event has fired.
+const SPLASH_MIN_DURATION_MS = 2000;
+const splashStartTime =
+  typeof performance !== "undefined" ? performance.now() : Date.now();
+let splashHidden = false;
+
 const hideSplashScreen = () => {
-  const splash = document.querySelector('.app-splash') as HTMLElement;
+  if (splashHidden) return;
+  const splash = document.querySelector(".app-splash") as HTMLElement | null;
   const body = document.body;
-  
-  if (splash && body) {
-    // Function to actually hide the splash screen
-    const hideSplash = () => {
-      body.classList.add('app-loaded');
-      splash.style.opacity = '0';
-      splash.style.transition = 'opacity 0.5s ease-out';
-      setTimeout(() => {
-        splash.remove();
-      }, 500);
-    };
 
-    // Check if all resources are loaded
-    const checkResourcesLoaded = () => {
-      const images = Array.from(document.images);
-      
-      // Check if all images are loaded
-      const imagesLoaded = images.every(img => {
-        return img.complete && img.naturalHeight !== 0;
-      });
+  if (!splash || !body) return;
 
-      // Check if fonts are loaded
-      const fontsLoaded = document.fonts.ready;
+  splashHidden = true;
+  body.classList.add("app-loaded");
+  splash.style.opacity = "0";
+  splash.style.transition = "opacity 0.5s ease-out";
+  setTimeout(() => {
+    splash.remove();
+  }, 500);
+};
 
-      // Wait for minimum time and all resources
-      const minLoadTime = 8000; // 8 seconds minimum
-      const startTime = Date.now();
-      
-      const checkComplete = () => {
-        const elapsed = Date.now() - startTime;
-        const minTimePassed = elapsed >= minLoadTime;
-        
-        fontsLoaded.then(() => {
-          if (minTimePassed && imagesLoaded) {
-            hideSplash();
-          } else {
-            // Check again in 100ms
-            setTimeout(checkComplete, 100);
-          }
-        });
-      };
+const scheduleSplashHideAfterLoad = () => {
+  const onLoad = () => {
+    const now =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+    const elapsed = now - splashStartTime;
+    const remaining = SPLASH_MIN_DURATION_MS - elapsed;
 
-      checkComplete();
-    };
+    if (remaining > 0) {
+      setTimeout(hideSplashScreen, remaining);
+    } else {
+      hideSplashScreen();
+    }
+  };
 
-    // Start checking after React mounts
-    setTimeout(checkResourcesLoaded, 100);
+  if (typeof window !== "undefined") {
+    if (document.readyState === "complete") {
+      // Window load has already fired
+      onLoad();
+    } else {
+      window.addEventListener("load", onLoad, { once: true });
+    }
   }
 };
 
@@ -72,8 +65,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );
 
-// Hide splash screen after React mounts
-hideSplashScreen();
+// Start splash handling after React mounts
+scheduleSplashHideAfterLoad();
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator && import.meta.env.PROD) {

@@ -33684,40 +33684,39 @@ const queryClient = new QueryClient();
 function App() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsxRuntimeExports.jsx(LanguageProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(PlayerProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NotificationProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "dark", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AppInner, {}) }) }) }) }) });
 }
+const SPLASH_MIN_DURATION_MS = 2e3;
+const splashStartTime = typeof performance !== "undefined" ? performance.now() : Date.now();
+let splashHidden = false;
 const hideSplashScreen = () => {
+  if (splashHidden) return;
   const splash = document.querySelector(".app-splash");
   const body = document.body;
-  if (splash && body) {
-    const hideSplash = () => {
-      body.classList.add("app-loaded");
-      splash.style.opacity = "0";
-      splash.style.transition = "opacity 0.5s ease-out";
-      setTimeout(() => {
-        splash.remove();
-      }, 500);
-    };
-    const checkResourcesLoaded = () => {
-      const images = Array.from(document.images);
-      const imagesLoaded = images.every((img) => {
-        return img.complete && img.naturalHeight !== 0;
-      });
-      const fontsLoaded = document.fonts.ready;
-      const minLoadTime = 8e3;
-      const startTime = Date.now();
-      const checkComplete = () => {
-        const elapsed = Date.now() - startTime;
-        const minTimePassed = elapsed >= minLoadTime;
-        fontsLoaded.then(() => {
-          if (minTimePassed && imagesLoaded) {
-            hideSplash();
-          } else {
-            setTimeout(checkComplete, 100);
-          }
-        });
-      };
-      checkComplete();
-    };
-    setTimeout(checkResourcesLoaded, 100);
+  if (!splash || !body) return;
+  splashHidden = true;
+  body.classList.add("app-loaded");
+  splash.style.opacity = "0";
+  splash.style.transition = "opacity 0.5s ease-out";
+  setTimeout(() => {
+    splash.remove();
+  }, 500);
+};
+const scheduleSplashHideAfterLoad = () => {
+  const onLoad3 = () => {
+    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const elapsed = now - splashStartTime;
+    const remaining = SPLASH_MIN_DURATION_MS - elapsed;
+    if (remaining > 0) {
+      setTimeout(hideSplashScreen, remaining);
+    } else {
+      hideSplashScreen();
+    }
+  };
+  if (typeof window !== "undefined") {
+    if (document.readyState === "complete") {
+      onLoad3();
+    } else {
+      window.addEventListener("load", onLoad3, { once: true });
+    }
   }
 };
 if (typeof window !== "undefined") {
@@ -33729,7 +33728,7 @@ if (typeof window !== "undefined") {
 ReactDOM$1.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsxRuntimeExports.jsx(React.StrictMode, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(App, {}) })
 );
-hideSplashScreen();
+scheduleSplashHideAfterLoad();
 if ("serviceWorker" in navigator && true) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/cne-app/sw.js").then((registration) => {
