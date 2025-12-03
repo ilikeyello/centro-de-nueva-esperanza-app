@@ -12,7 +12,7 @@ export const staticAssets = api.static({
 
 // Serve the main HTML file for all other routes
 export const index = api.static({
-  path: "/*path",
+  path: "/cne-app/*path",
   dir: "./dist",
   notFound: "./dist/index.html",
   notFoundStatus: 200,
