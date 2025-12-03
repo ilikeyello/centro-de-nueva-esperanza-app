@@ -923,10 +923,6 @@
     height: calc(var(--spacing) * 5);
   }
 
-  .h-5\.5 {
-    height: calc(var(--spacing) * 5.5);
-  }
-
   .h-6 {
     height: calc(var(--spacing) * 6);
   }
@@ -1049,10 +1045,6 @@
 
   .w-5 {
     width: calc(var(--spacing) * 5);
-  }
-
-  .w-5\.5 {
-    width: calc(var(--spacing) * 5.5);
   }
 
   .w-6 {
@@ -3730,12 +3722,20 @@
       display: none;
     }
 
+    .md\:h-5 {
+      height: calc(var(--spacing) * 5);
+    }
+
     .md\:h-\[54rem\] {
       height: 54rem;
     }
 
     .md\:h-auto {
       height: auto;
+    }
+
+    .md\:w-5 {
+      width: calc(var(--spacing) * 5);
     }
 
     .md\:w-96 {

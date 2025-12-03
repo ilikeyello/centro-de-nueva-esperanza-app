@@ -120,7 +120,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur transition-transform md:sticky md:top-0 md:border-b md:border-t-0">
       <div
         className={cn("container mx-auto py-0")}
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" }}
       >
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
           {/* Mobile nav-embedded YouTube player */}
@@ -135,21 +135,21 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     <button
                       type="button"
                       onClick={toggleMinimize}
-                      className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
+                      className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
                       aria-label={t(
                         isMinimized ? "Expand music player" : "Minimize music player",
                         isMinimized ? "Expandir reproductor de música" : "Minimizar reproductor de música"
                       )}
                     >
-                      {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
+                      {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
                     </button>
                     <button
                       type="button"
                       onClick={closeYouTubePlayer}
-                      className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-red-500 hover:text-red-400"
+                      className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 text-neutral-300 hover:border-red-500 hover:text-red-400"
                       aria-label={t("Close music player", "Cerrar reproductor de música")}
                     >
-                      ×
+                      <span className="text-sm leading-none">×</span>
                     </button>
                   </div>
                 </div>
@@ -186,7 +186,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                       : "text-neutral-400 hover:text-neutral-200"
                   )}
                 >
-                  <Icon className={cn("h-5.5 w-5.5", isActive && "text-red-500")} />
+                  <Icon className={cn("h-6 w-6 md:h-5 md:w-5", isActive && "text-red-500")} />
                   <span className="text-xs font-medium whitespace-nowrap md:text-sm">
                     {t(item.labelEn, item.labelEs)}
                   </span>
@@ -202,7 +202,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               )}
               aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
             >
-              <Languages className="h-5.5 w-5.5" />
+              <Languages className="h-6 w-6 md:h-5 md:w-5" />
               <span className="text-xs font-medium md:text-sm">{language === "en" ? "ESP" : "ENG"}</span>
             </button>
           </div>
