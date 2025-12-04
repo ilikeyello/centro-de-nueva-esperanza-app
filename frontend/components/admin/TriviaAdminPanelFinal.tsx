@@ -487,15 +487,6 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
               {status}
             </div>
           )}
-          {totalPendingOps > 0 && (
-            <Button 
-              onClick={executeBatchOperations}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {t("Save Changes", "Guardar Cambios")} ({totalPendingOps})
-            </Button>
-          )}
         </div>
       </div>
 
@@ -620,26 +611,45 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                               placeholder={t("Question (ES)", "Pregunta (ES)")}
                               className="mb-1 text-[0.9rem]"
                             />
-                            <div className="flex gap-2">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
                               <Input
-                                value={Array.isArray(question.options_en) ? question.options_en.join("|") : question.options_en}
-                                onChange={e => {/* handle options edit */}}
-                                placeholder={t("Options (| separated)", "Opciones (| separadas)")}
-                                className="flex-1 text-[0.9rem]"
+                                value={Array.isArray(question.options_en) ? (question.options_en[0] || "") : ''}
+                                onChange={e => {/* handle option 1 edit */}}
+                                placeholder={t("Option 1", "Opción 1")}
+                                className="text-[0.9rem]"
                               />
+                              <Input
+                                value={Array.isArray(question.options_en) ? (question.options_en[1] || "") : ''}
+                                onChange={e => {/* handle option 2 edit */}}
+                                placeholder={t("Option 2", "Opción 2")}
+                                className="text-[0.9rem]"
+                              />
+                              <Input
+                                value={Array.isArray(question.options_en) ? (question.options_en[2] || "") : ''}
+                                onChange={e => {/* handle option 3 edit */}}
+                                placeholder={t("Option 3", "Opción 3")}
+                                className="text-[0.9rem]"
+                              />
+                              <Input
+                                value={Array.isArray(question.options_en) ? (question.options_en[3] || "") : ''}
+                                onChange={e => {/* handle option 4 edit */}}
+                                placeholder={t("Option 4", "Opción 4")}
+                                className="text-[0.9rem]"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Label className="text-[0.7rem] text-neutral-400">
+                                {t("Correct Option Index (0-3)", "Índice de opción correcta (0-3)")}
+                              </Label>
                               <Input
                                 value={question.correct_answer}
                                 onChange={e => {/* handle correct answer edit */}}
                                 type="number"
                                 min={0}
                                 max={3}
-                                placeholder={t("Correct", "Correcta")}
-                                className="w-16 text-[0.9rem]"
+                                className="w-16 h-7 text-[0.9rem]"
                               />
-                            </div>
-                            <div className="flex gap-2 mt-1">
-                              <Button type="button" className="bg-green-700 px-2 h-7 text-xs" onClick={() => {/* save question */}}>{t("Save", "Guardar")}</Button>
-                              <Button type="button" className="bg-red-700 px-2 h-7 text-xs" onClick={() => {/* delete question */}}>{t("Delete", "Eliminar")}</Button>
+                              <Button type="button" className="ml-auto bg-red-700 px-2 h-7 text-xs" onClick={() => {/* delete question */}}>{t("Delete", "Eliminar")}</Button>
                             </div>
                           </div>
                         ))}
@@ -657,21 +667,43 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                             placeholder={t("New Question (ES)", "Nueva Pregunta (ES)")}
                             className="mb-1 text-[0.9rem]"
                           />
-                          <div className="flex gap-2">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
                             <Input
                               value={""}
                               onChange={() => {}}
-                              placeholder={t("Options (| separated)", "Opciones (| separadas)")}
-                              className="flex-1 text-[0.9rem]"
+                              placeholder={t("Option 1", "Opción 1")}
+                              className="text-[0.9rem]"
                             />
+                            <Input
+                              value={""}
+                              onChange={() => {}}
+                              placeholder={t("Option 2", "Opción 2")}
+                              className="text-[0.9rem]"
+                            />
+                            <Input
+                              value={""}
+                              onChange={() => {}}
+                              placeholder={t("Option 3", "Opción 3")}
+                              className="text-[0.9rem]"
+                            />
+                            <Input
+                              value={""}
+                              onChange={() => {}}
+                              placeholder={t("Option 4", "Opción 4")}
+                              className="text-[0.9rem]"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Label className="text-[0.7rem] text-neutral-400">
+                              {t("Correct Option Index (0-3)", "Índice de opción correcta (0-3)")}
+                            </Label>
                             <Input
                               value={""}
                               onChange={() => {}}
                               type="number"
                               min={0}
                               max={3}
-                              placeholder={t("Correct", "Correcta")}
-                              className="w-16 text-[0.9rem]"
+                              className="w-16 h-7 text-[0.9rem]"
                             />
                           </div>
                           <Button type="button" className="bg-blue-700 px-2 h-7 text-xs mt-1" onClick={() => {/* add new question */}}>{t("Add Question", "Agregar Pregunta")}</Button>
@@ -680,10 +712,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                     </div>
                     <Button
                       type="button"
-                      onClick={() => {/* save all changes */}}
-                      className="mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
+                      onClick={executeBatchOperations}
+                      disabled={totalPendingOps === 0}
+                      className="mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {t("Save Changes", "Guardar Cambios")}
+                      {t("Save Changes", "Guardar Cambios")} {totalPendingOps > 0 ? `(${totalPendingOps})` : ""}
                     </Button>
                   </div>
                 )}
