@@ -115,13 +115,14 @@ interface PuzzleCell {
   letter: string;
 }
 
-interface PuzzleResponse {
-  level: WordSearchLevel;
+interface PuzzleResult {
+  level: WordSearchLevel | null;
   words: string[];
   grid: string[];
+  error?: string;
 }
 
-export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResponse | { error: string }>(
+export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>(
   { expose: true, method: "GET", path: "/games/wordsearch/puzzle/:id" },
   async ({ id, lang }) => {
     const level = await db.queryRow<WordSearchLevel>`
@@ -131,7 +132,7 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleRespons
     `;
 
     if (!level) {
-      return { error: "Level not found" };
+      return { level: null, words: [], grid: [], error: "Level not found" };
     }
 
     const allWords = await db.queryAll<WordSearchWord>`
@@ -148,7 +149,7 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleRespons
       .filter((w) => w.length >= 3 && w.length <= Math.max(level.rows, level.cols));
 
     if (rawWords.length === 0) {
-      return { error: "No words configured for this level" };
+      return { level, words: [], grid: [], error: "No words configured for this level" };
     }
 
     const grid: PuzzleCell[][] = [];
