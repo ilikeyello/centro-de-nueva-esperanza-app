@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Sparkles, Brain, Play, Clock, Target, ChevronRight } from "lucide-react";
+import { Sparkles, Brain, Play, Clock, Target, Grid3X3 } from "lucide-react";
 
 export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const { language, t } = useLanguage();
@@ -64,16 +64,30 @@ export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
           </CardContent>
         </Card>
 
-        {/* Placeholder for future games */}
-        <Card className="bg-neutral-900/50 border-neutral-800 border-dashed">
-          <CardContent className="p-8 text-center">
-            <Sparkles className="h-12 w-12 mx-auto mb-4 text-neutral-600" />
-            <h3 className="text-xl font-semibold text-white mb-2">
-              {t("More Games Coming Soon", "Más Juegos Pronto")}
-            </h3>
-            <p className="text-neutral-400">
-              {t("Check back for more faith-filled games and activities!", "¡Vuelve a consultar para más juegos y actividades llenas de fe!")}
-            </p>
+        <Card className="bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <Grid3X3 className="h-8 w-8 text-red-400" />
+                  <h3 className="text-2xl font-bold text-white">
+                    {language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search"}
+                  </h3>
+                </div>
+                <p className="text-neutral-400 mb-4">
+                  {language === "es"
+                    ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Ideal para todas las edades."
+                    : "Find hidden Bible words in the grid. Great for all ages."}
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => onNavigate?.("wordSearchGame")}
+              className="mt-4 w-full bg-red-600 hover:bg-red-700"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              {t("Play Word Search", "Jugar Sopa de Letras")}
+            </Button>
           </CardContent>
         </Card>
       </section>

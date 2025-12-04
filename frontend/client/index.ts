@@ -129,7 +129,7 @@ export namespace announcements {
         titleEs: string
         contentEn: string
         contentEs: string
-        priority: "low" | "normal" | "high" | "urgent"
+        priority: "normal" | "urgent"
         passcode: string
     }
 

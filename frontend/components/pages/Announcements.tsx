@@ -20,7 +20,7 @@ export function Announcements() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [priority, setPriority] = useState<"low" | "normal" | "high" | "urgent">("normal");
+  const [priority, setPriority] = useState<"normal" | "urgent">("normal");
 
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
@@ -33,7 +33,7 @@ export function Announcements() {
       titleEs: string;
       contentEn: string;
       contentEs: string;
-      priority: "low" | "normal" | "high" | "urgent";
+      priority: "normal" | "urgent";
       passcode: string;
     }) => {
       return backend.announcements.create(data);
@@ -74,28 +74,18 @@ export function Announcements() {
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
-      case "high":
-        return <AlertCircle className="h-5 w-5 text-orange-500" />;
+        return <AlertTriangle className="h-5 w-5 text-orange-500" />;
       case "normal":
-        return <Info className="h-5 w-5 text-blue-500" />;
-      case "low":
-        return <Bell className="h-5 w-5 text-neutral-500" />;
       default:
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <Bell className="h-5 w-5 text-blue-500" />;
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return "border-red-600 bg-red-950/30";
-      case "high":
         return "border-orange-600 bg-orange-950/30";
       case "normal":
-        return "border-neutral-700 bg-neutral-900/50";
-      case "low":
-        return "border-neutral-800 bg-neutral-900/30";
       default:
         return "border-neutral-700 bg-neutral-900/50";
     }
@@ -186,9 +176,7 @@ export function Announcements() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="border-neutral-700 bg-neutral-800">
-                    <SelectItem value="low">{t("Low", "Baja")}</SelectItem>
                     <SelectItem value="normal">{t("Normal", "Normal")}</SelectItem>
-                    <SelectItem value="high">{t("High", "Alta")}</SelectItem>
                     <SelectItem value="urgent">{t("Urgent", "Urgente")}</SelectItem>
                   </SelectContent>
                 </Select>

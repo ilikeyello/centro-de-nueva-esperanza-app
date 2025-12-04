@@ -42,9 +42,7 @@ export const list = api<ListAnnouncementsRequest, ListAnnouncementsResponse>(
       ORDER BY 
         CASE priority
           WHEN 'urgent' THEN 1
-          WHEN 'high' THEN 2
-          WHEN 'normal' THEN 3
-          WHEN 'low' THEN 4
+          ELSE 2
         END,
         created_at DESC
       LIMIT ${limit}

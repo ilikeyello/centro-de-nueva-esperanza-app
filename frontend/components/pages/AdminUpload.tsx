@@ -4,6 +4,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TriviaAdminPanelFinal } from "../admin/TriviaAdminPanelFinal";
+import { WordSearchAdminPanel } from "../admin/WordSearchAdminPanel";
 import { Trash2 } from "lucide-react";
 
 export function AdminUpload() {
@@ -214,7 +215,7 @@ export function AdminUpload() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="media">{t("Music", "Música")}</TabsTrigger>
             <TabsTrigger value="other">{t("Media", "Medios")}</TabsTrigger>
-            <TabsTrigger value="trivia">{t("Trivia", "Trivia")}</TabsTrigger>
+            <TabsTrigger value="games">{t("Games", "Juegos")}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="media" className="space-y-4 mt-4">
@@ -511,8 +512,9 @@ export function AdminUpload() {
             </div>
           </TabsContent>
           
-          <TabsContent value="trivia" className="space-y-4 mt-4">
+          <TabsContent value="games" className="space-y-4 mt-4">
             <TriviaAdminPanelFinal passcode={uploadPasscode} />
+            <WordSearchAdminPanel passcode={uploadPasscode} />
           </TabsContent>
         </Tabs>
       </div>

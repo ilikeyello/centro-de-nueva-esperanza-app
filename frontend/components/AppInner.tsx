@@ -7,6 +7,7 @@ import { Donations } from "./pages/Donations";
 import { Media } from "./pages/Media";
 import { Games } from "./pages/Games";
 import { TriviaGamePage } from "./pages/TriviaGamePage";
+import { WordSearchGamePage } from "./pages/WordSearchGamePage";
 import { Contact } from "./pages/Contact";
 import { NewHere } from "./pages/NewHere";
 import { AdminUpload } from "./pages/AdminUpload";
@@ -23,6 +24,7 @@ type Page =
   | "contact"
   | "games"
   | "triviaGame"
+  | "wordSearchGame"
   | "newHere"
   | "adminUpload"
   | "notifications";
@@ -67,8 +69,9 @@ export function AppInner() {
         </div>
         {currentPage === "adminUpload" && <AdminUpload />}
         {currentPage === "contact" && <Contact onNavigate={handleNavigate} />}
-        {currentPage === "games" && <Games onNavigate={handleNavigate} />}
+        {currentPage === "games" && <Games onNavigate={handleNavigate} />}        
         {currentPage === "triviaGame" && <TriviaGamePage onNavigate={handleNavigate} />}
+        {currentPage === "wordSearchGame" && <WordSearchGamePage onNavigate={handleNavigate} />}
         {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
         {currentPage === "notifications" && <NotificationSettings />}
       </main>
