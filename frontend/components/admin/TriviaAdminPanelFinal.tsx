@@ -533,69 +533,101 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => (
-            <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white">{level.name}</h3>
-                    {level.description && (
-                      <p className="text-sm text-neutral-400 mt-1">{level.description}</p>
-                    )}
-                    <div className="flex gap-4 mt-2 text-xs text-neutral-500">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {level.time_limit ? `${level.time_limit}s` : t("No limit", "Sin límite")}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Target className="h-3 w-3" />
-                        {level.passing_score}%
-                      </span>
-                      <span>{questionsByLevel[level.id || '']?.length || 0} {t("questions", "preguntas")}</span>
+          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
+            const isExpanded = expandedLevels.has(level.id || '');
+            const levelQuestions = [
+              ...(questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id)),
+              ...pendingOperations.questionsToAdd.filter(question => question.level_id === level.id),
+              ...pendingOperations.questionsToEdit.filter(question => question.level_id === level.id && question.id === 0)
+            ].filter((question, index, array) => 
+              array.findIndex(q => q.question_en === question.question_en && q.level_id === question.level_id) === index
+            );
+            return (
+              <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
+                <div className="p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors" onClick={() => toggleLevelExpansion(level.id)}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      <h3 className="font-semibold text-white">{level.name}</h3>
+                      <span className="text-sm text-neutral-400">({levelQuestions.length} {t("questions", "preguntas")})</span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Dialog open={showLevelDialog && editingLevel?.id === (level.id || '')} onOpenChange={(open) => {
-                      setShowLevelDialog(open);
-                      if (!open) setEditingLevel(null);
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button
-                          onClick={() => setEditingLevel(level)}
-                          variant="outline"
-                          size="sm"
-                          className="border-neutral-700 hover:bg-neutral-800"
-                        >
-                          <Edit2 className="h-3 w-3" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-neutral-900 border-neutral-800 text-white max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>{t("Edit Level", "Editar Nivel")}</DialogTitle>
-                        </DialogHeader>
-                        <LevelForm
-                          level={level}
-                          onSave={addLevelToBatch}
-                          onCancel={() => {
-                            setShowLevelDialog(false);
-                            setEditingLevel(null);
-                          }}
+                </div>
+                {isExpanded && (
+                  <div className="border-t border-neutral-800 p-4 space-y-4">
+                    {/* Editable fields for the level */}
+                    <div className="grid gap-2 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <Label className="text-[0.7rem] text-neutral-400">{t("Name", "Nombre")}</Label>
+                        <Input
+                          value={level.name}
+                          onChange={e => {/* handle name change */}}
+                          className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
                         />
-                      </DialogContent>
-                    </Dialog>
+                      </div>
+                      <div className="space-y-1 flex gap-2">
+                        <div className="flex-1">
+                          <Label className="text-[0.7rem] text-neutral-400">{t("Time Limit (s)", "Límite de Tiempo (s)")}</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={level.time_limit || 0}
+                            onChange={e => {/* handle time change */}}
+                            className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <Label className="text-[0.7rem] text-neutral-400">{t("Passing Score (%)", "Puntaje de Aprobación (%)")}</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={level.passing_score || 0}
+                            onChange={e => {/* handle score change */}}
+                            className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[0.7rem] text-neutral-400">{t("Description", "Descripción")}</Label>
+                      <Textarea
+                        value={level.description || ''}
+                        onChange={e => {/* handle desc change */}}
+                        className="min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                      />
+                    </div>
+                    {/* Inline editable question list */}
+                    <div className="space-y-2 mt-4">
+                      <Label className="text-neutral-300">{t("Questions", "Preguntas")}</Label>
+                      {levelQuestions.length === 0 ? (
+                        <div className="text-center text-neutral-400">
+                          {t("No questions in this level yet.", "No hay preguntas en este nivel aún.")}
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          {levelQuestions.map((question) => (
+                            <div key={question.id} className="flex items-center gap-2">
+                              <span className="truncate text-[0.8rem]">{language === 'es' ? question.question_es : question.question_en}</span>
+                              {/* Add edit/delete buttons here */}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Add question input/button here */}
+                    </div>
                     <Button
-                      onClick={() => level.id && deleteLevelFromBatch(level.id)}
-                      variant="outline"
-                      size="sm"
-                      className="border-red-700 hover:bg-red-700 text-red-400"
+                      type="button"
+                      onClick={() => {/* save all changes */}}
+                      className="mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      {t("Save Changes", "Guardar Cambios")}
                     </Button>
                   </div>
-                </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
 
