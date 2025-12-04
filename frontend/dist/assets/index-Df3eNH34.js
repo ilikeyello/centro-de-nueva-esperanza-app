@@ -30343,12 +30343,12 @@ function WordSearchGamePage({ onNavigate }) {
     };
     loadLevels();
   }, [base, t]);
-  const handleBackToGames = () => {
+  const resetPuzzleState = () => {
     setPuzzle(null);
     setFoundWords(/* @__PURE__ */ new Set());
     setFoundCells(/* @__PURE__ */ new Set());
     setSelectedStart(null);
-    if (onNavigate) onNavigate("games");
+    setError(null);
   };
   const handleSelectLevel = async (levelId) => {
     try {
@@ -30358,26 +30358,25 @@ function WordSearchGamePage({ onNavigate }) {
       setFoundCells(/* @__PURE__ */ new Set());
       setSelectedStart(null);
       const langParam = language === "es" ? "es" : "en";
-      const res = await fetch(`${base}/games/wordsearch/puzzle/${encodeURIComponent(levelId)}?lang=${langParam}`);
+      const res = await fetch(
+        `${base}/games/wordsearch/puzzle/${encodeURIComponent(levelId)}?lang=${langParam}`
+      );
       const data = await res.json();
-      if (!res.ok || "error" in data) {
+      if (!res.ok || data.error || !data.level || !data.grid || !data.words) {
         throw new Error(data.error || "Failed to load puzzle");
       }
       setPuzzle(data);
     } catch (err) {
       console.error(err);
       setError(
-        t(
-          "Failed to load puzzle.",
-          "Error al cargar el rompecabezas."
-        )
+        t("Failed to load puzzle.", "Error al cargar el rompecabezas.")
       );
     } finally {
       setLoadingPuzzle(false);
     }
   };
   const toggleCellSelection = (row, col) => {
-    if (!puzzle) return;
+    if (!puzzle || !puzzle.level) return;
     const cols = puzzle.level.cols;
     const rows = puzzle.level.rows;
     if (!selectedStart) {
@@ -30392,7 +30391,10 @@ function WordSearchGamePage({ onNavigate }) {
       setSelectedStart(null);
       return;
     }
-    const length = Math.max(Math.abs(end.row - start.row), Math.abs(end.col - start.col)) + 1;
+    const length = Math.max(
+      Math.abs(end.row - start.row),
+      Math.abs(end.col - start.col)
+    ) + 1;
     const validDirection = dr === 0 && dc !== 0 || dc === 0 && dr !== 0 || Math.abs(dr) === 1 && Math.abs(dc) === 1;
     if (!validDirection) {
       setSelectedStart(null);
@@ -30409,13 +30411,24 @@ function WordSearchGamePage({ onNavigate }) {
       coords.push({ row: r2, col: c });
     }
     const letters = coords.map(({ row: r2, col: c }) => puzzle.grid[r2][c]).join("");
-    const upperWords = puzzle.words.map((w) => w.toUpperCase());
-    const wordIndex = upperWords.indexOf(letters);
-    if (wordIndex === -1) {
+    const candidate = letters.toUpperCase();
+    const reversed = candidate.split("").reverse().join("");
+    const upperWords = new Set(puzzle.words.map((w) => w.toUpperCase()));
+    let matched = "";
+    if (upperWords.has(candidate)) {
+      matched = candidate;
+    } else if (upperWords.has(reversed)) {
+      matched = reversed;
+    }
+    if (!matched) {
       setSelectedStart(null);
       return;
     }
-    setFoundWords((prev) => new Set(prev).add(letters));
+    setFoundWords((prev) => {
+      const next = new Set(prev);
+      next.add(matched);
+      return next;
+    });
     setFoundCells((prev) => {
       const next = new Set(prev);
       coords.forEach(({ row: r2, col: c }) => {
@@ -30425,65 +30438,66 @@ function WordSearchGamePage({ onNavigate }) {
     });
     setSelectedStart(null);
   };
-  if (!puzzle) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-8 px-4 py-8", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        Button,
+  const renderLevelList = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-8 px-4 py-8", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      Button,
+      {
+        onClick: () => onNavigate == null ? void 0 : onNavigate("games"),
+        variant: "outline",
+        className: "border-neutral-700 hover:bg-neutral-800 text-white mb-4",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+          t("Back to Games", "Volver a Juegos")
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-8 w-8 text-red-400" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-3xl font-bold text-white", children: language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl mt-1 text-sm", children: language === "es" ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Cada nivel tiene un conjunto diferente de palabras." : "Find hidden Bible words in the grid. Each level has its own set of themed words." })
+        ] })
+      ] }),
+      error && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-red-400", children: error }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-4 max-w-4xl", children: loadingLevels ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm", children: t("Loading levels...", "Cargando niveles...") }) : levels.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm", children: t("No word search levels yet.", "Aún no hay niveles de sopa de letras.") }) : levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
         {
-          onClick: () => onNavigate == null ? void 0 : onNavigate("games"),
-          variant: "outline",
-          className: "border-neutral-700 hover:bg-neutral-800 text-white mb-4",
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
-            t("Back to Games", "Volver a Juegos")
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-8 w-8 text-red-400" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-3xl font-bold text-white", children: language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl mt-1 text-sm", children: language === "es" ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Cada nivel tiene un conjunto diferente de palabras." : "Find hidden Bible words in the grid. Each level has its own set of themed words." })
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: level.name }),
+              level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-400 max-w-xl", children: level.description }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[0.75rem] text-neutral-500", children: [
+                level.rows,
+                "x",
+                level.cols,
+                " - ",
+                level.words.length,
+                " ",
+                t("words", "palabras")
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Button,
+              {
+                onClick: () => handleSelectLevel(level.id),
+                className: "mt-2 sm:mt-0 sm:w-auto w-full bg-red-600 hover:bg-red-700",
+                disabled: loadingPuzzle,
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
+                  t("Play", "Jugar")
+                ]
+              }
+            )
           ] })
-        ] }),
-        error && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-red-400", children: error }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-4 max-w-4xl", children: loadingLevels ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm", children: t("Loading levels...", "Cargando niveles...") }) : levels.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm", children: t("No word search levels yet.", "Aún no hay niveles de sopa de letras.") }) : levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Card,
-          {
-            className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-5 flex items-center justify-between gap-4", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: level.name }),
-                level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-400 max-w-xl", children: level.description }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[0.75rem] text-neutral-500", children: [
-                  level.rows,
-                  "x",
-                  level.cols,
-                  " \0b7 ",
-                  level.words.length,
-                  " ",
-                  t("words", "palabras")
-                ] })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                Button,
-                {
-                  onClick: () => handleSelectLevel(level.id),
-                  className: "bg-red-600 hover:bg-red-700 whitespace-nowrap",
-                  disabled: loadingPuzzle,
-                  children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-                    t("Play", "Jugar")
-                  ]
-                }
-              )
-            ] })
-          },
-          level.id
-        )) })
-      ] })
-    ] });
+        },
+        level.id
+      )) })
+    ] })
+  ] });
+  if (!puzzle || !puzzle.level) {
+    return renderLevelList();
   }
   const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-4 px-3 py-4 max-w-4xl", children: [
@@ -30491,7 +30505,7 @@ function WordSearchGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
         {
-          onClick: handleBackToGames,
+          onClick: resetPuzzleState,
           variant: "outline",
           className: "border-neutral-700 hover:bg-neutral-800 text-white",
           children: [
@@ -30517,15 +30531,16 @@ function WordSearchGamePage({ onNavigate }) {
         puzzle.level.name
       ] }),
       puzzle.level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 max-w-2xl", children: puzzle.level.description }),
-      allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-green-400", children: language === "es" ? "\0a1Completado!" : "Completed!" })
+      allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-green-400", children: language === "es" ? "¡Completado!" : "Completed!" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: language === "es" ? "Toca la primera y la última letra de la palabra en línea recta para marcarla." : "Tap the first and last letter of the word in a straight line to mark it." })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:gap-6", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-x-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         "div",
         {
-          className: "inline-grid gap-[2px] rounded-lg border border-neutral-800 bg-neutral-900 p-2",
+          className: "inline-grid max-w-full gap-[2px] rounded-lg border border-neutral-800 bg-neutral-900 p-1.5",
           style: {
-            gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(1.6rem, 2rem))`
+            gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(1.1rem, 2rem))`
           },
           children: puzzle.grid.map(
             (rowStr, r2) => rowStr.split("").map((ch, c) => {
@@ -30536,7 +30551,7 @@ function WordSearchGamePage({ onNavigate }) {
                 {
                   type: "button",
                   onClick: () => toggleCellSelection(r2, c),
-                  className: `flex h-8 w-8 items-center justify-center text-sm font-semibold rounded ${isFound ? "bg-red-600 text-white border border-red-300" : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"}`,
+                  className: `flex h-6 w-6 md:h-8 md:w-8 items-center justify-center text-[0.65rem] md:text-sm font-semibold rounded ${isFound ? "bg-red-600 text-white border border-red-300" : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"}`,
                   children: ch
                 },
                 key
@@ -32102,6 +32117,15 @@ function WordSearchAdminPanel({ passcode }) {
       level.words.map((w) => language === "es" && w.word_es ? `${w.word_en}|${w.word_es}` : w.word_en).join("\n")
     );
   };
+  const handleNewLevel = () => {
+    setSelectedLevelId(null);
+    setName("");
+    setDescription("");
+    setRows(12);
+    setCols(12);
+    setWordsText("");
+    setStatus(null);
+  };
   const handleSaveLevel = async () => {
     setStatus(null);
     if (!passcode) {
@@ -32160,8 +32184,12 @@ function WordSearchAdminPanel({ passcode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: selectedLevelId, passcode, words })
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
+      const contentType = res.headers.get("content-type") || "";
+      let data = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      }
+      if (!res.ok || data && data.success === false) {
         throw new Error("Save failed");
       }
       await loadLevels();
@@ -32180,7 +32208,19 @@ function WordSearchAdminPanel({ passcode }) {
       ) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-3", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 md:col-span-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Levels", "Niveles") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Levels", "Niveles") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                type: "button",
+                variant: "outline",
+                className: "h-7 px-2 text-[0.7rem] border-neutral-700 text-neutral-200 hover:bg-neutral-800",
+                onClick: handleNewLevel,
+                children: t("New Level", "Nuevo Nivel")
+              }
+            )
+          ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1 max-h-64 overflow-y-auto border border-neutral-800 rounded-md p-1 bg-neutral-950/40", children: [
             loading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading levels...", "Cargando niveles...") }),
             !loading && levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.") }),
@@ -32313,6 +32353,7 @@ function AdminUpload() {
   const [sermonUrl, setSermonUrl] = reactExports.useState("");
   const [sermonStatus, setSermonStatus] = reactExports.useState(null);
   const [livestreamStatus, setLivestreamStatus] = reactExports.useState(null);
+  const [openGameAdmin, setOpenGameAdmin] = reactExports.useState("trivia");
   reactExports.useEffect(() => {
     document.title = t("Admin Upload", "Carga de Admin");
   }, [t]);
@@ -32728,10 +32769,34 @@ function AdminUpload() {
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(TabsContent, { value: "games", className: "space-y-4 mt-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaAdminPanelFinal, { passcode: uploadPasscode }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(WordSearchAdminPanel, { passcode: uploadPasscode })
-      ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "games", className: "space-y-3 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            type: "button",
+            className: "flex w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-neutral-100 hover:border-red-500",
+            onClick: () => setOpenGameAdmin((prev) => prev === "trivia" ? null : "trivia"),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Bible Trivia", "Trivia Bíblica") }),
+              openGameAdmin === "trivia" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4 text-neutral-400" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4 text-neutral-400" })
+            ]
+          }
+        ),
+        openGameAdmin === "trivia" && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-neutral-800 bg-neutral-950/60 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaAdminPanelFinal, { passcode: uploadPasscode }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            type: "button",
+            className: "mt-2 flex w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-neutral-100 hover:border-red-500",
+            onClick: () => setOpenGameAdmin((prev) => prev === "wordSearch" ? null : "wordSearch"),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Word Search", "Sopa de Letras") }),
+              openGameAdmin === "wordSearch" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4 text-neutral-400" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4 text-neutral-400" })
+            ]
+          }
+        ),
+        openGameAdmin === "wordSearch" && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-neutral-800 bg-neutral-950/60 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(WordSearchAdminPanel, { passcode: uploadPasscode }) })
+      ] }) })
     ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
       "Tip: Bookmark this URL. It is not linked from the main site.",

@@ -66,6 +66,16 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
     );
   };
 
+  const handleNewLevel = () => {
+    setSelectedLevelId(null);
+    setName("");
+    setDescription("");
+    setRows(12);
+    setCols(12);
+    setWordsText("");
+    setStatus(null);
+  };
+
   const handleSaveLevel = async () => {
     setStatus(null);
     if (!passcode) {
@@ -168,7 +178,17 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2 md:col-span-1">
-            <Label className="text-neutral-300">{t("Levels", "Niveles")}</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label className="text-neutral-300">{t("Levels", "Niveles")}</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-7 px-2 text-[0.7rem] border-neutral-700 text-neutral-200 hover:bg-neutral-800"
+                onClick={handleNewLevel}
+              >
+                {t("New Level", "Nuevo Nivel")}
+              </Button>
+            </div>
             <div className="space-y-1 max-h-64 overflow-y-auto border border-neutral-800 rounded-md p-1 bg-neutral-950/40">
               {loading && (
                 <p className="text-[0.7rem] text-neutral-500">

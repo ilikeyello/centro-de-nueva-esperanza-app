@@ -5,7 +5,7 @@ import { usePlayer } from "../../contexts/PlayerContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TriviaAdminPanelFinal } from "../admin/TriviaAdminPanelFinal";
 import { WordSearchAdminPanel } from "../admin/WordSearchAdminPanel";
-import { Trash2 } from "lucide-react";
+import { Trash2, ChevronDown, ChevronRight } from "lucide-react";
 
 export function AdminUpload() {
   const { t } = useLanguage();
@@ -20,6 +20,7 @@ export function AdminUpload() {
   const [sermonUrl, setSermonUrl] = useState("");
   const [sermonStatus, setSermonStatus] = useState<string | null>(null);
   const [livestreamStatus, setLivestreamStatus] = useState<string | null>(null);
+  const [openGameAdmin, setOpenGameAdmin] = useState<"trivia" | "wordSearch" | null>("trivia");
 
   useEffect(() => {
     document.title = t("Admin Upload", "Carga de Admin");
@@ -512,9 +513,48 @@ export function AdminUpload() {
             </div>
           </TabsContent>
           
-          <TabsContent value="games" className="space-y-4 mt-4">
-            <TriviaAdminPanelFinal passcode={uploadPasscode} />
-            <WordSearchAdminPanel passcode={uploadPasscode} />
+          <TabsContent value="games" className="space-y-3 mt-4">
+            <div className="space-y-3">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-neutral-100 hover:border-red-500"
+                onClick={() =>
+                  setOpenGameAdmin((prev) => (prev === "trivia" ? null : "trivia"))
+                }
+              >
+                <span>{t("Bible Trivia", "Trivia Bíblica")}</span>
+                {openGameAdmin === "trivia" ? (
+                  <ChevronDown className="h-4 w-4 text-neutral-400" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                )}
+              </button>
+              {openGameAdmin === "trivia" && (
+                <div className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3">
+                  <TriviaAdminPanelFinal passcode={uploadPasscode} />
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="mt-2 flex w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-neutral-100 hover:border-red-500"
+                onClick={() =>
+                  setOpenGameAdmin((prev) => (prev === "wordSearch" ? null : "wordSearch"))
+                }
+              >
+                <span>{t("Word Search", "Sopa de Letras")}</span>
+                {openGameAdmin === "wordSearch" ? (
+                  <ChevronDown className="h-4 w-4 text-neutral-400" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                )}
+              </button>
+              {openGameAdmin === "wordSearch" && (
+                <div className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3">
+                  <WordSearchAdminPanel passcode={uploadPasscode} />
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
