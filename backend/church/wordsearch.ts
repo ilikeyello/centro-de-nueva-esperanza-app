@@ -195,8 +195,15 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>
       return false;
     };
 
+    const placedWords: string[] = [];
     for (const word of rawWords) {
-      placeWord(word);
+      if (placeWord(word)) {
+        placedWords.push(word);
+      }
+    }
+
+    if (placedWords.length === 0) {
+      return { level, words: [], grid: [], error: "No words could be placed in the grid" };
     }
 
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -212,7 +219,7 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>
 
     return {
       level,
-      words: rawWords,
+      words: placedWords,
       grid: gridStrings,
     };
   }
