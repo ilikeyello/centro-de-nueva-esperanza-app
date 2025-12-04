@@ -272,13 +272,6 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                         className="min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
                       />
                     </div>
-                    <Button
-                      type="button"
-                      onClick={handleSaveLevel}
-                      className="mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
-                    >
-                      {t("Save Level", "Guardar Nivel")}
-                    </Button>
                     <div className="space-y-2 mt-4">
                       <Label className="text-neutral-300">{t("Words", "Palabras")}</Label>
                       <p className="text-[0.7rem] text-neutral-500">
@@ -292,33 +285,14 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                         onChange={(e) => setWordsText(e.target.value)}
                         className="min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
                       />
-                      <Button
-                        type="button"
-                        onClick={handleSaveWords}
-                        className="mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
-                      >
-                        {t("Save Words", "Guardar Palabras")}
-                      </Button>
                     </div>
-                    {/* List of words */}
-                    <div className="space-y-2">
-                      {level.words.length === 0 ? (
-                        <div className="text-center text-neutral-400">
-                          {t("No words yet.", "Aún no hay palabras.")}
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          {level.words.map((w) => (
-                            <div key={w.id} className="flex items-center gap-2">
-                              <span className="truncate font-mono text-[0.7rem]">{w.word_en}</span>
-                              {w.word_es && (
-                                <span className="truncate font-mono text-[0.7rem] text-neutral-400">{w.word_es}</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <Button
+                      type="button"
+                      onClick={async () => { await handleSaveLevel(); await handleSaveWords(); }}
+                      className="mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
+                    >
+                      {t("Save Changes", "Guardar Cambios")}
+                    </Button>
                   </div>
                 )}
               </div>
