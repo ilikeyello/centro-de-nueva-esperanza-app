@@ -32202,157 +32202,162 @@ function WordSearchAdminPanel({ passcode }) {
       setStatus(t("Failed to save words", "Error al guardar palabras"));
     }
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800 mt-6", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Word Search Levels", "Niveles de Sopa de Letras") }) }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4 text-xs text-neutral-200", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: t(
-        "Create levels and word lists. The game will auto-generate the puzzles.",
-        "Crea niveles y listas de palabras. El juego generará los rompecabezas automáticamente."
-      ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-3", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 md:col-span-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Levels", "Niveles") }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
-              {
-                type: "button",
-                variant: "outline",
-                className: "h-7 px-2 text-[0.7rem] border-neutral-700 text-neutral-200 hover:bg-neutral-800",
-                onClick: handleNewLevel,
-                children: t("New Level", "Nuevo Nivel")
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 max-h-64 overflow-y-auto", children: [
-            loading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading levels...", "Cargando niveles...") }),
-            !loading && levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.") }),
-            !loading && levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-2xl font-bold text-white", children: t("Word Search Management", "Gestión de Sopa de Letras") }),
+      status && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1 rounded text-xs bg-neutral-800 text-neutral-200", children: status })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Word Search Levels", "Niveles de Sopa de Letras") }) }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4 text-xs text-neutral-200", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: t(
+          "Create levels and word lists. The game will auto-generate the puzzles.",
+          "Crea niveles y listas de palabras. El juego generará los rompecabezas automáticamente."
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-3", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 md:col-span-1", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Levels", "Niveles") }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "button",
+                Button,
                 {
                   type: "button",
-                  onClick: () => selectLevel(level),
-                  className: `w-full text-left rounded-lg border text-[0.75rem] px-2 py-2 transition-colors ${selectedLevelId === level.id ? "border-red-500 bg-red-950/40 text-white" : "border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-red-500 hover:text-white"}`,
-                  children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-medium", children: level.name }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[0.65rem] text-neutral-500", children: [
-                        level.rows,
-                        "x",
-                        level.cols,
-                        " · ",
-                        level.words.length,
-                        " ",
-                        t("words", "palabras")
-                      ] })
-                    ] }),
-                    level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.65rem] text-neutral-500 line-clamp-2", children: level.description })
-                  ] })
-                }
-              ),
-              openLevelId === level.id && level.words.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ml-2 rounded-md border border-neutral-800 bg-neutral-950/40 p-2 text-[0.7rem] text-neutral-300 max-h-32 overflow-y-auto", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-1 font-semibold text-[0.7rem] text-neutral-200", children: t("Words in this level", "Palabras en este nivel") }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-0.5", children: level.words.map((w) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: "flex items-center justify-between gap-2", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-mono text-[0.7rem]", children: w.word_en }),
-                  w.word_es && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-mono text-[0.7rem] text-neutral-400", children: w.word_es })
-                ] }, w.id)) })
-              ] })
-            ] }, level.id))
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 md:col-span-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Level Settings", "Configuración del Nivel") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2 md:grid-cols-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Name", "Nombre") }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Input,
-                {
-                  value: name,
-                  onChange: (e) => setName(e.target.value),
-                  className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                  variant: "outline",
+                  className: "h-7 px-2 text-[0.7rem] border-neutral-700 text-neutral-200 hover:bg-neutral-800",
+                  onClick: handleNewLevel,
+                  children: t("New Level", "Nuevo Nivel")
                 }
               )
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1 flex gap-2", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Rows", "Filas") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 max-h-64 overflow-y-auto", children: [
+              loading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading levels...", "Cargando niveles...") }),
+              !loading && levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.") }),
+              !loading && levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => selectLevel(level),
+                    className: `w-full text-left rounded-lg border text-[0.75rem] px-2 py-2 transition-colors ${selectedLevelId === level.id ? "border-red-500 bg-red-950/40 text-white" : "border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-red-500 hover:text-white"}`,
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-medium", children: level.name }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[0.65rem] text-neutral-500", children: [
+                          level.rows,
+                          "x",
+                          level.cols,
+                          " · ",
+                          level.words.length,
+                          " ",
+                          t("words", "palabras")
+                        ] })
+                      ] }),
+                      level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.65rem] text-neutral-500 line-clamp-2", children: level.description })
+                    ] })
+                  }
+                ),
+                openLevelId === level.id && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ml-2 rounded-md border border-neutral-800 bg-neutral-950/40 p-2 text-[0.7rem] text-neutral-300 max-h-32 overflow-y-auto", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-1 font-semibold text-[0.7rem] text-neutral-200", children: t("Words in this level", "Palabras en este nivel") }),
+                  level.words.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-0.5", children: level.words.map((w) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: "flex items-center justify-between gap-2", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-mono text-[0.7rem]", children: w.word_en }),
+                    w.word_es && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-mono text-[0.7rem] text-neutral-400", children: w.word_es })
+                  ] }, w.id)) }) : /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No words yet.", "Aún no hay palabras.") })
+                ] })
+              ] }, level.id))
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 md:col-span-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Level Settings", "Configuración del Nivel") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2 md:grid-cols-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Name", "Nombre") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   Input,
                   {
-                    type: "number",
-                    min: 8,
-                    max: 22,
-                    value: rows,
-                    onChange: (e) => setRows(parseInt(e.target.value || "12", 10)),
+                    value: name,
+                    onChange: (e) => setName(e.target.value),
                     className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
                   }
                 )
               ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Columns", "Columnas") }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  Input,
-                  {
-                    type: "number",
-                    min: 8,
-                    max: 22,
-                    value: cols,
-                    onChange: (e) => setCols(parseInt(e.target.value || "12", 10)),
-                    className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                  }
-                )
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1 flex gap-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Rows", "Filas") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      type: "number",
+                      min: 8,
+                      max: 22,
+                      value: rows,
+                      onChange: (e) => setRows(parseInt(e.target.value || "12", 10)),
+                      className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Columns", "Columnas") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      type: "number",
+                      min: 8,
+                      max: 22,
+                      value: cols,
+                      onChange: (e) => setCols(parseInt(e.target.value || "12", 10)),
+                      className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                    }
+                  )
+                ] })
               ] })
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Description", "Descripción") }),
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Description", "Descripción") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Textarea,
+                {
+                  value: description,
+                  onChange: (e) => setDescription(e.target.value),
+                  className: "min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                }
+              )
+            ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Textarea,
+              Button,
               {
-                value: description,
-                onChange: (e) => setDescription(e.target.value),
-                className: "min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                type: "button",
+                onClick: handleSaveLevel,
+                className: "mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700",
+                children: t("Save Level", "Guardar Nivel")
               }
             )
-          ] }),
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Words", "Palabras") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+            "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
+            "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Textarea,
+            {
+              value: wordsText,
+              onChange: (e) => setWordsText(e.target.value),
+              className: "min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
+            }
+          ),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Button,
             {
               type: "button",
-              onClick: handleSaveLevel,
+              onClick: handleSaveWords,
               className: "mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700",
-              children: t("Save Level", "Guardar Nivel")
+              children: t("Save Words", "Guardar Palabras")
             }
           )
         ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Words", "Palabras") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
-          "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
-          "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
-        ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Textarea,
-          {
-            value: wordsText,
-            onChange: (e) => setWordsText(e.target.value),
-            className: "min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            type: "button",
-            onClick: handleSaveWords,
-            className: "mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700",
-            children: t("Save Words", "Guardar Palabras")
-          }
-        )
-      ] }),
-      status && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400 mt-1", children: status })
+      ] })
     ] })
   ] });
 }
