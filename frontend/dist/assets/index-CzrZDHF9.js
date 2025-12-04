@@ -30538,7 +30538,7 @@ function WordSearchGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         "div",
         {
-          className: "grid w-full max-w-full mx-auto gap-[2px] rounded-lg border border-neutral-800 bg-neutral-900 p-1.5",
+          className: "grid w-full max-w-full mx-auto gap-[1px] rounded-lg bg-neutral-900 p-1.5",
           style: {
             gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`
           },
@@ -30552,7 +30552,7 @@ function WordSearchGamePage({ onNavigate }) {
                 {
                   type: "button",
                   onClick: () => toggleCellSelection(r2, c),
-                  className: `flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold rounded ${isFound ? "bg-green-600 text-white border border-green-300" : isSelectedStart ? "bg-neutral-800 text-white border border-green-400" : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"}`,
+                  className: `flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "bg-green-600 text-white rounded-sm" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
                   children: ch
                 },
                 key
@@ -32083,6 +32083,7 @@ function WordSearchAdminPanel({ passcode }) {
   const { t, language } = useLanguage();
   const [levels, setLevels] = reactExports.useState([]);
   const [selectedLevelId, setSelectedLevelId] = reactExports.useState(null);
+  const [openLevelId, setOpenLevelId] = reactExports.useState(null);
   const [loading, setLoading] = reactExports.useState(false);
   const [status, setStatus] = reactExports.useState(null);
   const [name, setName] = reactExports.useState("");
@@ -32110,6 +32111,7 @@ function WordSearchAdminPanel({ passcode }) {
   }, []);
   const selectLevel = (level) => {
     setSelectedLevelId(level.id);
+    setOpenLevelId((current) => current === level.id ? null : level.id);
     setName(level.name);
     setDescription(level.description || "");
     setRows(level.rows || 12);
@@ -32120,6 +32122,7 @@ function WordSearchAdminPanel({ passcode }) {
   };
   const handleNewLevel = () => {
     setSelectedLevelId(null);
+    setOpenLevelId(null);
     setName("");
     setDescription("");
     setRows(12);
@@ -32200,7 +32203,7 @@ function WordSearchAdminPanel({ passcode }) {
     }
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800 mt-6", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white text-lg", children: t("Word Search", "Sopa de Letras") }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-white flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Word Search Levels", "Niveles de Sopa de Letras") }) }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4 text-xs text-neutral-200", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: t(
         "Create levels and word lists. The game will auto-generate the puzzles.",
@@ -32221,30 +32224,41 @@ function WordSearchAdminPanel({ passcode }) {
               }
             )
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1 max-h-64 overflow-y-auto border border-neutral-800 rounded-md p-1 bg-neutral-950/40", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 max-h-64 overflow-y-auto", children: [
             loading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading levels...", "Cargando niveles...") }),
             !loading && levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.") }),
-            !loading && levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "button",
-              {
-                type: "button",
-                onClick: () => selectLevel(level),
-                className: `w-full text-left px-2 py-1 rounded-md text-[0.75rem] border transition-colors ${selectedLevelId === level.id ? "border-red-500 bg-red-950/40 text-white" : "border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-red-500 hover:text-white"}`,
-                children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex justify-between items-center gap-2", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate", children: level.name }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[0.65rem] text-neutral-500", children: [
-                    level.rows,
-                    "x",
-                    level.cols,
-                    " · ",
-                    level.words.length,
-                    " ",
-                    t("words", "palabras")
+            !loading && levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => selectLevel(level),
+                  className: `w-full text-left rounded-lg border text-[0.75rem] px-2 py-2 transition-colors ${selectedLevelId === level.id ? "border-red-500 bg-red-950/40 text-white" : "border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-red-500 hover:text-white"}`,
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-medium", children: level.name }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[0.65rem] text-neutral-500", children: [
+                        level.rows,
+                        "x",
+                        level.cols,
+                        " · ",
+                        level.words.length,
+                        " ",
+                        t("words", "palabras")
+                      ] })
+                    ] }),
+                    level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.65rem] text-neutral-500 line-clamp-2", children: level.description })
                   ] })
-                ] })
-              },
-              level.id
-            ))
+                }
+              ),
+              openLevelId === level.id && level.words.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ml-2 rounded-md border border-neutral-800 bg-neutral-950/40 p-2 text-[0.7rem] text-neutral-300 max-h-32 overflow-y-auto", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-1 font-semibold text-[0.7rem] text-neutral-200", children: t("Words in this level", "Palabras en este nivel") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-0.5", children: level.words.map((w) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: "flex items-center justify-between gap-2", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-mono text-[0.7rem]", children: w.word_en }),
+                  w.word_es && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate font-mono text-[0.7rem] text-neutral-400", children: w.word_es })
+                ] }, w.id)) })
+              ] })
+            ] }, level.id))
           ] })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 md:col-span-2", children: [

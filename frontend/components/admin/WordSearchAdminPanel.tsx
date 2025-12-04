@@ -23,6 +23,7 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
   const { t, language } = useLanguage();
   const [levels, setLevels] = useState<WordSearchLevel[]>([]);
   const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
+  const [openLevelId, setOpenLevelId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -55,6 +56,7 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
 
   const selectLevel = (level: WordSearchLevel) => {
     setSelectedLevelId(level.id);
+    setOpenLevelId((current) => (current === level.id ? null : level.id));
     setName(level.name);
     setDescription(level.description || "");
     setRows(level.rows || 12);
@@ -68,6 +70,7 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
 
   const handleNewLevel = () => {
     setSelectedLevelId(null);
+    setOpenLevelId(null);
     setName("");
     setDescription("");
     setRows(12);
@@ -163,8 +166,8 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
   return (
     <Card className="bg-neutral-900 border-neutral-800 mt-6">
       <CardHeader>
-        <CardTitle className="text-white text-lg">
-          {t("Word Search", "Sopa de Letras")}
+        <CardTitle className="text-white flex items-center justify-between">
+          <span>{t("Word Search Levels", "Niveles de Sopa de Letras")}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 text-xs text-neutral-200">
@@ -188,7 +191,7 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                 {t("New Level", "Nuevo Nivel")}
               </Button>
             </div>
-            <div className="space-y-1 max-h-64 overflow-y-auto border border-neutral-800 rounded-md p-1 bg-neutral-950/40">
+            <div className="space-y-2 max-h-64 overflow-y-auto">
               {loading && (
                 <p className="text-[0.7rem] text-neutral-500">
                   {t("Loading levels...", "Cargando niveles...")}
@@ -201,23 +204,46 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
               )}
               {!loading &&
                 levels.map((level) => (
-                  <button
-                    key={level.id}
-                    type="button"
-                    onClick={() => selectLevel(level)}
-                    className={`w-full text-left px-2 py-1 rounded-md text-[0.75rem] border transition-colors ${
-                      selectedLevelId === level.id
-                        ? "border-red-500 bg-red-950/40 text-white"
-                        : "border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-red-500 hover:text-white"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center gap-2">
-                      <span className="truncate">{level.name}</span>
-                      <span className="text-[0.65rem] text-neutral-500">
-                        {level.rows}x{level.cols} · {level.words.length} {t("words", "palabras")}
-                      </span>
-                    </div>
-                  </button>
+                  <div key={level.id} className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => selectLevel(level)}
+                      className={`w-full text-left rounded-lg border text-[0.75rem] px-2 py-2 transition-colors ${
+                        selectedLevelId === level.id
+                          ? "border-red-500 bg-red-950/40 text-white"
+                          : "border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-red-500 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate font-medium">{level.name}</span>
+                          <span className="text-[0.65rem] text-neutral-500">
+                            {level.rows}x{level.cols} · {level.words.length} {t("words", "palabras")}
+                          </span>
+                        </div>
+                        {level.description && (
+                          <p className="text-[0.65rem] text-neutral-500 line-clamp-2">{level.description}</p>
+                        )}
+                      </div>
+                    </button>
+                    {openLevelId === level.id && level.words.length > 0 && (
+                      <div className="ml-2 rounded-md border border-neutral-800 bg-neutral-950/40 p-2 text-[0.7rem] text-neutral-300 max-h-32 overflow-y-auto">
+                        <p className="mb-1 font-semibold text-[0.7rem] text-neutral-200">
+                          {t("Words in this level", "Palabras en este nivel")}
+                        </p>
+                        <ul className="space-y-0.5">
+                          {level.words.map((w) => (
+                            <li key={w.id} className="flex items-center justify-between gap-2">
+                              <span className="truncate font-mono text-[0.7rem]">{w.word_en}</span>
+                              {w.word_es && (
+                                <span className="truncate font-mono text-[0.7rem] text-neutral-400">{w.word_es}</span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 ))}
             </div>
           </div>
