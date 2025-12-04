@@ -30546,12 +30546,13 @@ function WordSearchGamePage({ onNavigate }) {
             (rowStr, r2) => rowStr.split("").map((ch, c) => {
               const key = `${r2},${c}`;
               const isFound = foundCells.has(key);
+              const isSelectedStart = selectedStart && selectedStart.row === r2 && selectedStart.col === c;
               return /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "button",
                 {
                   type: "button",
                   onClick: () => toggleCellSelection(r2, c),
-                  className: `flex aspect-square items-center justify-center text-[0.65rem] md:text-sm font-semibold rounded ${isFound ? "bg-red-600 text-white border border-red-300" : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"}`,
+                  className: `flex aspect-square items-center justify-center text-[0.65rem] md:text-sm font-semibold rounded ${isFound ? "bg-green-600 text-white border border-green-300" : isSelectedStart ? "bg-neutral-800 text-white border border-green-400" : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"}`,
                   children: ch
                 },
                 key

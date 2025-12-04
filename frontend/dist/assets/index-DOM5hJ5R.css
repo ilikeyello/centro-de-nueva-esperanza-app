@@ -1143,10 +1143,6 @@
     max-width: calc(100% - 2rem);
   }
 
-  .max-w-full {
-    max-width: 100%;
-  }
-
   .max-w-md {
     max-width: var(--container-md);
   }
@@ -1451,10 +1447,6 @@
     overflow: hidden;
   }
 
-  .overflow-x-auto {
-    overflow-x: auto;
-  }
-
   .overflow-x-hidden {
     overflow-x: hidden;
   }
@@ -1643,6 +1635,10 @@
 
   .border-gray-800 {
     border-color: var(--color-gray-800);
+  }
+
+  .border-green-300 {
+    border-color: var(--color-green-300);
   }
 
   .border-green-400 {
@@ -3780,10 +3776,6 @@
       height: calc(var(--spacing) * 5);
     }
 
-    .md\:h-8 {
-      height: calc(var(--spacing) * 8);
-    }
-
     .md\:h-\[54rem\] {
       height: 54rem;
     }
@@ -3794,10 +3786,6 @@
 
     .md\:w-5 {
       width: calc(var(--spacing) * 5);
-    }
-
-    .md\:w-8 {
-      width: calc(var(--spacing) * 8);
     }
 
     .md\:w-64 {

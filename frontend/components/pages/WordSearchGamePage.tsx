@@ -337,6 +337,8 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
               rowStr.split("").map((ch, c) => {
                 const key = `${r},${c}`;
                 const isFound = foundCells.has(key);
+                const isSelectedStart =
+                  selectedStart && selectedStart.row === r && selectedStart.col === c;
                 return (
                   <button
                     key={key}
@@ -344,7 +346,9 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                     onClick={() => toggleCellSelection(r, c)}
                     className={`flex aspect-square items-center justify-center text-[0.65rem] md:text-sm font-semibold rounded ${
                       isFound
-                        ? "bg-red-600 text-white border border-red-300"
+                        ? "bg-green-600 text-white border border-green-300"
+                        : isSelectedStart
+                        ? "bg-neutral-800 text-white border border-green-400"
                         : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"
                     }`}
                   >
