@@ -59,8 +59,6 @@ export const upsertLevel = api(
     id?: string;
     name: string;
     description?: string;
-    rows?: number;
-    cols?: number;
     passcode: string;
   }): Promise<{ success: boolean; id: string }> => {
     if (params.passcode !== "78598") {
@@ -68,8 +66,10 @@ export const upsertLevel = api(
     }
 
     const id = params.id?.trim() || `ws-${Date.now().toString(36)}`;
-    const rows = params.rows && params.rows > 5 ? params.rows : 12;
-    const cols = params.cols && params.cols > 5 ? params.cols : 12;
+    // Grid size is now determined automatically from the words (capped at 9x9).
+    // Store a sensible default here; it will be updated when words are saved.
+    const rows = 9;
+    const cols = 9;
 
     await db.exec`
       INSERT INTO word_search_levels (id, name, description, rows, cols)
@@ -94,12 +94,28 @@ export const setWordsForLevel = api(
 
     await db.exec`DELETE FROM word_search_words WHERE level_id = ${id}`;
 
+    const cleanedWords: string[] = [];
+
     for (const w of words) {
       const wordEn = w.word_en.trim();
       if (!wordEn) continue;
+      const upper = wordEn.toUpperCase();
+      cleanedWords.push(upper.replace(/\s+/g, ""));
       await db.exec`
         INSERT INTO word_search_words (level_id, word_en, word_es)
-        VALUES (${id}, ${wordEn.toUpperCase()}, ${w.word_es?.trim() || null})
+        VALUES (${id}, ${upper}, ${w.word_es?.trim() || null})
+      `;
+    }
+
+    // Automatically choose a grid size based on the words, capped at 9x9.
+    if (cleanedWords.length > 0) {
+      const maxLen = cleanedWords.reduce((max, w) => Math.max(max, w.length), 0);
+      const minSize = 5;
+      const size = Math.min(9, Math.max(minSize, maxLen + 2));
+      await db.exec`
+        UPDATE word_search_levels
+        SET rows = ${size}, cols = ${size}
+        WHERE id = ${id}
       `;
     }
 

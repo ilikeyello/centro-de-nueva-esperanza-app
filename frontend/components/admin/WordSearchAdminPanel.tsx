@@ -73,8 +73,6 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
     setOpenLevelId(null);
     setName("");
     setDescription("");
-    setRows(12);
-    setCols(12);
     setStatus(null);
   };
 
@@ -97,8 +95,6 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
           id: selectedLevelId || undefined,
           name: name.trim(),
           description: description.trim() || undefined,
-          rows,
-          cols,
           passcode,
         }),
       });
@@ -239,29 +235,13 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                           className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
                         />
                       </div>
-                      <div className="space-y-1 flex gap-2">
-                        <div className="flex-1">
-                          <Label className="text-[0.7rem] text-neutral-400">{t("Rows", "Filas")}</Label>
-                          <Input
-                            type="number"
-                            min={8}
-                            max={22}
-                            value={rows}
-                            onChange={(e) => setRows(parseInt(e.target.value || "12", 10))}
-                            className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <Label className="text-[0.7rem] text-neutral-400">{t("Columns", "Columnas")}</Label>
-                          <Input
-                            type="number"
-                            min={8}
-                            max={22}
-                            value={cols}
-                            onChange={(e) => setCols(parseInt(e.target.value || "12", 10))}
-                            className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                          />
-                        </div>
+                      <div className="flex items-end">
+                        <p className="text-[0.7rem] text-neutral-500">
+                          {t(
+                            "Grid size is chosen automatically based on your words (max 9x9).",
+                            "El tamaño de la cuadrícula se elige automáticamente según tus palabras (máx. 9x9)."
+                          )}
+                        </p>
                       </div>
                     </div>
                     <div className="space-y-1">

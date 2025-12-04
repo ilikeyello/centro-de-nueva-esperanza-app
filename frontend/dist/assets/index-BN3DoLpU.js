@@ -15327,7 +15327,9 @@ function PlayerProvider({ children }) {
     const loadPlaylistUrl = async () => {
       try {
         const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/playlist`);
+        const res = await fetch(`${base}/playlist?ts=${Date.now()}`, {
+          cache: "no-store"
+        });
         if (res.ok) {
           const data = await res.json();
           if (data.url) {
@@ -31287,6 +31289,229 @@ function TriviaAdminPanelFinal({ passcode }) {
       setEditingQuestion(null);
     }
   };
+  const executeBatchOperations = async () => {
+    if (!passcode) {
+      setStatus("Admin passcode required");
+      return;
+    }
+    setStatus("Saving changes...");
+    console.log("=== STARTING BATCH OPERATIONS ===");
+    console.log("Pending operations:", JSON.stringify(pendingOperations, null, 2));
+    console.log("Passcode:", passcode);
+    try {
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const results = [];
+      console.log("Levels to delete:", pendingOperations.levelsToDelete);
+      console.log("Questions to delete:", pendingOperations.questionsToDelete);
+      for (const level of pendingOperations.levelsToAdd) {
+        try {
+          const payload = {
+            id: level.id,
+            name: level.name,
+            description: level.description || null,
+            shuffle_questions: level.shuffle_questions ?? true,
+            time_limit: level.time_limit === null ? 0 : level.time_limit,
+            passing_score: level.passing_score || 70
+          };
+          console.log("Creating level with payload:", payload);
+          const response = await fetch(`${base}/trivia/simple/level`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          console.log("Create level response status:", response.status);
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Create level response body:", result);
+            if (result.success) {
+              console.log("✅ Level created successfully:", level.id);
+              results.push({ success: true, id: level.id });
+            } else {
+              console.error("❌ Failed to create level:", result.message);
+              results.push({ success: false, error: result.message, id: level.id });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Create level failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id: level.id });
+          }
+        } catch (error) {
+          console.error("❌ Error creating level:", level.id, error);
+          results.push({ success: false, error: String(error), id: level.id });
+        }
+      }
+      for (const id of pendingOperations.levelsToDelete) {
+        try {
+          const deleteUrl = `${base}/trivia/simple/level/${id}?passcode=${passcode}`;
+          console.log("Attempting to delete level:", id);
+          console.log("Full delete URL:", deleteUrl);
+          const response = await fetch(deleteUrl, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" }
+          });
+          console.log("Delete level response status:", response.status);
+          console.log("Delete level response headers:", Object.fromEntries(response.headers.entries()));
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Delete level response body:", result);
+            if (result.success) {
+              console.log("✅ Level deleted successfully:", id);
+              results.push({ success: true, id });
+            } else {
+              console.error("❌ Failed to delete level:", result.message);
+              results.push({ success: false, error: result.message, id });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Delete level failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
+          }
+        } catch (error) {
+          console.error("❌ Error deleting level:", id, error);
+          results.push({ success: false, error: String(error), id });
+        }
+      }
+      for (const question of pendingOperations.questionsToAdd) {
+        try {
+          const payload = {
+            question_en: question.question_en,
+            question_es: question.question_es || null,
+            options_en: question.options_en,
+            options_es: question.options_es || question.options_en,
+            correct_answer: question.correct_answer,
+            category: question.category || "General",
+            level_id: question.level_id
+          };
+          console.log("Creating question with payload:", payload);
+          const response = await fetch(`${base}/trivia/simple/question`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          console.log("Create question response status:", response.status);
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Create question response body:", result);
+            if (result.success) {
+              console.log("✅ Question created successfully");
+              results.push({ success: true });
+            } else {
+              console.error("❌ Failed to create question:", result.message);
+              results.push({ success: false, error: result.message });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Create question failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}` });
+          }
+        } catch (error) {
+          console.error("❌ Error creating question:", error);
+          results.push({ success: false, error: String(error) });
+        }
+      }
+      for (const question of pendingOperations.questionsToEdit) {
+        try {
+          const payload = {
+            question_en: question.question_en,
+            question_es: question.question_es || null,
+            options_en: question.options_en,
+            options_es: question.options_es || question.options_en,
+            correct_answer: question.correct_answer,
+            category: question.category || "General",
+            level_id: question.level_id
+          };
+          console.log("Updating question with payload:", payload);
+          if (question.id === 0) {
+            console.log("Creating new question (id=0):", payload);
+            const response = await fetch(`${base}/trivia/simple/question`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            console.log("Create question response status:", response.status);
+            if (response.ok) {
+              const result = await response.json();
+              console.log("Create question response body:", result);
+              if (result.success) {
+                console.log("✅ Question created successfully");
+                results.push({ success: true });
+              } else {
+                console.error("❌ Failed to create question:", result.message);
+                results.push({ success: false, error: result.message });
+              }
+            } else {
+              const errorText = await response.text();
+              console.error("❌ Create question failed:", response.status, errorText);
+              results.push({ success: false, error: `HTTP ${response.status}: ${errorText}` });
+            }
+          } else {
+            console.log("Updating existing question:", question.id);
+            console.log("❌ Question update not implemented yet");
+            results.push({ success: false, error: "Question update not implemented" });
+          }
+        } catch (error) {
+          console.error("❌ Error editing question:", error);
+          results.push({ success: false, error: String(error) });
+        }
+      }
+      for (const id of pendingOperations.questionsToDelete) {
+        try {
+          const deleteUrl = `${base}/trivia/simple/question/${id}?passcode=${passcode}`;
+          console.log("Attempting to delete question:", id);
+          console.log("Full delete question URL:", deleteUrl);
+          const response = await fetch(deleteUrl, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" }
+          });
+          console.log("Delete question response status:", response.status);
+          console.log("Delete question response headers:", Object.fromEntries(response.headers.entries()));
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Delete question response body:", result);
+            if (result.success) {
+              console.log("✅ Question deleted successfully:", id);
+              results.push({ success: true, id });
+            } else {
+              console.error("❌ Failed to delete question:", result.message);
+              results.push({ success: false, error: result.message, id });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Delete question failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
+          }
+        } catch (error) {
+          console.error("❌ Error deleting question:", id, error);
+          results.push({ success: false, error: String(error), id });
+        }
+      }
+      console.log("=== ALL DELETION RESULTS ===");
+      console.log("Results:", JSON.stringify(results, null, 2));
+      const errors = results.filter((r2) => !r2.success);
+      console.log("Errors found:", errors.length);
+      console.log("Error details:", JSON.stringify(errors, null, 2));
+      if (errors.length === 0) {
+        console.log("✅ All operations successful!");
+        setStatus("All changes saved successfully!");
+        console.log("About to call loadData after successful save");
+        setPendingOperations({
+          levelsToAdd: [],
+          levelsToEdit: [],
+          levelsToDelete: [],
+          questionsToAdd: [],
+          questionsToEdit: [],
+          questionsToDelete: []
+        });
+        console.log("Calling loadData...");
+        loadData();
+      } else {
+        console.log("❌ Some operations failed");
+        setStatus(`${errors.length} operations failed`);
+      }
+    } catch (error) {
+      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
   const toggleLevelExpansion = (levelId) => {
     const newExpanded = new Set(expandedLevels);
     if (newExpanded.has(levelId)) {
@@ -31303,7 +31528,7 @@ function TriviaAdminPanelFinal({ passcode }) {
     acc[question.level_id].push(question);
     return acc;
   }, {});
-  pendingOperations.levelsToAdd.length + pendingOperations.levelsToEdit.length + pendingOperations.levelsToDelete.length + pendingOperations.questionsToAdd.length + pendingOperations.questionsToEdit.length + pendingOperations.questionsToDelete.length;
+  const totalPendingOps = pendingOperations.levelsToAdd.length + pendingOperations.levelsToEdit.length + pendingOperations.levelsToDelete.length + pendingOperations.questionsToAdd.length + pendingOperations.questionsToEdit.length + pendingOperations.questionsToDelete.length;
   if (loading) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-8", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 mx-auto mb-2 animate-pulse text-red-400" }),
@@ -31432,87 +31657,97 @@ function TriviaAdminPanelFinal({ passcode }) {
               /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Questions", "Preguntas") }),
               levelQuestions.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-                levelQuestions.map((question, idx) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-700 rounded bg-neutral-800/50 p-3 flex flex-col gap-2", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      value: question.question_en,
-                      onChange: (e) => {
-                      },
-                      placeholder: t("Question (EN)", "Pregunta (EN)"),
-                      className: "mb-1 text-[0.9rem]"
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      value: question.question_es,
-                      onChange: (e) => {
-                      },
-                      placeholder: t("Question (ES)", "Pregunta (ES)"),
-                      className: "mb-1 text-[0.9rem]"
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mt-1", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Input,
-                      {
-                        value: Array.isArray(question.options_en) ? question.options_en[0] || "" : "",
-                        onChange: (e) => {
-                        },
-                        placeholder: t("Option 1", "Opción 1"),
-                        className: "text-[0.9rem]"
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Input,
-                      {
-                        value: Array.isArray(question.options_en) ? question.options_en[1] || "" : "",
-                        onChange: (e) => {
-                        },
-                        placeholder: t("Option 2", "Opción 2"),
-                        className: "text-[0.9rem]"
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Input,
-                      {
-                        value: Array.isArray(question.options_en) ? question.options_en[2] || "" : "",
-                        onChange: (e) => {
-                        },
-                        placeholder: t("Option 3", "Opción 3"),
-                        className: "text-[0.9rem]"
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Input,
-                      {
-                        value: Array.isArray(question.options_en) ? question.options_en[3] || "" : "",
-                        onChange: (e) => {
-                        },
-                        placeholder: t("Option 4", "Opción 4"),
-                        className: "text-[0.9rem]"
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-1", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Correct Option Index (0-3)", "Índice de opción correcta (0-3)") }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Input,
-                      {
-                        value: question.correct_answer,
-                        onChange: (e) => {
-                        },
-                        type: "number",
-                        min: 0,
-                        max: 3,
-                        className: "w-16 h-7 text-[0.9rem]"
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { type: "button", className: "ml-auto bg-red-700 px-2 h-7 text-xs", onClick: () => {
-                    }, children: t("Delete", "Eliminar") })
-                  ] })
-                ] }, question.id ?? `temp-${idx}`)),
+                levelQuestions.map((question, idx) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "div",
+                  {
+                    className: "border border-neutral-700 rounded bg-neutral-800/50 p-3 flex flex-col gap-2",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Input,
+                        {
+                          value: question.question_en,
+                          onChange: (e) => {
+                          },
+                          placeholder: t("Question", "Pregunta"),
+                          className: "mb-1 text-[0.9rem]"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mt-1", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            value: Array.isArray(question.options_en) ? question.options_en[0] || "" : "",
+                            onChange: (e) => {
+                            },
+                            placeholder: t("Option 1", "Opción 1"),
+                            className: "text-[0.9rem]"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            value: Array.isArray(question.options_en) ? question.options_en[1] || "" : "",
+                            onChange: (e) => {
+                            },
+                            placeholder: t("Option 2", "Opción 2"),
+                            className: "text-[0.9rem]"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            value: Array.isArray(question.options_en) ? question.options_en[2] || "" : "",
+                            onChange: (e) => {
+                            },
+                            placeholder: t("Option 3", "Opción 3"),
+                            className: "text-[0.9rem]"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            value: Array.isArray(question.options_en) ? question.options_en[3] || "" : "",
+                            onChange: (e) => {
+                            },
+                            placeholder: t("Option 4", "Opción 4"),
+                            className: "text-[0.9rem]"
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-1", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Correct Answer", "Respuesta correcta") }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          Select,
+                          {
+                            value: String(question.correct_answer ?? 0),
+                            onValueChange: (value) => {
+                            },
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-40 h-7 bg-neutral-950 border-neutral-700 text-[0.8rem]", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose option", "Elige opción") }) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectContent, { className: "bg-neutral-950 border-neutral-700 text-[0.85rem]", children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "0", children: t("Option 1", "Opción 1") }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "1", children: t("Option 2", "Opción 2") }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "2", children: t("Option 3", "Opción 3") }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "3", children: t("Option 4", "Opción 4") })
+                              ] })
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Button,
+                          {
+                            type: "button",
+                            className: "ml-auto bg-red-700 px-2 h-7 text-xs",
+                            onClick: () => {
+                            },
+                            children: t("Delete", "Eliminar")
+                          }
+                        )
+                      ] })
+                    ]
+                  },
+                  question.id ?? `temp-${idx}`
+                )),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-dashed border-neutral-700 rounded bg-neutral-900/30 p-3 flex flex-col gap-2 mt-2", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
@@ -31520,17 +31755,7 @@ function TriviaAdminPanelFinal({ passcode }) {
                       value: "",
                       onChange: () => {
                       },
-                      placeholder: t("New Question (EN)", "Nueva Pregunta (EN)"),
-                      className: "mb-1 text-[0.9rem]"
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      value: "",
-                      onChange: () => {
-                      },
-                      placeholder: t("New Question (ES)", "Nueva Pregunta (ES)"),
+                      placeholder: t("New Question", "Nueva Pregunta"),
                       className: "mb-1 text-[0.9rem]"
                     }
                   ),
@@ -31577,17 +31802,22 @@ function TriviaAdminPanelFinal({ passcode }) {
                     )
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-1", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Correct Option Index (0-3)", "Índice de opción correcta (0-3)") }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Input,
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Correct Answer", "Respuesta correcta") }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      Select,
                       {
-                        value: "",
-                        onChange: () => {
+                        defaultValue: "0",
+                        onValueChange: () => {
                         },
-                        type: "number",
-                        min: 0,
-                        max: 3,
-                        className: "w-16 h-7 text-[0.9rem]"
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-40 h-7 bg-neutral-950 border-neutral-700 text-[0.8rem]", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose option", "Elige opción") }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectContent, { className: "bg-neutral-950 border-neutral-700 text-[0.85rem]", children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "0", children: t("Option 1", "Opción 1") }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "1", children: t("Option 2", "Opción 2") }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "2", children: t("Option 3", "Opción 3") }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "3", children: t("Option 4", "Opción 4") })
+                          ] })
+                        ]
                       }
                     )
                   ] }),
@@ -31596,14 +31826,18 @@ function TriviaAdminPanelFinal({ passcode }) {
                 ] })
               ] })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
               Button,
               {
                 type: "button",
-                onClick: () => {
-                },
-                className: "mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700",
-                children: t("Save Changes", "Guardar Cambios")
+                onClick: executeBatchOperations,
+                disabled: totalPendingOps === 0,
+                className: "mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed",
+                children: [
+                  t("Save Changes", "Guardar Cambios"),
+                  " ",
+                  totalPendingOps > 0 ? `(${totalPendingOps})` : ""
+                ]
               }
             )
           ] })
@@ -31851,18 +32085,27 @@ function QuestionForm({
             placeholder: `Option ${index2 + 1}`,
             required: true
           }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
+        )
+      ] }, index2)) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-3 flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-sm text-neutral-300", children: t("Correct Answer", "Respuesta correcta") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Select,
           {
-            type: "radio",
-            name: "correct_answer",
-            checked: formData.correct_answer === index2,
-            onChange: () => setFormData({ ...formData, correct_answer: index2 }),
-            className: "border-neutral-700 bg-neutral-950"
+            value: String(formData.correct_answer ?? 0),
+            onValueChange: (value) => setFormData({ ...formData, correct_answer: parseInt(value, 10) || 0 }),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-40 bg-neutral-950 border-neutral-700 text-[0.9rem] h-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose option", "Elige opción") }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectContent, { className: "bg-neutral-950 border-neutral-700 text-[0.9rem]", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "0", children: t("Option 1", "Opción 1") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "1", children: t("Option 2", "Opción 2") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "2", children: t("Option 3", "Opción 3") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "3", children: t("Option 4", "Opción 4") })
+              ] })
+            ]
           }
         )
-      ] }, index2)) })
+      ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700", children: [
@@ -31922,8 +32165,6 @@ function WordSearchAdminPanel({ passcode }) {
     setOpenLevelId(null);
     setName("");
     setDescription("");
-    setRows(12);
-    setCols(12);
     setStatus(null);
   };
   const handleSaveLevel = async () => {
@@ -31944,8 +32185,6 @@ function WordSearchAdminPanel({ passcode }) {
           id: selectedLevelId || void 0,
           name: name.trim(),
           description: description.trim() || void 0,
-          rows,
-          cols,
           passcode
         })
       });
@@ -32056,36 +32295,10 @@ function WordSearchAdminPanel({ passcode }) {
                   }
                 )
               ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1 flex gap-2", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Rows", "Filas") }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      type: "number",
-                      min: 8,
-                      max: 22,
-                      value: rows,
-                      onChange: (e) => setRows(parseInt(e.target.value || "12", 10)),
-                      className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Columns", "Columnas") }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      type: "number",
-                      min: 8,
-                      max: 22,
-                      value: cols,
-                      onChange: (e) => setCols(parseInt(e.target.value || "12", 10)),
-                      className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                    }
-                  )
-                ] })
-              ] })
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-end", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+                "Grid size is chosen automatically based on your words (max 9x9).",
+                "El tamaño de la cuadrícula se elige automáticamente según tus palabras (máx. 9x9)."
+              ) }) })
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Description", "Descripción") }),

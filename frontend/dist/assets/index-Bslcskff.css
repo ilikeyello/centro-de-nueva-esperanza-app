@@ -1097,6 +1097,10 @@
     width: calc(var(--spacing) * 20);
   }
 
+  .w-40 {
+    width: calc(var(--spacing) * 40);
+  }
+
   .w-72 {
     width: calc(var(--spacing) * 72);
   }
@@ -1292,6 +1296,10 @@
 
   .items-center {
     align-items: center;
+  }
+
+  .items-end {
+    align-items: flex-end;
   }
 
   .items-start {
@@ -1796,10 +1804,6 @@
     .bg-green-600\/20 {
       background-color: color-mix(in oklab, var(--color-green-600) 20%, transparent);
     }
-  }
-
-  .bg-green-700 {
-    background-color: var(--color-green-700);
   }
 
   .bg-green-900 {
@@ -2396,6 +2400,10 @@
 
   .text-\[0\.75rem\] {
     font-size: .75rem;
+  }
+
+  .text-\[0\.85rem\] {
+    font-size: .85rem;
   }
 
   .leading-none {
