@@ -132,10 +132,17 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: selectedLevelId, passcode, words }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
+
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      }
+
+      if (!res.ok || (data && data.success === false)) {
         throw new Error("Save failed");
       }
+
       await loadLevels();
       setStatus(t("Words saved", "Palabras guardadas"));
     } catch (err) {
