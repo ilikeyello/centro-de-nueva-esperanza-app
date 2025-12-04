@@ -176,7 +176,7 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
         )}
       </div>
 
-      {/* Levels Card - matches Trivia Levels card */}
+      {/* Levels Card - refactored: each level row expands to show full editor inline */}
       <Card className="bg-neutral-900 border-neutral-800">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
@@ -228,23 +228,97 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                   </div>
                 </div>
                 {openLevelId === level.id && (
-                  <div className="border-t border-neutral-800">
-                    {level.words.length === 0 ? (
-                      <div className="p-4 text-center text-neutral-400">
-                        {t("No words yet.", "Aún no hay palabras.")}
+                  <div className="border-t border-neutral-800 p-4 space-y-4">
+                    {/* Inline full editor for this level */}
+                    <div className="grid gap-2 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <Label className="text-[0.7rem] text-neutral-400">{t("Name", "Nombre")}</Label>
+                        <Input
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                        />
                       </div>
-                    ) : (
-                      <div className="space-y-2 p-4">
-                        {level.words.map((w) => (
-                          <div key={w.id} className="flex items-center gap-2">
-                            <span className="truncate font-mono text-[0.7rem]">{w.word_en}</span>
-                            {w.word_es && (
-                              <span className="truncate font-mono text-[0.7rem] text-neutral-400">{w.word_es}</span>
-                            )}
-                          </div>
-                        ))}
+                      <div className="space-y-1 flex gap-2">
+                        <div className="flex-1">
+                          <Label className="text-[0.7rem] text-neutral-400">{t("Rows", "Filas")}</Label>
+                          <Input
+                            type="number"
+                            min={8}
+                            max={22}
+                            value={rows}
+                            onChange={(e) => setRows(parseInt(e.target.value || "12", 10))}
+                            className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <Label className="text-[0.7rem] text-neutral-400">{t("Columns", "Columnas")}</Label>
+                          <Input
+                            type="number"
+                            min={8}
+                            max={22}
+                            value={cols}
+                            onChange={(e) => setCols(parseInt(e.target.value || "12", 10))}
+                            className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                          />
+                        </div>
                       </div>
-                    )}
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[0.7rem] text-neutral-400">{t("Description", "Descripción")}</Label>
+                      <Textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={handleSaveLevel}
+                      className="mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
+                    >
+                      {t("Save Level", "Guardar Nivel")}
+                    </Button>
+                    <div className="space-y-2 mt-4">
+                      <Label className="text-neutral-300">{t("Words", "Palabras")}</Label>
+                      <p className="text-[0.7rem] text-neutral-500">
+                        {t(
+                          "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
+                          "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
+                        )}
+                      </p>
+                      <Textarea
+                        value={wordsText}
+                        onChange={(e) => setWordsText(e.target.value)}
+                        className="min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleSaveWords}
+                        className="mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
+                      >
+                        {t("Save Words", "Guardar Palabras")}
+                      </Button>
+                    </div>
+                    {/* List of words */}
+                    <div className="space-y-2">
+                      {level.words.length === 0 ? (
+                        <div className="text-center text-neutral-400">
+                          {t("No words yet.", "Aún no hay palabras.")}
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          {level.words.map((w) => (
+                            <div key={w.id} className="flex items-center gap-2">
+                              <span className="truncate font-mono text-[0.7rem]">{w.word_en}</span>
+                              {w.word_es && (
+                                <span className="truncate font-mono text-[0.7rem] text-neutral-400">{w.word_es}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -252,86 +326,6 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
         </CardContent>
       </Card>
 
-      {/* Level Settings & Words Card - matches Trivia Questions card */}
-      <Card className="bg-neutral-900 border-neutral-800">
-        <CardHeader>
-          <CardTitle className="text-white">
-            {t("Level Settings & Words", "Configuración y Palabras del Nivel")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-xs text-neutral-200">
-          <div className="grid gap-2 md:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-[0.7rem] text-neutral-400">{t("Name", "Nombre")}</Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-              />
-            </div>
-            <div className="space-y-1 flex gap-2">
-              <div className="flex-1">
-                <Label className="text-[0.7rem] text-neutral-400">{t("Rows", "Filas")}</Label>
-                <Input
-                  type="number"
-                  min={8}
-                  max={22}
-                  value={rows}
-                  onChange={(e) => setRows(parseInt(e.target.value || "12", 10))}
-                  className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                />
-              </div>
-              <div className="flex-1">
-                <Label className="text-[0.7rem] text-neutral-400">{t("Columns", "Columnas")}</Label>
-                <Input
-                  type="number"
-                  min={8}
-                  max={22}
-                  value={cols}
-                  onChange={(e) => setCols(parseInt(e.target.value || "12", 10))}
-                  className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-[0.7rem] text-neutral-400">{t("Description", "Descripción")}</Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
-            />
-          </div>
-          <Button
-            type="button"
-            onClick={handleSaveLevel}
-            className="mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
-          >
-            {t("Save Level", "Guardar Nivel")}
-          </Button>
-          <div className="space-y-2 mt-4">
-            <Label className="text-neutral-300">{t("Words", "Palabras")}</Label>
-            <p className="text-[0.7rem] text-neutral-500">
-              {t(
-                "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
-                "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
-              )}
-            </p>
-            <Textarea
-              value={wordsText}
-              onChange={(e) => setWordsText(e.target.value)}
-              className="min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
-            />
-            <Button
-              type="button"
-              onClick={handleSaveWords}
-              className="mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
-            >
-              {t("Save Words", "Guardar Palabras")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
