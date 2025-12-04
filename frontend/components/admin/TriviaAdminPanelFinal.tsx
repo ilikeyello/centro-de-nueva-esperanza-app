@@ -598,40 +598,37 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                       )}
                       <div className="space-y-2">
                         {levelQuestions.map((question, idx) => (
-                          <div key={question.id ?? `temp-${idx}`} className="border border-neutral-700 rounded bg-neutral-800/50 p-3 flex flex-col gap-2">
+                          <div
+                            key={question.id ?? `temp-${idx}`}
+                            className="border border-neutral-700 rounded bg-neutral-800/50 p-3 flex flex-col gap-2"
+                          >
                             <Input
                               value={question.question_en}
-                              onChange={e => {/* handle inline edit for EN */}}
-                              placeholder={t("Question (EN)", "Pregunta (EN)")}
-                              className="mb-1 text-[0.9rem]"
-                            />
-                            <Input
-                              value={question.question_es}
-                              onChange={e => {/* handle inline edit for ES */}}
-                              placeholder={t("Question (ES)", "Pregunta (ES)")}
+                              onChange={e => {/* handle inline edit for question */}}
+                              placeholder={t("Question", "Pregunta")}
                               className="mb-1 text-[0.9rem]"
                             />
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
                               <Input
-                                value={Array.isArray(question.options_en) ? (question.options_en[0] || "") : ''}
+                                value={Array.isArray(question.options_en) ? (question.options_en[0] || "") : ""}
                                 onChange={e => {/* handle option 1 edit */}}
                                 placeholder={t("Option 1", "Opción 1")}
                                 className="text-[0.9rem]"
                               />
                               <Input
-                                value={Array.isArray(question.options_en) ? (question.options_en[1] || "") : ''}
+                                value={Array.isArray(question.options_en) ? (question.options_en[1] || "") : ""}
                                 onChange={e => {/* handle option 2 edit */}}
                                 placeholder={t("Option 2", "Opción 2")}
                                 className="text-[0.9rem]"
                               />
                               <Input
-                                value={Array.isArray(question.options_en) ? (question.options_en[2] || "") : ''}
+                                value={Array.isArray(question.options_en) ? (question.options_en[2] || "") : ""}
                                 onChange={e => {/* handle option 3 edit */}}
                                 placeholder={t("Option 3", "Opción 3")}
                                 className="text-[0.9rem]"
                               />
                               <Input
-                                value={Array.isArray(question.options_en) ? (question.options_en[3] || "") : ''}
+                                value={Array.isArray(question.options_en) ? (question.options_en[3] || "") : ""}
                                 onChange={e => {/* handle option 4 edit */}}
                                 placeholder={t("Option 4", "Opción 4")}
                                 className="text-[0.9rem]"
@@ -639,17 +636,31 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <Label className="text-[0.7rem] text-neutral-400">
-                                {t("Correct Option Index (0-3)", "Índice de opción correcta (0-3)")}
+                                {t("Correct Answer", "Respuesta correcta")}
                               </Label>
-                              <Input
-                                value={question.correct_answer}
-                                onChange={e => {/* handle correct answer edit */}}
-                                type="number"
-                                min={0}
-                                max={3}
-                                className="w-16 h-7 text-[0.9rem]"
-                              />
-                              <Button type="button" className="ml-auto bg-red-700 px-2 h-7 text-xs" onClick={() => {/* delete question */}}>{t("Delete", "Eliminar")}</Button>
+                              <Select
+                                value={String(question.correct_answer ?? 0)}
+                                onValueChange={(value) => {
+                                  // handle correct answer change via dropdown
+                                }}
+                              >
+                                <SelectTrigger className="w-40 h-7 bg-neutral-950 border-neutral-700 text-[0.8rem]">
+                                  <SelectValue placeholder={t("Choose option", "Elige opción")} />
+                                </SelectTrigger>
+                                <SelectContent className="bg-neutral-950 border-neutral-700 text-[0.85rem]">
+                                  <SelectItem value="0">{t("Option 1", "Opción 1")}</SelectItem>
+                                  <SelectItem value="1">{t("Option 2", "Opción 2")}</SelectItem>
+                                  <SelectItem value="2">{t("Option 3", "Opción 3")}</SelectItem>
+                                  <SelectItem value="3">{t("Option 4", "Opción 4")}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                type="button"
+                                className="ml-auto bg-red-700 px-2 h-7 text-xs"
+                                onClick={() => {/* delete question */}}
+                              >
+                                {t("Delete", "Eliminar")}
+                              </Button>
                             </div>
                           </div>
                         ))}
@@ -658,15 +669,10 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                           <Input
                             value={""}
                             onChange={() => {}}
-                            placeholder={t("New Question (EN)", "Nueva Pregunta (EN)")}
+                            placeholder={t("New Question", "Nueva Pregunta")}
                             className="mb-1 text-[0.9rem]"
                           />
-                          <Input
-                            value={""}
-                            onChange={() => {}}
-                            placeholder={t("New Question (ES)", "Nueva Pregunta (ES)")}
-                            className="mb-1 text-[0.9rem]"
-                          />
+                          {/* Single question field only; translations can be handled later */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
                             <Input
                               value={""}
@@ -695,16 +701,24 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                           </div>
                           <div className="flex items-center gap-2 mt-1">
                             <Label className="text-[0.7rem] text-neutral-400">
-                              {t("Correct Option Index (0-3)", "Índice de opción correcta (0-3)")}
+                              {t("Correct Answer", "Respuesta correcta")}
                             </Label>
-                            <Input
-                              value={""}
-                              onChange={() => {}}
-                              type="number"
-                              min={0}
-                              max={3}
-                              className="w-16 h-7 text-[0.9rem]"
-                            />
+                            <Select
+                              defaultValue="0"
+                              onValueChange={() => {
+                                // handle new-question correct answer via dropdown
+                              }}
+                            >
+                              <SelectTrigger className="w-40 h-7 bg-neutral-950 border-neutral-700 text-[0.8rem]">
+                                <SelectValue placeholder={t("Choose option", "Elige opción")} />
+                              </SelectTrigger>
+                              <SelectContent className="bg-neutral-950 border-neutral-700 text-[0.85rem]">
+                                <SelectItem value="0">{t("Option 1", "Opción 1")}</SelectItem>
+                                <SelectItem value="1">{t("Option 2", "Opción 2")}</SelectItem>
+                                <SelectItem value="2">{t("Option 3", "Opción 3")}</SelectItem>
+                                <SelectItem value="3">{t("Option 4", "Opción 4")}</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           <Button type="button" className="bg-blue-700 px-2 h-7 text-xs mt-1" onClick={() => {/* add new question */}}>{t("Add Question", "Agregar Pregunta")}</Button>
                         </div>
@@ -991,15 +1005,29 @@ function QuestionForm({
                 placeholder={`Option ${index + 1}`}
                 required
               />
-              <input
-                type="radio"
-                name="correct_answer"
-                checked={formData.correct_answer === index}
-                onChange={() => setFormData({ ...formData, correct_answer: index })}
-                className="border-neutral-700 bg-neutral-950"
-              />
             </div>
           ))}
+        </div>
+        <div className="mt-3 flex items-center gap-2">
+          <Label className="text-sm text-neutral-300">
+            {t("Correct Answer", "Respuesta correcta")}
+          </Label>
+          <Select
+            value={String(formData.correct_answer ?? 0)}
+            onValueChange={(value) =>
+              setFormData({ ...formData, correct_answer: parseInt(value, 10) || 0 })
+            }
+          >
+            <SelectTrigger className="w-40 bg-neutral-950 border-neutral-700 text-[0.9rem] h-8">
+              <SelectValue placeholder={t("Choose option", "Elige opción")} />
+            </SelectTrigger>
+            <SelectContent className="bg-neutral-950 border-neutral-700 text-[0.9rem]">
+              <SelectItem value="0">{t("Option 1", "Opción 1")}</SelectItem>
+              <SelectItem value="1">{t("Option 2", "Opción 2")}</SelectItem>
+              <SelectItem value="2">{t("Option 3", "Opción 3")}</SelectItem>
+              <SelectItem value="3">{t("Option 4", "Opción 4")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

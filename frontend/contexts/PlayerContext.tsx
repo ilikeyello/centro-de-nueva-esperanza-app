@@ -116,14 +116,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     loadLivestreamUrl();
   }, []);
 
-  // Load playlist URL from backend on mount (only once)
+  // Load playlist URL from backend on mount (only once), bypassing caches
   useEffect(() => {
     const loadPlaylistUrl = async () => {
       try {
         const base = import.meta.env.DEV
           ? "http://127.0.0.1:4000"
           : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/playlist`);
+        const res = await fetch(`${base}/playlist?ts=${Date.now()}` as string, {
+          cache: "no-store",
+        });
         if (res.ok) {
           const data = await res.json();
           if (data.url) {
