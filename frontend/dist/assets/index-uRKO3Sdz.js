@@ -30538,7 +30538,7 @@ function WordSearchGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         "div",
         {
-          className: "grid w-full max-w-xs sm:max-w-sm mx-auto gap-[2px] rounded-lg border border-neutral-800 bg-neutral-900 p-1.5",
+          className: "grid w-full max-w-full mx-auto gap-[2px] rounded-lg border border-neutral-800 bg-neutral-900 p-1.5",
           style: {
             gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`
           },
@@ -30552,7 +30552,7 @@ function WordSearchGamePage({ onNavigate }) {
                 {
                   type: "button",
                   onClick: () => toggleCellSelection(r2, c),
-                  className: `flex aspect-square items-center justify-center text-[0.65rem] md:text-sm font-semibold rounded ${isFound ? "bg-green-600 text-white border border-green-300" : isSelectedStart ? "bg-neutral-800 text-white border border-green-400" : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"}`,
+                  className: `flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold rounded ${isFound ? "bg-green-600 text-white border border-green-300" : isSelectedStart ? "bg-neutral-800 text-white border border-green-400" : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"}`,
                   children: ch
                 },
                 key
@@ -32353,7 +32353,7 @@ function AdminUpload() {
   const [sermonUrl, setSermonUrl] = reactExports.useState("");
   const [sermonStatus, setSermonStatus] = reactExports.useState(null);
   const [livestreamStatus, setLivestreamStatus] = reactExports.useState(null);
-  const [openGameAdmin, setOpenGameAdmin] = reactExports.useState("trivia");
+  const [openGameAdmin, setOpenGameAdmin] = reactExports.useState(null);
   reactExports.useEffect(() => {
     document.title = t("Admin Upload", "Carga de Admin");
   }, [t]);

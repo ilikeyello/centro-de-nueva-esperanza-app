@@ -20,7 +20,7 @@ export function AdminUpload() {
   const [sermonUrl, setSermonUrl] = useState("");
   const [sermonStatus, setSermonStatus] = useState<string | null>(null);
   const [livestreamStatus, setLivestreamStatus] = useState<string | null>(null);
-  const [openGameAdmin, setOpenGameAdmin] = useState<"trivia" | "wordSearch" | null>("trivia");
+  const [openGameAdmin, setOpenGameAdmin] = useState<"trivia" | "wordSearch" | null>(null);
 
   useEffect(() => {
     document.title = t("Admin Upload", "Carga de Admin");
