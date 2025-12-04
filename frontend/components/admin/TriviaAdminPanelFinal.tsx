@@ -600,21 +600,83 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                     {/* Inline editable question list */}
                     <div className="space-y-2 mt-4">
                       <Label className="text-neutral-300">{t("Questions", "Preguntas")}</Label>
-                      {levelQuestions.length === 0 ? (
+                      {levelQuestions.length === 0 && (
                         <div className="text-center text-neutral-400">
                           {t("No questions in this level yet.", "No hay preguntas en este nivel aún.")}
                         </div>
-                      ) : (
-                        <div className="space-y-1">
-                          {levelQuestions.map((question) => (
-                            <div key={question.id} className="flex items-center gap-2">
-                              <span className="truncate text-[0.8rem]">{language === 'es' ? question.question_es : question.question_en}</span>
-                              {/* Add edit/delete buttons here */}
-                            </div>
-                          ))}
-                        </div>
                       )}
-                      {/* Add question input/button here */}
+                      <div className="space-y-2">
+                        {levelQuestions.map((question, idx) => (
+                          <div key={question.id ?? `temp-${idx}`} className="border border-neutral-700 rounded bg-neutral-800/50 p-3 flex flex-col gap-2">
+                            <Input
+                              value={question.question_en}
+                              onChange={e => {/* handle inline edit for EN */}}
+                              placeholder={t("Question (EN)", "Pregunta (EN)")}
+                              className="mb-1 text-[0.9rem]"
+                            />
+                            <Input
+                              value={question.question_es}
+                              onChange={e => {/* handle inline edit for ES */}}
+                              placeholder={t("Question (ES)", "Pregunta (ES)")}
+                              className="mb-1 text-[0.9rem]"
+                            />
+                            <div className="flex gap-2">
+                              <Input
+                                value={Array.isArray(question.options_en) ? question.options_en.join("|") : question.options_en}
+                                onChange={e => {/* handle options edit */}}
+                                placeholder={t("Options (| separated)", "Opciones (| separadas)")}
+                                className="flex-1 text-[0.9rem]"
+                              />
+                              <Input
+                                value={question.correct_answer}
+                                onChange={e => {/* handle correct answer edit */}}
+                                type="number"
+                                min={0}
+                                max={3}
+                                placeholder={t("Correct", "Correcta")}
+                                className="w-16 text-[0.9rem]"
+                              />
+                            </div>
+                            <div className="flex gap-2 mt-1">
+                              <Button type="button" className="bg-green-700 px-2 h-7 text-xs" onClick={() => {/* save question */}}>{t("Save", "Guardar")}</Button>
+                              <Button type="button" className="bg-red-700 px-2 h-7 text-xs" onClick={() => {/* delete question */}}>{t("Delete", "Eliminar")}</Button>
+                            </div>
+                          </div>
+                        ))}
+                        {/* Add new question row */}
+                        <div className="border border-dashed border-neutral-700 rounded bg-neutral-900/30 p-3 flex flex-col gap-2 mt-2">
+                          <Input
+                            value={""}
+                            onChange={() => {}}
+                            placeholder={t("New Question (EN)", "Nueva Pregunta (EN)")}
+                            className="mb-1 text-[0.9rem]"
+                          />
+                          <Input
+                            value={""}
+                            onChange={() => {}}
+                            placeholder={t("New Question (ES)", "Nueva Pregunta (ES)")}
+                            className="mb-1 text-[0.9rem]"
+                          />
+                          <div className="flex gap-2">
+                            <Input
+                              value={""}
+                              onChange={() => {}}
+                              placeholder={t("Options (| separated)", "Opciones (| separadas)")}
+                              className="flex-1 text-[0.9rem]"
+                            />
+                            <Input
+                              value={""}
+                              onChange={() => {}}
+                              type="number"
+                              min={0}
+                              max={3}
+                              placeholder={t("Correct", "Correcta")}
+                              className="w-16 text-[0.9rem]"
+                            />
+                          </div>
+                          <Button type="button" className="bg-blue-700 px-2 h-7 text-xs mt-1" onClick={() => {/* add new question */}}>{t("Add Question", "Agregar Pregunta")}</Button>
+                        </div>
+                      </div>
                     </div>
                     <Button
                       type="button"
