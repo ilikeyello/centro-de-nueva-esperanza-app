@@ -176,149 +176,140 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
         )}
       </div>
 
+      {/* Levels Card - matches Trivia Levels card */}
       <Card className="bg-neutral-900 border-neutral-800">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
-            <span>{t("Word Search Levels", "Niveles de Sopa de Letras")}</span>
+            <span>{t("Levels", "Niveles")}</span>
+            <Button
+              type="button"
+              className="bg-red-600 hover:bg-red-700"
+              onClick={handleNewLevel}
+            >
+              {t("New Level", "Nuevo Nivel")}
+            </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 text-xs text-neutral-200">
+        <CardContent className="space-y-3">
           <p className="text-[0.7rem] text-neutral-400">
             {t(
               "Create levels and word lists. The game will auto-generate the puzzles.",
               "Crea niveles y listas de palabras. El juego generará los rompecabezas automáticamente."
             )}
           </p>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2 md:col-span-1">
-              <div className="flex items-center justify-between gap-2">
-                <Label className="text-neutral-300">{t("Levels", "Niveles")}</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-7 px-2 text-[0.7rem] border-neutral-700 text-neutral-200 hover:bg-neutral-800"
-                  onClick={handleNewLevel}
+          {loading && (
+            <p className="text-[0.7rem] text-neutral-500">
+              {t("Loading levels...", "Cargando niveles...")}
+            </p>
+          )}
+          {!loading && levels.length === 0 && (
+            <p className="text-[0.7rem] text-neutral-500">
+              {t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.")}
+            </p>
+          )}
+          {!loading &&
+            levels.map((level) => (
+              <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
+                <div className="p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors"
+                  onClick={() => selectLevel(level)}
                 >
-                  {t("New Level", "Nuevo Nivel")}
-                </Button>
-              </div>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {loading && (
-                  <p className="text-[0.7rem] text-neutral-500">
-                    {t("Loading levels...", "Cargando niveles...")}
-                  </p>
-                )}
-                {!loading && levels.length === 0 && (
-                  <p className="text-[0.7rem] text-neutral-500">
-                    {t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.")}
-                  </p>
-                )}
-                {!loading &&
-                  levels.map((level) => (
-                    <div key={level.id} className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => selectLevel(level)}
-                        className={`w-full text-left rounded-lg border text-[0.75rem] px-2 py-2 transition-colors ${
-                          selectedLevelId === level.id
-                            ? "border-red-500 bg-red-950/40 text-white"
-                            : "border-neutral-800 bg-neutral-900/40 text-neutral-300 hover:border-red-500 hover:text-white"
-                        }`}
-                      >
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="truncate font-medium">{level.name}</span>
-                            <span className="text-[0.65rem] text-neutral-500">
-                              {level.rows}x{level.cols} · {level.words.length} {t("words", "palabras")}
-                            </span>
-                          </div>
-                          {level.description && (
-                            <p className="text-[0.65rem] text-neutral-500 line-clamp-2">{level.description}</p>
-                          )}
-                        </div>
-                      </button>
-                      {openLevelId === level.id && (
-                        <div className="ml-2 rounded-md border border-neutral-800 bg-neutral-950/40 p-2 text-[0.7rem] text-neutral-300 max-h-32 overflow-y-auto">
-                          <p className="mb-1 font-semibold text-[0.7rem] text-neutral-200">
-                            {t("Words in this level", "Palabras en este nivel")}
-                          </p>
-                          {level.words.length > 0 ? (
-                            <ul className="space-y-0.5">
-                              {level.words.map((w) => (
-                                <li key={w.id} className="flex items-center justify-between gap-2">
-                                  <span className="truncate font-mono text-[0.7rem]">{w.word_en}</span>
-                                  {w.word_es && (
-                                    <span className="truncate font-mono text-[0.7rem] text-neutral-400">{w.word_es}</span>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-[0.7rem] text-neutral-500">{t("No words yet.", "Aún no hay palabras.")}</p>
-                          )}
-                        </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {openLevelId === level.id ? (
+                        <span className="inline-block w-4 text-red-400">▼</span>
+                      ) : (
+                        <span className="inline-block w-4 text-neutral-400">▶</span>
                       )}
+                      <h3 className="font-semibold text-white">{level.name}</h3>
+                      <span className="text-sm text-neutral-400">
+                        ({level.words.length} {t("words", "palabras")})
+                      </span>
                     </div>
-                  ))}
+                  </div>
+                </div>
+                {openLevelId === level.id && (
+                  <div className="border-t border-neutral-800">
+                    {level.words.length === 0 ? (
+                      <div className="p-4 text-center text-neutral-400">
+                        {t("No words yet.", "Aún no hay palabras.")}
+                      </div>
+                    ) : (
+                      <div className="space-y-2 p-4">
+                        {level.words.map((w) => (
+                          <div key={w.id} className="flex items-center gap-2">
+                            <span className="truncate font-mono text-[0.7rem]">{w.word_en}</span>
+                            {w.word_es && (
+                              <span className="truncate font-mono text-[0.7rem] text-neutral-400">{w.word_es}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
+            ))}
+        </CardContent>
+      </Card>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label className="text-neutral-300">{t("Level Settings", "Configuración del Nivel")}</Label>
-              <div className="grid gap-2 md:grid-cols-2">
-                <div className="space-y-1">
-                  <Label className="text-[0.7rem] text-neutral-400">{t("Name", "Nombre")}</Label>
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                  />
-                </div>
-                <div className="space-y-1 flex gap-2">
-                  <div className="flex-1">
-                    <Label className="text-[0.7rem] text-neutral-400">{t("Rows", "Filas")}</Label>
-                    <Input
-                      type="number"
-                      min={8}
-                      max={22}
-                      value={rows}
-                      onChange={(e) => setRows(parseInt(e.target.value || "12", 10))}
-                      className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <Label className="text-[0.7rem] text-neutral-400">{t("Columns", "Columnas")}</Label>
-                    <Input
-                      type="number"
-                      min={8}
-                      max={22}
-                      value={cols}
-                      onChange={(e) => setCols(parseInt(e.target.value || "12", 10))}
-                      className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[0.7rem] text-neutral-400">{t("Description", "Descripción")}</Label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+      {/* Level Settings & Words Card - matches Trivia Questions card */}
+      <Card className="bg-neutral-900 border-neutral-800">
+        <CardHeader>
+          <CardTitle className="text-white">
+            {t("Level Settings & Words", "Configuración y Palabras del Nivel")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-xs text-neutral-200">
+          <div className="grid gap-2 md:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="text-[0.7rem] text-neutral-400">{t("Name", "Nombre")}</Label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+              />
+            </div>
+            <div className="space-y-1 flex gap-2">
+              <div className="flex-1">
+                <Label className="text-[0.7rem] text-neutral-400">{t("Rows", "Filas")}</Label>
+                <Input
+                  type="number"
+                  min={8}
+                  max={22}
+                  value={rows}
+                  onChange={(e) => setRows(parseInt(e.target.value || "12", 10))}
+                  className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
                 />
               </div>
-              <Button
-                type="button"
-                onClick={handleSaveLevel}
-                className="mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
-              >
-                {t("Save Level", "Guardar Nivel")}
-              </Button>
+              <div className="flex-1">
+                <Label className="text-[0.7rem] text-neutral-400">{t("Columns", "Columnas")}</Label>
+                <Input
+                  type="number"
+                  min={8}
+                  max={22}
+                  value={cols}
+                  onChange={(e) => setCols(parseInt(e.target.value || "12", 10))}
+                  className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                />
+              </div>
             </div>
           </div>
-
-          <div className="space-y-2">
+          <div className="space-y-1">
+            <Label className="text-[0.7rem] text-neutral-400">{t("Description", "Descripción")}</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+            />
+          </div>
+          <Button
+            type="button"
+            onClick={handleSaveLevel}
+            className="mt-1 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700"
+          >
+            {t("Save Level", "Guardar Nivel")}
+          </Button>
+          <div className="space-y-2 mt-4">
             <Label className="text-neutral-300">{t("Words", "Palabras")}</Label>
             <p className="text-[0.7rem] text-neutral-500">
               {t(
