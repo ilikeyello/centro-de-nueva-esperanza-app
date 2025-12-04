@@ -328,7 +328,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <div className="flex-1">
           <div
-            className="grid w-full max-w-full mx-auto gap-[2px] rounded-lg border border-neutral-800 bg-neutral-900 p-1.5"
+            className="grid w-full max-w-full mx-auto gap-[1px] rounded-lg bg-neutral-900 p-1.5"
             style={{
               gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
             }}
@@ -344,12 +344,12 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                     key={key}
                     type="button"
                     onClick={() => toggleCellSelection(r, c)}
-                    className={`flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold rounded ${
+                    className={`flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
                       isFound
-                        ? "bg-green-600 text-white border border-green-300"
+                        ? "bg-green-600 text-white rounded-sm"
                         : isSelectedStart
-                        ? "bg-neutral-800 text-white border border-green-400"
-                        : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"
+                        ? "border border-green-400 rounded-sm text-white"
+                        : "text-neutral-100"
                     }`}
                   >
                     {ch}
