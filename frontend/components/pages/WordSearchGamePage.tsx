@@ -326,11 +326,11 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-        <div className="flex-1 overflow-x-auto">
+        <div className="flex-1">
           <div
-            className="inline-grid max-w-full gap-[2px] rounded-lg border border-neutral-800 bg-neutral-900 p-1.5"
+            className="grid w-full max-w-xs sm:max-w-sm mx-auto gap-[2px] rounded-lg border border-neutral-800 bg-neutral-900 p-1.5"
             style={{
-              gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(1.1rem, 2rem))`,
+              gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
             }}
           >
             {puzzle.grid.map((rowStr, r) =>
@@ -342,7 +342,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                     key={key}
                     type="button"
                     onClick={() => toggleCellSelection(r, c)}
-                    className={`flex h-6 w-6 md:h-8 md:w-8 items-center justify-center text-[0.65rem] md:text-sm font-semibold rounded ${
+                    className={`flex aspect-square items-center justify-center text-[0.65rem] md:text-sm font-semibold rounded ${
                       isFound
                         ? "bg-red-600 text-white border border-red-300"
                         : "bg-neutral-800 text-neutral-100 border border-neutral-700 hover:bg-red-700 hover:text-white"

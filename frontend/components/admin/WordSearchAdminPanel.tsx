@@ -72,7 +72,6 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
     setDescription("");
     setRows(12);
     setCols(12);
-    setWordsText("");
     setStatus(null);
   };
 
