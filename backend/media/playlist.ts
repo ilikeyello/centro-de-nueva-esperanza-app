@@ -5,7 +5,7 @@ import db from "../db";
 // Simple in-memory storage to avoid database permission issues
 let playlistUrl: string | null = null;
 
-const youtubeApiKey = secret("Youtubekey");
+const youtubeApiKey = secret("YoutubeKey");
 
 interface UpdatePlaylistRequest {
   passcode: string;
