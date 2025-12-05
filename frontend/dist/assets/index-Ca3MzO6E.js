@@ -15261,7 +15261,23 @@ function useMutation(options, queryClient2) {
 }
 const LanguageContext = reactExports.createContext(void 0);
 function LanguageProvider({ children }) {
-  const [language, setLanguage] = reactExports.useState("en");
+  const [language, setLanguage] = reactExports.useState(() => {
+    if (typeof window === "undefined") return "es";
+    try {
+      const stored = window.localStorage.getItem("cne_language");
+      if (stored === "en" || stored === "es") return stored;
+    } catch {
+    }
+    return "es";
+  });
+  reactExports.useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("cne_language", language);
+      }
+    } catch {
+    }
+  }, [language]);
   const toggleLanguage = () => {
     setLanguage((prev) => prev === "en" ? "es" : "en");
   };
@@ -32231,6 +32247,41 @@ function WordSearchAdminPanel({ passcode }) {
     } catch (err) {
       console.error(err);
       setStatus(t("Failed to save level", "Error al guardar nivel"));
+    }
+  };
+  const handleDeleteLevel = async (levelId) => {
+    setStatus(null);
+    if (!passcode) {
+      setStatus(t("Enter admin passcode first", "Ingresa el código de admin primero"));
+      return;
+    }
+    const confirmed = window.confirm(
+      t(
+        "Are you sure you want to delete this level?",
+        "¿Seguro que deseas eliminar este nivel?"
+      )
+    );
+    if (!confirmed) return;
+    try {
+      const res = await fetch(`${base}/games/wordsearch/levels/${levelId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode })
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data && data.success === false) {
+        throw new Error("Delete failed");
+      }
+      await loadLevels();
+      setStatus(t("Level deleted", "Nivel eliminado"));
+      if (selectedLevelId === levelId) {
+        setSelectedLevelId(null);
+        setOpenLevelId(null);
+        setWordsText("");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus(t("Failed to delete level", "Error al eliminar nivel"));
     }
   };
   const handleSaveWords = async () => {
