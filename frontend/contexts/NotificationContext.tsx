@@ -114,6 +114,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const sendSubscriptionToBackend = async (subscription: PushSubscription) => {
     try {
+      let language: string | undefined;
+      try {
+        if (typeof window !== 'undefined') {
+          const stored = window.localStorage.getItem('cne_language');
+          if (stored === 'en' || stored === 'es') language = stored;
+        }
+      } catch {
+        // ignore storage errors
+      }
+
       const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
         method: 'POST',
         headers: {
@@ -124,7 +134,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           keys: {
             p256dh: subscription.getKey('p256dh') ? btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')!))) : '',
             auth: subscription.getKey('auth') ? btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')!))) : ''
-          }
+          },
+          language
         })
       });
 

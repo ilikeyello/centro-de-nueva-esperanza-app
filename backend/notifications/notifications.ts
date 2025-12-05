@@ -12,6 +12,7 @@ interface NotificationSubscription {
   p256dh_key: string;
   auth_key: string;
   user_agent?: string;
+  language?: string | null;
   created_at: Date;
 }
 
@@ -22,11 +23,15 @@ interface SubscribeRequest {
     auth: string;
   };
   userAgent?: string;
+  language?: string;
 }
 
 interface SendNotificationRequest {
   title: string;
   body: string;
+  // Optional Spanish variants; if provided, they will be used for 'es' subscriptions
+  title_es?: string;
+  body_es?: string;
   icon?: string;
   data?: any;
   tag?: string;
@@ -319,6 +324,8 @@ export const subscribe = api(
         existingRows.push(row);
       }
       
+      const lang = params.language === "en" || params.language === "es" ? params.language : "es";
+
       if (existingRows.length > 0) {
         // Update existing subscription
         await db.exec`
@@ -326,14 +333,15 @@ export const subscribe = api(
           SET p256dh_key = ${params.keys.p256dh}, 
               auth_key = ${params.keys.auth},
               user_agent = ${params.userAgent || null},
+              language = ${lang},
               updated_at = CURRENT_TIMESTAMP
           WHERE endpoint = ${params.endpoint}
         `;
       } else {
         // Insert new subscription
         await db.exec`
-          INSERT INTO push_subscriptions (endpoint, p256dh_key, auth_key, user_agent, created_at)
-          VALUES (${params.endpoint}, ${params.keys.p256dh}, ${params.keys.auth}, ${params.userAgent || null}, CURRENT_TIMESTAMP)
+          INSERT INTO push_subscriptions (endpoint, p256dh_key, auth_key, user_agent, language, created_at)
+          VALUES (${params.endpoint}, ${params.keys.p256dh}, ${params.keys.auth}, ${params.userAgent || null}, ${lang}, CURRENT_TIMESTAMP)
         `;
       }
       
@@ -438,14 +446,14 @@ async function sendNotificationInternal(params: SendNotificationRequest): Promis
   console.log("sendNotificationInternal called with:", params);
   
   try {
-    // Get all subscriptions from database
-    const subscriptions = [];
+    // Get all subscriptions from database (including language preference)
+    const subscriptions: NotificationSubscription[] = [];
     for await (const sub of db.query`
-      SELECT endpoint, p256dh_key, auth_key, user_agent 
+      SELECT endpoint, p256dh_key, auth_key, user_agent, language 
       FROM push_subscriptions 
       WHERE created_at > NOW() - INTERVAL '30 days'
     `) {
-      subscriptions.push(sub);
+      subscriptions.push(sub as NotificationSubscription);
     }
     
     console.log(`Found ${subscriptions.length} subscriptions to notify`);
@@ -472,6 +480,10 @@ async function sendNotificationInternal(params: SendNotificationRequest): Promis
     // Send to each subscription
     for (const subscription of subscriptions) {
       try {
+        const lang = subscription.language === "en" || subscription.language === "es" ? subscription.language : "es";
+        const title = lang === "es" && params.title_es ? params.title_es : params.title;
+        const body = lang === "es" && params.body_es ? params.body_es : params.body;
+
         const pushSubscription = {
           endpoint: subscription.endpoint,
           keys: {
@@ -485,8 +497,8 @@ async function sendNotificationInternal(params: SendNotificationRequest): Promis
         await webpush.sendNotification(
           pushSubscription,
           JSON.stringify({
-            title: params.title,
-            body: params.body,
+            title,
+            body,
             icon: params.icon || "/cne-app/icon-192x192.png",
             badge: "/cne-app/icon-192x192.png",
             tag: params.tag,

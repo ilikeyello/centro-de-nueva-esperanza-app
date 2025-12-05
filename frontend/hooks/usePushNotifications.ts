@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import backend from '~backend/client';
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface PushSubscription {
   endpoint: string;
@@ -21,6 +22,7 @@ interface UsePushNotificationsReturn {
 }
 
 export const usePushNotifications = (): UsePushNotificationsReturn => {
+  const { language } = useLanguage();
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -81,7 +83,8 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
             auth: authKey ? 
               btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ''
           },
-          userAgent: navigator.userAgent
+          userAgent: navigator.userAgent,
+          language,
         };
 
         console.log('🔔 Saving existing subscription to backend:', {
@@ -232,7 +235,8 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
           auth: authKey ? 
             btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ''
         },
-        userAgent: navigator.userAgent
+        userAgent: navigator.userAgent,
+        language,
       };
 
       console.log('🔔 Sending subscription to backend:', {
