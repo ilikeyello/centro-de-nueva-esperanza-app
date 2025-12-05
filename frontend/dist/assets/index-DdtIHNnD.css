@@ -3228,6 +3228,16 @@
       background-color: var(--color-red-800);
     }
 
+    .hover\:bg-red-900\/30:hover {
+      background-color: #82181a4d;
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-red-900\/30:hover {
+        background-color: color-mix(in oklab, var(--color-red-900) 30%, transparent);
+      }
+    }
+
     .hover\:bg-red-950\/40:hover {
       background-color: #46080966;
     }

@@ -764,8 +764,8 @@ export function Media({ onStartMusic }: MediaProps) {
               {!loadingSermons && effectiveSelectedSermon && (
                 <p className="text-xs text-neutral-500">
                   {t(
-                    "Tap a devotional from the list on the right to watch a different message.",
-                    "Toca un devocional de la lista de la derecha para ver un mensaje diferente."
+                    "Tap a devotional from the list to watch a different message.",
+                    "Toca un devocional de la lista para ver un mensaje diferente."
                   )}
                 </p>
               )}

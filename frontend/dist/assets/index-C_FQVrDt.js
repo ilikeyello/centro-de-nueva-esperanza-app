@@ -29775,8 +29775,8 @@ function Media({ onStartMusic }) {
               !loadingSermons && !effectiveSelectedSermon && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex h-full items-center justify-center text-xs text-neutral-500", children: t("No devotionals available yet.", "Todavía no hay devocionales disponibles.") })
             ] }),
             !loadingSermons && effectiveSelectedSermon && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500", children: t(
-              "Tap a devotional from the list on the right to watch a different message.",
-              "Toca un devocional de la lista de la derecha para ver un mensaje diferente."
+              "Tap a devotional from the list to watch a different message.",
+              "Toca un devocional de la lista para ver un mensaje diferente."
             ) })
           ] })
         ] }),
@@ -31289,6 +31289,12 @@ function TriviaAdminPanelFinal({ passcode }) {
       setEditingQuestion(null);
     }
   };
+  const deleteLevelFromBatch = (id) => {
+    setPendingOperations((prev) => ({
+      ...prev,
+      levelsToDelete: [...prev.levelsToDelete, id]
+    }));
+  };
   const executeBatchOperations = async () => {
     if (!passcode) {
       setStatus("Admin passcode required");
@@ -31584,17 +31590,42 @@ function TriviaAdminPanelFinal({ passcode }) {
           (question, index2, array) => array.findIndex((q) => q.question_en === question.question_en && q.level_id === question.level_id) === index2
         );
         return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors", onClick: () => toggleLevelExpansion(level.id), children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-            isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400", children: [
-              "(",
-              levelQuestions.length,
-              " ",
-              t("questions", "preguntas"),
-              ")"
-            ] })
-          ] }) }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 hover:bg-neutral-800/50 transition-colors", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                className: "flex flex-1 items-center gap-2 text-left",
+                onClick: () => toggleLevelExpansion(level.id),
+                children: [
+                  isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400", children: [
+                    "(",
+                    levelQuestions.length,
+                    " ",
+                    t("questions", "preguntas"),
+                    ")"
+                  ] })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                type: "button",
+                variant: "ghost",
+                size: "icon",
+                className: "h-7 w-7 text-neutral-400 hover:text-red-400 hover:bg-red-900/30",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  if (!level.id) return;
+                  deleteLevelFromBatch(level.id);
+                },
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
+              }
+            )
+          ] }) }),
           isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-neutral-800 p-4 space-y-4", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2 md:grid-cols-2", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
@@ -32264,24 +32295,41 @@ function WordSearchAdminPanel({ passcode }) {
         loading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading levels...", "Cargando niveles...") }),
         !loading && levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.") }),
         !loading && levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "div",
-            {
-              className: "p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors",
-              onClick: () => selectLevel(level),
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-                openLevelId === level.id ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-block w-4 text-red-400", children: "▼" }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-block w-4 text-neutral-400", children: "▶" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400", children: [
-                  "(",
-                  level.words.length,
-                  " ",
-                  t("words", "palabras"),
-                  ")"
-                ] })
-              ] }) })
-            }
-          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 hover:bg-neutral-800/50 transition-colors", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                className: "flex flex-1 items-center gap-2 text-left",
+                onClick: () => selectLevel(level),
+                children: [
+                  openLevelId === level.id ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-block w-4 text-red-400", children: "▼" }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-block w-4 text-neutral-400", children: "▶" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400", children: [
+                    "(",
+                    level.words.length,
+                    " ",
+                    t("words", "palabras"),
+                    ")"
+                  ] })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                type: "button",
+                variant: "ghost",
+                size: "icon",
+                className: "h-7 w-7 text-neutral-400 hover:text-red-400 hover:bg-red-900/30",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleDeleteLevel(level.id);
+                },
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
+              }
+            )
+          ] }) }),
           openLevelId === level.id && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-neutral-800 p-4 space-y-4", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2 md:grid-cols-2", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [

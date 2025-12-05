@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cne-app-v1';
+const CACHE_NAME = 'cne-app-v2';
 const urlsToCache = [
   '/cne-app/',
   '/cne-app/icon-192x192.png',
@@ -13,18 +13,44 @@ self.addEventListener('install', event => {
   );
 });
 
+// Activate event - clean up old caches
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      )
+    )
+  );
+});
+
 // Fetch event
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Always go to the network first for dynamic API endpoints, especially playlist/livestream/sermons,
+  // then fall back to cache only if offline.
+  if (
+    url.pathname.includes('/playlist') ||
+    url.pathname.includes('/livestream') ||
+    url.pathname.includes('/sermons')
+  ) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Default cache-first behavior for static assets and the app shell
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
+    caches.match(event.request).then(response => {
+      if (response) {
+        return response;
       }
-    )
+      return fetch(event.request);
+    })
   );
 });
 

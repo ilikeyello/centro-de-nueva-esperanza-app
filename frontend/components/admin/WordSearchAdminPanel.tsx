@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Trash2 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 interface WordSearchLevel {
@@ -113,6 +114,44 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
     }
   };
 
+  const handleDeleteLevel = async (levelId: string) => {
+    setStatus(null);
+    if (!passcode) {
+      setStatus(t("Enter admin passcode first", "Ingresa el código de admin primero"));
+      return;
+    }
+
+    const confirmed = window.confirm(
+      t(
+        "Are you sure you want to delete this level?",
+        "¿Seguro que deseas eliminar este nivel?"
+      )
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`${base}/games/wordsearch/levels/${levelId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode }),
+      });
+      const data = await res.json().catch(() => null as any);
+      if (!res.ok || (data && data.success === false)) {
+        throw new Error("Delete failed");
+      }
+      await loadLevels();
+      setStatus(t("Level deleted", "Nivel eliminado"));
+      if (selectedLevelId === levelId) {
+        setSelectedLevelId(null);
+        setOpenLevelId(null);
+        setWordsText("");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus(t("Failed to delete level", "Error al eliminar nivel"));
+    }
+  };
+
   const handleSaveWords = async () => {
     setStatus(null);
     if (!passcode) {
@@ -206,11 +245,13 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
           {!loading &&
             levels.map((level) => (
               <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
-                <div className="p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors"
-                  onClick={() => selectLevel(level)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                <div className="p-4 hover:bg-neutral-800/50 transition-colors">
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      className="flex flex-1 items-center gap-2 text-left"
+                      onClick={() => selectLevel(level)}
+                    >
                       {openLevelId === level.id ? (
                         <span className="inline-block w-4 text-red-400">▼</span>
                       ) : (
@@ -220,7 +261,19 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                       <span className="text-sm text-neutral-400">
                         ({level.words.length} {t("words", "palabras")})
                       </span>
-                    </div>
+                    </button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-neutral-400 hover:text-red-400 hover:bg-red-900/30"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteLevel(level.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
                 {openLevelId === level.id && (

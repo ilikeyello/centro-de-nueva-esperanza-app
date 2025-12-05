@@ -123,6 +123,18 @@ export const setWordsForLevel = api(
   }
 );
 
+export const deleteLevel = api(
+  { expose: true, method: "DELETE", path: "/games/wordsearch/levels/:id" },
+  async ({ id, passcode }: { id: string; passcode: string }): Promise<{ success: boolean }> => {
+    if (passcode !== "78598") {
+      return { success: false };
+    }
+
+    await db.exec`DELETE FROM word_search_levels WHERE id = ${id}`;
+    return { success: true };
+  }
+);
+
 // Simple puzzle generator: backend returns grid + words for the game page.
 
 interface PuzzleCell {

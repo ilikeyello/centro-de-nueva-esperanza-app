@@ -535,13 +535,31 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
             );
             return (
               <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
-                <div className="p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors" onClick={() => toggleLevelExpansion(level.id)}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                <div className="p-4 hover:bg-neutral-800/50 transition-colors">
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      className="flex flex-1 items-center gap-2 text-left"
+                      onClick={() => toggleLevelExpansion(level.id)}
+                    >
                       {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       <h3 className="font-semibold text-white">{level.name}</h3>
                       <span className="text-sm text-neutral-400">({levelQuestions.length} {t("questions", "preguntas")})</span>
-                    </div>
+                    </button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-neutral-400 hover:text-red-400 hover:bg-red-900/30"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!level.id) return;
+                        // Mark level for deletion in the pending batch
+                        deleteLevelFromBatch(level.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
                 {isExpanded && (
