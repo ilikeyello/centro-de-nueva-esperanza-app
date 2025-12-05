@@ -8,6 +8,6 @@ export {
   upsertLevel as upsertWordSearchLevel,
   setWordsForLevel as setWordSearchWords,
   getPuzzle as getWordSearchPuzzle,
-  deleteLevel as deleteWordSearchLevel,
+  deleteWordSearchLevelApi as deleteWordSearchLevel,
 } from "./wordsearch";
 export { subscribe, unsubscribe, sendToAll, sendNewsNotification, sendAnnouncementNotification, sendLivestreamNotification, getStats } from "./notifications";

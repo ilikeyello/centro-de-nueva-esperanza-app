@@ -123,7 +123,7 @@ export const setWordsForLevel = api(
   }
 );
 
-export const deleteLevel = api(
+export const deleteWordSearchLevelApi = api(
   { expose: true, method: "DELETE", path: "/games/wordsearch/levels/:id" },
   async ({ id, passcode }: { id: string; passcode: string }): Promise<{ success: boolean }> => {
     if (passcode !== "78598") {
