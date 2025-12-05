@@ -15500,6 +15500,14 @@ const NotificationProvider = ({ children }) => {
   };
   const sendSubscriptionToBackend = async (subscription2) => {
     try {
+      let language;
+      try {
+        if (typeof window !== "undefined") {
+          const stored = window.localStorage.getItem("cne_language");
+          if (stored === "en" || stored === "es") language = stored;
+        }
+      } catch {
+      }
       const response = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
         method: "POST",
         headers: {
@@ -15510,7 +15518,8 @@ const NotificationProvider = ({ children }) => {
           keys: {
             p256dh: subscription2.getKey("p256dh") ? btoa(String.fromCharCode(...new Uint8Array(subscription2.getKey("p256dh")))) : "",
             auth: subscription2.getKey("auth") ? btoa(String.fromCharCode(...new Uint8Array(subscription2.getKey("auth")))) : ""
-          }
+          },
+          language
         })
       });
       if (!response.ok) {
@@ -29300,12 +29309,38 @@ function Media({ onStartMusic }) {
   const [uploadPasscode, setUploadPasscode] = reactExports.useState("");
   const [uploadStatus, setUploadStatus] = reactExports.useState(null);
   const [uploadBusy, setUploadBusy] = reactExports.useState(false);
+  const [playlistSongs, setPlaylistSongs] = reactExports.useState([]);
+  const [loadingPlaylistSongs, setLoadingPlaylistSongs] = reactExports.useState(false);
   reactExports.useEffect(() => {
     const interval = setInterval(() => {
       setNow(/* @__PURE__ */ new Date());
     }, 1e3);
     return () => clearInterval(interval);
   }, []);
+  reactExports.useEffect(() => {
+    const loadPlaylistSongs = async () => {
+      if (!playlistUrl) return;
+      setLoadingPlaylistSongs(true);
+      try {
+        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/playlist/items`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const rawItems = Array.isArray(data.items) ? data.items : [];
+        const songs = rawItems.map((it) => ({
+          id: it.id,
+          title: it.title || "",
+          artist: it.channelTitle || "",
+          position: typeof it.position === "number" ? it.position : 0
+        })).filter((s) => s.id && s.title);
+        setPlaylistSongs(songs);
+      } catch {
+      } finally {
+        setLoadingPlaylistSongs(false);
+      }
+    };
+    void loadPlaylistSongs();
+  }, [playlistUrl]);
   reactExports.useEffect(() => {
     const loadSermons = async () => {
       try {
@@ -29844,7 +29879,34 @@ function Media({ onStartMusic }) {
             t("Play YouTube Worship Playlist", "Reproducir lista de adoración en YouTube")
           ]
         }
-      ) })
+      ) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-xs text-neutral-200", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Songs in this playlist", "Canciones en esta lista") }),
+        loadingPlaylistSongs && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("Loading songs...", "Cargando canciones...") }),
+        !loadingPlaylistSongs && playlistSongs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("No songs found for this playlist.", "No se encontraron canciones para esta lista.") }),
+        !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto", children: playlistSongs.slice().sort((a, b) => a.position - b.position).map((song) => {
+          let playlistId = null;
+          try {
+            const match = playlistUrl == null ? void 0 : playlistUrl.match(/[?&]list=([^&]+)/);
+            playlistId = match ? match[1] : null;
+          } catch {
+            playlistId = null;
+          }
+          const songUrl = playlistId ? `https://www.youtube.com/watch?v=${song.id}&list=${playlistId}` : `https://www.youtube.com/watch?v=${song.id}`;
+          return /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => playTrack(songUrl),
+              className: "flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate text-[0.8rem] font-medium text-white", children: song.title }),
+                song.artist && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-0.5 truncate text-[0.7rem] text-neutral-400", children: song.artist })
+              ]
+            }
+          ) }, song.id);
+        }) })
+      ] })
     ] }) })
   ] });
 }
@@ -33049,6 +33111,7 @@ const NotificationSettings = () => {
   ] });
 };
 const usePushNotifications = () => {
+  const { language } = useLanguage();
   const [isSupported, setIsSupported] = reactExports.useState(false);
   const [isSubscribed, setIsSubscribed] = reactExports.useState(false);
   const [permission, setPermission] = reactExports.useState("default");
@@ -33092,7 +33155,8 @@ const usePushNotifications = () => {
             p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
             auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ""
           },
-          userAgent: navigator.userAgent
+          userAgent: navigator.userAgent,
+          language
         };
         console.log("🔔 Saving existing subscription to backend:", {
           endpoint: subscriptionData.endpoint.substring(0, 50) + "...",
@@ -33205,7 +33269,8 @@ const usePushNotifications = () => {
           p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
           auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ""
         },
-        userAgent: navigator.userAgent
+        userAgent: navigator.userAgent,
+        language
       };
       console.log("🔔 Sending subscription to backend:", {
         endpoint: subscriptionData.endpoint.substring(0, 50) + "...",

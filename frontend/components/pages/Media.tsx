@@ -82,6 +82,13 @@ export function Media({ onStartMusic }: MediaProps) {
   const [uploadPasscode, setUploadPasscode] = useState("");
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [playlistSongs, setPlaylistSongs] = useState<{
+    id: string;
+    title: string;
+    artist: string;
+    position: number;
+  }[]>([]);
+  const [loadingPlaylistSongs, setLoadingPlaylistSongs] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -90,6 +97,37 @@ export function Media({ onStartMusic }: MediaProps) {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const loadPlaylistSongs = async () => {
+      if (!playlistUrl) return;
+      setLoadingPlaylistSongs(true);
+      try {
+        const base = import.meta.env.DEV
+          ? "http://127.0.0.1:4000"
+          : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/playlist/items`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const rawItems = Array.isArray(data.items) ? data.items : [];
+        const songs = rawItems
+          .map((it: any) => ({
+            id: it.id as string,
+            title: (it.title as string) || "",
+            artist: (it.channelTitle as string) || "",
+            position: typeof it.position === "number" ? it.position : 0,
+          }))
+          .filter((s: { id: string; title: string }) => s.id && s.title);
+        setPlaylistSongs(songs);
+      } catch {
+        // ignore errors, just don't show list
+      } finally {
+        setLoadingPlaylistSongs(false);
+      }
+    };
+
+    void loadPlaylistSongs();
+  }, [playlistUrl]);
 
   useEffect(() => {
     const loadSermons = async () => {
@@ -848,6 +886,60 @@ export function Media({ onStartMusic }: MediaProps) {
               <Play className="mr-2 h-4 w-4" />
               {t("Play YouTube Worship Playlist", "Reproducir lista de adoración en YouTube")}
             </Button>
+          </div>
+          <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-xs text-neutral-200">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
+              {t("Songs in this playlist", "Canciones en esta lista")}
+            </p>
+            {loadingPlaylistSongs && (
+              <p className="mt-2 text-[0.75rem] text-neutral-500">
+                {t("Loading songs...", "Cargando canciones...")}
+              </p>
+            )}
+            {!loadingPlaylistSongs && playlistSongs.length === 0 && (
+              <p className="mt-2 text-[0.75rem] text-neutral-500">
+                {t("No songs found for this playlist.", "No se encontraron canciones para esta lista.")}
+              </p>
+            )}
+            {!loadingPlaylistSongs && playlistSongs.length > 0 && (
+              <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto">
+                {playlistSongs
+                  .slice()
+                  .sort((a, b) => a.position - b.position)
+                  .map((song) => {
+                    let playlistId: string | null = null;
+                    try {
+                      const match = playlistUrl?.match(/[?&]list=([^&]+)/);
+                      playlistId = match ? match[1] : null;
+                    } catch {
+                      playlistId = null;
+                    }
+
+                    const songUrl = playlistId
+                      ? `https://www.youtube.com/watch?v=${song.id}&list=${playlistId}`
+                      : `https://www.youtube.com/watch?v=${song.id}`;
+
+                    return (
+                      <li key={song.id}>
+                        <button
+                          type="button"
+                          onClick={() => playTrack(songUrl)}
+                          className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
+                        >
+                          <span className="truncate text-[0.8rem] font-medium text-white">
+                            {song.title}
+                          </span>
+                          {song.artist && (
+                            <span className="mt-0.5 truncate text-[0.7rem] text-neutral-400">
+                              {song.artist}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+              </ul>
+            )}
           </div>
         </div>
       </section>
