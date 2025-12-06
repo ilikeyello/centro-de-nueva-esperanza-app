@@ -19295,6 +19295,7 @@ function Navigation({ currentPage, onNavigate }) {
   };
   getEmbedUrl(youtubeTrackUrl);
   const playerRef = reactExports.useRef(null);
+  const [playerReady, setPlayerReady] = reactExports.useState(false);
   const [desktopPlayerPosition, setDesktopPlayerPosition] = reactExports.useState({ top: 160, right: 16 });
   const [dragState, setDragState] = reactExports.useState(null);
   reactExports.useEffect(() => {
@@ -19328,6 +19329,7 @@ function Navigation({ currentPage, onNavigate }) {
         }
       }
       playerRef.current = null;
+      setPlayerReady(false);
       return;
     }
     const createPlayer = () => {
@@ -19342,6 +19344,11 @@ function Navigation({ currentPage, onNavigate }) {
           autoplay: 1,
           rel: 0,
           modestbranding: 1
+        },
+        events: {
+          onReady: () => {
+            setPlayerReady(true);
+          }
         }
       });
     };
@@ -19366,6 +19373,7 @@ function Navigation({ currentPage, onNavigate }) {
   reactExports.useEffect(() => {
     if (!playerRef.current) return;
     if (typeof window === "undefined") return;
+    if (!playerReady) return;
     const player = playerRef.current;
     if (playlistIndex != null && playlistUrl) {
       let playlistId = null;
@@ -19393,7 +19401,7 @@ function Navigation({ currentPage, onNavigate }) {
       } catch {
       }
     }
-  }, [youtubeTrackUrl, playlistIndex, playlistUrl]);
+  }, [youtubeTrackUrl, playlistIndex, playlistUrl, playerReady]);
   const handleDesktopPlayerMouseDown = (event) => {
     if (window.innerWidth < 768) {
       return;
