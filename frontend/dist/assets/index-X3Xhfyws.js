@@ -30197,10 +30197,11 @@ function Media({ onStartMusic }) {
               },
               className: "flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80",
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-container text-[0.8rem] font-medium text-white", children: title.length > 24 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "marquee-track", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-container text-[0.8rem] font-medium text-white md:hidden", children: title.length > 24 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "marquee-track", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: title }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: title })
                 ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: title }) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "hidden text-[0.8rem] font-medium text-white truncate md:inline", children: title }),
                 showArtist && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-0.5 truncate text-[0.7rem] text-neutral-400", children: artist })
               ]
             }

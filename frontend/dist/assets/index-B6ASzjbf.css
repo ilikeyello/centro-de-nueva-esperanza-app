@@ -3826,6 +3826,10 @@
       display: none;
     }
 
+    .md\:inline {
+      display: inline;
+    }
+
     .md\:h-5 {
       height: calc(var(--spacing) * 5);
     }
@@ -4474,7 +4478,7 @@
 .marquee-track {
   will-change: transform;
   min-width: 200%;
-  animation: 26s linear infinite cne-marquee;
+  animation: 36s linear infinite cne-marquee;
   display: inline-flex;
 }
 

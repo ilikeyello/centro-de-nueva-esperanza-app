@@ -316,7 +316,7 @@
   display: inline-flex;
   min-width: 200%;
   will-change: transform;
-  animation: cne-marquee 26s linear infinite;
+  animation: cne-marquee 36s linear infinite;
 }
 
 .marquee-item {
