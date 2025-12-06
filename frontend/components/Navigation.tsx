@@ -178,9 +178,13 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
       if (playlistId) {
         try {
-          // Use cuePlaylist + playVideo instead of loadPlaylist for more reliable
-          // first-load behavior when starting from a specific index.
-          player.cuePlaylist(playlistId, playlistIndex);
+          // Use the object form of cuePlaylist which explicitly specifies
+          // that we're loading a playlist by ID, then start playback.
+          player.cuePlaylist({
+            listType: "playlist",
+            list: playlistId,
+            index: playlistIndex,
+          });
           player.playVideo();
           return;
         } catch {
