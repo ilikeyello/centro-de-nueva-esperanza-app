@@ -2,7 +2,8 @@ import { api, APIError } from "encore.dev/api";
 import { secret } from "encore.dev/config";
 import db from "../db";
 
-// Simple in-memory storage to avoid database permission issues
+// Cache the playlist URL in memory, but persist it in the database so it
+// is shared across devices and survives deploys/restarts.
 let playlistUrl: string | null = null;
 
 const youtubeApiKey = secret("YoutubeKey");
@@ -14,6 +15,21 @@ interface UpdatePlaylistRequest {
 
 interface GetPlaylistResponse {
   url: string | null;
+}
+
+async function getStoredPlaylistUrl(): Promise<string | null> {
+  if (playlistUrl !== null) {
+    return playlistUrl;
+  }
+
+  const row = await db.queryRow<{ url: string }>`
+    SELECT url
+    FROM media_playlist
+    WHERE id = 1
+  `;
+
+  playlistUrl = row?.url ?? null;
+  return playlistUrl;
 }
 
 export const save = api<UpdatePlaylistRequest, void>(
@@ -46,6 +62,15 @@ export const save = api<UpdatePlaylistRequest, void>(
       }
     }
 
+    // Persist in the database so all devices and server instances share
+    // the same playlist URL.
+    await db.exec`
+      INSERT INTO media_playlist (id, url)
+      VALUES (1, ${embedUrl})
+      ON CONFLICT (id) DO UPDATE SET url = EXCLUDED.url
+    `;
+
+    // Update in-memory cache
     playlistUrl = embedUrl;
 
     return { success: true, url: embedUrl };
@@ -55,7 +80,8 @@ export const save = api<UpdatePlaylistRequest, void>(
 export const get = api<void, GetPlaylistResponse>(
   { expose: true, method: "GET", path: "/playlist" },
   async () => {
-    return { url: playlistUrl };
+    const url = await getStoredPlaylistUrl();
+    return { url };
   }
 );
 
@@ -73,12 +99,13 @@ interface PlaylistItemsResponse {
 export const getItems = api<void, PlaylistItemsResponse>(
   { expose: true, method: "GET", path: "/playlist/items" },
   async () => {
-    if (!playlistUrl) {
+    const urlFromStore = await getStoredPlaylistUrl();
+    if (!urlFromStore) {
       return { items: [] };
     }
 
     // Extract playlist ID from the stored embed URL
-    const listMatch = playlistUrl.match(/[?&]list=([^&]+)/);
+    const listMatch = urlFromStore.match(/[?&]list=([^&]+)/);
     const playlistId = listMatch ? listMatch[1] : null;
     if (!playlistId) {
       return { items: [] };

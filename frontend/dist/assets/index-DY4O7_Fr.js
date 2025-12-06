@@ -29885,14 +29885,11 @@ function Media({ onStartMusic }) {
         loadingPlaylistSongs && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("Loading songs...", "Cargando canciones...") }),
         !loadingPlaylistSongs && playlistSongs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("No songs found for this playlist.", "No se encontraron canciones para esta lista.") }),
         !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto", children: playlistSongs.slice().sort((a, b) => a.position - b.position).map((song) => {
-          let playlistId = null;
-          try {
-            const match = playlistUrl == null ? void 0 : playlistUrl.match(/[?&]list=([^&]+)/);
-            playlistId = match ? match[1] : null;
-          } catch {
-            playlistId = null;
-          }
-          const songUrl = playlistId ? `https://www.youtube.com/watch?v=${song.id}&list=${playlistId}` : `https://www.youtube.com/watch?v=${song.id}`;
+          var _a2, _b2;
+          const songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
+          const artist = ((_a2 = song.artist) == null ? void 0 : _a2.trim()) ?? "";
+          const title = ((_b2 = song.title) == null ? void 0 : _b2.trim()) ?? "";
+          const showArtist = artist.length > 0 && artist.toLowerCase() !== title.toLowerCase() && !title.toLowerCase().includes(artist.toLowerCase());
           return /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "button",
             {
@@ -29900,8 +29897,8 @@ function Media({ onStartMusic }) {
               onClick: () => playTrack(songUrl),
               className: "flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80",
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate text-[0.8rem] font-medium text-white", children: song.title }),
-                song.artist && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-0.5 truncate text-[0.7rem] text-neutral-400", children: song.artist })
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate text-[0.8rem] font-medium text-white", children: title }),
+                showArtist && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-0.5 truncate text-[0.7rem] text-neutral-400", children: artist })
               ]
             }
           ) }, song.id);

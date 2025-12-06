@@ -907,17 +907,17 @@ export function Media({ onStartMusic }: MediaProps) {
                   .slice()
                   .sort((a, b) => a.position - b.position)
                   .map((song) => {
-                    let playlistId: string | null = null;
-                    try {
-                      const match = playlistUrl?.match(/[?&]list=([^&]+)/);
-                      playlistId = match ? match[1] : null;
-                    } catch {
-                      playlistId = null;
-                    }
+                    // Play each song as its own standalone embed so selecting a song
+                    // always switches the mini player to that exact track and starts
+                    // playing immediately.
+                    const songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
 
-                    const songUrl = playlistId
-                      ? `https://www.youtube.com/watch?v=${song.id}&list=${playlistId}`
-                      : `https://www.youtube.com/watch?v=${song.id}`;
+                    const artist = song.artist?.trim() ?? "";
+                    const title = song.title?.trim() ?? "";
+                    const showArtist =
+                      artist.length > 0 &&
+                      artist.toLowerCase() !== title.toLowerCase() &&
+                      !title.toLowerCase().includes(artist.toLowerCase());
 
                     return (
                       <li key={song.id}>
@@ -927,11 +927,11 @@ export function Media({ onStartMusic }: MediaProps) {
                           className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
                         >
                           <span className="truncate text-[0.8rem] font-medium text-white">
-                            {song.title}
+                            {title}
                           </span>
-                          {song.artist && (
+                          {showArtist && (
                             <span className="mt-0.5 truncate text-[0.7rem] text-neutral-400">
-                              {song.artist}
+                              {artist}
                             </span>
                           )}
                         </button>
