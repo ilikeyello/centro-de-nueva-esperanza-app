@@ -271,6 +271,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         style={{ paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" }}
       >
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
+          {/* Mobile: minimized pill in navbar */}
           {youtubeTrackUrl && isMinimized && (
             <div className="flex items-center justify-between px-3 pt-1.5 md:hidden">
               <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-inner">
@@ -326,6 +327,68 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
             </div>
           )}
 
+          {/* Mobile: open player integrated into navbar */}
+          {youtubeTrackUrl && !isMinimized && !isDesktop && (
+            <div className="px-3 pt-1.5 md:hidden">
+              <div className="flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner">
+                <div className="min-w-0 flex-1 pr-2">
+                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                    {t("Music", "Música")}
+                  </span>
+                  {currentTrackTitle && (
+                    <div className="mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container">
+                      {shouldScrollTitle ? (
+                        <div className="marquee-track">
+                          <span className="marquee-item">{currentTrackTitle}</span>
+                          <span className="marquee-item" aria-hidden="true">
+                            {currentTrackTitle}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="marquee-item truncate">
+                          {currentTrackTitle}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={isPlaying ? handlePauseClick : handlePlayClick}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                    aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
+                  >
+                    {isPlaying ? (
+                      <Pause className="h-4 w-4" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextClick}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                    aria-label={t("Next song", "Siguiente canción")}
+                  >
+                    <SkipForward className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleMinimize}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                    aria-label={t("Minimize music player", "Minimizar reproductor de música")}
+                  >
+                    <Minimize2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="mt-2 h-40 w-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/90">
+                <div id="global-music-player" className="h-full w-full" />
+              </div>
+            </div>
+          )}
+
           <div className="flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -364,8 +427,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         </div>
       </div>
 
-      {/* Single floating YouTube overlay (used on all screen sizes) */}
-      {youtubeTrackUrl && (
+      {/* Desktop: single floating YouTube overlay */}
+      {youtubeTrackUrl && isDesktop && (
         <div
           className={cn(
             "z-60 transition-all",

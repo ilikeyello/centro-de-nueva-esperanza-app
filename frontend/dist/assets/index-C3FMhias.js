@@ -19621,6 +19621,50 @@ function Navigation({ currentPage, onNavigate }) {
               )
             ] })
           ] }) }),
+          youtubeTrackUrl && !isMinimized && !isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-3 pt-1.5 md:hidden", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1 pr-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
+                currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
+                ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-shrink-0 items-center gap-1.5", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: isPlaying ? handlePauseClick : handlePlayClick,
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+                    children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4" })
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: handleNextClick,
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    "aria-label": t("Next song", "Siguiente canción"),
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-4 w-4" })
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: toggleMinimize,
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    "aria-label": t("Minimize music player", "Minimizar reproductor de música"),
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Minimize2, { className: "h-4 w-4" })
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 h-40 w-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/90", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: "global-music-player", className: "h-full w-full" }) })
+          ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2", children: [
             navItems.map((item) => {
               const Icon2 = item.icon;
@@ -19661,7 +19705,7 @@ function Navigation({ currentPage, onNavigate }) {
         ] })
       }
     ),
-    youtubeTrackUrl && /* @__PURE__ */ jsxRuntimeExports.jsx(
+    youtubeTrackUrl && isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
         className: cn(
