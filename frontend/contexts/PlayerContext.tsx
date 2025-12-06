@@ -42,6 +42,8 @@ function normalizeLivestreamUrl(raw: string, fallback: string): string {
 interface PlayerContextType {
   // currentTrack and queue entries are YouTube video IDs when used for music playback.
   currentTrack: string | null;
+  currentTrackTitle: string | null;
+  currentTrackArtist: string | null;
   isPlaying: boolean;
   isMinimized: boolean;
   playlistUrl: string;
@@ -50,10 +52,15 @@ interface PlayerContextType {
   playlistShuffle: boolean;
   queue: string[];
   queueIndex: number | null;
+  queueMeta: { title: string; artist?: string }[];
   playTrack: (url: string) => void;
   playPlaylistFromIndex: (index: number) => void;
   playPlaylistShuffle: () => void;
-  startQueue: (urls: string[], startIndex: number) => void;
+  startQueue: (
+    urls: string[],
+    startIndex: number,
+    meta?: { title: string; artist?: string }[]
+  ) => void;
   playNextInQueue: () => void;
   pauseTrack: () => void;
   resumeTrack: () => void;
@@ -67,12 +74,15 @@ const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<string | null>(null);
+  const [currentTrackTitle, setCurrentTrackTitle] = useState<string | null>(null);
+  const [currentTrackArtist, setCurrentTrackArtist] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [playlistIndex, setPlaylistIndex] = useState<number | null>(null);
   const [playlistShuffle, setPlaylistShuffle] = useState(false);
   const [queue, setQueue] = useState<string[]>([]);
   const [queueIndex, setQueueIndex] = useState<number | null>(null);
+  const [queueMeta, setQueueMeta] = useState<{ title: string; artist?: string }[]>([]);
 
   const defaultPlaylistUrl =
     "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
@@ -164,10 +174,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const playTrack = (url: string) => {
     setCurrentTrack(url);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
     setQueue([]);
     setQueueIndex(null);
+    setQueueMeta([]);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -177,6 +190,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setPlaylistShuffle(false);
     setPlaylistIndex(safeIndex);
     setCurrentTrack(playlistUrl);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -185,11 +200,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setPlaylistShuffle(true);
     setPlaylistIndex(0);
     setCurrentTrack(playlistUrl);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
     setIsPlaying(true);
     setIsMinimized(false);
   };
 
-  const startQueue = (urls: string[], startIndex: number) => {
+  const startQueue = (
+    urls: string[],
+    startIndex: number,
+    meta?: { title: string; artist?: string }[]
+  ) => {
     const safeUrls = Array.isArray(urls) ? urls.filter((u) => typeof u === "string" && u.trim().length > 0) : [];
     if (safeUrls.length === 0) {
       return;
@@ -198,11 +219,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const maxIndex = safeUrls.length - 1;
     const clampedIndex = Math.min(Math.max(0, Math.floor(startIndex || 0)), maxIndex);
 
+    const normalizedMeta: { title: string; artist?: string }[] = Array.isArray(meta) && meta.length
+      ? meta.map((m) => ({
+          title: typeof m.title === "string" ? m.title : "",
+          artist: typeof m.artist === "string" ? m.artist : "",
+        }))
+      : safeUrls.map(() => ({ title: "", artist: "" }));
+
     setQueue(safeUrls);
+    setQueueMeta(normalizedMeta);
     setQueueIndex(clampedIndex);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
     setCurrentTrack(safeUrls[clampedIndex]);
+    const metaForTrack = normalizedMeta[clampedIndex];
+    setCurrentTrackTitle(metaForTrack?.title || null);
+    setCurrentTrackArtist(metaForTrack?.artist || null);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -216,12 +248,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       // Reached end of queue; stop playback.
       setCurrentTrack(null);
       setQueueIndex(null);
+      setCurrentTrackTitle(null);
+      setCurrentTrackArtist(null);
       setIsPlaying(false);
       return;
     }
 
     setQueueIndex(nextIndex);
     setCurrentTrack(queue[nextIndex]);
+    const metaForTrack = queueMeta[nextIndex];
+    setCurrentTrackTitle(metaForTrack?.title || null);
+    setCurrentTrackArtist(metaForTrack?.artist || null);
     setIsPlaying(true);
   };
 
@@ -236,10 +273,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const closePlayer = () => {
     setCurrentTrack(null);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
     setQueue([]);
     setQueueIndex(null);
+    setQueueMeta([]);
     setIsPlaying(false);
     setIsMinimized(false);
   };
@@ -274,6 +314,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     <PlayerContext.Provider
       value={{
         currentTrack,
+        currentTrackTitle,
+        currentTrackArtist,
         isPlaying,
         isMinimized,
         playlistUrl,
@@ -282,6 +324,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         playlistShuffle,
         queue,
         queueIndex,
+        queueMeta,
         playTrack,
         playPlaylistFromIndex,
         playPlaylistShuffle,

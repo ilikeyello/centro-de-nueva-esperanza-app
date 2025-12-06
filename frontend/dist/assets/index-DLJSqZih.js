@@ -15296,10 +15296,15 @@ function useLanguage() {
 const PlayerContext = reactExports.createContext(void 0);
 function PlayerProvider({ children }) {
   const [currentTrack, setCurrentTrack] = reactExports.useState(null);
+  const [currentTrackTitle, setCurrentTrackTitle] = reactExports.useState(null);
+  const [currentTrackArtist, setCurrentTrackArtist] = reactExports.useState(null);
   const [isPlaying, setIsPlaying] = reactExports.useState(false);
   const [isMinimized, setIsMinimized] = reactExports.useState(false);
   const [playlistIndex, setPlaylistIndex] = reactExports.useState(null);
   const [playlistShuffle, setPlaylistShuffle] = reactExports.useState(false);
+  const [queue, setQueue] = reactExports.useState([]);
+  const [queueIndex, setQueueIndex] = reactExports.useState(null);
+  const [queueMeta, setQueueMeta] = reactExports.useState([]);
   const defaultPlaylistUrl = "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
   const [playlistUrl, setPlaylistUrlState] = reactExports.useState(() => {
     if (typeof window === "undefined") return defaultPlaylistUrl;
@@ -15367,8 +15372,13 @@ function PlayerProvider({ children }) {
   }, []);
   const playTrack = (url) => {
     setCurrentTrack(url);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
+    setQueue([]);
+    setQueueIndex(null);
+    setQueueMeta([]);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -15377,6 +15387,8 @@ function PlayerProvider({ children }) {
     setPlaylistShuffle(false);
     setPlaylistIndex(safeIndex);
     setCurrentTrack(playlistUrl);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -15384,15 +15396,68 @@ function PlayerProvider({ children }) {
     setPlaylistShuffle(true);
     setPlaylistIndex(0);
     setCurrentTrack(playlistUrl);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
     setIsPlaying(true);
     setIsMinimized(false);
   };
+  const startQueue = (urls, startIndex, meta) => {
+    const safeUrls = Array.isArray(urls) ? urls.filter((u) => typeof u === "string" && u.trim().length > 0) : [];
+    if (safeUrls.length === 0) {
+      return;
+    }
+    const maxIndex = safeUrls.length - 1;
+    const clampedIndex = Math.min(Math.max(0, Math.floor(startIndex || 0)), maxIndex);
+    const normalizedMeta = Array.isArray(meta) && meta.length ? meta.map((m) => ({
+      title: typeof m.title === "string" ? m.title : "",
+      artist: typeof m.artist === "string" ? m.artist : ""
+    })) : safeUrls.map(() => ({ title: "", artist: "" }));
+    setQueue(safeUrls);
+    setQueueMeta(normalizedMeta);
+    setQueueIndex(clampedIndex);
+    setPlaylistIndex(null);
+    setPlaylistShuffle(false);
+    setCurrentTrack(safeUrls[clampedIndex]);
+    const metaForTrack = normalizedMeta[clampedIndex];
+    setCurrentTrackTitle((metaForTrack == null ? void 0 : metaForTrack.title) || null);
+    setCurrentTrackArtist((metaForTrack == null ? void 0 : metaForTrack.artist) || null);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+  const playNextInQueue = () => {
+    if (!queue || queue.length === 0) return;
+    if (queueIndex == null) return;
+    const nextIndex = queueIndex + 1;
+    if (nextIndex >= queue.length) {
+      setCurrentTrack(null);
+      setQueueIndex(null);
+      setCurrentTrackTitle(null);
+      setCurrentTrackArtist(null);
+      setIsPlaying(false);
+      return;
+    }
+    setQueueIndex(nextIndex);
+    setCurrentTrack(queue[nextIndex]);
+    const metaForTrack = queueMeta[nextIndex];
+    setCurrentTrackTitle((metaForTrack == null ? void 0 : metaForTrack.title) || null);
+    setCurrentTrackArtist((metaForTrack == null ? void 0 : metaForTrack.artist) || null);
+    setIsPlaying(true);
+  };
   const pauseTrack = () => setIsPlaying(false);
+  const resumeTrack = () => {
+    if (!currentTrack) return;
+    setIsPlaying(true);
+  };
   const toggleMinimize = () => setIsMinimized((prev) => !prev);
   const closePlayer = () => {
     setCurrentTrack(null);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
+    setQueue([]);
+    setQueueIndex(null);
+    setQueueMeta([]);
     setIsPlaying(false);
     setIsMinimized(false);
   };
@@ -15421,16 +15486,24 @@ function PlayerProvider({ children }) {
     {
       value: {
         currentTrack,
+        currentTrackTitle,
+        currentTrackArtist,
         isPlaying,
         isMinimized,
         playlistUrl,
         livestreamUrl,
         playlistIndex,
         playlistShuffle,
+        queue,
+        queueIndex,
+        queueMeta,
         playTrack,
         playPlaylistFromIndex,
         playPlaylistShuffle,
+        startQueue,
+        playNextInQueue,
         pauseTrack,
+        resumeTrack,
         toggleMinimize,
         closePlayer,
         setPlaylistUrl,
@@ -15692,18 +15765,18 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$F = [
+const __iconNode$I = [
   ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
   ["path", { d: "M19 12H5", key: "x3x0zl" }]
 ];
-const ArrowLeft = createLucideIcon("arrow-left", __iconNode$F);
+const ArrowLeft = createLucideIcon("arrow-left", __iconNode$I);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$E = [
+const __iconNode$H = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -15715,14 +15788,14 @@ const __iconNode$E = [
   ["path", { d: "m2 2 20 20", key: "1ooewy" }],
   ["path", { d: "M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05", key: "1hqiys" }]
 ];
-const BellOff = createLucideIcon("bell-off", __iconNode$E);
+const BellOff = createLucideIcon("bell-off", __iconNode$H);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$D = [
+const __iconNode$G = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -15732,14 +15805,14 @@ const __iconNode$D = [
     }
   ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$D);
+const Bell = createLucideIcon("bell", __iconNode$G);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$C = [
+const __iconNode$F = [
   [
     "path",
     {
@@ -15762,14 +15835,14 @@ const __iconNode$C = [
   ["path", { d: "M6 18a4 4 0 0 1-1.967-.516", key: "2e4loj" }],
   ["path", { d: "M19.967 17.484A4 4 0 0 1 18 18", key: "159ez6" }]
 ];
-const Brain = createLucideIcon("brain", __iconNode$C);
+const Brain = createLucideIcon("brain", __iconNode$F);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$B = [
+const __iconNode$E = [
   ["path", { d: "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z", key: "1b4qmf" }],
   ["path", { d: "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2", key: "i71pzd" }],
   ["path", { d: "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2", key: "10jefs" }],
@@ -15778,82 +15851,82 @@ const __iconNode$B = [
   ["path", { d: "M10 14h4", key: "kelpxr" }],
   ["path", { d: "M10 18h4", key: "1ulq68" }]
 ];
-const Building2 = createLucideIcon("building-2", __iconNode$B);
+const Building2 = createLucideIcon("building-2", __iconNode$E);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$A = [
+const __iconNode$D = [
   ["path", { d: "M8 2v4", key: "1cmpym" }],
   ["path", { d: "M16 2v4", key: "4m81vk" }],
   ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
   ["path", { d: "M3 10h18", key: "8toen8" }]
 ];
-const Calendar = createLucideIcon("calendar", __iconNode$A);
+const Calendar = createLucideIcon("calendar", __iconNode$D);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$z = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$z);
+const __iconNode$C = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$C);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$y = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$y);
+const __iconNode$B = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$B);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$x = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$x);
+const __iconNode$A = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$A);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$w = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$w);
+const __iconNode$z = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$z);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$v = [
+const __iconNode$y = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
   ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
 ];
-const CircleAlert = createLucideIcon("circle-alert", __iconNode$v);
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$y);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$u = [
+const __iconNode$x = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
 ];
-const Clock = createLucideIcon("clock", __iconNode$u);
+const Clock = createLucideIcon("clock", __iconNode$x);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$t = [
+const __iconNode$w = [
   ["path", { d: "M10 2v2", key: "7u0qdc" }],
   ["path", { d: "M14 2v2", key: "6buw04" }],
   [
@@ -15865,38 +15938,38 @@ const __iconNode$t = [
   ],
   ["path", { d: "M6 2v2", key: "colzsn" }]
 ];
-const Coffee = createLucideIcon("coffee", __iconNode$t);
+const Coffee = createLucideIcon("coffee", __iconNode$w);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$s = [
+const __iconNode$v = [
   ["line", { x1: "12", x2: "12", y1: "2", y2: "22", key: "7eqyqh" }],
   ["path", { d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6", key: "1b0p4s" }]
 ];
-const DollarSign = createLucideIcon("dollar-sign", __iconNode$s);
+const DollarSign = createLucideIcon("dollar-sign", __iconNode$v);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$r = [
+const __iconNode$u = [
   [
     "path",
     { d: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z", key: "1jg4f8" }
   ]
 ];
-const Facebook = createLucideIcon("facebook", __iconNode$r);
+const Facebook = createLucideIcon("facebook", __iconNode$u);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$q = [
+const __iconNode$t = [
   ["line", { x1: "6", x2: "10", y1: "11", y2: "11", key: "1gktln" }],
   ["line", { x1: "8", x2: "8", y1: "9", y2: "13", key: "qnk9ow" }],
   ["line", { x1: "15", x2: "15.01", y1: "12", y2: "12", key: "krot7o" }],
@@ -15909,40 +15982,40 @@ const __iconNode$q = [
     }
   ]
 ];
-const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$q);
+const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$t);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$p = [
+const __iconNode$s = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
   ["path", { d: "M2 12h20", key: "9i4pu4" }]
 ];
-const Globe = createLucideIcon("globe", __iconNode$p);
+const Globe = createLucideIcon("globe", __iconNode$s);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [
+const __iconNode$r = [
   ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" }],
   ["path", { d: "M3 9h18", key: "1pudct" }],
   ["path", { d: "M3 15h18", key: "5xshup" }],
   ["path", { d: "M9 3v18", key: "fh3hqa" }],
   ["path", { d: "M15 3v18", key: "14nvp0" }]
 ];
-const Grid3x3 = createLucideIcon("grid-3x3", __iconNode$o);
+const Grid3x3 = createLucideIcon("grid-3x3", __iconNode$r);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$n = [
+const __iconNode$q = [
   [
     "path",
     {
@@ -15951,14 +16024,14 @@ const __iconNode$n = [
     }
   ]
 ];
-const Heart = createLucideIcon("heart", __iconNode$n);
+const Heart = createLucideIcon("heart", __iconNode$q);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$m = [
+const __iconNode$p = [
   ["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", key: "5wwlr5" }],
   [
     "path",
@@ -15968,14 +16041,14 @@ const __iconNode$m = [
     }
   ]
 ];
-const House = createLucideIcon("house", __iconNode$m);
+const House = createLucideIcon("house", __iconNode$p);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$l = [
+const __iconNode$o = [
   ["path", { d: "m5 8 6 6", key: "1wu5hv" }],
   ["path", { d: "m4 14 6-6 2-3", key: "1k1g8d" }],
   ["path", { d: "M2 5h12", key: "or177f" }],
@@ -15983,33 +16056,33 @@ const __iconNode$l = [
   ["path", { d: "m22 22-5-10-5 10", key: "don7ne" }],
   ["path", { d: "M14 18h6", key: "1m8k6r" }]
 ];
-const Languages = createLucideIcon("languages", __iconNode$l);
+const Languages = createLucideIcon("languages", __iconNode$o);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$k = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
-const LoaderCircle = createLucideIcon("loader-circle", __iconNode$k);
+const __iconNode$n = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
+const LoaderCircle = createLucideIcon("loader-circle", __iconNode$n);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$j = [
+const __iconNode$m = [
   ["rect", { width: "20", height: "16", x: "2", y: "4", rx: "2", key: "18n3k1" }],
   ["path", { d: "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7", key: "1ocrg3" }]
 ];
-const Mail = createLucideIcon("mail", __iconNode$j);
+const Mail = createLucideIcon("mail", __iconNode$m);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$i = [
+const __iconNode$l = [
   [
     "path",
     {
@@ -16019,7 +16092,41 @@ const __iconNode$i = [
   ],
   ["circle", { cx: "12", cy: "10", r: "3", key: "ilqhr7" }]
 ];
-const MapPin = createLucideIcon("map-pin", __iconNode$i);
+const MapPin = createLucideIcon("map-pin", __iconNode$l);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$k = [
+  ["polyline", { points: "15 3 21 3 21 9", key: "mznyad" }],
+  ["polyline", { points: "9 21 3 21 3 15", key: "1avn1i" }],
+  ["line", { x1: "21", x2: "14", y1: "3", y2: "10", key: "ota7mn" }],
+  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
+];
+const Maximize2 = createLucideIcon("maximize-2", __iconNode$k);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$j = [
+  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
+  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
+];
+const Megaphone = createLucideIcon("megaphone", __iconNode$j);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$i = [
+  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
+];
+const MessageCircle = createLucideIcon("message-circle", __iconNode$i);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -16027,10 +16134,12 @@ const MapPin = createLucideIcon("map-pin", __iconNode$i);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$h = [
-  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
-  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
+  ["polyline", { points: "4 14 10 14 10 20", key: "11kfnr" }],
+  ["polyline", { points: "20 10 14 10 14 4", key: "rlmsce" }],
+  ["line", { x1: "14", x2: "21", y1: "10", y2: "3", key: "o5lafz" }],
+  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
 ];
-const Megaphone = createLucideIcon("megaphone", __iconNode$h);
+const Minimize2 = createLucideIcon("minimize-2", __iconNode$h);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -16038,9 +16147,11 @@ const Megaphone = createLucideIcon("megaphone", __iconNode$h);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$g = [
-  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
+  ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
+  ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
+  ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }]
 ];
-const MessageCircle = createLucideIcon("message-circle", __iconNode$g);
+const Music = createLucideIcon("music", __iconNode$g);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -16048,12 +16159,10 @@ const MessageCircle = createLucideIcon("message-circle", __iconNode$g);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$f = [
-  ["polyline", { points: "4 14 10 14 10 20", key: "11kfnr" }],
-  ["polyline", { points: "20 10 14 10 14 4", key: "rlmsce" }],
-  ["line", { x1: "14", x2: "21", y1: "10", y2: "3", key: "o5lafz" }],
-  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
+  ["rect", { x: "14", y: "4", width: "4", height: "16", rx: "1", key: "zuxfzm" }],
+  ["rect", { x: "6", y: "4", width: "4", height: "16", rx: "1", key: "1okwgv" }]
 ];
-const Minimize2 = createLucideIcon("minimize-2", __iconNode$f);
+const Pause = createLucideIcon("pause", __iconNode$f);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -16061,18 +16170,6 @@ const Minimize2 = createLucideIcon("minimize-2", __iconNode$f);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$e = [
-  ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
-  ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
-  ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }]
-];
-const Music = createLucideIcon("music", __iconNode$e);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$d = [
   [
     "path",
     {
@@ -16081,15 +16178,26 @@ const __iconNode$d = [
     }
   ]
 ];
-const Phone = createLucideIcon("phone", __iconNode$d);
+const Phone = createLucideIcon("phone", __iconNode$e);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$c = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
-const Play = createLucideIcon("play", __iconNode$c);
+const __iconNode$d = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
+const Play = createLucideIcon("play", __iconNode$d);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$c = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
+];
+const Plus = createLucideIcon("plus", __iconNode$c);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -16097,10 +16205,10 @@ const Play = createLucideIcon("play", __iconNode$c);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$b = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "M12 5v14", key: "s699le" }]
+  ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
+  ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
 ];
-const Plus = createLucideIcon("plus", __iconNode$b);
+const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$b);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -16108,17 +16216,6 @@ const Plus = createLucideIcon("plus", __iconNode$b);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$a = [
-  ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
-  ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
-];
-const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$a);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$9 = [
   [
     "path",
     {
@@ -16129,7 +16226,18 @@ const __iconNode$9 = [
   ["path", { d: "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7", key: "1ydtos" }],
   ["path", { d: "M7 3v4a1 1 0 0 0 1 1h7", key: "t51u73" }]
 ];
-const Save = createLucideIcon("save", __iconNode$9);
+const Save = createLucideIcon("save", __iconNode$a);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$9 = [
+  ["polygon", { points: "5 4 15 12 5 20 5 4", key: "16p6eg" }],
+  ["line", { x1: "19", x2: "19", y1: "5", y2: "19", key: "futhcm" }]
+];
+const SkipForward = createLucideIcon("skip-forward", __iconNode$9);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -19282,12 +19390,15 @@ function Navigation({ currentPage, onNavigate }) {
   const { t, language, toggleLanguage } = useLanguage();
   const {
     currentTrack: youtubeTrackUrl,
+    currentTrackTitle,
+    currentTrackArtist,
+    isPlaying,
     isMinimized,
     toggleMinimize,
     closePlayer: closeYouTubePlayer,
-    playlistUrl,
-    playlistIndex,
-    playlistShuffle
+    pauseTrack,
+    resumeTrack,
+    playNextInQueue
   } = usePlayer();
   const getEmbedUrl = (url) => {
     if (!url) return url;
@@ -19306,6 +19417,31 @@ function Navigation({ currentPage, onNavigate }) {
       return embedUrl2;
     }
     return url;
+  };
+  const handlePlayClick = () => {
+    if (!playerRef.current) return;
+    const player = playerRef.current;
+    try {
+      if (typeof player.playVideo === "function") {
+        player.playVideo();
+      }
+    } catch {
+    }
+    resumeTrack();
+  };
+  const handlePauseClick = () => {
+    if (!playerRef.current) return;
+    const player = playerRef.current;
+    try {
+      if (typeof player.pauseVideo === "function") {
+        player.pauseVideo();
+      }
+    } catch {
+    }
+    pauseTrack();
+  };
+  const handleNextClick = () => {
+    playNextInQueue();
   };
   getEmbedUrl(youtubeTrackUrl);
   const playerRef = reactExports.useRef(null);
@@ -19345,7 +19481,7 @@ function Navigation({ currentPage, onNavigate }) {
   reactExports.useEffect(() => {
     if (typeof window === "undefined") return;
     const w = window;
-    if (!youtubeTrackUrl && playlistIndex == null) {
+    if (!youtubeTrackUrl) {
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
         try {
           playerRef.current.destroy();
@@ -19372,6 +19508,13 @@ function Navigation({ currentPage, onNavigate }) {
         events: {
           onReady: () => {
             setPlayerReady(true);
+          },
+          onStateChange: (event) => {
+            const YT = w.YT;
+            if (!YT || !YT.PlayerState) return;
+            if (event.data === YT.PlayerState.ENDED) {
+              playNextInQueue();
+            }
           }
         }
       });
@@ -19393,46 +19536,26 @@ function Navigation({ currentPage, onNavigate }) {
         document.body.appendChild(tag);
       }
     }
-  }, [youtubeTrackUrl, playlistIndex]);
+  }, [youtubeTrackUrl, playNextInQueue]);
   reactExports.useEffect(() => {
     if (!playerRef.current) return;
     if (typeof window === "undefined") return;
     if (!playerReady) return;
     const player = playerRef.current;
-    if (playlistIndex != null && playlistUrl) {
-      let playlistId = null;
-      try {
-        const match = playlistUrl.match(/[?&]list=([^&]+)/);
-        playlistId = match ? match[1] : null;
-      } catch {
-        playlistId = null;
-      }
-      if (playlistId) {
-        try {
-          player.cuePlaylist({
-            listType: "playlist",
-            list: playlistId,
-            index: playlistIndex
-          });
-          if (typeof player.setShuffle === "function") {
-            player.setShuffle(!!playlistShuffle);
-          }
-          player.playVideo();
-          return;
-        } catch {
-        }
-      }
-    }
     if (youtubeTrackUrl) {
       try {
-        player.loadVideoByUrl(youtubeTrackUrl);
+        if (typeof player.loadVideoById === "function") {
+          player.loadVideoById(youtubeTrackUrl);
+        } else {
+          player.loadVideoByUrl(`https://www.youtube.com/watch?v=${youtubeTrackUrl}`);
+        }
         if (typeof player.playVideo === "function") {
           player.playVideo();
         }
       } catch {
       }
     }
-  }, [youtubeTrackUrl, playlistIndex, playlistUrl, playerReady]);
+  }, [youtubeTrackUrl, playerReady]);
   const handleDesktopPlayerMouseDown = (event) => {
     if (window.innerWidth < 768) {
       return;
@@ -19458,43 +19581,83 @@ function Navigation({ currentPage, onNavigate }) {
       {
         className: cn("container mx-auto py-0"),
         style: { paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" },
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex w-full flex-col gap-1 md:flex-col-reverse", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2", children: [
-          navItems.map((item) => {
-            const Icon2 = item.icon;
-            const isActive = currentPage === item.id;
-            return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full flex-col gap-1 md:flex-col-reverse", children: [
+          youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between px-3 pt-2 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
+              currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-text", children: currentTrackTitle }) })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ml-2 flex items-center gap-1.5", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: isPlaying ? handlePauseClick : handlePlayClick,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+                  children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleNextClick,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": t("Next song", "Siguiente canción"),
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-3.5 w-3.5" })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: toggleMinimize,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": t("Expand music player", "Expandir reproductor de música"),
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-3.5 w-3.5" })
+                }
+              )
+            ] })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2", children: [
+            navItems.map((item) => {
+              const Icon2 = item.icon;
+              const isActive = currentPage === item.id;
+              return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
+                {
+                  onClick: () => onNavigate(item.id),
+                  className: cn(
+                    "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
+                    isActive ? "text-red-500" : "text-neutral-400 hover:text-neutral-200"
+                  ),
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { className: cn("h-6 w-6 md:h-5 md:w-5", isActive && "text-red-500") }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium whitespace-nowrap md:text-sm", children: t(item.labelEn, item.labelEs) })
+                  ]
+                },
+                item.id
+              );
+            }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
               "button",
               {
-                onClick: () => onNavigate(item.id),
+                type: "button",
+                onClick: toggleLanguage,
                 className: cn(
-                  "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
-                  isActive ? "text-red-500" : "text-neutral-400 hover:text-neutral-200"
+                  "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
+                  "border border-transparent md:border-neutral-700 md:bg-neutral-900"
                 ),
+                "aria-label": language === "en" ? "Switch to Spanish" : "Cambiar a inglés",
                 children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { className: cn("h-6 w-6 md:h-5 md:w-5", isActive && "text-red-500") }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium whitespace-nowrap md:text-sm", children: t(item.labelEn, item.labelEs) })
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Languages, { className: "h-6 w-6 md:h-5 md:w-5" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium md:text-sm", children: language === "en" ? "ESP" : "ENG" })
                 ]
-              },
-              item.id
-            );
-          }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "button",
-            {
-              type: "button",
-              onClick: toggleLanguage,
-              className: cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
-                "border border-transparent md:border-neutral-700 md:bg-neutral-900"
-              ),
-              "aria-label": language === "en" ? "Switch to Spanish" : "Cambiar a inglés",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Languages, { className: "h-6 w-6 md:h-5 md:w-5" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium md:text-sm", children: language === "en" ? "ESP" : "ENG" })
-              ]
-            }
-          )
-        ] }) })
+              }
+            )
+          ] })
+        ] })
       }
     ),
     youtubeTrackUrl && /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -19515,13 +19678,36 @@ function Navigation({ currentPage, onNavigate }) {
             "div",
             {
               className: cn(
-                "flex items-center justify-between px-3 pt-2",
+                "flex items-center justify-between gap-3 px-3 pt-2",
                 isDesktop && "cursor-move"
               ),
               onMouseDown: isDesktop ? handleDesktopPlayerMouseDown : void 0,
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
+                  currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-text", children: currentTrackTitle }) })
+                ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: isPlaying ? handlePauseClick : handlePlayClick,
+                      className: "rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50",
+                      "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+                      children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" })
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: handleNextClick,
+                      className: "rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50",
+                      "aria-label": t("Next song", "Siguiente canción"),
+                      children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-3.5 w-3.5" })
+                    }
+                  ),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     "button",
                     {
@@ -19551,7 +19737,7 @@ function Navigation({ currentPage, onNavigate }) {
             {
               className: cn(
                 "mt-2 w-full overflow-hidden transition-all",
-                isMinimized ? "h-0" : isDesktop ? "aspect-video" : "h-32"
+                isMinimized ? "h-0" : isDesktop ? "aspect-video" : "h-40"
               ),
               children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: "global-music-player", className: "h-full w-full" })
             }
@@ -19559,19 +19745,39 @@ function Navigation({ currentPage, onNavigate }) {
         ] })
       }
     ),
-    youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "button",
-      {
-        type: "button",
-        onClick: toggleMinimize,
-        className: "hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg hover:border-neutral-500 hover:text-neutral-50",
-        "aria-label": t("Expand YouTube player", "Expandir reproductor de YouTube"),
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "whitespace-nowrap", children: "Music" })
-        ]
-      }
-    )
+    youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg", children: [
+      currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-[10rem] text-[0.7rem] text-neutral-100 marquee-container", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-text", children: currentTrackTitle }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: isPlaying ? handlePauseClick : handlePlayClick,
+          className: "rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+          "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+          children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: handleNextClick,
+          className: "rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+          "aria-label": t("Next song", "Siguiente canción"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-3.5 w-3.5" })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: toggleMinimize,
+          className: "rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+          "aria-label": t("Expand music player", "Expandir reproductor de YouTube"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-3.5 w-3.5" })
+        }
+      )
+    ] })
   ] });
 }
 function setRef(ref, value) {
@@ -29363,7 +29569,7 @@ function Media({ onStartMusic }) {
   const [sermons2, setSermons] = reactExports.useState([]);
   const [selectedSermonId, setSelectedSermonId] = reactExports.useState(null);
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
-  const { playTrack, playPlaylistFromIndex, playPlaylistShuffle, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, startQueue, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = reactExports.useState(false);
   const [isActuallyLive, setIsActuallyLive] = reactExports.useState(false);
   const [manualLiveOverride, setManualLiveOverride] = reactExports.useState(false);
@@ -29405,6 +29611,14 @@ function Media({ onStartMusic }) {
     };
     void loadPlaylistSongs();
   }, [playlistUrl]);
+  const sortedPlaylistSongs = reactExports.useMemo(
+    () => playlistSongs.slice().sort((a, b) => a.position - b.position),
+    [playlistSongs]
+  );
+  const sortedSongIds = reactExports.useMemo(
+    () => sortedPlaylistSongs.map((song) => song.id),
+    [sortedPlaylistSongs]
+  );
   reactExports.useEffect(() => {
     const loadSermons = async () => {
       try {
@@ -29937,7 +30151,16 @@ function Media({ onStartMusic }) {
         {
           type: "button",
           className: "bg-blue-600 hover:bg-blue-700",
-          onClick: () => playPlaylistShuffle(),
+          onClick: () => {
+            if (!sortedPlaylistSongs.length) return;
+            const shuffledSongs = sortedPlaylistSongs.slice().sort(() => Math.random() - 0.5);
+            const shuffledIds = shuffledSongs.map((song) => song.id);
+            const shuffledMeta = shuffledSongs.map((song) => ({
+              title: song.title,
+              artist: song.artist
+            }));
+            startQueue(shuffledIds, 0, shuffledMeta);
+          },
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "mr-2 h-4 w-4" }),
             t("Shuffle Worship Playlist", "Reproducir lista de adoración al azar")
@@ -29948,7 +30171,7 @@ function Media({ onStartMusic }) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Songs in this playlist", "Canciones en esta lista") }),
         loadingPlaylistSongs && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("Loading songs...", "Cargando canciones...") }),
         !loadingPlaylistSongs && playlistSongs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("No songs found for this playlist.", "No se encontraron canciones para esta lista.") }),
-        !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto", children: playlistSongs.slice().sort((a, b) => a.position - b.position).map((song) => {
+        !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden", children: sortedPlaylistSongs.map((song, index2) => {
           var _a2, _b2;
           const artist = ((_a2 = song.artist) == null ? void 0 : _a2.trim()) ?? "";
           const title = ((_b2 = song.title) == null ? void 0 : _b2.trim()) ?? "";
@@ -29957,10 +30180,17 @@ function Media({ onStartMusic }) {
             "button",
             {
               type: "button",
-              onClick: () => playPlaylistFromIndex(song.position),
+              onClick: () => {
+                if (!sortedSongIds.length) return;
+                const meta = sortedPlaylistSongs.map((s) => ({
+                  title: s.title,
+                  artist: s.artist
+                }));
+                startQueue(sortedSongIds, index2, meta);
+              },
               className: "flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80",
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate text-[0.8rem] font-medium text-white", children: title }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-container text-[0.8rem] font-medium text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-text", children: title }) }),
                 showArtist && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-0.5 truncate text-[0.7rem] text-neutral-400", children: artist })
               ]
             }

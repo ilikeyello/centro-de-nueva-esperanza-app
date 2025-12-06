@@ -896,14 +896,19 @@ export function Media({ onStartMusic }: MediaProps) {
               type="button"
               className="bg-blue-600 hover:bg-blue-700"
               onClick={() => {
-                if (!sortedSongIds.length) return;
+                if (!sortedPlaylistSongs.length) return;
 
-                // Create a shuffled queue of the song URLs.
-                const shuffled = sortedSongIds
+                const shuffledSongs = sortedPlaylistSongs
                   .slice()
                   .sort(() => Math.random() - 0.5);
 
-                startQueue(shuffled, 0);
+                const shuffledIds = shuffledSongs.map((song) => song.id);
+                const shuffledMeta = shuffledSongs.map((song) => ({
+                  title: song.title,
+                  artist: song.artist,
+                }));
+
+                startQueue(shuffledIds, 0, shuffledMeta);
               }}
             >
               <Play className="mr-2 h-4 w-4" />
@@ -925,7 +930,7 @@ export function Media({ onStartMusic }: MediaProps) {
               </p>
             )}
             {!loadingPlaylistSongs && playlistSongs.length > 0 && (
-              <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto">
+              <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden">
                 {sortedPlaylistSongs.map((song, index) => {
                     const artist = song.artist?.trim() ?? "";
                     const title = song.title?.trim() ?? "";
@@ -940,12 +945,16 @@ export function Media({ onStartMusic }: MediaProps) {
                           type="button"
                           onClick={() => {
                             if (!sortedSongIds.length) return;
-                            startQueue(sortedSongIds, index);
+                            const meta = sortedPlaylistSongs.map((s) => ({
+                              title: s.title,
+                              artist: s.artist,
+                            }));
+                            startQueue(sortedSongIds, index, meta);
                           }}
                           className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
                         >
-                          <span className="truncate text-[0.8rem] font-medium text-white">
-                            {title}
+                          <span className="marquee-container text-[0.8rem] font-medium text-white">
+                            <span className="marquee-text">{title}</span>
                           </span>
                           {showArtist && (
                             <span className="mt-0.5 truncate text-[0.7rem] text-neutral-400">
