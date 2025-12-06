@@ -275,7 +275,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       {youtubeTrackUrl && (
         <div
           className={cn(
-            "fixed z-40 w-80 transition-all",
+            "fixed z-60 w-80 transition-all",
             isMinimized && "pointer-events-none opacity-0"
           )}
           style={{ top: desktopPlayerPosition.top, right: desktopPlayerPosition.right }}
