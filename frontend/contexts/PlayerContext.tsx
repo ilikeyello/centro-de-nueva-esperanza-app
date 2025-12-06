@@ -56,6 +56,7 @@ interface PlayerContextType {
   startQueue: (urls: string[], startIndex: number) => void;
   playNextInQueue: () => void;
   pauseTrack: () => void;
+  resumeTrack: () => void;
   toggleMinimize: () => void;
   closePlayer: () => void;
   setPlaylistUrl: (url: string) => void;
@@ -226,6 +227,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const pauseTrack = () => setIsPlaying(false);
 
+   const resumeTrack = () => {
+    if (!currentTrack) return;
+    setIsPlaying(true);
+  };
+
   const toggleMinimize = () => setIsMinimized((prev) => !prev);
 
   const closePlayer = () => {
@@ -282,6 +288,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         startQueue,
         playNextInQueue,
         pauseTrack,
+        resumeTrack,
         toggleMinimize,
         closePlayer,
         setPlaylistUrl,

@@ -3,6 +3,8 @@ import {
   Home,
   Megaphone,
   Play,
+  Pause,
+  SkipForward,
   Gamepad2,
   Languages,
   MessageCircle,
@@ -23,9 +25,12 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const { t, language, toggleLanguage } = useLanguage();
   const {
     currentTrack: youtubeTrackUrl,
+    isPlaying,
     isMinimized,
     toggleMinimize,
     closePlayer: closeYouTubePlayer,
+    pauseTrack,
+    resumeTrack,
     playNextInQueue,
   } = usePlayer();
 
@@ -56,6 +61,32 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     }
     
     return url;
+  };
+
+  const handlePlayClick = () => {
+    if (!playerRef.current) return;
+    const player = playerRef.current as any;
+    try {
+      if (typeof player.playVideo === "function") {
+        player.playVideo();
+      }
+    } catch {}
+    resumeTrack();
+  };
+
+  const handlePauseClick = () => {
+    if (!playerRef.current) return;
+    const player = playerRef.current as any;
+    try {
+      if (typeof player.pauseVideo === "function") {
+        player.pauseVideo();
+      }
+    } catch {}
+    pauseTrack();
+  };
+
+  const handleNextClick = () => {
+    playNextInQueue();
   };
 
   const embedUrl = getEmbedUrl(youtubeTrackUrl);
@@ -270,6 +301,40 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               <Languages className="h-6 w-6 md:h-5 md:w-5" />
               <span className="text-xs font-medium md:text-sm">{language === "en" ? "ESP" : "ENG"}</span>
             </button>
+
+            {/* Mobile-only minimized music controls inside the navbar */}
+            {youtubeTrackUrl && isMinimized && (
+              <div className="flex items-center gap-1 md:hidden">
+                <button
+                  type="button"
+                  onClick={isPlaying ? handlePauseClick : handlePlayClick}
+                  className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                  aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
+                >
+                  {isPlaying ? (
+                    <Pause className="h-3.5 w-3.5" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextClick}
+                  className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                  aria-label={t("Next song", "Siguiente canción")}
+                >
+                  <SkipForward className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleMinimize}
+                  className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                  aria-label={t("Expand music player", "Expandir reproductor de música")}
+                >
+                  <Maximize2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -306,6 +371,26 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={isPlaying ? handlePauseClick : handlePlayClick}
+                  className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
+                  aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
+                >
+                  {isPlaying ? (
+                    <Pause className="h-3.5 w-3.5" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextClick}
+                  className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
+                  aria-label={t("Next song", "Siguiente canción")}
+                >
+                  <SkipForward className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
                   onClick={toggleMinimize}
                   className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
                   aria-label={t("Minimize music player", "Minimizar reproductor de música")}
@@ -338,7 +423,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         <button
           type="button"
           onClick={toggleMinimize}
-          className="flex fixed right-4 bottom-4 z-50 items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg hover:border-neutral-500 hover:text-neutral-50"
+          className="hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg hover:border-neutral-500 hover:text-neutral-50"
           aria-label={t("Expand YouTube player", "Expandir reproductor de YouTube")}
         >
           <Play className="h-3.5 w-3.5" />
