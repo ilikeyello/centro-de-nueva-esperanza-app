@@ -907,10 +907,20 @@ export function Media({ onStartMusic }: MediaProps) {
                   .slice()
                   .sort((a, b) => a.position - b.position)
                   .map((song) => {
-                    // Play each song as its own standalone embed so selecting a song
-                    // always switches the mini player to that exact track and starts
-                    // playing immediately.
-                    const songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
+                    // Try to keep playback inside the playlist so when this song
+                    // finishes, the rest of the playlist continues.
+                    let playlistId: string | null = null;
+                    try {
+                      const match = playlistUrl?.match(/[?&]list=([^&]+)/);
+                      playlistId = match ? match[1] : null;
+                    } catch {
+                      playlistId = null;
+                    }
+
+                    let songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
+                    if (playlistId) {
+                      songUrl = `https://www.youtube.com/embed/${song.id}?list=${playlistId}&autoplay=1&enablejsapi=1`;
+                    }
 
                     const artist = song.artist?.trim() ?? "";
                     const title = song.title?.trim() ?? "";
