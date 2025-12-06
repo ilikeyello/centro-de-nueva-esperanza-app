@@ -15381,6 +15381,7 @@ function PlayerProvider({ children }) {
   const toggleMinimize = () => setIsMinimized((prev) => !prev);
   const closePlayer = () => {
     setCurrentTrack(null);
+    setPlaylistIndex(null);
     setIsPlaying(false);
     setIsMinimized(false);
   };
@@ -19318,8 +19319,17 @@ function Navigation({ currentPage, onNavigate }) {
   }, [dragState]);
   reactExports.useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!youtubeTrackUrl && playlistIndex == null) return;
     const w = window;
+    if (!youtubeTrackUrl && playlistIndex == null) {
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        try {
+          playerRef.current.destroy();
+        } catch {
+        }
+      }
+      playerRef.current = null;
+      return;
+    }
     const createPlayer = () => {
       if (!w.YT || !w.YT.Player) return;
       if (playerRef.current) return;

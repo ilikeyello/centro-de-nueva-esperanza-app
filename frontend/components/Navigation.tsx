@@ -97,11 +97,24 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     };
   }, [dragState]);
 
+  // Create/destroy the global YouTube IFrame Player instance
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!youtubeTrackUrl && playlistIndex == null) return;
 
     const w = window as any;
+
+    // When there is no active track and no playlist index, tear down the player
+    if (!youtubeTrackUrl && playlistIndex == null) {
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        try {
+          playerRef.current.destroy();
+        } catch {
+          // ignore
+        }
+      }
+      playerRef.current = null;
+      return;
+    }
 
     const createPlayer = () => {
       if (!w.YT || !w.YT.Player) return;

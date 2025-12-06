@@ -172,6 +172,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const closePlayer = () => {
     setCurrentTrack(null);
+    setPlaylistIndex(null);
     setIsPlaying(false);
     setIsMinimized(false);
   };
