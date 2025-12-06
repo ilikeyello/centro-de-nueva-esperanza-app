@@ -19492,6 +19492,14 @@ function Navigation({ currentPage, onNavigate }) {
       setPlayerReady(false);
       return;
     }
+    if (playerRef.current && typeof playerRef.current.destroy === "function") {
+      try {
+        playerRef.current.destroy();
+      } catch {
+      }
+      playerRef.current = null;
+      setPlayerReady(false);
+    }
     const createPlayer = () => {
       if (!w.YT || !w.YT.Player) return;
       if (playerRef.current) return;
@@ -19536,7 +19544,7 @@ function Navigation({ currentPage, onNavigate }) {
         document.body.appendChild(tag);
       }
     }
-  }, [youtubeTrackUrl, playNextInQueue]);
+  }, [youtubeTrackUrl, playNextInQueue, isDesktop]);
   reactExports.useEffect(() => {
     if (!playerRef.current) return;
     if (typeof window === "undefined") return;
@@ -19586,6 +19594,7 @@ function Navigation({ currentPage, onNavigate }) {
           youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between px-3 pt-1.5 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-inner", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-w-0 flex-1 max-w-[65%]", children: currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
             ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ml-2 flex flex-shrink-0 items-center gap-1.5", children: [
@@ -19627,6 +19636,7 @@ function Navigation({ currentPage, onNavigate }) {
                 /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
                 currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
                 ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) })
               ] }),
@@ -19659,6 +19669,16 @@ function Navigation({ currentPage, onNavigate }) {
                     className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
                     "aria-label": t("Minimize music player", "Minimizar reproductor de música"),
                     children: /* @__PURE__ */ jsxRuntimeExports.jsx(Minimize2, { className: "h-4 w-4" })
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: closeYouTubePlayer,
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-red-500 hover:text-red-400",
+                    "aria-label": t("Close music player", "Cerrar reproductor de música"),
+                    children: "×"
                   }
                 )
               ] })
@@ -19732,6 +19752,7 @@ function Navigation({ currentPage, onNavigate }) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
                   currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
                   ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) })
                 ] }),
@@ -19796,6 +19817,7 @@ function Navigation({ currentPage, onNavigate }) {
     youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg", children: [
       currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-[10rem] text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
       ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(

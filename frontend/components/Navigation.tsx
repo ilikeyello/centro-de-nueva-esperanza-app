@@ -165,6 +165,16 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       return;
     }
 
+    if (playerRef.current && typeof playerRef.current.destroy === "function") {
+      try {
+        playerRef.current.destroy();
+      } catch {
+        // ignore
+      }
+      playerRef.current = null;
+      setPlayerReady(false);
+    }
+
     const createPlayer = () => {
       if (!w.YT || !w.YT.Player) return;
       if (playerRef.current) return;
@@ -213,7 +223,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         document.body.appendChild(tag);
       }
     }
-  }, [youtubeTrackUrl, playNextInQueue]);
+  }, [youtubeTrackUrl, playNextInQueue, isDesktop]);
 
   useEffect(() => {
     if (!playerRef.current) return;
@@ -284,6 +294,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                           <span className="marquee-item" aria-hidden="true">
                             {currentTrackTitle}
                           </span>
+                          <span className="marquee-item" aria-hidden="true">
+                            {currentTrackTitle}
+                          </span>
                         </div>
                       ) : (
                         <span className="marquee-item truncate">
@@ -343,6 +356,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                           <span className="marquee-item" aria-hidden="true">
                             {currentTrackTitle}
                           </span>
+                          <span className="marquee-item" aria-hidden="true">
+                            {currentTrackTitle}
+                          </span>
                         </div>
                       ) : (
                         <span className="marquee-item truncate">
@@ -380,6 +396,14 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     aria-label={t("Minimize music player", "Minimizar reproductor de música")}
                   >
                     <Minimize2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeYouTubePlayer}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-red-500 hover:text-red-400"
+                    aria-label={t("Close music player", "Cerrar reproductor de música")}
+                  >
+                    ×
                   </button>
                 </div>
               </div>
@@ -465,6 +489,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                         <span className="marquee-item" aria-hidden="true">
                           {currentTrackTitle}
                         </span>
+                        <span className="marquee-item" aria-hidden="true">
+                          {currentTrackTitle}
+                        </span>
                       </div>
                     ) : (
                       <span className="marquee-item truncate">
@@ -532,6 +559,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               {shouldScrollTitle ? (
                 <div className="marquee-track">
                   <span className="marquee-item">{currentTrackTitle}</span>
+                  <span className="marquee-item" aria-hidden="true">
+                    {currentTrackTitle}
+                  </span>
                   <span className="marquee-item" aria-hidden="true">
                     {currentTrackTitle}
                   </span>
