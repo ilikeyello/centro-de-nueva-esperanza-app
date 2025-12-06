@@ -19583,7 +19583,7 @@ function Navigation({ currentPage, onNavigate }) {
         className: cn("container mx-auto py-0"),
         style: { paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" },
         children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full flex-col gap-1 md:flex-col-reverse", children: [
-          youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between px-3 pt-2 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner", children: [
+          youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between px-3 pt-1.5 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-inner", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-w-0 flex-1 max-w-[65%]", children: currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
@@ -30178,7 +30178,7 @@ function Media({ onStartMusic }) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Songs in this playlist", "Canciones en esta lista") }),
         loadingPlaylistSongs && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("Loading songs...", "Cargando canciones...") }),
         !loadingPlaylistSongs && playlistSongs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("No songs found for this playlist.", "No se encontraron canciones para esta lista.") }),
-        !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden", children: sortedPlaylistSongs.map((song, index2) => {
+        !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden md:max-h-none md:overflow-visible", children: sortedPlaylistSongs.map((song, index2) => {
           var _a2, _b2;
           const artist = ((_a2 = song.artist) == null ? void 0 : _a2.trim()) ?? "";
           const title = ((_b2 = song.title) == null ? void 0 : _b2.trim()) ?? "";

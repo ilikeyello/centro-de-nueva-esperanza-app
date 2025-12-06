@@ -2310,6 +2310,10 @@
     padding-top: calc(var(--spacing) * 0);
   }
 
+  .pt-1\.5 {
+    padding-top: calc(var(--spacing) * 1.5);
+  }
+
   .pt-2 {
     padding-top: calc(var(--spacing) * 2);
   }
@@ -3834,6 +3838,10 @@
       height: auto;
     }
 
+    .md\:max-h-none {
+      max-height: none;
+    }
+
     .md\:w-5 {
       width: calc(var(--spacing) * 5);
     }
@@ -4466,7 +4474,7 @@
 .marquee-track {
   will-change: transform;
   min-width: 200%;
-  animation: 20s linear infinite cne-marquee;
+  animation: 26s linear infinite cne-marquee;
   display: inline-flex;
 }
 

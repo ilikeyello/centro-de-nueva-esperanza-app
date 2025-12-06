@@ -272,8 +272,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       >
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
           {youtubeTrackUrl && isMinimized && (
-            <div className="flex items-center justify-between px-3 pt-2 md:hidden">
-              <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner">
+            <div className="flex items-center justify-between px-3 pt-1.5 md:hidden">
+              <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-inner">
                 <div className="min-w-0 flex-1 max-w-[65%]">
                   {currentTrackTitle && (
                     <div className="max-w-full text-[0.7rem] text-neutral-100 marquee-container">

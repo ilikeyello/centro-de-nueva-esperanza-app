@@ -930,7 +930,7 @@ export function Media({ onStartMusic }: MediaProps) {
               </p>
             )}
             {!loadingPlaylistSongs && playlistSongs.length > 0 && (
-              <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden">
+              <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden md:max-h-none md:overflow-visible">
                 {sortedPlaylistSongs.map((song, index) => {
                     const artist = song.artist?.trim() ?? "";
                     const title = song.title?.trim() ?? "";
