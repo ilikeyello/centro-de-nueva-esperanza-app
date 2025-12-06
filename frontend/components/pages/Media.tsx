@@ -907,25 +907,9 @@ export function Media({ onStartMusic }: MediaProps) {
                   .slice()
                   .sort((a, b) => a.position - b.position)
                   .map((song) => {
-                    // Try to keep playback inside the playlist so when this song
-                    // finishes, the rest of the playlist continues.
-                    let playlistId: string | null = null;
-                    try {
-                      const match = playlistUrl?.match(/[?&]list=([^&]+)/);
-                      playlistId = match ? match[1] : null;
-                    } catch {
-                      playlistId = null;
-                    }
-
-                    // Default: play just this video.
-                    let songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
-
-                    // If we know the playlist, use a playlist embed starting at this
-                    // song's position so the rest of the playlist will continue.
-                    if (playlistId) {
-                      const index = Number.isFinite(song.position) ? song.position : 0;
-                      songUrl = `https://www.youtube.com/embed/videoseries?list=${playlistId}&index=${index}&autoplay=1&enablejsapi=1`;
-                    }
+                    // Focus on reliably playing the exact song that was clicked.
+                    // Use a per-video embed URL with autoplay.
+                    const songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
 
                     const artist = song.artist?.trim() ?? "";
                     const title = song.title?.trim() ?? "";

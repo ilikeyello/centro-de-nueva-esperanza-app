@@ -29886,18 +29886,7 @@ function Media({ onStartMusic }) {
         !loadingPlaylistSongs && playlistSongs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("No songs found for this playlist.", "No se encontraron canciones para esta lista.") }),
         !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto", children: playlistSongs.slice().sort((a, b) => a.position - b.position).map((song) => {
           var _a2, _b2;
-          let playlistId = null;
-          try {
-            const match = playlistUrl == null ? void 0 : playlistUrl.match(/[?&]list=([^&]+)/);
-            playlistId = match ? match[1] : null;
-          } catch {
-            playlistId = null;
-          }
-          let songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
-          if (playlistId) {
-            const index2 = Number.isFinite(song.position) ? song.position : 0;
-            songUrl = `https://www.youtube.com/embed/videoseries?list=${playlistId}&index=${index2}&autoplay=1&enablejsapi=1`;
-          }
+          const songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
           const artist = ((_a2 = song.artist) == null ? void 0 : _a2.trim()) ?? "";
           const title = ((_b2 = song.title) == null ? void 0 : _b2.trim()) ?? "";
           const showArtist = artist.length > 0 && artist.toLowerCase() !== title.toLowerCase() && !title.toLowerCase().includes(artist.toLowerCase());

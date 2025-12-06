@@ -42,6 +42,7 @@ export default function MiniPlayer() {
 
       <div className={isMinimized ? "hidden" : "block"}>
         <iframe
+          key={currentTrack}
           src={currentTrack}
           title="YouTube player"
           className="h-[180px] w-full"
