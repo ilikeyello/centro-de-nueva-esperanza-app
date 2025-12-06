@@ -178,11 +178,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
       if (playlistId) {
         try {
-          player.loadPlaylist({
-            listType: "playlist",
-            list: playlistId,
-            index: playlistIndex,
-          });
+          // Use cuePlaylist + playVideo instead of loadPlaylist for more reliable
+          // first-load behavior when starting from a specific index.
+          player.cuePlaylist(playlistId, playlistIndex);
+          player.playVideo();
           return;
         } catch {
         }
