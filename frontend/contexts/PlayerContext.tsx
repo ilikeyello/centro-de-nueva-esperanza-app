@@ -40,6 +40,7 @@ function normalizeLivestreamUrl(raw: string, fallback: string): string {
 }
 
 interface PlayerContextType {
+  // currentTrack and queue entries are YouTube video IDs when used for music playback.
   currentTrack: string | null;
   isPlaying: boolean;
   isMinimized: boolean;

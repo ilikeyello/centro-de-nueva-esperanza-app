@@ -191,7 +191,13 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
     if (youtubeTrackUrl) {
       try {
-        player.loadVideoByUrl(youtubeTrackUrl);
+        // Treat currentTrack as a YouTube video ID and use loadVideoById
+        if (typeof player.loadVideoById === "function") {
+          player.loadVideoById(youtubeTrackUrl);
+        } else {
+          // Fallback to URL-based loading if needed
+          player.loadVideoByUrl(`https://www.youtube.com/watch?v=${youtubeTrackUrl}`);
+        }
         if (typeof player.playVideo === "function") {
           player.playVideo();
         }

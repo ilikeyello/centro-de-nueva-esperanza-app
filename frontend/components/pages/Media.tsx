@@ -137,11 +137,9 @@ export function Media({ onStartMusic }: MediaProps) {
     [playlistSongs]
   );
 
-  const sortedSongUrls = useMemo(
+  const sortedSongIds = useMemo(
     () =>
-      sortedPlaylistSongs.map((song) =>
-        `https://www.youtube.com/watch?v=${song.id}`
-      ),
+      sortedPlaylistSongs.map((song) => song.id),
     [sortedPlaylistSongs]
   );
 
@@ -898,10 +896,10 @@ export function Media({ onStartMusic }: MediaProps) {
               type="button"
               className="bg-blue-600 hover:bg-blue-700"
               onClick={() => {
-                if (!sortedSongUrls.length) return;
+                if (!sortedSongIds.length) return;
 
                 // Create a shuffled queue of the song URLs.
-                const shuffled = sortedSongUrls
+                const shuffled = sortedSongIds
                   .slice()
                   .sort(() => Math.random() - 0.5);
 
@@ -941,8 +939,8 @@ export function Media({ onStartMusic }: MediaProps) {
                         <button
                           type="button"
                           onClick={() => {
-                            if (!sortedSongUrls.length) return;
-                            startQueue(sortedSongUrls, index);
+                            if (!sortedSongIds.length) return;
+                            startQueue(sortedSongIds, index);
                           }}
                           className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
                         >
