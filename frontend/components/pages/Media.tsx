@@ -954,7 +954,18 @@ export function Media({ onStartMusic }: MediaProps) {
                           className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
                         >
                           <span className="marquee-container text-[0.8rem] font-medium text-white">
-                            <span className="marquee-text">{title}</span>
+                            {title.length > 24 ? (
+                              <span className="marquee-track">
+                                <span className="marquee-item">{title}</span>
+                                <span className="marquee-item" aria-hidden="true">
+                                  {title}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="marquee-item truncate">
+                                {title}
+                              </span>
+                            )}
                           </span>
                           {showArtist && (
                             <span className="mt-0.5 truncate text-[0.7rem] text-neutral-400">

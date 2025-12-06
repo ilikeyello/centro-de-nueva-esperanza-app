@@ -262,6 +262,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     { id: "games", icon: Gamepad2, labelEn: "Games", labelEs: "Juegos" },
   ];
 
+  const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur transition-transform md:sticky md:top-0 md:border-b md:border-t-0">
       <div
@@ -271,18 +273,26 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
           {youtubeTrackUrl && isMinimized && (
             <div className="flex items-center justify-between px-3 pt-2 md:hidden">
-              <div className="flex flex-1 items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner">
-                <div className="min-w-0 flex-1">
-                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                    {t("Music", "Música")}
-                  </span>
+              <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner">
+                <div className="min-w-0 flex-1 max-w-[65%]">
                   {currentTrackTitle && (
-                    <div className="mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container">
-                      <span className="marquee-text">{currentTrackTitle}</span>
+                    <div className="max-w-full text-[0.7rem] text-neutral-100 marquee-container">
+                      {shouldScrollTitle ? (
+                        <div className="marquee-track">
+                          <span className="marquee-item">{currentTrackTitle}</span>
+                          <span className="marquee-item" aria-hidden="true">
+                            {currentTrackTitle}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="marquee-item truncate">
+                          {currentTrackTitle}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
-                <div className="ml-2 flex items-center gap-1.5">
+                <div className="ml-2 flex flex-shrink-0 items-center gap-1.5">
                   <button
                     type="button"
                     onClick={isPlaying ? handlePauseClick : handlePlayClick}
@@ -386,7 +396,18 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 </span>
                 {currentTrackTitle && (
                   <div className="mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container">
-                    <span className="marquee-text">{currentTrackTitle}</span>
+                    {shouldScrollTitle ? (
+                      <div className="marquee-track">
+                        <span className="marquee-item">{currentTrackTitle}</span>
+                        <span className="marquee-item" aria-hidden="true">
+                          {currentTrackTitle}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="marquee-item truncate">
+                        {currentTrackTitle}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -445,7 +466,18 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         <div className="hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg">
           {currentTrackTitle && (
             <div className="max-w-[10rem] text-[0.7rem] text-neutral-100 marquee-container">
-              <span className="marquee-text">{currentTrackTitle}</span>
+              {shouldScrollTitle ? (
+                <div className="marquee-track">
+                  <span className="marquee-item">{currentTrackTitle}</span>
+                  <span className="marquee-item" aria-hidden="true">
+                    {currentTrackTitle}
+                  </span>
+                </div>
+              ) : (
+                <span className="marquee-item truncate">
+                  {currentTrackTitle}
+                </span>
+              )}
             </div>
           )}
           <button

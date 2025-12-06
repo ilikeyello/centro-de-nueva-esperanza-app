@@ -973,10 +973,6 @@
     height: calc(var(--spacing) * 24);
   }
 
-  .h-32 {
-    height: calc(var(--spacing) * 32);
-  }
-
   .h-40 {
     height: calc(var(--spacing) * 40);
   }
@@ -1159,6 +1155,10 @@
 
   .max-w-\[10rem\] {
     max-width: 10rem;
+  }
+
+  .max-w-\[65\%\] {
+    max-width: 65%;
   }
 
   .max-w-\[90vw\] {
@@ -1951,16 +1951,6 @@
   @supports (color: color-mix(in lab, red, red)) {
     .bg-neutral-900\/90 {
       background-color: color-mix(in oklab, var(--color-neutral-900) 90%, transparent);
-    }
-  }
-
-  .bg-neutral-900\/95 {
-    background-color: #171717f2;
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-neutral-900\/95 {
-      background-color: color-mix(in oklab, var(--color-neutral-900) 95%, transparent);
     }
   }
 
@@ -4473,10 +4463,16 @@
   overflow: hidden;
 }
 
-.marquee-text {
+.marquee-track {
   will-change: transform;
-  min-width: 100%;
-  animation: 14s linear infinite cne-marquee;
+  min-width: 200%;
+  animation: 20s linear infinite cne-marquee;
+  display: inline-flex;
+}
+
+.marquee-item {
+  white-space: nowrap;
+  padding-right: 2rem;
   display: inline-block;
 }
 
@@ -4486,7 +4482,7 @@
   }
 
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 

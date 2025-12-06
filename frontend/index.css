@@ -312,11 +312,17 @@
   white-space: nowrap;
 }
 
-.marquee-text {
-  display: inline-block;
-  min-width: 100%;
+.marquee-track {
+  display: inline-flex;
+  min-width: 200%;
   will-change: transform;
-  animation: cne-marquee 14s linear infinite;
+  animation: cne-marquee 20s linear infinite;
+}
+
+.marquee-item {
+  display: inline-block;
+  padding-right: 2rem;
+  white-space: nowrap;
 }
 
 @keyframes cne-marquee {
@@ -324,6 +330,6 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
