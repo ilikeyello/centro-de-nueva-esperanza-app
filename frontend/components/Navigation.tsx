@@ -26,9 +26,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     isMinimized,
     toggleMinimize,
     closePlayer: closeYouTubePlayer,
-    playlistUrl,
-    playlistIndex,
-    playlistShuffle,
+    playNextInQueue,
   } = usePlayer();
 
   // Convert YouTube playlist URL to embed format for iframe
@@ -120,8 +118,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
     const w = window as any;
 
-    // When there is no active track and no playlist index, tear down the player
-    if (!youtubeTrackUrl && playlistIndex == null) {
+    // When there is no active track, tear down the player
+    if (!youtubeTrackUrl) {
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
         try {
           playerRef.current.destroy();
@@ -152,6 +150,14 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           onReady: () => {
             setPlayerReady(true);
           },
+          onStateChange: (event: any) => {
+            const YT = w.YT;
+            if (!YT || !YT.PlayerState) return;
+            // When the current video finishes, advance our own queue.
+            if (event.data === YT.PlayerState.ENDED) {
+              playNextInQueue();
+            }
+          },
         },
       });
     };
@@ -174,7 +180,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         document.body.appendChild(tag);
       }
     }
-  }, [youtubeTrackUrl, playlistIndex]);
+  }, [youtubeTrackUrl, playNextInQueue]);
 
   useEffect(() => {
     if (!playerRef.current) return;
@@ -182,34 +188,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     if (!playerReady) return;
 
     const player = playerRef.current as any;
-
-    if (playlistIndex != null && playlistUrl) {
-      let playlistId: string | null = null;
-      try {
-        const match = playlistUrl.match(/[?&]list=([^&]+)/);
-        playlistId = match ? match[1] : null;
-      } catch {
-        playlistId = null;
-      }
-
-      if (playlistId) {
-        try {
-          // Use the object form of cuePlaylist which explicitly specifies
-          // that we're loading a playlist by ID.
-          player.cuePlaylist({
-            listType: "playlist",
-            list: playlistId,
-            index: playlistIndex,
-          });
-          if (typeof player.setShuffle === "function") {
-            player.setShuffle(!!playlistShuffle);
-          }
-          player.playVideo();
-          return;
-        } catch {
-        }
-      }
-    }
 
     if (youtubeTrackUrl) {
       try {
@@ -220,7 +198,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       } catch {
       }
     }
-  }, [youtubeTrackUrl, playlistIndex, playlistUrl, playerReady]);
+  }, [youtubeTrackUrl, playerReady]);
 
   const handleDesktopPlayerMouseDown = (event: any) => {
     if (window.innerWidth < 768) {
@@ -354,7 +332,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         <button
           type="button"
           onClick={toggleMinimize}
-          className="hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg hover:border-neutral-500 hover:text-neutral-50"
+          className="flex fixed right-4 bottom-4 z-50 items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg hover:border-neutral-500 hover:text-neutral-50"
           aria-label={t("Expand YouTube player", "Expandir reproductor de YouTube")}
         >
           <Play className="h-3.5 w-3.5" />

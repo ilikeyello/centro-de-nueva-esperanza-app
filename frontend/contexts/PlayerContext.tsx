@@ -47,9 +47,13 @@ interface PlayerContextType {
   livestreamUrl: string;
   playlistIndex: number | null;
   playlistShuffle: boolean;
+  queue: string[];
+  queueIndex: number | null;
   playTrack: (url: string) => void;
   playPlaylistFromIndex: (index: number) => void;
   playPlaylistShuffle: () => void;
+  startQueue: (urls: string[], startIndex: number) => void;
+  playNextInQueue: () => void;
   pauseTrack: () => void;
   toggleMinimize: () => void;
   closePlayer: () => void;
@@ -65,6 +69,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [playlistIndex, setPlaylistIndex] = useState<number | null>(null);
   const [playlistShuffle, setPlaylistShuffle] = useState(false);
+  const [queue, setQueue] = useState<string[]>([]);
+  const [queueIndex, setQueueIndex] = useState<number | null>(null);
 
   const defaultPlaylistUrl =
     "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
@@ -158,6 +164,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCurrentTrack(url);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
+    setQueue([]);
+    setQueueIndex(null);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -179,6 +187,42 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIsMinimized(false);
   };
 
+  const startQueue = (urls: string[], startIndex: number) => {
+    const safeUrls = Array.isArray(urls) ? urls.filter((u) => typeof u === "string" && u.trim().length > 0) : [];
+    if (safeUrls.length === 0) {
+      return;
+    }
+
+    const maxIndex = safeUrls.length - 1;
+    const clampedIndex = Math.min(Math.max(0, Math.floor(startIndex || 0)), maxIndex);
+
+    setQueue(safeUrls);
+    setQueueIndex(clampedIndex);
+    setPlaylistIndex(null);
+    setPlaylistShuffle(false);
+    setCurrentTrack(safeUrls[clampedIndex]);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+
+  const playNextInQueue = () => {
+    if (!queue || queue.length === 0) return;
+    if (queueIndex == null) return;
+
+    const nextIndex = queueIndex + 1;
+    if (nextIndex >= queue.length) {
+      // Reached end of queue; stop playback.
+      setCurrentTrack(null);
+      setQueueIndex(null);
+      setIsPlaying(false);
+      return;
+    }
+
+    setQueueIndex(nextIndex);
+    setCurrentTrack(queue[nextIndex]);
+    setIsPlaying(true);
+  };
+
   const pauseTrack = () => setIsPlaying(false);
 
   const toggleMinimize = () => setIsMinimized((prev) => !prev);
@@ -187,6 +231,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCurrentTrack(null);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
+    setQueue([]);
+    setQueueIndex(null);
     setIsPlaying(false);
     setIsMinimized(false);
   };
@@ -227,9 +273,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         livestreamUrl,
         playlistIndex,
         playlistShuffle,
+        queue,
+        queueIndex,
         playTrack,
         playPlaylistFromIndex,
         playPlaylistShuffle,
+        startQueue,
+        playNextInQueue,
         pauseTrack,
         toggleMinimize,
         closePlayer,

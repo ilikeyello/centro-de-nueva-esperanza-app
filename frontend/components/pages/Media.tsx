@@ -71,7 +71,7 @@ export function Media({ onStartMusic }: MediaProps) {
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
-  const { playTrack, playPlaylistFromIndex, playPlaylistShuffle, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, startQueue, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
   const [manualLiveOverride, setManualLiveOverride] = useState(false);
@@ -128,6 +128,22 @@ export function Media({ onStartMusic }: MediaProps) {
 
     void loadPlaylistSongs();
   }, [playlistUrl]);
+
+  const sortedPlaylistSongs = useMemo(
+    () =>
+      playlistSongs
+        .slice()
+        .sort((a, b) => a.position - b.position),
+    [playlistSongs]
+  );
+
+  const sortedSongUrls = useMemo(
+    () =>
+      sortedPlaylistSongs.map((song) =>
+        `https://www.youtube.com/watch?v=${song.id}`
+      ),
+    [sortedPlaylistSongs]
+  );
 
   useEffect(() => {
     const loadSermons = async () => {
@@ -881,7 +897,16 @@ export function Media({ onStartMusic }: MediaProps) {
             <Button
               type="button"
               className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => playPlaylistShuffle()}
+              onClick={() => {
+                if (!sortedSongUrls.length) return;
+
+                // Create a shuffled queue of the song URLs.
+                const shuffled = sortedSongUrls
+                  .slice()
+                  .sort(() => Math.random() - 0.5);
+
+                startQueue(shuffled, 0);
+              }}
             >
               <Play className="mr-2 h-4 w-4" />
               {t("Shuffle Worship Playlist", "Reproducir lista de adoración al azar")}
@@ -903,10 +928,7 @@ export function Media({ onStartMusic }: MediaProps) {
             )}
             {!loadingPlaylistSongs && playlistSongs.length > 0 && (
               <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto">
-                {playlistSongs
-                  .slice()
-                  .sort((a, b) => a.position - b.position)
-                  .map((song) => {
+                {sortedPlaylistSongs.map((song, index) => {
                     const artist = song.artist?.trim() ?? "";
                     const title = song.title?.trim() ?? "";
                     const showArtist =
@@ -918,7 +940,10 @@ export function Media({ onStartMusic }: MediaProps) {
                       <li key={song.id}>
                         <button
                           type="button"
-                          onClick={() => playPlaylistFromIndex(song.position)}
+                          onClick={() => {
+                            if (!sortedSongUrls.length) return;
+                            startQueue(sortedSongUrls, index);
+                          }}
                           className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
                         >
                           <span className="truncate text-[0.8rem] font-medium text-white">
