@@ -195,6 +195,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     if (youtubeTrackUrl) {
       try {
         player.loadVideoByUrl(youtubeTrackUrl);
+        if (typeof player.playVideo === "function") {
+          player.playVideo();
+        }
       } catch {
       }
     }
