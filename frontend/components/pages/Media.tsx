@@ -917,9 +917,14 @@ export function Media({ onStartMusic }: MediaProps) {
                       playlistId = null;
                     }
 
+                    // Default: play just this video.
                     let songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
+
+                    // If we know the playlist, use a playlist embed starting at this
+                    // song's position so the rest of the playlist will continue.
                     if (playlistId) {
-                      songUrl = `https://www.youtube.com/embed/${song.id}?list=${playlistId}&autoplay=1&enablejsapi=1`;
+                      const index = Number.isFinite(song.position) ? song.position : 0;
+                      songUrl = `https://www.youtube.com/embed/videoseries?list=${playlistId}&index=${index}&autoplay=1&enablejsapi=1`;
                     }
 
                     const artist = song.artist?.trim() ?? "";

@@ -29895,7 +29895,8 @@ function Media({ onStartMusic }) {
           }
           let songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
           if (playlistId) {
-            songUrl = `https://www.youtube.com/embed/${song.id}?list=${playlistId}&autoplay=1&enablejsapi=1`;
+            const index2 = Number.isFinite(song.position) ? song.position : 0;
+            songUrl = `https://www.youtube.com/embed/videoseries?list=${playlistId}&index=${index2}&autoplay=1&enablejsapi=1`;
           }
           const artist = ((_a2 = song.artist) == null ? void 0 : _a2.trim()) ?? "";
           const title = ((_b2 = song.title) == null ? void 0 : _b2.trim()) ?? "";
