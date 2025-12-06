@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Home,
   Megaphone,
@@ -26,6 +26,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     isMinimized,
     toggleMinimize,
     closePlayer: closeYouTubePlayer,
+    playlistUrl,
+    playlistIndex,
   } = usePlayer();
 
   // Convert YouTube playlist URL to embed format for iframe
@@ -58,6 +60,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   };
 
   const embedUrl = getEmbedUrl(youtubeTrackUrl);
+
+  const playerRef = useRef<any | null>(null);
 
   const [desktopPlayerPosition, setDesktopPlayerPosition] = useState({ top: 160, right: 16 });
   const [dragState, setDragState] = useState<{
@@ -92,6 +96,85 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!youtubeTrackUrl && playlistIndex == null) return;
+
+    const w = window as any;
+
+    const createPlayer = () => {
+      if (!w.YT || !w.YT.Player) return;
+      if (playerRef.current) return;
+      const container = document.getElementById("global-music-player");
+      if (!container) return;
+
+      playerRef.current = new w.YT.Player("global-music-player", {
+        height: "100%",
+        width: "100%",
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+          modestbranding: 1,
+        },
+      });
+    };
+
+    if (w.YT && w.YT.Player) {
+      createPlayer();
+    } else {
+      const prevReady = w.onYouTubeIframeAPIReady;
+      w.onYouTubeIframeAPIReady = () => {
+        if (typeof prevReady === "function") prevReady();
+        createPlayer();
+      };
+
+      const existingScript = document.querySelector(
+        "script[src='https://www.youtube.com/iframe_api']"
+      );
+      if (!existingScript) {
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+      }
+    }
+  }, [youtubeTrackUrl, playlistIndex]);
+
+  useEffect(() => {
+    if (!playerRef.current) return;
+    if (typeof window === "undefined") return;
+
+    const player = playerRef.current as any;
+
+    if (playlistIndex != null && playlistUrl) {
+      let playlistId: string | null = null;
+      try {
+        const match = playlistUrl.match(/[?&]list=([^&]+)/);
+        playlistId = match ? match[1] : null;
+      } catch {
+        playlistId = null;
+      }
+
+      if (playlistId) {
+        try {
+          player.loadPlaylist({
+            listType: "playlist",
+            list: playlistId,
+            index: playlistIndex,
+          });
+          return;
+        } catch {
+        }
+      }
+    }
+
+    if (youtubeTrackUrl) {
+      try {
+        player.loadVideoByUrl(youtubeTrackUrl);
+      } catch {
+      }
+    }
+  }, [youtubeTrackUrl, playlistIndex, playlistUrl]);
 
   const handleDesktopPlayerMouseDown = (event: any) => {
     if (window.innerWidth < 768) {
@@ -203,15 +286,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 isMinimized ? "h-0" : "aspect-video"
               )}
             >
-              <iframe
-                key={embedUrl || ''}
-                src={embedUrl || ''}
-                title="YouTube player"
-                className="h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
+              <div id="global-music-player" className="h-full w-full" />
             </div>
           </div>
         </div>

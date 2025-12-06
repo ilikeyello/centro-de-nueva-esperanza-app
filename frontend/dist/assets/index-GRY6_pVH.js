@@ -15298,6 +15298,7 @@ function PlayerProvider({ children }) {
   const [currentTrack, setCurrentTrack] = reactExports.useState(null);
   const [isPlaying, setIsPlaying] = reactExports.useState(false);
   const [isMinimized, setIsMinimized] = reactExports.useState(false);
+  const [playlistIndex, setPlaylistIndex] = reactExports.useState(null);
   const defaultPlaylistUrl = "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
   const [playlistUrl, setPlaylistUrlState] = reactExports.useState(() => {
     if (typeof window === "undefined") return defaultPlaylistUrl;
@@ -15365,6 +15366,14 @@ function PlayerProvider({ children }) {
   }, []);
   const playTrack = (url) => {
     setCurrentTrack(url);
+    setPlaylistIndex(null);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+  const playPlaylistFromIndex = (index2) => {
+    const safeIndex = Number.isFinite(index2) && index2 >= 0 ? Math.floor(index2) : 0;
+    setPlaylistIndex(safeIndex);
+    setCurrentTrack(playlistUrl);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -15404,7 +15413,9 @@ function PlayerProvider({ children }) {
         isMinimized,
         playlistUrl,
         livestreamUrl,
+        playlistIndex,
         playTrack,
+        playPlaylistFromIndex,
         pauseTrack,
         toggleMinimize,
         closePlayer,
@@ -19259,7 +19270,9 @@ function Navigation({ currentPage, onNavigate }) {
     currentTrack: youtubeTrackUrl,
     isMinimized,
     toggleMinimize,
-    closePlayer: closeYouTubePlayer
+    closePlayer: closeYouTubePlayer,
+    playlistUrl,
+    playlistIndex
   } = usePlayer();
   const getEmbedUrl = (url) => {
     if (!url) return url;
@@ -19279,7 +19292,8 @@ function Navigation({ currentPage, onNavigate }) {
     }
     return url;
   };
-  const embedUrl = getEmbedUrl(youtubeTrackUrl);
+  getEmbedUrl(youtubeTrackUrl);
+  const playerRef = reactExports.useRef(null);
   const [desktopPlayerPosition, setDesktopPlayerPosition] = reactExports.useState({ top: 160, right: 16 });
   const [dragState, setDragState] = reactExports.useState(null);
   reactExports.useEffect(() => {
@@ -19302,6 +19316,74 @@ function Navigation({ currentPage, onNavigate }) {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragState]);
+  reactExports.useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!youtubeTrackUrl && playlistIndex == null) return;
+    const w = window;
+    const createPlayer = () => {
+      if (!w.YT || !w.YT.Player) return;
+      if (playerRef.current) return;
+      const container = document.getElementById("global-music-player");
+      if (!container) return;
+      playerRef.current = new w.YT.Player("global-music-player", {
+        height: "100%",
+        width: "100%",
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+          modestbranding: 1
+        }
+      });
+    };
+    if (w.YT && w.YT.Player) {
+      createPlayer();
+    } else {
+      const prevReady = w.onYouTubeIframeAPIReady;
+      w.onYouTubeIframeAPIReady = () => {
+        if (typeof prevReady === "function") prevReady();
+        createPlayer();
+      };
+      const existingScript = document.querySelector(
+        "script[src='https://www.youtube.com/iframe_api']"
+      );
+      if (!existingScript) {
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+      }
+    }
+  }, [youtubeTrackUrl, playlistIndex]);
+  reactExports.useEffect(() => {
+    if (!playerRef.current) return;
+    if (typeof window === "undefined") return;
+    const player = playerRef.current;
+    if (playlistIndex != null && playlistUrl) {
+      let playlistId = null;
+      try {
+        const match = playlistUrl.match(/[?&]list=([^&]+)/);
+        playlistId = match ? match[1] : null;
+      } catch {
+        playlistId = null;
+      }
+      if (playlistId) {
+        try {
+          player.loadPlaylist({
+            listType: "playlist",
+            list: playlistId,
+            index: playlistIndex
+          });
+          return;
+        } catch {
+        }
+      }
+    }
+    if (youtubeTrackUrl) {
+      try {
+        player.loadVideoByUrl(youtubeTrackUrl);
+      } catch {
+      }
+    }
+  }, [youtubeTrackUrl, playlistIndex, playlistUrl]);
   const handleDesktopPlayerMouseDown = (event) => {
     if (window.innerWidth < 768) {
       return;
@@ -19414,18 +19496,7 @@ function Navigation({ currentPage, onNavigate }) {
                 "mt-2 w-full overflow-hidden transition-all",
                 isMinimized ? "h-0" : "aspect-video"
               ),
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "iframe",
-                {
-                  src: embedUrl || "",
-                  title: "YouTube player",
-                  className: "h-full w-full",
-                  allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-                  referrerPolicy: "strict-origin-when-cross-origin",
-                  allowFullScreen: true
-                },
-                embedUrl || ""
-              )
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: "global-music-player", className: "h-full w-full" })
             }
           )
         ] })
@@ -29235,7 +29306,7 @@ function Media({ onStartMusic }) {
   const [sermons2, setSermons] = reactExports.useState([]);
   const [selectedSermonId, setSelectedSermonId] = reactExports.useState(null);
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
-  const { playTrack, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, playPlaylistFromIndex, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = reactExports.useState(false);
   const [isActuallyLive, setIsActuallyLive] = reactExports.useState(false);
   const [manualLiveOverride, setManualLiveOverride] = reactExports.useState(false);
@@ -29809,7 +29880,7 @@ function Media({ onStartMusic }) {
         {
           type: "button",
           className: "bg-blue-600 hover:bg-blue-700",
-          onClick: () => playTrack(playlistUrl),
+          onClick: () => playPlaylistFromIndex(0),
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "mr-2 h-4 w-4" }),
             t("Play YouTube Worship Playlist", "Reproducir lista de adoración en YouTube")
@@ -29822,7 +29893,6 @@ function Media({ onStartMusic }) {
         !loadingPlaylistSongs && playlistSongs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("No songs found for this playlist.", "No se encontraron canciones para esta lista.") }),
         !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto", children: playlistSongs.slice().sort((a, b) => a.position - b.position).map((song) => {
           var _a2, _b2;
-          const songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
           const artist = ((_a2 = song.artist) == null ? void 0 : _a2.trim()) ?? "";
           const title = ((_b2 = song.title) == null ? void 0 : _b2.trim()) ?? "";
           const showArtist = artist.length > 0 && artist.toLowerCase() !== title.toLowerCase() && !title.toLowerCase().includes(artist.toLowerCase());
@@ -29830,7 +29900,7 @@ function Media({ onStartMusic }) {
             "button",
             {
               type: "button",
-              onClick: () => playTrack(songUrl),
+              onClick: () => playPlaylistFromIndex(song.position),
               className: "flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80",
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate text-[0.8rem] font-medium text-white", children: title }),

@@ -3789,10 +3789,6 @@
       display: flex;
     }
 
-    .md\:hidden {
-      display: none;
-    }
-
     .md\:h-5 {
       height: calc(var(--spacing) * 5);
     }

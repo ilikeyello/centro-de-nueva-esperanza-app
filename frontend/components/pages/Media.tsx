@@ -71,7 +71,7 @@ export function Media({ onStartMusic }: MediaProps) {
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
-  const { playTrack, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, playPlaylistFromIndex, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
   const [manualLiveOverride, setManualLiveOverride] = useState(false);
@@ -881,7 +881,7 @@ export function Media({ onStartMusic }: MediaProps) {
             <Button
               type="button"
               className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => playTrack(playlistUrl)}
+              onClick={() => playPlaylistFromIndex(0)}
             >
               <Play className="mr-2 h-4 w-4" />
               {t("Play YouTube Worship Playlist", "Reproducir lista de adoración en YouTube")}
@@ -907,10 +907,6 @@ export function Media({ onStartMusic }: MediaProps) {
                   .slice()
                   .sort((a, b) => a.position - b.position)
                   .map((song) => {
-                    // Focus on reliably playing the exact song that was clicked.
-                    // Use a per-video embed URL with autoplay.
-                    const songUrl = `https://www.youtube.com/embed/${song.id}?autoplay=1&enablejsapi=1`;
-
                     const artist = song.artist?.trim() ?? "";
                     const title = song.title?.trim() ?? "";
                     const showArtist =
@@ -922,7 +918,7 @@ export function Media({ onStartMusic }: MediaProps) {
                       <li key={song.id}>
                         <button
                           type="button"
-                          onClick={() => playTrack(songUrl)}
+                          onClick={() => playPlaylistFromIndex(song.position)}
                           className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
                         >
                           <span className="truncate text-[0.8rem] font-medium text-white">

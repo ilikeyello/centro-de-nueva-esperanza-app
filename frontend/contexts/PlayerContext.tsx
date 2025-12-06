@@ -45,7 +45,9 @@ interface PlayerContextType {
   isMinimized: boolean;
   playlistUrl: string;
   livestreamUrl: string;
+  playlistIndex: number | null;
   playTrack: (url: string) => void;
+  playPlaylistFromIndex: (index: number) => void;
   pauseTrack: () => void;
   toggleMinimize: () => void;
   closePlayer: () => void;
@@ -59,6 +61,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [playlistIndex, setPlaylistIndex] = useState<number | null>(null);
 
   const defaultPlaylistUrl =
     "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
@@ -150,6 +153,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const playTrack = (url: string) => {
     setCurrentTrack(url);
+    setPlaylistIndex(null);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+
+  const playPlaylistFromIndex = (index: number) => {
+    const safeIndex = Number.isFinite(index) && index >= 0 ? Math.floor(index) : 0;
+    setPlaylistIndex(safeIndex);
+    setCurrentTrack(playlistUrl);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -198,7 +210,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         isMinimized,
         playlistUrl,
         livestreamUrl,
+        playlistIndex,
         playTrack,
+        playPlaylistFromIndex,
         pauseTrack,
         toggleMinimize,
         closePlayer,
