@@ -302,37 +302,42 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               <span className="text-xs font-medium md:text-sm">{language === "en" ? "ESP" : "ENG"}</span>
             </button>
 
-            {/* Mobile-only minimized music controls inside the navbar */}
+            {/* Mobile-only minimized music controls overlayed on top of navbar buttons */}
             {youtubeTrackUrl && isMinimized && (
-              <div className="flex items-center gap-1 md:hidden">
-                <button
-                  type="button"
-                  onClick={isPlaying ? handlePauseClick : handlePlayClick}
-                  className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                  aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
-                >
-                  {isPlaying ? (
-                    <Pause className="h-3.5 w-3.5" />
-                  ) : (
-                    <Play className="h-3.5 w-3.5" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNextClick}
-                  className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                  aria-label={t("Next song", "Siguiente canción")}
-                >
-                  <SkipForward className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleMinimize}
-                  className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                  aria-label={t("Expand music player", "Expandir reproductor de música")}
-                >
-                  <Maximize2 className="h-3.5 w-3.5" />
-                </button>
+              <div className="absolute inset-x-3 bottom-2 z-20 flex items-center justify-between rounded-full border border-neutral-700 bg-neutral-900/95 px-3 py-1 text-[0.75rem] md:hidden">
+                <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                  {t("Music", "Música")}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={isPlaying ? handlePauseClick : handlePlayClick}
+                    className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                    aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
+                  >
+                    {isPlaying ? (
+                      <Pause className="h-3.5 w-3.5" />
+                    ) : (
+                      <Play className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextClick}
+                    className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                    aria-label={t("Next song", "Siguiente canción")}
+                  >
+                    <SkipForward className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleMinimize}
+                    className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+                    aria-label={t("Expand music player", "Expandir reproductor de música")}
+                  >
+                    <Maximize2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -420,15 +425,36 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       )}
 
       {youtubeTrackUrl && isMinimized && (
-        <button
-          type="button"
-          onClick={toggleMinimize}
-          className="hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg hover:border-neutral-500 hover:text-neutral-50"
-          aria-label={t("Expand YouTube player", "Expandir reproductor de YouTube")}
-        >
-          <Play className="h-3.5 w-3.5" />
-          <span className="whitespace-nowrap">Music</span>
-        </button>
+        <div className="hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg">
+          <button
+            type="button"
+            onClick={isPlaying ? handlePauseClick : handlePlayClick}
+            className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+            aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
+          >
+            {isPlaying ? (
+              <Pause className="h-3.5 w-3.5" />
+            ) : (
+              <Play className="h-3.5 w-3.5" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleNextClick}
+            className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+            aria-label={t("Next song", "Siguiente canción")}
+          >
+            <SkipForward className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={toggleMinimize}
+            className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+            aria-label={t("Expand music player", "Expandir reproductor de YouTube")}
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
 
     </nav>
