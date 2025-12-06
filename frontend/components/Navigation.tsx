@@ -123,54 +123,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         style={{ paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" }}
       >
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
-          {/* Mobile nav-embedded YouTube player */}
-          {youtubeTrackUrl && (
-            <div className="px-3 pt-2 md:hidden">
-              <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/90">
-                <div className="flex items-center justify-between px-3 pt-2">
-                  <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                    {t("Music", "Música")}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={toggleMinimize}
-                      className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
-                      aria-label={t(
-                        isMinimized ? "Expand music player" : "Minimize music player",
-                        isMinimized ? "Expandir reproductor de música" : "Minimizar reproductor de música"
-                      )}
-                    >
-                      {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={closeYouTubePlayer}
-                      className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 text-neutral-300 hover:border-red-500 hover:text-red-400"
-                      aria-label={t("Close music player", "Cerrar reproductor de música")}
-                    >
-                      <span className="text-sm leading-none">×</span>
-                    </button>
-                  </div>
-                </div>
-                <div
-                  className={cn(
-                    "mt-2 w-full overflow-hidden transition-all",
-                    isMinimized ? "h-0" : "aspect-video"
-                  )}
-                >
-                  <iframe
-                    src={embedUrl || ''}
-                    title="YouTube player"
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
-                </div>
-              </div>
-            </div>
-          )}
           <div className="flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -209,11 +161,11 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         </div>
       </div>
 
-      {/* Desktop floating YouTube overlays (outside navbar) */}
+      {/* Single floating YouTube overlay (used on all screen sizes) */}
       {youtubeTrackUrl && (
         <div
           className={cn(
-            "hidden md:block fixed z-40 w-80 transition-all",
+            "fixed z-40 w-80 transition-all",
             isMinimized && "pointer-events-none opacity-0"
           )}
           style={{ top: desktopPlayerPosition.top, right: desktopPlayerPosition.right }}
@@ -252,6 +204,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               )}
             >
               <iframe
+                key={embedUrl || ''}
                 src={embedUrl || ''}
                 title="YouTube player"
                 className="h-full w-full"
