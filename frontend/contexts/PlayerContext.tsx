@@ -46,8 +46,10 @@ interface PlayerContextType {
   playlistUrl: string;
   livestreamUrl: string;
   playlistIndex: number | null;
+  playlistShuffle: boolean;
   playTrack: (url: string) => void;
   playPlaylistFromIndex: (index: number) => void;
+  playPlaylistShuffle: () => void;
   pauseTrack: () => void;
   toggleMinimize: () => void;
   closePlayer: () => void;
@@ -62,6 +64,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [playlistIndex, setPlaylistIndex] = useState<number | null>(null);
+  const [playlistShuffle, setPlaylistShuffle] = useState(false);
 
   const defaultPlaylistUrl =
     "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
@@ -154,13 +157,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const playTrack = (url: string) => {
     setCurrentTrack(url);
     setPlaylistIndex(null);
+    setPlaylistShuffle(false);
     setIsPlaying(true);
     setIsMinimized(false);
   };
 
   const playPlaylistFromIndex = (index: number) => {
     const safeIndex = Number.isFinite(index) && index >= 0 ? Math.floor(index) : 0;
+    setPlaylistShuffle(false);
     setPlaylistIndex(safeIndex);
+    setCurrentTrack(playlistUrl);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+
+  const playPlaylistShuffle = () => {
+    setPlaylistShuffle(true);
+    setPlaylistIndex(0);
     setCurrentTrack(playlistUrl);
     setIsPlaying(true);
     setIsMinimized(false);
@@ -173,6 +186,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const closePlayer = () => {
     setCurrentTrack(null);
     setPlaylistIndex(null);
+    setPlaylistShuffle(false);
     setIsPlaying(false);
     setIsMinimized(false);
   };
@@ -212,8 +226,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         playlistUrl,
         livestreamUrl,
         playlistIndex,
+        playlistShuffle,
         playTrack,
         playPlaylistFromIndex,
+        playPlaylistShuffle,
         pauseTrack,
         toggleMinimize,
         closePlayer,

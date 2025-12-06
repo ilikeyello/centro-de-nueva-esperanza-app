@@ -28,6 +28,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     closePlayer: closeYouTubePlayer,
     playlistUrl,
     playlistIndex,
+    playlistShuffle,
   } = usePlayer();
 
   // Convert YouTube playlist URL to embed format for iframe
@@ -63,6 +64,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   const playerRef = useRef<any | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   const [desktopPlayerPosition, setDesktopPlayerPosition] = useState({ top: 160, right: 16 });
   const [dragState, setDragState] = useState<{
@@ -71,6 +73,20 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     startTop: number;
     startRight: number;
   } | null>(null);
+
+  // Track whether we're on a desktop-sized viewport so we can adjust player layout.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateIsDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    updateIsDesktop();
+
+    window.addEventListener("resize", updateIsDesktop);
+    return () => window.removeEventListener("resize", updateIsDesktop);
+  }, []);
 
   useEffect(() => {
     if (!dragState) return;
@@ -179,12 +195,15 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       if (playlistId) {
         try {
           // Use the object form of cuePlaylist which explicitly specifies
-          // that we're loading a playlist by ID, then start playback.
+          // that we're loading a playlist by ID.
           player.cuePlaylist({
             listType: "playlist",
             list: playlistId,
             index: playlistIndex,
           });
+          if (typeof player.setShuffle === "function") {
+            player.setShuffle(!!playlistShuffle);
+          }
           player.playVideo();
           return;
         } catch {
@@ -275,15 +294,27 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       {youtubeTrackUrl && (
         <div
           className={cn(
-            "fixed z-60 w-80 transition-all",
+            "z-60 transition-all",
+            // Desktop: draggable floating card.
+            isDesktop
+              ? "fixed w-80"
+              : // Mobile: full-width bar pinned just above the nav.
+                "fixed bottom-16 left-2 right-2 w-auto",
             isMinimized && "pointer-events-none opacity-0"
           )}
-          style={{ top: desktopPlayerPosition.top, right: desktopPlayerPosition.right }}
+          style={
+            isDesktop
+              ? { top: desktopPlayerPosition.top, right: desktopPlayerPosition.right }
+              : undefined
+          }
         >
           <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/90 shadow-xl">
             <div
-              className="flex items-center justify-between px-3 pt-2 cursor-move"
-              onMouseDown={handleDesktopPlayerMouseDown}
+              className={cn(
+                "flex items-center justify-between px-3 pt-2",
+                isDesktop && "cursor-move"
+              )}
+              onMouseDown={isDesktop ? handleDesktopPlayerMouseDown : undefined}
             >
               <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
                 {t("Music", "Música")}
@@ -310,7 +341,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
             <div
               className={cn(
                 "mt-2 w-full overflow-hidden transition-all",
-                isMinimized ? "h-0" : "aspect-video"
+                isMinimized ? "h-0" : isDesktop ? "aspect-video" : "h-32"
               )}
             >
               <div id="global-music-player" className="h-full w-full" />

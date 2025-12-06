@@ -71,7 +71,7 @@ export function Media({ onStartMusic }: MediaProps) {
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
-  const { playTrack, playPlaylistFromIndex, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, playPlaylistFromIndex, playPlaylistShuffle, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
   const [manualLiveOverride, setManualLiveOverride] = useState(false);
@@ -881,10 +881,10 @@ export function Media({ onStartMusic }: MediaProps) {
             <Button
               type="button"
               className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => playPlaylistFromIndex(0)}
+              onClick={() => playPlaylistShuffle()}
             >
               <Play className="mr-2 h-4 w-4" />
-              {t("Play YouTube Worship Playlist", "Reproducir lista de adoración en YouTube")}
+              {t("Shuffle Worship Playlist", "Reproducir lista de adoración al azar")}
             </Button>
           </div>
           <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-xs text-neutral-200">
