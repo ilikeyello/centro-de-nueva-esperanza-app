@@ -316,7 +316,7 @@
   display: inline-flex;
   min-width: 200%;
   will-change: transform;
-  animation: cne-marquee 36s linear infinite;
+  animation: cne-marquee 48s linear infinite;
 }
 
 .marquee-item {
@@ -330,6 +330,6 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }

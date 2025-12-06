@@ -19621,7 +19621,7 @@ function Navigation({ currentPage, onNavigate }) {
               )
             ] })
           ] }) }),
-          youtubeTrackUrl && !isMinimized && !isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-3 pt-1.5 md:hidden", children: [
+          youtubeTrackUrl && !isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: cn("px-3 pt-1.5 md:hidden", isMinimized && "hidden"), children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1 pr-2", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),

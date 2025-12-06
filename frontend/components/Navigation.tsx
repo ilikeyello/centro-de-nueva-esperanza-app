@@ -327,9 +327,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
             </div>
           )}
 
-          {/* Mobile: open player integrated into navbar */}
-          {youtubeTrackUrl && !isMinimized && !isDesktop && (
-            <div className="px-3 pt-1.5 md:hidden">
+          {/* Mobile: open player integrated into navbar (kept mounted when minimized) */}
+          {youtubeTrackUrl && !isDesktop && (
+            <div className={cn("px-3 pt-1.5 md:hidden", isMinimized && "hidden")}>
               <div className="flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner">
                 <div className="min-w-0 flex-1 pr-2">
                   <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
