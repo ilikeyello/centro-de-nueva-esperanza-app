@@ -32720,6 +32720,7 @@ function WordSearchAdminPanel({ passcode }) {
   const [openLevelId, setOpenLevelId] = reactExports.useState(null);
   const [loading, setLoading] = reactExports.useState(false);
   const [status, setStatus] = reactExports.useState(null);
+  const [isCreatingNew, setIsCreatingNew] = reactExports.useState(false);
   const [name, setName] = reactExports.useState("");
   const [description, setDescription] = reactExports.useState("");
   const [rows, setRows] = reactExports.useState(12);
@@ -32744,6 +32745,7 @@ function WordSearchAdminPanel({ passcode }) {
     loadLevels();
   }, []);
   const selectLevel = (level) => {
+    setIsCreatingNew(false);
     setSelectedLevelId(level.id);
     setOpenLevelId((current) => current === level.id ? null : level.id);
     setName(level.name);
@@ -32755,6 +32757,7 @@ function WordSearchAdminPanel({ passcode }) {
     );
   };
   const handleNewLevel = () => {
+    setIsCreatingNew(true);
     setSelectedLevelId(null);
     setOpenLevelId(null);
     setName("");
@@ -32990,7 +32993,64 @@ function WordSearchAdminPanel({ passcode }) {
               }
             )
           ] })
-        ] }, level.id))
+        ] }, level.id)),
+        isCreatingNew && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-4 space-y-4", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2 md:grid-cols-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Name", "Nombre") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  value: name,
+                  onChange: (e) => setName(e.target.value),
+                  className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-end", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+              "Grid size is chosen automatically based on your words (max 9x9).",
+              "El tamaño de la cuadrícula se elige automáticamente según tus palabras (máx. 9x9)."
+            ) }) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Description", "Descripción") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Textarea,
+              {
+                value: description,
+                onChange: (e) => setDescription(e.target.value),
+                className: "min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 mt-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Words", "Palabras") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+              "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
+              "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
+            ) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Textarea,
+              {
+                value: wordsText,
+                onChange: (e) => setWordsText(e.target.value),
+                className: "min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              type: "button",
+              onClick: async () => {
+                await handleSaveLevel();
+                await handleSaveWords();
+              },
+              className: "mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700",
+              children: t("Save Level", "Guardar Nivel")
+            }
+          )
+        ] }) })
       ] })
     ] })
   ] });
