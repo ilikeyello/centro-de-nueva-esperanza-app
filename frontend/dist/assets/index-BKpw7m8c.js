@@ -30765,6 +30765,20 @@ function WordSearchGamePage({ onNavigate }) {
   const [foundCells, setFoundCells] = reactExports.useState(() => /* @__PURE__ */ new Set());
   const [selectedStart, setSelectedStart] = reactExports.useState(null);
   const [foundSegments, setFoundSegments] = reactExports.useState([]);
+  const highlightColors = [
+    "#f97316",
+    // orange-500
+    "#22c55e",
+    // green-500
+    "#60a5fa",
+    // blue-400
+    "#eab308",
+    // yellow-500
+    "#ec4899",
+    // pink-500
+    "#a855f7"
+    // purple-500
+  ];
   const base = "https://prod-cne-sh82.encr.app";
   reactExports.useEffect(() => {
     const loadLevels = async () => {
@@ -31015,7 +31029,7 @@ function WordSearchGamePage({ onNavigate }) {
                   {
                     type: "button",
                     onClick: () => toggleCellSelection(r2, c),
-                    className: `flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-green-400" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
+                    className: `flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
                     children: ch
                   },
                   key
@@ -31030,13 +31044,14 @@ function WordSearchGamePage({ onNavigate }) {
             className: "pointer-events-none absolute inset-0",
             viewBox: "0 0 100 100",
             preserveAspectRatio: "none",
-            children: foundSegments.map((seg) => {
+            children: foundSegments.map((seg, index2) => {
               const cols = puzzle.level.cols;
               const rows = puzzle.level.rows;
               const x1 = (seg.start.col + 0.5) / cols * 100;
               const y1 = (seg.start.row + 0.5) / rows * 100;
               const x2 = (seg.end.col + 0.5) / cols * 100;
               const y2 = (seg.end.row + 0.5) / rows * 100;
+              const color = highlightColors[index2 % highlightColors.length];
               return /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "line",
                 {
@@ -31044,8 +31059,9 @@ function WordSearchGamePage({ onNavigate }) {
                   y1,
                   x2,
                   y2,
-                  stroke: "#22c55e",
-                  strokeWidth: 3,
+                  stroke: color,
+                  strokeWidth: 3.5,
+                  strokeOpacity: 0.6,
                   strokeLinecap: "round"
                 },
                 seg.id

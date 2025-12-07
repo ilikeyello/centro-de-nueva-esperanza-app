@@ -57,6 +57,16 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
   const [selectedStart, setSelectedStart] = useState<CellCoord | null>(null);
   const [foundSegments, setFoundSegments] = useState<FoundSegment[]>([]);
 
+  // Palette of soft highlight colors to cycle through for found words
+  const highlightColors = [
+    "#f97316", // orange-500
+    "#22c55e", // green-500
+    "#60a5fa", // blue-400
+    "#eab308", // yellow-500
+    "#ec4899", // pink-500
+    "#a855f7", // purple-500
+  ];
+
   const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
 
   useEffect(() => {
@@ -377,7 +387,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                       onClick={() => toggleCellSelection(r, c)}
                       className={`flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
                         isFound
-                          ? "text-green-400"
+                          ? "text-white"
                           : isSelectedStart
                           ? "border border-green-400 rounded-sm text-white"
                           : "text-neutral-100"
@@ -396,13 +406,15 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
               >
-                {foundSegments.map((seg) => {
+                {foundSegments.map((seg, index) => {
                   const cols = puzzle.level!.cols;
                   const rows = puzzle.level!.rows;
                   const x1 = ((seg.start.col + 0.5) / cols) * 100;
                   const y1 = ((seg.start.row + 0.5) / rows) * 100;
                   const x2 = ((seg.end.col + 0.5) / cols) * 100;
                   const y2 = ((seg.end.row + 0.5) / rows) * 100;
+
+                  const color = highlightColors[index % highlightColors.length];
 
                   return (
                     <line
@@ -411,8 +423,9 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                       y1={y1}
                       x2={x2}
                       y2={y2}
-                      stroke="#22c55e"
-                      strokeWidth={3}
+                      stroke={color}
+                      strokeWidth={3.5}
+                      strokeOpacity={0.6}
                       strokeLinecap="round"
                     />
                   );
