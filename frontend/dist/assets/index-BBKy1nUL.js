@@ -34557,43 +34557,31 @@ function AppInner() {
 }
 const queryClient = new QueryClient();
 function App() {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsxRuntimeExports.jsx(LanguageProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(PlayerProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NotificationProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "dark", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AppInner, {}) }) }) }) }) });
+  const [showSplash, setShowSplash] = reactExports.useState(true);
+  reactExports.useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setShowSplash(false);
+    }, 800);
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, []);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsxRuntimeExports.jsx(LanguageProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(PlayerProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NotificationProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "dark", children: [
+    showSplash && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "app-splash", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "img",
+        {
+          src: "./cne_logo_black.svg",
+          alt: "Centro de Nueva Esperanza",
+          className: "app-splash-logo",
+          style: { filter: "invert(1)" }
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "app-splash-spinner", "aria-hidden": "true" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(AppInner, {})
+  ] }) }) }) }) });
 }
-const SPLASH_MIN_DURATION_MS = 2e3;
-const splashStartTime = typeof performance !== "undefined" ? performance.now() : Date.now();
-let splashHidden = false;
-const hideSplashScreen = () => {
-  if (splashHidden) return;
-  const splash = document.querySelector(".app-splash");
-  const body = document.body;
-  if (!splash || !body) return;
-  splashHidden = true;
-  body.classList.add("app-loaded");
-  splash.style.opacity = "0";
-  splash.style.transition = "opacity 0.5s ease-out";
-  setTimeout(() => {
-    splash.remove();
-  }, 500);
-};
-const scheduleSplashHideAfterLoad = () => {
-  const onLoad3 = () => {
-    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
-    const elapsed = now - splashStartTime;
-    const remaining = SPLASH_MIN_DURATION_MS - elapsed;
-    if (remaining > 0) {
-      setTimeout(hideSplashScreen, remaining);
-    } else {
-      hideSplashScreen();
-    }
-  };
-  if (typeof window !== "undefined") {
-    if (document.readyState === "complete") {
-      onLoad3();
-    } else {
-      window.addEventListener("load", onLoad3, { once: true });
-    }
-  }
-};
 if (typeof window !== "undefined") {
   window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   if ("scrollRestoration" in history) {
@@ -34603,7 +34591,6 @@ if (typeof window !== "undefined") {
 ReactDOM$1.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsxRuntimeExports.jsx(React.StrictMode, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(App, {}) })
 );
-scheduleSplashHideAfterLoad();
 if ("serviceWorker" in navigator && true) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/cne-app/sw.js").then((registration) => {
