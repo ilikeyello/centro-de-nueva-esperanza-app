@@ -31040,17 +31040,15 @@ function WordSearchGamePage({ onNavigate }) {
               "svg",
               {
                 className: "pointer-events-none absolute inset-0",
-                viewBox: "0 0 100 100",
+                viewBox: `0 0 ${puzzle.level.cols} ${puzzle.level.rows}`,
                 preserveAspectRatio: "none",
                 children: foundSegments.map((seg, index2) => {
-                  const cols = puzzle.level.cols;
-                  const rows = puzzle.level.rows;
-                  const cellHeight = 100 / rows;
-                  const verticalOffset = cellHeight * 0.12;
-                  const x1 = (seg.start.col + 0.5) / cols * 100;
-                  const y1 = (seg.start.row + 0.5) / rows * 100 + verticalOffset;
-                  const x2 = (seg.end.col + 0.5) / cols * 100;
-                  const y2 = (seg.end.row + 0.5) / rows * 100 + verticalOffset;
+                  puzzle.level.cols;
+                  puzzle.level.rows;
+                  const x1 = seg.start.col + 0.5;
+                  const y1 = seg.start.row + 0.5;
+                  const x2 = seg.end.col + 0.5;
+                  const y2 = seg.end.row + 0.5;
                   const color = highlightColors[index2 % highlightColors.length];
                   return /* @__PURE__ */ jsxRuntimeExports.jsx(
                     "line",
