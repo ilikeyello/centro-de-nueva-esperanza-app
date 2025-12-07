@@ -423,8 +423,8 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                         x2={x2}
                         y2={y2}
                         stroke={color}
-                        strokeWidth={3.5}
-                        strokeOpacity={0.6}
+                        strokeWidth={0.25}
+                        strokeOpacity={0.7}
                         strokeLinecap="round"
                       />
                     );
