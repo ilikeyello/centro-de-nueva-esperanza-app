@@ -115,6 +115,56 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     }
   };
 
+  const handleDeleteLevel = async (id: string) => {
+    if (!passcode) {
+      setStatus(
+        language === "es" ? "Se requiere código de administrador" : "Admin passcode required"
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      language === "es"
+        ? "¿Seguro que deseas eliminar este nivel? Todas las preguntas de este nivel también se eliminarán."
+        : "Are you sure you want to delete this level? All questions in this level will also be deleted."
+    );
+    if (!confirmed) return;
+
+    try {
+      const base = import.meta.env.DEV
+        ? "http://127.0.0.1:4000"
+        : "https://prod-cne-sh82.encr.app";
+      const deleteUrl = `${base}/trivia/simple/level/${encodeURIComponent(
+        id
+      )}?passcode=${encodeURIComponent(passcode)}`;
+
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const contentType = response.headers.get("content-type") || "";
+      let data: any = null;
+      if (contentType.includes("application/json")) {
+        data = await response.json().catch(() => null as any);
+      }
+
+      if (!response.ok || (data && data.success === false)) {
+        throw new Error(data?.message || "Delete failed");
+      }
+
+      setStatus(
+        language === "es" ? "Nivel eliminado correctamente" : "Level deleted successfully"
+      );
+      await loadData();
+    } catch (error) {
+      console.error("Failed to delete level", error);
+      setStatus(
+        language === "es" ? "Error al eliminar nivel" : "Failed to delete level"
+      );
+    }
+  };
+
   const addLevelToBatch = (level: Partial<TriviaLevel>) => {
     if (editingLevel) {
       // Edit existing level
@@ -524,23 +574,33 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[...levels, ...pendingOperations.levelsToAdd].filter(level => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
-            const isExpanded = expandedLevels.has(level.id || '');
-            const levelQuestions = [
-              ...(questionsByLevel[level.id || ''] || []).filter((question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id)),
-              ...pendingOperations.questionsToAdd.filter(question => question.level_id === level.id),
-              ...pendingOperations.questionsToEdit.filter(question => question.level_id === level.id && question.id === 0)
-            ].filter((question, index, array) => 
-              array.findIndex(q => q.question_en === question.question_en && q.level_id === question.level_id) === index
-            );
-            return (
-              <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
+          {[...levels, ...pendingOperations.levelsToAdd]
+            .filter((level) => typeof level.id === "string" && !pendingOperations.levelsToDelete.includes(level.id as string))
+            .map((level) => {
+              const levelId = level.id as string;
+              const isExpanded = expandedLevels.has(levelId);
+              const levelQuestions = [
+                ...(questionsByLevel[levelId] || []).filter(
+                  (question: TriviaQuestion) => !pendingOperations.questionsToDelete.includes(question.id)
+                ),
+                ...pendingOperations.questionsToAdd.filter((question) => question.level_id === levelId),
+                ...pendingOperations.questionsToEdit.filter(
+                  (question) => question.level_id === levelId && question.id === 0
+                ),
+              ].filter(
+                (question, index, array) =>
+                  array.findIndex(
+                    (q) => q.question_en === question.question_en && q.level_id === question.level_id
+                  ) === index
+              );
+              return (
+                <div key={levelId} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
                 <div className="p-4 hover:bg-neutral-800/50 transition-colors">
                   <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
                       className="flex flex-1 items-center gap-2 text-left"
-                      onClick={() => toggleLevelExpansion(level.id)}
+                      onClick={() => toggleLevelExpansion(levelId)}
                     >
                       {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       <h3 className="font-semibold text-white">{level.name}</h3>
@@ -554,8 +614,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!level.id) return;
-                        // Mark level for deletion in the pending batch
-                        deleteLevelFromBatch(level.id);
+                        void handleDeleteLevel(level.id);
                       }}
                     >
                       <Trash2 className="h-4 w-4" />

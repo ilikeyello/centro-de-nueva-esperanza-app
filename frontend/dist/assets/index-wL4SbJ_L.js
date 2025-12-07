@@ -30764,6 +30764,7 @@ function WordSearchGamePage({ onNavigate }) {
   const [foundWords, setFoundWords] = reactExports.useState(() => /* @__PURE__ */ new Set());
   const [foundCells, setFoundCells] = reactExports.useState(() => /* @__PURE__ */ new Set());
   const [selectedStart, setSelectedStart] = reactExports.useState(null);
+  const [foundSegments, setFoundSegments] = reactExports.useState([]);
   const base = "https://prod-cne-sh82.encr.app";
   reactExports.useEffect(() => {
     const loadLevels = async () => {
@@ -30793,6 +30794,7 @@ function WordSearchGamePage({ onNavigate }) {
     setFoundWords(/* @__PURE__ */ new Set());
     setFoundCells(/* @__PURE__ */ new Set());
     setSelectedStart(null);
+    setFoundSegments([]);
     setError(null);
   };
   const handleSelectLevel = async (levelId) => {
@@ -30802,6 +30804,7 @@ function WordSearchGamePage({ onNavigate }) {
       setFoundWords(/* @__PURE__ */ new Set());
       setFoundCells(/* @__PURE__ */ new Set());
       setSelectedStart(null);
+      setFoundSegments([]);
       const langParam = language === "es" ? "es" : "en";
       const res = await fetch(
         `${base}/games/wordsearch/puzzle/${encodeURIComponent(levelId)}?lang=${langParam}`
@@ -30869,6 +30872,8 @@ function WordSearchGamePage({ onNavigate }) {
       setSelectedStart(null);
       return;
     }
+    const segmentStart = matched === candidate ? start : end;
+    const segmentEnd = matched === candidate ? end : start;
     setFoundWords((prev) => {
       const next = new Set(prev);
       next.add(matched);
@@ -30880,6 +30885,18 @@ function WordSearchGamePage({ onNavigate }) {
         next.add(`${r2},${c}`);
       });
       return next;
+    });
+    setFoundSegments((prev) => {
+      const id = `${matched}-${segmentStart.row},${segmentStart.col}-${segmentEnd.row},${segmentEnd.col}`;
+      if (prev.some((seg) => seg.id === id)) return prev;
+      return [
+        ...prev,
+        {
+          id,
+          start: segmentStart,
+          end: segmentEnd
+        }
+      ];
     });
     setSelectedStart(null);
   };
@@ -30980,32 +30997,63 @@ function WordSearchGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: language === "es" ? "Toca la primera y la última letra de la palabra en línea recta para marcarla." : "Tap the first and last letter of the word in a straight line to mark it." })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:gap-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "div",
-        {
-          className: "grid w-full max-w-full mx-auto gap-[1px] rounded-lg bg-neutral-900 p-1.5",
-          style: {
-            gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`
-          },
-          children: puzzle.grid.map(
-            (rowStr, r2) => rowStr.split("").map((ch, c) => {
-              const key = `${r2},${c}`;
-              const isFound = foundCells.has(key);
-              const isSelectedStart = selectedStart && selectedStart.row === r2 && selectedStart.col === c;
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative w-full max-w-full mx-auto", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: "grid gap-[1px] rounded-lg bg-neutral-900 p-1.5",
+            style: {
+              gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`
+            },
+            children: puzzle.grid.map(
+              (rowStr, r2) => rowStr.split("").map((ch, c) => {
+                const key = `${r2},${c}`;
+                const isFound = foundCells.has(key);
+                const isSelectedStart = selectedStart && selectedStart.row === r2 && selectedStart.col === c;
+                return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => toggleCellSelection(r2, c),
+                    className: `flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-green-400" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
+                    children: ch
+                  },
+                  key
+                );
+              })
+            )
+          }
+        ),
+        foundSegments.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "svg",
+          {
+            className: "pointer-events-none absolute inset-0",
+            viewBox: "0 0 100 100",
+            preserveAspectRatio: "none",
+            children: foundSegments.map((seg) => {
+              const cols = puzzle.level.cols;
+              const rows = puzzle.level.rows;
+              const x1 = (seg.start.col + 0.5) / cols * 100;
+              const y1 = (seg.start.row + 0.5) / rows * 100;
+              const x2 = (seg.end.col + 0.5) / cols * 100;
+              const y2 = (seg.end.row + 0.5) / rows * 100;
               return /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "button",
+                "line",
                 {
-                  type: "button",
-                  onClick: () => toggleCellSelection(r2, c),
-                  className: `flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "bg-green-600 text-white rounded-sm" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
-                  children: ch
+                  x1,
+                  y1,
+                  x2,
+                  y2,
+                  stroke: "#22c55e",
+                  strokeWidth: 3,
+                  strokeLinecap: "round"
                 },
-                key
+                seg.id
               );
             })
-          )
-        }
-      ) }),
+          }
+        )
+      ] }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full md:w-64 space-y-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-sm font-semibold text-white flex items-center gap-2", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
@@ -31708,6 +31756,45 @@ function TriviaAdminPanelFinal({ passcode }) {
       setLoading(false);
     }
   };
+  const handleDeleteLevel = async (id) => {
+    if (!passcode) {
+      setStatus(
+        language === "es" ? "Se requiere código de administrador" : "Admin passcode required"
+      );
+      return;
+    }
+    const confirmed = window.confirm(
+      language === "es" ? "¿Seguro que deseas eliminar este nivel? Todas las preguntas de este nivel también se eliminarán." : "Are you sure you want to delete this level? All questions in this level will also be deleted."
+    );
+    if (!confirmed) return;
+    try {
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const deleteUrl = `${base}/trivia/simple/level/${encodeURIComponent(
+        id
+      )}?passcode=${encodeURIComponent(passcode)}`;
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+      });
+      const contentType = response.headers.get("content-type") || "";
+      let data = null;
+      if (contentType.includes("application/json")) {
+        data = await response.json().catch(() => null);
+      }
+      if (!response.ok || data && data.success === false) {
+        throw new Error((data == null ? void 0 : data.message) || "Delete failed");
+      }
+      setStatus(
+        language === "es" ? "Nivel eliminado correctamente" : "Level deleted successfully"
+      );
+      await loadData();
+    } catch (error) {
+      console.error("Failed to delete level", error);
+      setStatus(
+        language === "es" ? "Error al eliminar nivel" : "Failed to delete level"
+      );
+    }
+  };
   const addLevelToBatch = (level) => {
     if (editingLevel) {
       setPendingOperations((prev) => ({
@@ -31747,12 +31834,6 @@ function TriviaAdminPanelFinal({ passcode }) {
       setShowQuestionDialog(false);
       setEditingQuestion(null);
     }
-  };
-  const deleteLevelFromBatch = (id) => {
-    setPendingOperations((prev) => ({
-      ...prev,
-      levelsToDelete: [...prev.levelsToDelete, id]
-    }));
   };
   const executeBatchOperations = async () => {
     if (!passcode) {
@@ -32039,14 +32120,21 @@ function TriviaAdminPanelFinal({ passcode }) {
           ] })
         ] })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => level.id && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
-        const isExpanded = expandedLevels.has(level.id || "");
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => typeof level.id === "string" && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
+        const levelId = level.id;
+        const isExpanded = expandedLevels.has(levelId);
         const levelQuestions = [
-          ...(questionsByLevel[level.id || ""] || []).filter((question) => !pendingOperations.questionsToDelete.includes(question.id)),
-          ...pendingOperations.questionsToAdd.filter((question) => question.level_id === level.id),
-          ...pendingOperations.questionsToEdit.filter((question) => question.level_id === level.id && question.id === 0)
+          ...(questionsByLevel[levelId] || []).filter(
+            (question) => !pendingOperations.questionsToDelete.includes(question.id)
+          ),
+          ...pendingOperations.questionsToAdd.filter((question) => question.level_id === levelId),
+          ...pendingOperations.questionsToEdit.filter(
+            (question) => question.level_id === levelId && question.id === 0
+          )
         ].filter(
-          (question, index2, array) => array.findIndex((q) => q.question_en === question.question_en && q.level_id === question.level_id) === index2
+          (question, index2, array) => array.findIndex(
+            (q) => q.question_en === question.question_en && q.level_id === question.level_id
+          ) === index2
         );
         return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 hover:bg-neutral-800/50 transition-colors", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
@@ -32055,7 +32143,7 @@ function TriviaAdminPanelFinal({ passcode }) {
               {
                 type: "button",
                 className: "flex flex-1 items-center gap-2 text-left",
-                onClick: () => toggleLevelExpansion(level.id),
+                onClick: () => toggleLevelExpansion(levelId),
                 children: [
                   isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4" }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
@@ -32079,7 +32167,7 @@ function TriviaAdminPanelFinal({ passcode }) {
                 onClick: (e) => {
                   e.stopPropagation();
                   if (!level.id) return;
-                  deleteLevelFromBatch(level.id);
+                  void handleDeleteLevel(level.id);
                 },
                 children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
               }
@@ -32331,7 +32419,7 @@ function TriviaAdminPanelFinal({ passcode }) {
               }
             )
           ] })
-        ] }, level.id);
+        ] }, levelId);
       }) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showQuestionDialog, onOpenChange: setShowQuestionDialog, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
@@ -32706,14 +32794,19 @@ function WordSearchAdminPanel({ passcode }) {
     );
     if (!confirmed) return;
     try {
-      const res = await fetch(`${base}/games/wordsearch/levels/${levelId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passcode })
+      const url = `${base}/games/wordsearch/levels/${encodeURIComponent(
+        levelId
+      )}?passcode=${encodeURIComponent(passcode)}`;
+      const res = await fetch(url, {
+        method: "DELETE"
       });
-      const data = await res.json().catch(() => null);
+      const contentType = res.headers.get("content-type") || "";
+      let data = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json().catch(() => null);
+      }
       if (!res.ok || data && data.success === false) {
-        throw new Error("Delete failed");
+        throw new Error((data == null ? void 0 : data.message) || "Delete failed");
       }
       await loadLevels();
       setStatus(t("Level deleted", "Nivel eliminado"));

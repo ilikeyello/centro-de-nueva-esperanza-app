@@ -37,6 +37,12 @@ interface CellCoord {
   col: number;
 }
 
+interface FoundSegment {
+  id: string;
+  start: CellCoord;
+  end: CellCoord;
+}
+
 export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
   const { t, language } = useLanguage();
 
@@ -49,6 +55,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
   const [foundWords, setFoundWords] = useState<Set<string>>(() => new Set());
   const [foundCells, setFoundCells] = useState<Set<string>>(() => new Set());
   const [selectedStart, setSelectedStart] = useState<CellCoord | null>(null);
+  const [foundSegments, setFoundSegments] = useState<FoundSegment[]>([]);
 
   const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
 
@@ -82,6 +89,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
     setFoundWords(new Set());
     setFoundCells(new Set());
     setSelectedStart(null);
+    setFoundSegments([]);
     setError(null);
   };
 
@@ -97,6 +105,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       setFoundWords(new Set());
       setFoundCells(new Set());
       setSelectedStart(null);
+      setFoundSegments([]);
 
       const langParam = language === "es" ? "es" : "en";
       const res = await fetch(
@@ -188,6 +197,13 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       return;
     }
 
+    // Determine the canonical segment direction so our highlight line
+    // always runs from the first letter of the matched word to the last.
+    const segmentStart: CellCoord =
+      matched === candidate ? start : end;
+    const segmentEnd: CellCoord =
+      matched === candidate ? end : start;
+
     setFoundWords((prev) => {
       const next = new Set(prev);
       next.add(matched);
@@ -200,6 +216,20 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         next.add(`${r},${c}`);
       });
       return next;
+    });
+
+    // Record a segment for this found word so we can draw a line across it.
+    setFoundSegments((prev) => {
+      const id = `${matched}-${segmentStart.row},${segmentStart.col}-${segmentEnd.row},${segmentEnd.col}`;
+      if (prev.some((seg) => seg.id === id)) return prev;
+      return [
+        ...prev,
+        {
+          id,
+          start: segmentStart,
+          end: segmentEnd,
+        },
+      ];
     });
 
     setSelectedStart(null);
@@ -327,35 +357,67 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <div className="flex-1">
-          <div
-            className="grid w-full max-w-full mx-auto gap-[1px] rounded-lg bg-neutral-900 p-1.5"
-            style={{
-              gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
-            }}
-          >
-            {puzzle.grid.map((rowStr, r) =>
-              rowStr.split("").map((ch, c) => {
-                const key = `${r},${c}`;
-                const isFound = foundCells.has(key);
-                const isSelectedStart =
-                  selectedStart && selectedStart.row === r && selectedStart.col === c;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => toggleCellSelection(r, c)}
-                    className={`flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
-                      isFound
-                        ? "bg-green-600 text-white rounded-sm"
-                        : isSelectedStart
-                        ? "border border-green-400 rounded-sm text-white"
-                        : "text-neutral-100"
-                    }`}
-                  >
-                    {ch}
-                  </button>
-                );
-              })
+          <div className="relative w-full max-w-full mx-auto">
+            <div
+              className="grid gap-[1px] rounded-lg bg-neutral-900 p-1.5"
+              style={{
+                gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
+              }}
+            >
+              {puzzle.grid.map((rowStr, r) =>
+                rowStr.split("").map((ch, c) => {
+                  const key = `${r},${c}`;
+                  const isFound = foundCells.has(key);
+                  const isSelectedStart =
+                    selectedStart && selectedStart.row === r && selectedStart.col === c;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => toggleCellSelection(r, c)}
+                      className={`flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
+                        isFound
+                          ? "text-green-400"
+                          : isSelectedStart
+                          ? "border border-green-400 rounded-sm text-white"
+                          : "text-neutral-100"
+                      }`}
+                    >
+                      {ch}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            {foundSegments.length > 0 && (
+              <svg
+                className="pointer-events-none absolute inset-0"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                {foundSegments.map((seg) => {
+                  const cols = puzzle.level!.cols;
+                  const rows = puzzle.level!.rows;
+                  const x1 = ((seg.start.col + 0.5) / cols) * 100;
+                  const y1 = ((seg.start.row + 0.5) / rows) * 100;
+                  const x2 = ((seg.end.col + 0.5) / cols) * 100;
+                  const y2 = ((seg.end.row + 0.5) / rows) * 100;
+
+                  return (
+                    <line
+                      key={seg.id}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke="#22c55e"
+                      strokeWidth={3}
+                      strokeLinecap="round"
+                    />
+                  );
+                })}
+              </svg>
             )}
           </div>
         </div>

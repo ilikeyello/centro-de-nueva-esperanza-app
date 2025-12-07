@@ -130,14 +130,21 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`${base}/games/wordsearch/levels/${levelId}`, {
+      const url = `${base}/games/wordsearch/levels/${encodeURIComponent(
+        levelId
+      )}?passcode=${encodeURIComponent(passcode)}`;
+      const res = await fetch(url, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passcode }),
       });
-      const data = await res.json().catch(() => null as any);
+
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json().catch(() => null as any);
+      }
+
       if (!res.ok || (data && data.success === false)) {
-        throw new Error("Delete failed");
+        throw new Error(data?.message || "Delete failed");
       }
       await loadLevels();
       setStatus(t("Level deleted", "Nivel eliminado"));
