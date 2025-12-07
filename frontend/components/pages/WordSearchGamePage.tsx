@@ -369,7 +369,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         <div className="flex-1">
           <div className="relative w-full max-w-full mx-auto">
             <div
-              className="grid gap-[1px] rounded-lg bg-neutral-900 p-1.5"
+              className="relative grid rounded-lg bg-neutral-900 overflow-hidden"
               style={{
                 gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
               }}
@@ -398,40 +398,40 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                   );
                 })
               )}
+
+              {foundSegments.length > 0 && (
+                <svg
+                  className="pointer-events-none absolute inset-0"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
+                  {foundSegments.map((seg, index) => {
+                    const cols = puzzle.level!.cols;
+                    const rows = puzzle.level!.rows;
+                    const x1 = ((seg.start.col + 0.5) / cols) * 100;
+                    const y1 = ((seg.start.row + 0.5) / rows) * 100;
+                    const x2 = ((seg.end.col + 0.5) / cols) * 100;
+                    const y2 = ((seg.end.row + 0.5) / rows) * 100;
+
+                    const color = highlightColors[index % highlightColors.length];
+
+                    return (
+                      <line
+                        key={seg.id}
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
+                        stroke={color}
+                        strokeWidth={3.5}
+                        strokeOpacity={0.6}
+                        strokeLinecap="round"
+                      />
+                    );
+                  })}
+                </svg>
+              )}
             </div>
-
-            {foundSegments.length > 0 && (
-              <svg
-                className="pointer-events-none absolute inset-0"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                {foundSegments.map((seg, index) => {
-                  const cols = puzzle.level!.cols;
-                  const rows = puzzle.level!.rows;
-                  const x1 = ((seg.start.col + 0.5) / cols) * 100;
-                  const y1 = ((seg.start.row + 0.5) / rows) * 100;
-                  const x2 = ((seg.end.col + 0.5) / cols) * 100;
-                  const y2 = ((seg.end.row + 0.5) / rows) * 100;
-
-                  const color = highlightColors[index % highlightColors.length];
-
-                  return (
-                    <line
-                      key={seg.id}
-                      x1={x1}
-                      y1={y1}
-                      x2={x2}
-                      y2={y2}
-                      stroke={color}
-                      strokeWidth={3.5}
-                      strokeOpacity={0.6}
-                      strokeLinecap="round"
-                    />
-                  );
-                })}
-              </svg>
-            )}
           </div>
         </div>
 

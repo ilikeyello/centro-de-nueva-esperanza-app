@@ -31011,15 +31011,15 @@ function WordSearchGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: language === "es" ? "Toca la primera y la última letra de la palabra en línea recta para marcarla." : "Tap the first and last letter of the word in a straight line to mark it." })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:gap-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative w-full max-w-full mx-auto", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "div",
-          {
-            className: "grid gap-[1px] rounded-lg bg-neutral-900 p-1.5",
-            style: {
-              gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`
-            },
-            children: puzzle.grid.map(
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative w-full max-w-full mx-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          className: "relative grid rounded-lg bg-neutral-900 overflow-hidden",
+          style: {
+            gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`
+          },
+          children: [
+            puzzle.grid.map(
               (rowStr, r2) => rowStr.split("").map((ch, c) => {
                 const key = `${r2},${c}`;
                 const isFound = foundCells.has(key);
@@ -31035,41 +31035,41 @@ function WordSearchGamePage({ onNavigate }) {
                   key
                 );
               })
+            ),
+            foundSegments.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "svg",
+              {
+                className: "pointer-events-none absolute inset-0",
+                viewBox: "0 0 100 100",
+                preserveAspectRatio: "none",
+                children: foundSegments.map((seg, index2) => {
+                  const cols = puzzle.level.cols;
+                  const rows = puzzle.level.rows;
+                  const x1 = (seg.start.col + 0.5) / cols * 100;
+                  const y1 = (seg.start.row + 0.5) / rows * 100;
+                  const x2 = (seg.end.col + 0.5) / cols * 100;
+                  const y2 = (seg.end.row + 0.5) / rows * 100;
+                  const color = highlightColors[index2 % highlightColors.length];
+                  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "line",
+                    {
+                      x1,
+                      y1,
+                      x2,
+                      y2,
+                      stroke: color,
+                      strokeWidth: 3.5,
+                      strokeOpacity: 0.6,
+                      strokeLinecap: "round"
+                    },
+                    seg.id
+                  );
+                })
+              }
             )
-          }
-        ),
-        foundSegments.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "svg",
-          {
-            className: "pointer-events-none absolute inset-0",
-            viewBox: "0 0 100 100",
-            preserveAspectRatio: "none",
-            children: foundSegments.map((seg, index2) => {
-              const cols = puzzle.level.cols;
-              const rows = puzzle.level.rows;
-              const x1 = (seg.start.col + 0.5) / cols * 100;
-              const y1 = (seg.start.row + 0.5) / rows * 100;
-              const x2 = (seg.end.col + 0.5) / cols * 100;
-              const y2 = (seg.end.row + 0.5) / rows * 100;
-              const color = highlightColors[index2 % highlightColors.length];
-              return /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "line",
-                {
-                  x1,
-                  y1,
-                  x2,
-                  y2,
-                  stroke: color,
-                  strokeWidth: 3.5,
-                  strokeOpacity: 0.6,
-                  strokeLinecap: "round"
-                },
-                seg.id
-              );
-            })
-          }
-        )
-      ] }) }),
+          ]
+        }
+      ) }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full md:w-64 space-y-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-sm font-semibold text-white flex items-center gap-2", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
