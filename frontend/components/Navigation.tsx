@@ -96,6 +96,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const playerRef = useRef<any | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const lastLayoutIsDesktopRef = useRef<boolean | null>(null);
 
   const [desktopPlayerPosition, setDesktopPlayerPosition] = useState({ top: 160, right: 16 });
   const [dragState, setDragState] = useState<{
@@ -151,6 +152,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
     const w = window as any;
 
+    const prevIsDesktop = lastLayoutIsDesktopRef.current;
+    lastLayoutIsDesktopRef.current = isDesktop;
+    const layoutChanged = prevIsDesktop !== null && prevIsDesktop !== isDesktop;
+
     // When there is no active track, tear down the player
     if (!youtubeTrackUrl) {
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
@@ -165,7 +170,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       return;
     }
 
-    if (playerRef.current && typeof playerRef.current.destroy === "function") {
+    // If the layout (desktop vs mobile) changed while a track is active,
+    // recreate the player so it attaches to the new container.
+    if (layoutChanged && playerRef.current && typeof playerRef.current.destroy === "function") {
       try {
         playerRef.current.destroy();
       } catch {

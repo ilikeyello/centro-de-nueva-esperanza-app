@@ -19447,6 +19447,7 @@ function Navigation({ currentPage, onNavigate }) {
   const playerRef = reactExports.useRef(null);
   const [playerReady, setPlayerReady] = reactExports.useState(false);
   const [isDesktop, setIsDesktop] = reactExports.useState(false);
+  const lastLayoutIsDesktopRef = reactExports.useRef(null);
   const [desktopPlayerPosition, setDesktopPlayerPosition] = reactExports.useState({ top: 160, right: 16 });
   const [dragState, setDragState] = reactExports.useState(null);
   reactExports.useEffect(() => {
@@ -19481,6 +19482,9 @@ function Navigation({ currentPage, onNavigate }) {
   reactExports.useEffect(() => {
     if (typeof window === "undefined") return;
     const w = window;
+    const prevIsDesktop = lastLayoutIsDesktopRef.current;
+    lastLayoutIsDesktopRef.current = isDesktop;
+    const layoutChanged = prevIsDesktop !== null && prevIsDesktop !== isDesktop;
     if (!youtubeTrackUrl) {
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
         try {
@@ -19492,7 +19496,7 @@ function Navigation({ currentPage, onNavigate }) {
       setPlayerReady(false);
       return;
     }
-    if (playerRef.current && typeof playerRef.current.destroy === "function") {
+    if (layoutChanged && playerRef.current && typeof playerRef.current.destroy === "function") {
       try {
         playerRef.current.destroy();
       } catch {
