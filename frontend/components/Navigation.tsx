@@ -249,6 +249,24 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     }
   }, [youtubeTrackUrl, playerReady]);
 
+  // If the context says we should be playing and the player is ready,
+  // make sure the video is actually playing (helps recover from cases
+  // where autoplay was blocked or the player was recreated).
+  useEffect(() => {
+    if (!playerRef.current) return;
+    if (!playerReady) return;
+    if (!youtubeTrackUrl) return;
+    if (!isPlaying) return;
+
+    const player = playerRef.current as any;
+    try {
+      if (typeof player.playVideo === "function") {
+        player.playVideo();
+      }
+    } catch {
+    }
+  }, [isPlaying, playerReady, youtubeTrackUrl]);
+
   const handleDesktopPlayerMouseDown = (event: any) => {
     if (window.innerWidth < 768) {
       return;

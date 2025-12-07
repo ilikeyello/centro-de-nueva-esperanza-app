@@ -19564,6 +19564,19 @@ function Navigation({ currentPage, onNavigate }) {
       }
     }
   }, [youtubeTrackUrl, playerReady]);
+  reactExports.useEffect(() => {
+    if (!playerRef.current) return;
+    if (!playerReady) return;
+    if (!youtubeTrackUrl) return;
+    if (!isPlaying) return;
+    const player = playerRef.current;
+    try {
+      if (typeof player.playVideo === "function") {
+        player.playVideo();
+      }
+    } catch {
+    }
+  }, [isPlaying, playerReady, youtubeTrackUrl]);
   const handleDesktopPlayerMouseDown = (event) => {
     if (window.innerWidth < 768) {
       return;
@@ -30263,10 +30276,7 @@ function Media({ onStartMusic }) {
               },
               className: "flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80",
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-container text-[0.8rem] font-medium text-white md:hidden", children: title.length > 24 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "marquee-track", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: title }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: title })
-                ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: title }) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.8rem] font-medium text-white leading-snug break-words whitespace-normal md:hidden", children: title }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "hidden text-[0.8rem] font-medium text-white truncate md:inline", children: title }),
                 showArtist && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-0.5 truncate text-[0.7rem] text-neutral-400", children: artist })
               ]

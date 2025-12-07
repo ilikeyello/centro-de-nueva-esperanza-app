@@ -953,20 +953,9 @@ export function Media({ onStartMusic }: MediaProps) {
                           }}
                           className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
                         >
-                          {/* Mobile: marquee for long titles only */}
-                          <span className="marquee-container text-[0.8rem] font-medium text-white md:hidden">
-                            {title.length > 24 ? (
-                              <span className="marquee-track">
-                                <span className="marquee-item">{title}</span>
-                                <span className="marquee-item" aria-hidden="true">
-                                  {title}
-                                </span>
-                              </span>
-                            ) : (
-                              <span className="marquee-item truncate">
-                                {title}
-                              </span>
-                            )}
+                          {/* Mobile: static wrapped title, no horizontal marquee */}
+                          <span className="text-[0.8rem] font-medium text-white leading-snug break-words whitespace-normal md:hidden">
+                            {title}
                           </span>
                           {/* Desktop: static truncated title, no marquee */}
                           <span className="hidden text-[0.8rem] font-medium text-white truncate md:inline">
