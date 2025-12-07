@@ -31043,12 +31043,21 @@ function WordSearchGamePage({ onNavigate }) {
                 viewBox: `0 0 ${puzzle.level.cols} ${puzzle.level.rows}`,
                 preserveAspectRatio: "none",
                 children: foundSegments.map((seg, index2) => {
-                  puzzle.level.cols;
-                  puzzle.level.rows;
-                  const x1 = seg.start.col + 0.5;
-                  const y1 = seg.start.row + 0.5;
-                  const x2 = seg.end.col + 0.5;
-                  const y2 = seg.end.row + 0.5;
+                  const cols = puzzle.level.cols;
+                  const rows = puzzle.level.rows;
+                  const dx = seg.end.col - seg.start.col;
+                  const dy = seg.end.row - seg.start.row;
+                  const stepX = Math.sign(dx);
+                  const stepY = Math.sign(dy);
+                  const pad = 0.3;
+                  let x1 = seg.start.col + 0.5 - stepX * pad;
+                  let y1 = seg.start.row + 0.5 - stepY * pad;
+                  let x2 = seg.end.col + 0.5 + stepX * pad;
+                  let y2 = seg.end.row + 0.5 + stepY * pad;
+                  x1 = Math.max(0, Math.min(cols, x1));
+                  y1 = Math.max(0, Math.min(rows, y1));
+                  x2 = Math.max(0, Math.min(cols, x2));
+                  y2 = Math.max(0, Math.min(rows, y2));
                   const color = highlightColors[index2 % highlightColors.length];
                   return /* @__PURE__ */ jsxRuntimeExports.jsx(
                     "line",
