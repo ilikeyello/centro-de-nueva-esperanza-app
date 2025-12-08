@@ -324,9 +324,9 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
   const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
 
-  // Precompute a highlight color for each cell that belongs to a found word segment,
-  // so we can render per-cell highlight bars instead of a single global SVG line.
-  const cellHighlightColors: Record<string, string> = {};
+  // Precompute highlight metadata for each cell (color + direction) so we can render
+  // per-cell highlight bars that follow the word direction (horizontal, vertical, diagonal).
+  const cellHighlights: Record<string, { color: string; dirX: number; dirY: number }> = {};
   if (puzzle.level && foundSegments.length > 0) {
     for (let i = 0; i < foundSegments.length; i++) {
       const seg = foundSegments[i];
@@ -344,8 +344,8 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         const r = seg.start.row + dy * step;
         const c = seg.start.col + dx * step;
         const key = `${r},${c}`;
-        if (!cellHighlightColors[key]) {
-          cellHighlightColors[key] = color;
+        if (!cellHighlights[key]) {
+          cellHighlights[key] = { color, dirX: dx, dirY: dy };
         }
       }
     }
@@ -404,10 +404,34 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
               {puzzle.grid.map((rowStr, r) =>
                 rowStr.split("").map((ch, c) => {
                   const key = `${r},${c}`;
-                  const highlightColor = cellHighlightColors[key];
-                  const isFound = Boolean(highlightColor);
+                  const meta = cellHighlights[key];
+                  const isFound = Boolean(meta);
                   const isSelectedStart =
                     selectedStart && selectedStart.row === r && selectedStart.col === c;
+
+                  let barClass =
+                    "pointer-events-none absolute rounded-full";
+                  let barStyle: any = meta
+                    ? { backgroundColor: meta.color, opacity: 0.6 }
+                    : null;
+
+                  if (meta) {
+                    const { dirX, dirY } = meta;
+                    if (dirY === 0 && dirX !== 0) {
+                      // Horizontal word: horizontal bar across the cell
+                      barClass += " left-[8%] right-[8%] h-[20%]";
+                    } else if (dirX === 0 && dirY !== 0) {
+                      // Vertical word: vertical bar through the cell
+                      barClass += " top-[8%] bottom-[8%] w-[20%] left-1/2 -translate-x-1/2";
+                    } else {
+                      // Diagonal word: rotated bar through the cell
+                      barClass +=
+                        " w-[160%] h-[18%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
+                      const angle = dirX * dirY > 0 ? 45 : -45;
+                      barStyle.transform = `rotate(${angle}deg)`;
+                    }
+                  }
+
                   return (
                     <button
                       key={key}
@@ -422,11 +446,8 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                       }`}
                     >
                       <span className="relative inline-flex h-full w-full items-center justify-center">
-                        {highlightColor && (
-                          <span
-                            className="pointer-events-none absolute left-[10%] right-[10%] h-[18%] rounded-full"
-                            style={{ backgroundColor: highlightColor, opacity: 0.6 }}
-                          />
+                        {meta && (
+                          <span className={barClass} style={barStyle} />
                         )}
                         <span className="relative z-10">{ch}</span>
                       </span>
