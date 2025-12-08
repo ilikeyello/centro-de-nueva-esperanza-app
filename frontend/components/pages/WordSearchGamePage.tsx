@@ -324,6 +324,33 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
   const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
 
+  // Precompute a highlight color for each cell that belongs to a found word segment,
+  // so we can render per-cell highlight bars instead of a single global SVG line.
+  const cellHighlightColors: Record<string, string> = {};
+  if (puzzle.level && foundSegments.length > 0) {
+    for (let i = 0; i < foundSegments.length; i++) {
+      const seg = foundSegments[i];
+      const color = highlightColors[i % highlightColors.length];
+
+      const dx = Math.sign(seg.end.col - seg.start.col);
+      const dy = Math.sign(seg.end.row - seg.start.row);
+      const length =
+        Math.max(
+          Math.abs(seg.end.row - seg.start.row),
+          Math.abs(seg.end.col - seg.start.col)
+        ) + 1;
+
+      for (let step = 0; step < length; step++) {
+        const r = seg.start.row + dy * step;
+        const c = seg.start.col + dx * step;
+        const key = `${r},${c}`;
+        if (!cellHighlightColors[key]) {
+          cellHighlightColors[key] = color;
+        }
+      }
+    }
+  }
+
   return (
     <div className="container mx-auto space-y-4 px-3 py-4 max-w-4xl">
       <div className="flex items-center justify-between gap-2">
@@ -377,7 +404,8 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
               {puzzle.grid.map((rowStr, r) =>
                 rowStr.split("").map((ch, c) => {
                   const key = `${r},${c}`;
-                  const isFound = foundCells.has(key);
+                  const highlightColor = cellHighlightColors[key];
+                  const isFound = Boolean(highlightColor);
                   const isSelectedStart =
                     selectedStart && selectedStart.row === r && selectedStart.col === c;
                   return (
@@ -385,7 +413,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                       key={key}
                       type="button"
                       onClick={() => toggleCellSelection(r, c)}
-                      className={`flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
+                      className={`relative flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
                         isFound
                           ? "text-white"
                           : isSelectedStart
@@ -393,62 +421,18 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                           : "text-neutral-100"
                       }`}
                     >
-                      {ch}
+                      <span className="relative inline-flex h-full w-full items-center justify-center">
+                        {highlightColor && (
+                          <span
+                            className="pointer-events-none absolute left-[10%] right-[10%] h-[18%] rounded-full"
+                            style={{ backgroundColor: highlightColor, opacity: 0.6 }}
+                          />
+                        )}
+                        <span className="relative z-10">{ch}</span>
+                      </span>
                     </button>
                   );
                 })
-              )}
-
-              {foundSegments.length > 0 && (
-                <svg
-                  className="pointer-events-none absolute inset-0"
-                  viewBox={`0 0 ${puzzle.level.cols} ${puzzle.level.rows}`}
-                  preserveAspectRatio="none"
-                >
-                  {foundSegments.map((seg, index) => {
-                    const cols = puzzle.level!.cols;
-                    const rows = puzzle.level!.rows;
-
-                    const dx = seg.end.col - seg.start.col;
-                    const dy = seg.end.row - seg.start.row;
-                    const stepX = Math.sign(dx);
-                    const stepY = Math.sign(dy);
-                    const pad = 0.3;
-
-                    // Vertical offset scaled to the grid height so letters look centered
-                    // across different sizes (5x5 up to 9x9). Slightly more offset on
-                    // denser grids where text tends to sit visually higher.
-                    const baseOffset = 0.08;
-                    const extraOffset = Math.max(0, rows - 5) * 0.02;
-                    const verticalOffset = baseOffset + extraOffset;
-
-                    let x1 = seg.start.col + 0.5 - stepX * pad;
-                    let y1 = seg.start.row + 0.5 - stepY * pad + verticalOffset;
-                    let x2 = seg.end.col + 0.5 + stepX * pad;
-                    let y2 = seg.end.row + 0.5 + stepY * pad + verticalOffset;
-
-                    x1 = Math.max(0, Math.min(cols, x1));
-                    y1 = Math.max(0, Math.min(rows, y1));
-                    x2 = Math.max(0, Math.min(cols, x2));
-                    y2 = Math.max(0, Math.min(rows, y2));
-
-                    const color = highlightColors[index % highlightColors.length];
-
-                    return (
-                      <line
-                        key={seg.id}
-                        x1={x1}
-                        y1={y1}
-                        x2={x2}
-                        y2={y2}
-                        stroke={color}
-                        strokeWidth={0.25}
-                        strokeOpacity={0.7}
-                        strokeLinecap="round"
-                      />
-                    );
-                  })}
-                </svg>
               )}
             </div>
           </div>
