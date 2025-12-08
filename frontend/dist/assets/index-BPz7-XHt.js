@@ -30991,9 +30991,9 @@ function WordSearchGamePage({ onNavigate }) {
         const r2 = seg.start.row + dy * step;
         const c = seg.start.col + dx * step;
         const key = `${r2},${c}`;
-        if (!cellHighlights[key]) {
-          cellHighlights[key] = { color, dirX: dx, dirY: dy };
-        }
+        const existing = cellHighlights[key] || [];
+        existing.push({ color, dirX: dx, dirY: dy });
+        cellHighlights[key] = existing;
       }
     }
   }
@@ -31042,23 +31042,9 @@ function WordSearchGamePage({ onNavigate }) {
           children: puzzle.grid.map(
             (rowStr, r2) => rowStr.split("").map((ch, c) => {
               const key = `${r2},${c}`;
-              const meta = cellHighlights[key];
-              const isFound = Boolean(meta);
+              const metaList = cellHighlights[key];
+              const isFound = Boolean(metaList && metaList.length > 0);
               const isSelectedStart = selectedStart && selectedStart.row === r2 && selectedStart.col === c;
-              let barClass = "pointer-events-none absolute rounded-full";
-              let barStyle = meta ? { backgroundColor: meta.color, opacity: 0.6 } : null;
-              if (meta) {
-                const { dirX, dirY } = meta;
-                if (dirY === 0 && dirX !== 0) {
-                  barClass += " left-[8%] right-[8%] h-[20%]";
-                } else if (dirX === 0 && dirY !== 0) {
-                  barClass += " top-[8%] bottom-[8%] w-[20%] left-1/2 -translate-x-1/2";
-                } else {
-                  barClass += " w-[160%] h-[18%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
-                  const angle = dirX * dirY > 0 ? 45 : -45;
-                  barStyle.transform = `rotate(${angle}deg)`;
-                }
-              }
               return /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "button",
                 {
@@ -31066,7 +31052,31 @@ function WordSearchGamePage({ onNavigate }) {
                   onClick: () => toggleCellSelection(r2, c),
                   className: `relative flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
                   children: /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "relative inline-flex h-full w-full items-center justify-center", children: [
-                    meta && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: barClass, style: barStyle }),
+                    metaList && metaList.map((meta, index2) => {
+                      let barClass = "pointer-events-none absolute rounded-full";
+                      const barStyle = {
+                        backgroundColor: meta.color,
+                        opacity: 0.6
+                      };
+                      const { dirX, dirY } = meta;
+                      if (dirY === 0 && dirX !== 0) {
+                        barClass += " left-[3%] right-[3%] h-[26%]";
+                      } else if (dirX === 0 && dirY !== 0) {
+                        barClass += " top-[3%] bottom-[3%] w-[26%] left-1/2 -translate-x-1/2";
+                      } else {
+                        barClass += " w-[220%] h-[22%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
+                        const angle = dirX * dirY > 0 ? 45 : -45;
+                        barStyle.transform = `rotate(${angle}deg)`;
+                      }
+                      return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          className: barClass,
+                          style: barStyle
+                        },
+                        index2
+                      );
+                    }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "relative z-10", children: ch })
                   ] })
                 },
