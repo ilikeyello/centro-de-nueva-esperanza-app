@@ -326,7 +326,11 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
   // Precompute highlight metadata for each cell (color + direction) so we can render
   // per-cell highlight bars that follow the word direction (horizontal, vertical, diagonal).
-  const cellHighlights: Record<string, { color: string; dirX: number; dirY: number }> = {};
+  // Allow multiple bars per cell so crossing words can both be visible on a shared letter.
+  const cellHighlights: Record<
+    string,
+    { color: string; dirX: number; dirY: number }[]
+  > = {};
   if (puzzle.level && foundSegments.length > 0) {
     for (let i = 0; i < foundSegments.length; i++) {
       const seg = foundSegments[i];
@@ -344,9 +348,9 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         const r = seg.start.row + dy * step;
         const c = seg.start.col + dx * step;
         const key = `${r},${c}`;
-        if (!cellHighlights[key]) {
-          cellHighlights[key] = { color, dirX: dx, dirY: dy };
-        }
+        const existing = cellHighlights[key] || [];
+        existing.push({ color, dirX: dx, dirY: dy });
+        cellHighlights[key] = existing;
       }
     }
   }
@@ -404,33 +408,10 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
               {puzzle.grid.map((rowStr, r) =>
                 rowStr.split("").map((ch, c) => {
                   const key = `${r},${c}`;
-                  const meta = cellHighlights[key];
-                  const isFound = Boolean(meta);
+                  const metaList = cellHighlights[key];
+                  const isFound = Boolean(metaList && metaList.length > 0);
                   const isSelectedStart =
                     selectedStart && selectedStart.row === r && selectedStart.col === c;
-
-                  let barClass =
-                    "pointer-events-none absolute rounded-full";
-                  let barStyle: any = meta
-                    ? { backgroundColor: meta.color, opacity: 0.6 }
-                    : null;
-
-                  if (meta) {
-                    const { dirX, dirY } = meta;
-                    if (dirY === 0 && dirX !== 0) {
-                      // Horizontal word: horizontal bar across the cell
-                      barClass += " left-[8%] right-[8%] h-[20%]";
-                    } else if (dirX === 0 && dirY !== 0) {
-                      // Vertical word: vertical bar through the cell
-                      barClass += " top-[8%] bottom-[8%] w-[20%] left-1/2 -translate-x-1/2";
-                    } else {
-                      // Diagonal word: rotated bar through the cell
-                      barClass +=
-                        " w-[160%] h-[18%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
-                      const angle = dirX * dirY > 0 ? 45 : -45;
-                      barStyle.transform = `rotate(${angle}deg)`;
-                    }
-                  }
 
                   return (
                     <button
@@ -446,9 +427,39 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                       }`}
                     >
                       <span className="relative inline-flex h-full w-full items-center justify-center">
-                        {meta && (
-                          <span className={barClass} style={barStyle} />
-                        )}
+                        {metaList &&
+                          metaList.map((meta, index) => {
+                            let barClass =
+                              "pointer-events-none absolute rounded-full";
+                            const barStyle: any = {
+                              backgroundColor: meta.color,
+                              opacity: 0.6,
+                            };
+
+                            const { dirX, dirY } = meta;
+                            if (dirY === 0 && dirX !== 0) {
+                              // Horizontal word: horizontal bar across the cell, nearly full width
+                              barClass += " left-[3%] right-[3%] h-[26%]";
+                            } else if (dirX === 0 && dirY !== 0) {
+                              // Vertical word: vertical bar through the cell, nearly full height
+                              barClass +=
+                                " top-[3%] bottom-[3%] w-[26%] left-1/2 -translate-x-1/2";
+                            } else {
+                              // Diagonal word: rotated bar through the cell, extended so neighbors connect
+                              barClass +=
+                                " w-[220%] h-[22%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
+                              const angle = dirX * dirY > 0 ? 45 : -45;
+                              barStyle.transform = `rotate(${angle}deg)`;
+                            }
+
+                            return (
+                              <span
+                                key={index}
+                                className={barClass}
+                                style={barStyle}
+                              />
+                            );
+                          })}
                         <span className="relative z-10">{ch}</span>
                       </span>
                     </button>
