@@ -415,10 +415,17 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                     const stepY = Math.sign(dy);
                     const pad = 0.3;
 
+                    // Vertical offset scaled to the grid height so letters look centered
+                    // across different sizes (5x5 up to 9x9). Slightly more offset on
+                    // denser grids where text tends to sit visually higher.
+                    const baseOffset = 0.08;
+                    const extraOffset = Math.max(0, rows - 5) * 0.02;
+                    const verticalOffset = baseOffset + extraOffset;
+
                     let x1 = seg.start.col + 0.5 - stepX * pad;
-                    let y1 = seg.start.row + 0.5 - stepY * pad;
+                    let y1 = seg.start.row + 0.5 - stepY * pad + verticalOffset;
                     let x2 = seg.end.col + 0.5 + stepX * pad;
-                    let y2 = seg.end.row + 0.5 + stepY * pad;
+                    let y2 = seg.end.row + 0.5 + stepY * pad + verticalOffset;
 
                     x1 = Math.max(0, Math.min(cols, x1));
                     y1 = Math.max(0, Math.min(rows, y1));

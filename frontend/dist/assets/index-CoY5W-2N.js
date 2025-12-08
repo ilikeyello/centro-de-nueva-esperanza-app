@@ -31050,10 +31050,13 @@ function WordSearchGamePage({ onNavigate }) {
                   const stepX = Math.sign(dx);
                   const stepY = Math.sign(dy);
                   const pad = 0.3;
+                  const baseOffset = 0.08;
+                  const extraOffset = Math.max(0, rows - 5) * 0.02;
+                  const verticalOffset = baseOffset + extraOffset;
                   let x1 = seg.start.col + 0.5 - stepX * pad;
-                  let y1 = seg.start.row + 0.5 - stepY * pad;
+                  let y1 = seg.start.row + 0.5 - stepY * pad + verticalOffset;
                   let x2 = seg.end.col + 0.5 + stepX * pad;
-                  let y2 = seg.end.row + 0.5 + stepY * pad;
+                  let y2 = seg.end.row + 0.5 + stepY * pad + verticalOffset;
                   x1 = Math.max(0, Math.min(cols, x1));
                   y1 = Math.max(0, Math.min(rows, y1));
                   x2 = Math.max(0, Math.min(cols, x2));
