@@ -31015,9 +31015,9 @@ function WordSearchGamePage({ onNavigate }) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "svg",
           {
-            className: "absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900",
+            className: "absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900 p-1",
             viewBox: `0 0 ${puzzle.level.cols} ${puzzle.level.rows}`,
-            preserveAspectRatio: "none",
+            preserveAspectRatio: "xMidYMid meet",
             children: foundSegments.map((seg, i) => {
               const color = highlightColors[i % highlightColors.length];
               return /* @__PURE__ */ jsxRuntimeExports.jsx(

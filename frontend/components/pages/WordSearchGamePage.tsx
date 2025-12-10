@@ -374,9 +374,9 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
             <div className="relative aspect-square">
               {/* SVG Overlay for Found Words */}
               <svg
-                className="absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900"
+                className="absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900 p-1"
                 viewBox={`0 0 ${puzzle.level.cols} ${puzzle.level.rows}`}
-                preserveAspectRatio="none"
+                preserveAspectRatio="xMidYMid meet"
               >
                 {foundSegments.map((seg, i) => {
                   const color = highlightColors[i % highlightColors.length];
