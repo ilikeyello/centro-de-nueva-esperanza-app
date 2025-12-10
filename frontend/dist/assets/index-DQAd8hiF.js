@@ -31032,12 +31032,13 @@ function WordSearchGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: language === "es" ? "Toca la primera y la última letra de la palabra en línea recta para marcarla." : "Tap the first and last letter of the word in a straight line to mark it." })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:gap-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative w-full max-w-full mx-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative aspect-square", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         "div",
         {
-          className: "relative grid rounded-lg bg-neutral-900",
+          className: "absolute inset-0 grid rounded-lg bg-neutral-900",
           style: {
-            gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`
+            gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
+            gridAutoRows: "1fr"
           },
           children: puzzle.grid.map(
             (rowStr, r2) => rowStr.split("").map((ch, c) => {
@@ -31050,7 +31051,7 @@ function WordSearchGamePage({ onNavigate }) {
                 {
                   type: "button",
                   onClick: () => toggleCellSelection(r2, c),
-                  className: `relative flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
+                  className: `relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
                   children: /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "relative inline-flex h-full w-full items-center justify-center", children: [
                     metaList && metaList.map((meta, index2) => {
                       let barClass = "pointer-events-none absolute rounded-full";
@@ -31085,7 +31086,7 @@ function WordSearchGamePage({ onNavigate }) {
             })
           )
         }
-      ) }) }),
+      ) }) }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full md:w-64 space-y-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-sm font-semibold text-white flex items-center gap-2", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
