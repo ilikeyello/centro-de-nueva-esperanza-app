@@ -31040,10 +31040,10 @@ function WordSearchGamePage({ onNavigate }) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "div",
           {
-            className: "absolute inset-0 grid rounded-lg z-10",
+            className: "absolute inset-0 grid rounded-lg z-10 p-1",
             style: {
               gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
-              gridAutoRows: "1fr"
+              gridTemplateRows: `repeat(${puzzle.level.rows}, minmax(0, 1fr))`
             },
             children: puzzle.grid.map(
               (rowStr, r2) => rowStr.split("").map((ch, c) => {
