@@ -107,10 +107,17 @@ export const setWordsForLevel = api(
       `;
     }
 
-    // Standardize grid size to fixed 9x9 so all puzzles use the same square layout.
+    // Choose a square grid size (rows = cols) based on the longest word, between 5x5 and 9x9.
+    let size = 9;
+    if (cleanedWords.length > 0) {
+      const maxLen = cleanedWords.reduce((max, w) => Math.max(max, w.length), 0);
+      const minSize = 5;
+      size = Math.min(9, Math.max(minSize, maxLen + 2));
+    }
+
     await db.exec`
       UPDATE word_search_levels
-      SET rows = 9, cols = 9
+      SET rows = ${size}, cols = ${size}
       WHERE id = ${id}
     `;
 
@@ -166,7 +173,11 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>
     `;
 
     const useSpanish = (lang || "en") === "es";
-    const size = 9;
+
+    // Use the configured level size, ensuring a square grid between 5x5 and 9x9.
+    const baseSize = Math.max(level.rows, level.cols);
+    const size = Math.max(5, Math.min(9, baseSize || 9));
+
     const rawWords = allWords
       .map((w) => (useSpanish && w.word_es ? w.word_es : w.word_en))
       .map((w) => w.replace(/\s+/g, "").toUpperCase())
