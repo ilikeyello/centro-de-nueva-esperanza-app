@@ -30976,27 +30976,6 @@ function WordSearchGamePage({ onNavigate }) {
     return renderLevelList();
   }
   const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
-  const cellHighlights = {};
-  if (puzzle.level && foundSegments.length > 0) {
-    for (let i = 0; i < foundSegments.length; i++) {
-      const seg = foundSegments[i];
-      const color = highlightColors[i % highlightColors.length];
-      const dx = Math.sign(seg.end.col - seg.start.col);
-      const dy = Math.sign(seg.end.row - seg.start.row);
-      const length = Math.max(
-        Math.abs(seg.end.row - seg.start.row),
-        Math.abs(seg.end.col - seg.start.col)
-      ) + 1;
-      for (let step = 0; step < length; step++) {
-        const r2 = seg.start.row + dy * step;
-        const c = seg.start.col + dx * step;
-        const key = `${r2},${c}`;
-        const existing = cellHighlights[key] || [];
-        existing.push({ color, dirX: dx, dirY: dy });
-        cellHighlights[key] = existing;
-      }
-    }
-  }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-4 px-3 py-4 max-w-4xl", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -31032,61 +31011,60 @@ function WordSearchGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: language === "es" ? "Toca la primera y la última letra de la palabra en línea recta para marcarla." : "Tap the first and last letter of the word in a straight line to mark it." })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:gap-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative aspect-square", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "div",
-        {
-          className: "absolute inset-0 grid rounded-lg bg-neutral-900",
-          style: {
-            gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
-            gridAutoRows: "1fr"
-          },
-          children: puzzle.grid.map(
-            (rowStr, r2) => rowStr.split("").map((ch, c) => {
-              const key = `${r2},${c}`;
-              const metaList = cellHighlights[key];
-              const isFound = Boolean(metaList && metaList.length > 0);
-              const isSelectedStart = selectedStart && selectedStart.row === r2 && selectedStart.col === c;
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative aspect-square", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "svg",
+          {
+            className: "absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900",
+            viewBox: `0 0 ${puzzle.level.cols} ${puzzle.level.rows}`,
+            preserveAspectRatio: "none",
+            children: foundSegments.map((seg, i) => {
+              const color = highlightColors[i % highlightColors.length];
               return /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "button",
+                "line",
                 {
-                  type: "button",
-                  onClick: () => toggleCellSelection(r2, c),
-                  className: `relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
-                  children: /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "relative inline-flex h-full w-full items-center justify-center", children: [
-                    metaList && metaList.map((meta, index2) => {
-                      let barClass = "pointer-events-none absolute rounded-full";
-                      const barStyle = {
-                        backgroundColor: meta.color,
-                        opacity: 0.6
-                      };
-                      const { dirX, dirY } = meta;
-                      if (dirY === 0 && dirX !== 0) {
-                        barClass += " left-[3%] right-[3%] h-[26%]";
-                      } else if (dirX === 0 && dirY !== 0) {
-                        barClass += " top-[3%] bottom-[3%] w-[26%] left-1/2 -translate-x-1/2";
-                      } else {
-                        barClass += " w-[220%] h-[22%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
-                        const angle = dirX * dirY > 0 ? 45 : -45;
-                        barStyle.transform = `rotate(${angle}deg)`;
-                      }
-                      return /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        "span",
-                        {
-                          className: barClass,
-                          style: barStyle
-                        },
-                        index2
-                      );
-                    }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "relative z-10", children: ch })
-                  ] })
+                  x1: seg.start.col + 0.5,
+                  y1: seg.start.row + 0.5,
+                  x2: seg.end.col + 0.5,
+                  y2: seg.end.row + 0.5,
+                  stroke: color,
+                  strokeWidth: "0.8",
+                  strokeLinecap: "round",
+                  strokeOpacity: "0.6"
                 },
-                key
+                seg.id
               );
             })
-          )
-        }
-      ) }) }) }),
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: "absolute inset-0 grid rounded-lg z-10",
+            style: {
+              gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
+              gridAutoRows: "1fr"
+            },
+            children: puzzle.grid.map(
+              (rowStr, r2) => rowStr.split("").map((ch, c) => {
+                const key = `${r2},${c}`;
+                const isFound = foundCells.has(`${r2},${c}`);
+                const isSelectedStart = selectedStart && selectedStart.row === r2 && selectedStart.col === c;
+                return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => toggleCellSelection(r2, c),
+                    className: `relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "relative z-10", children: ch })
+                  },
+                  key
+                );
+              })
+            )
+          }
+        )
+      ] }) }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full md:w-64 space-y-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-sm font-semibold text-white flex items-center gap-2", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),

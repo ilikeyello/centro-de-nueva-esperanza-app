@@ -324,36 +324,8 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
   const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
 
-  // Precompute highlight metadata for each cell (color + direction) so we can render
-  // per-cell highlight bars that follow the word direction (horizontal, vertical, diagonal).
-  // Allow multiple bars per cell so crossing words can both be visible on a shared letter.
-  const cellHighlights: Record<
-    string,
-    { color: string; dirX: number; dirY: number }[]
-  > = {};
-  if (puzzle.level && foundSegments.length > 0) {
-    for (let i = 0; i < foundSegments.length; i++) {
-      const seg = foundSegments[i];
-      const color = highlightColors[i % highlightColors.length];
-
-      const dx = Math.sign(seg.end.col - seg.start.col);
-      const dy = Math.sign(seg.end.row - seg.start.row);
-      const length =
-        Math.max(
-          Math.abs(seg.end.row - seg.start.row),
-          Math.abs(seg.end.col - seg.start.col)
-        ) + 1;
-
-      for (let step = 0; step < length; step++) {
-        const r = seg.start.row + dy * step;
-        const c = seg.start.col + dx * step;
-        const key = `${r},${c}`;
-        const existing = cellHighlights[key] || [];
-        existing.push({ color, dirX: dx, dirY: dy });
-        cellHighlights[key] = existing;
-      }
-    }
-  }
+  // Found word segments are now rendered via a unified SVG overlay,
+  // ensuring continuous lines and perfect alignment.
 
   return (
     <div className="container mx-auto space-y-4 px-3 py-4 max-w-4xl">
@@ -400,8 +372,32 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         <div className="flex-1">
           <div className="relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md">
             <div className="relative aspect-square">
+              {/* SVG Overlay for Found Words */}
+              <svg
+                className="absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900"
+                viewBox={`0 0 ${puzzle.level.cols} ${puzzle.level.rows}`}
+                preserveAspectRatio="none"
+              >
+                {foundSegments.map((seg, i) => {
+                  const color = highlightColors[i % highlightColors.length];
+                  return (
+                    <line
+                      key={seg.id}
+                      x1={seg.start.col + 0.5}
+                      y1={seg.start.row + 0.5}
+                      x2={seg.end.col + 0.5}
+                      y2={seg.end.row + 0.5}
+                      stroke={color}
+                      strokeWidth="0.8"
+                      strokeLinecap="round"
+                      strokeOpacity="0.6"
+                    />
+                  );
+                })}
+              </svg>
+
               <div
-                className="absolute inset-0 grid rounded-lg bg-neutral-900"
+                className="absolute inset-0 grid rounded-lg z-10"
                 style={{
                   gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
                   gridAutoRows: "1fr",
@@ -409,65 +405,31 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
               >
                 {puzzle.grid.map((rowStr, r) =>
                   rowStr.split("").map((ch, c) => {
-                  const key = `${r},${c}`;
-                  const metaList = cellHighlights[key];
-                  const isFound = Boolean(metaList && metaList.length > 0);
-                  const isSelectedStart =
-                    selectedStart && selectedStart.row === r && selectedStart.col === c;
+                    const key = `${r},${c}`;
+                    const isFound = foundCells.has(`${r},${c}`);
+                    const isSelectedStart =
+                      selectedStart &&
+                      selectedStart.row === r &&
+                      selectedStart.col === c;
 
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => toggleCellSelection(r, c)}
-                      className={`relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
-                        isFound
-                          ? "text-white"
-                          : isSelectedStart
-                          ? "border border-green-400 rounded-sm text-white"
-                          : "text-neutral-100"
-                      }`}
-                    >
-                      <span className="relative inline-flex h-full w-full items-center justify-center">
-                        {metaList &&
-                          metaList.map((meta, index) => {
-                            let barClass =
-                              "pointer-events-none absolute rounded-full";
-                            const barStyle: any = {
-                              backgroundColor: meta.color,
-                              opacity: 0.6,
-                            };
-
-                            const { dirX, dirY } = meta;
-                            if (dirY === 0 && dirX !== 0) {
-                              // Horizontal word: horizontal bar across the cell, nearly full width
-                              barClass += " left-[3%] right-[3%] h-[26%]";
-                            } else if (dirX === 0 && dirY !== 0) {
-                              // Vertical word: vertical bar through the cell, nearly full height
-                              barClass +=
-                                " top-[3%] bottom-[3%] w-[26%] left-1/2 -translate-x-1/2";
-                            } else {
-                              // Diagonal word: rotated bar through the cell, extended so neighbors connect
-                              barClass +=
-                                " w-[220%] h-[22%] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
-                              const angle = dirX * dirY > 0 ? 45 : -45;
-                              barStyle.transform = `rotate(${angle}deg)`;
-                            }
-
-                            return (
-                              <span
-                                key={index}
-                                className={barClass}
-                                style={barStyle}
-                              />
-                            );
-                          })}
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => toggleCellSelection(r, c)}
+                        className={`relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
+                          isFound
+                            ? "text-white"
+                            : isSelectedStart
+                            ? "border border-green-400 rounded-sm text-white"
+                            : "text-neutral-100"
+                        }`}
+                      >
                         <span className="relative z-10">{ch}</span>
-                      </span>
-                    </button>
-                  );
-                })
-              )}
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
