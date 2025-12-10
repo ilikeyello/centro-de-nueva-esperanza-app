@@ -398,15 +398,17 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <div className="flex-1">
-          <div className="relative w-full max-w-full mx-auto">
-            <div
-              className="relative grid rounded-lg bg-neutral-900 overflow-hidden"
-              style={{
-                gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
-              }}
-            >
-              {puzzle.grid.map((rowStr, r) =>
-                rowStr.split("").map((ch, c) => {
+          <div className="relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md">
+            <div className="relative aspect-square">
+              <div
+                className="absolute inset-0 grid rounded-lg bg-neutral-900 overflow-hidden"
+                style={{
+                  gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
+                  gridAutoRows: "1fr",
+                }}
+              >
+                {puzzle.grid.map((rowStr, r) =>
+                  rowStr.split("").map((ch, c) => {
                   const key = `${r},${c}`;
                   const metaList = cellHighlights[key];
                   const isFound = Boolean(metaList && metaList.length > 0);
@@ -418,7 +420,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                       key={key}
                       type="button"
                       onClick={() => toggleCellSelection(r, c)}
-                      className={`relative flex aspect-square items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
+                      className={`relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
                         isFound
                           ? "text-white"
                           : isSelectedStart
@@ -466,6 +468,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                   );
                 })
               )}
+              </div>
             </div>
           </div>
         </div>

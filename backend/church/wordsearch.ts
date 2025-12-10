@@ -107,17 +107,12 @@ export const setWordsForLevel = api(
       `;
     }
 
-    // Automatically choose a grid size based on the words, capped at 9x9.
-    if (cleanedWords.length > 0) {
-      const maxLen = cleanedWords.reduce((max, w) => Math.max(max, w.length), 0);
-      const minSize = 5;
-      const size = Math.min(9, Math.max(minSize, maxLen + 2));
-      await db.exec`
-        UPDATE word_search_levels
-        SET rows = ${size}, cols = ${size}
-        WHERE id = ${id}
-      `;
-    }
+    // Standardize grid size to fixed 9x9 so all puzzles use the same square layout.
+    await db.exec`
+      UPDATE word_search_levels
+      SET rows = 9, cols = 9
+      WHERE id = ${id}
+    `;
 
     return { success: true };
   }
@@ -171,19 +166,23 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>
     `;
 
     const useSpanish = (lang || "en") === "es";
+    const size = 9;
     const rawWords = allWords
       .map((w) => (useSpanish && w.word_es ? w.word_es : w.word_en))
       .map((w) => w.replace(/\s+/g, "").toUpperCase())
-      .filter((w) => w.length >= 3 && w.length <= Math.max(level.rows, level.cols));
+      .filter((w) => w.length >= 3 && w.length <= size);
 
     if (rawWords.length === 0) {
       return { level, words: [], grid: [], error: "No words configured for this level" };
     }
 
+    const rows = size;
+    const cols = size;
+
     const grid: PuzzleCell[][] = [];
-    for (let r = 0; r < level.rows; r++) {
+    for (let r = 0; r < rows; r++) {
       const row: PuzzleCell[] = [];
-      for (let c = 0; c < level.cols; c++) {
+      for (let c = 0; c < cols; c++) {
         row.push({ row: r, col: c, letter: "" });
       }
       grid.push(row);
@@ -200,7 +199,7 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>
       if (dr === 0 && dc === 0) return false;
       const endR = r + dr * (word.length - 1);
       const endC = c + dc * (word.length - 1);
-      if (endR < 0 || endR >= level.rows || endC < 0 || endC >= level.cols) return false;
+      if (endR < 0 || endR >= rows || endC < 0 || endC >= cols) return false;
       for (let i = 0; i < word.length; i++) {
         const cell = grid[r + dr * i][c + dc * i];
         if (cell.letter && cell.letter !== word[i]) return false;
@@ -212,8 +211,8 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>
       const maxAttempts = 100;
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const dir = directions[Math.floor(Math.random() * directions.length)];
-        const r = Math.floor(Math.random() * level.rows);
-        const c = Math.floor(Math.random() * level.cols);
+        const r = Math.floor(Math.random() * rows);
+        const c = Math.floor(Math.random() * cols);
         if (!canPlace(word, r, c, dir.dr, dir.dc)) continue;
         for (let i = 0; i < word.length; i++) {
           grid[r + dir.dr * i][c + dir.dc * i].letter = word[i];
@@ -235,8 +234,8 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>
     }
 
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for (let r = 0; r < level.rows; r++) {
-      for (let c = 0; c < level.cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
         if (!grid[r][c].letter) {
           grid[r][c].letter = alphabet[Math.floor(Math.random() * alphabet.length)];
         }
@@ -246,7 +245,7 @@ export const getPuzzle = api<{ id: string; lang?: Query<string> }, PuzzleResult>
     const gridStrings = grid.map((row) => row.map((cell) => cell.letter).join(""));
 
     return {
-      level,
+      level: { ...level, rows, cols },
       words: placedWords,
       grid: gridStrings,
     };
