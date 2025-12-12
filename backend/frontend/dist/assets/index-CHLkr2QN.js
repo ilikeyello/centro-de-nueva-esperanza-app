@@ -29651,7 +29651,7 @@ function Media({ onStartMusic }) {
   const [sermons2, setSermons] = reactExports.useState([]);
   const [selectedSermonId, setSelectedSermonId] = reactExports.useState(null);
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
-  const { playTrack, startQueue, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, startQueue, playlistUrl, livestreamUrl, setLivestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = reactExports.useState(false);
   const [isActuallyLive, setIsActuallyLive] = reactExports.useState(false);
   const [manualLiveOverride, setManualLiveOverride] = reactExports.useState(false);
@@ -29856,8 +29856,8 @@ function Media({ onStartMusic }) {
   }, [previousLivestreamStart]);
   const millisecondsUntilStream = nextLivestream.getTime() - now.getTime();
   const isInCurrentLivestreamWindow = now >= previousLivestreamStart && now <= previousLivestreamEnd;
-  const showCountdown = millisecondsUntilStream > 0 && now >= previousLivestreamEnd && !isStreamPlaying && !isActuallyLive && !manualLiveOverride;
-  const showStartingSoon = millisecondsUntilStream <= 0 && now >= previousLivestreamEnd && !isStreamPlaying && !isActuallyLive && !manualLiveOverride && livestreamUrl;
+  const showCountdown = !isInCurrentLivestreamWindow && millisecondsUntilStream > 0 && !isStreamPlaying && !manualLiveOverride;
+  const showStartingSoon = isInCurrentLivestreamWindow && !isStreamPlaying && !manualLiveOverride && livestreamUrl;
   const countdownLabel = formatCountdown(Math.max(millisecondsUntilStream, 0));
   const nextServiceFormatted = reactExports.useMemo(() => {
     return nextLivestream.toLocaleString(language === "en" ? "en-US" : "es-MX", {
@@ -29867,6 +29867,31 @@ function Media({ onStartMusic }) {
     });
   }, [language, nextLivestream]);
   const nextStreamMessage = language === "en" ? `Next stream: ${nextServiceFormatted}` : `Próxima transmisión: ${nextServiceFormatted}`;
+  reactExports.useEffect(() => {
+    let cancelled = false;
+    const fetchLatestLivestream = async () => {
+      try {
+        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/livestream?ts=${Date.now()}`, {
+          cache: "no-store"
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const latest = ((data == null ? void 0 : data.url) || "").trim();
+        if (cancelled) return;
+        if (typeof latest === "string" && latest !== (livestreamUrl || "")) {
+          setLivestreamUrl(latest);
+        }
+      } catch {
+      }
+    };
+    void fetchLatestLivestream();
+    const intervalId = window.setInterval(fetchLatestLivestream, 3e4);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [livestreamUrl, setLivestreamUrl]);
   reactExports.useEffect(() => {
     if (!isInCurrentLivestreamWindow) return;
     if (showCountdown) return;

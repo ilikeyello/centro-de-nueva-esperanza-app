@@ -71,7 +71,7 @@ export function Media({ onStartMusic }: MediaProps) {
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
-  const { playTrack, startQueue, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, startQueue, playlistUrl, livestreamUrl, setLivestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
   const [manualLiveOverride, setManualLiveOverride] = useState(false);
@@ -350,19 +350,18 @@ export function Media({ onStartMusic }: MediaProps) {
   // Show countdown only when we're before the *next* livestream AND
   // not currently within the previous service's live window AND
   // the stream is not actually live (unless manually overridden).
+  // Before we enter the current livestream window, show a countdown.
   const showCountdown =
-    millisecondsUntilStream > 0 && 
-    now >= previousLivestreamEnd && 
-    !isStreamPlaying && 
-    !isActuallyLive && 
+    !isInCurrentLivestreamWindow &&
+    millisecondsUntilStream > 0 &&
+    !isStreamPlaying &&
     !manualLiveOverride;
 
-  // Show "Starting Soon" when countdown is done but stream isn't live yet
+  // Once we're in the current livestream window but the player isn't
+  // playing yet, show a "Starting Soon" overlay instead of a countdown.
   const showStartingSoon =
-    millisecondsUntilStream <= 0 && 
-    now >= previousLivestreamEnd && 
-    !isStreamPlaying && 
-    !isActuallyLive && 
+    isInCurrentLivestreamWindow &&
+    !isStreamPlaying &&
     !manualLiveOverride &&
     livestreamUrl; // Only show if there's a livestream URL
 
@@ -379,6 +378,41 @@ export function Media({ onStartMusic }: MediaProps) {
     language === "en"
       ? `Next stream: ${nextServiceFormatted}`
       : `Próxima transmisión: ${nextServiceFormatted}`;
+
+  // Periodically refresh the livestream URL from the backend so that
+  // changes made on the Admin page propagate without a full page reload.
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchLatestLivestream = async () => {
+      try {
+        const base = import.meta.env.DEV
+          ? "http://127.0.0.1:4000"
+          : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/livestream?ts=${Date.now()}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const latest = (data?.url || "").trim();
+        if (cancelled) return;
+        if (typeof latest === "string" && latest !== (livestreamUrl || "")) {
+          setLivestreamUrl(latest);
+        }
+      } catch {
+        // Ignore errors; we'll try again on the next interval.
+      }
+    };
+
+    // Fetch once on mount, then at an interval.
+    void fetchLatestLivestream();
+    const intervalId = window.setInterval(fetchLatestLivestream, 30000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [livestreamUrl, setLivestreamUrl]);
 
   // When countdown ends and we are in the current live window, try to start playback once.
   useEffect(() => {
