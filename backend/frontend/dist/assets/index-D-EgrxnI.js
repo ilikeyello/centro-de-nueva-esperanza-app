@@ -33077,6 +33077,7 @@ function AdminUpload() {
   }, []);
   const handleSavePlaylist = async () => {
     setPlaylistStatus(null);
+    const trimmedPasscode = uploadPasscode.trim();
     if (!playlistUrl.trim()) {
       setPlaylistStatus(
         t(
@@ -33086,7 +33087,7 @@ function AdminUpload() {
       );
       return;
     }
-    if (!uploadPasscode) {
+    if (!trimmedPasscode) {
       setPlaylistStatus(
         t(
           "Enter the upload passcode before saving.",
@@ -33101,7 +33102,7 @@ function AdminUpload() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          passcode: uploadPasscode,
+          passcode: trimmedPasscode,
           url: playlistUrl.trim()
         })
       });
@@ -33131,7 +33132,8 @@ function AdminUpload() {
   };
   const handleSaveLivestream = async () => {
     setLivestreamStatus(null);
-    if (!uploadPasscode) {
+    const trimmedPasscode = uploadPasscode.trim();
+    if (!trimmedPasscode) {
       setLivestreamStatus(
         t(
           "Enter the upload passcode before saving.",
@@ -33146,7 +33148,7 @@ function AdminUpload() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          passcode: uploadPasscode,
+          passcode: trimmedPasscode,
           url: livestreamUrl.trim()
         })
       });
