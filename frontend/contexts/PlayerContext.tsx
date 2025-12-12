@@ -243,16 +243,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (!queue || queue.length === 0) return;
     if (queueIndex == null) return;
 
-    const nextIndex = queueIndex + 1;
-    if (nextIndex >= queue.length) {
-      // Reached end of queue; stop playback.
-      setCurrentTrack(null);
-      setQueueIndex(null);
-      setCurrentTrackTitle(null);
-      setCurrentTrackArtist(null);
-      setIsPlaying(false);
-      return;
-    }
+    // Advance to the next index, looping back to the beginning when we reach the end
+    const nextIndex = queueIndex + 1 >= queue.length ? 0 : queueIndex + 1;
 
     setQueueIndex(nextIndex);
     setCurrentTrack(queue[nextIndex]);

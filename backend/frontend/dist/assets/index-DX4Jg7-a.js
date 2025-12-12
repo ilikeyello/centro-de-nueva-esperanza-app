@@ -15261,7 +15261,23 @@ function useMutation(options, queryClient2) {
 }
 const LanguageContext = reactExports.createContext(void 0);
 function LanguageProvider({ children }) {
-  const [language, setLanguage] = reactExports.useState("en");
+  const [language, setLanguage] = reactExports.useState(() => {
+    if (typeof window === "undefined") return "es";
+    try {
+      const stored = window.localStorage.getItem("cne_language");
+      if (stored === "en" || stored === "es") return stored;
+    } catch {
+    }
+    return "es";
+  });
+  reactExports.useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("cne_language", language);
+      }
+    } catch {
+    }
+  }, [language]);
   const toggleLanguage = () => {
     setLanguage((prev) => prev === "en" ? "es" : "en");
   };
@@ -15280,8 +15296,15 @@ function useLanguage() {
 const PlayerContext = reactExports.createContext(void 0);
 function PlayerProvider({ children }) {
   const [currentTrack, setCurrentTrack] = reactExports.useState(null);
+  const [currentTrackTitle, setCurrentTrackTitle] = reactExports.useState(null);
+  const [currentTrackArtist, setCurrentTrackArtist] = reactExports.useState(null);
   const [isPlaying, setIsPlaying] = reactExports.useState(false);
   const [isMinimized, setIsMinimized] = reactExports.useState(false);
+  const [playlistIndex, setPlaylistIndex] = reactExports.useState(null);
+  const [playlistShuffle, setPlaylistShuffle] = reactExports.useState(false);
+  const [queue, setQueue] = reactExports.useState([]);
+  const [queueIndex, setQueueIndex] = reactExports.useState(null);
+  const [queueMeta, setQueueMeta] = reactExports.useState([]);
   const defaultPlaylistUrl = "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
   const [playlistUrl, setPlaylistUrlState] = reactExports.useState(() => {
     if (typeof window === "undefined") return defaultPlaylistUrl;
@@ -15327,7 +15350,9 @@ function PlayerProvider({ children }) {
     const loadPlaylistUrl = async () => {
       try {
         const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/playlist`);
+        const res = await fetch(`${base}/playlist?ts=${Date.now()}`, {
+          cache: "no-store"
+        });
         if (res.ok) {
           const data = await res.json();
           if (data.url) {
@@ -15347,13 +15372,84 @@ function PlayerProvider({ children }) {
   }, []);
   const playTrack = (url) => {
     setCurrentTrack(url);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
+    setPlaylistIndex(null);
+    setPlaylistShuffle(false);
+    setQueue([]);
+    setQueueIndex(null);
+    setQueueMeta([]);
     setIsPlaying(true);
     setIsMinimized(false);
   };
+  const playPlaylistFromIndex = (index2) => {
+    const safeIndex = Number.isFinite(index2) && index2 >= 0 ? Math.floor(index2) : 0;
+    setPlaylistShuffle(false);
+    setPlaylistIndex(safeIndex);
+    setCurrentTrack(playlistUrl);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+  const playPlaylistShuffle = () => {
+    setPlaylistShuffle(true);
+    setPlaylistIndex(0);
+    setCurrentTrack(playlistUrl);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+  const startQueue = (urls, startIndex, meta) => {
+    const safeUrls = Array.isArray(urls) ? urls.filter((u) => typeof u === "string" && u.trim().length > 0) : [];
+    if (safeUrls.length === 0) {
+      return;
+    }
+    const maxIndex = safeUrls.length - 1;
+    const clampedIndex = Math.min(Math.max(0, Math.floor(startIndex || 0)), maxIndex);
+    const normalizedMeta = Array.isArray(meta) && meta.length ? meta.map((m) => ({
+      title: typeof m.title === "string" ? m.title : "",
+      artist: typeof m.artist === "string" ? m.artist : ""
+    })) : safeUrls.map(() => ({ title: "", artist: "" }));
+    setQueue(safeUrls);
+    setQueueMeta(normalizedMeta);
+    setQueueIndex(clampedIndex);
+    setPlaylistIndex(null);
+    setPlaylistShuffle(false);
+    setCurrentTrack(safeUrls[clampedIndex]);
+    const metaForTrack = normalizedMeta[clampedIndex];
+    setCurrentTrackTitle((metaForTrack == null ? void 0 : metaForTrack.title) || null);
+    setCurrentTrackArtist((metaForTrack == null ? void 0 : metaForTrack.artist) || null);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+  const playNextInQueue = () => {
+    if (!queue || queue.length === 0) return;
+    if (queueIndex == null) return;
+    const nextIndex = queueIndex + 1 >= queue.length ? 0 : queueIndex + 1;
+    setQueueIndex(nextIndex);
+    setCurrentTrack(queue[nextIndex]);
+    const metaForTrack = queueMeta[nextIndex];
+    setCurrentTrackTitle((metaForTrack == null ? void 0 : metaForTrack.title) || null);
+    setCurrentTrackArtist((metaForTrack == null ? void 0 : metaForTrack.artist) || null);
+    setIsPlaying(true);
+  };
   const pauseTrack = () => setIsPlaying(false);
+  const resumeTrack = () => {
+    if (!currentTrack) return;
+    setIsPlaying(true);
+  };
   const toggleMinimize = () => setIsMinimized((prev) => !prev);
   const closePlayer = () => {
     setCurrentTrack(null);
+    setCurrentTrackTitle(null);
+    setCurrentTrackArtist(null);
+    setPlaylistIndex(null);
+    setPlaylistShuffle(false);
+    setQueue([]);
+    setQueueIndex(null);
+    setQueueMeta([]);
     setIsPlaying(false);
     setIsMinimized(false);
   };
@@ -15382,12 +15478,24 @@ function PlayerProvider({ children }) {
     {
       value: {
         currentTrack,
+        currentTrackTitle,
+        currentTrackArtist,
         isPlaying,
         isMinimized,
         playlistUrl,
         livestreamUrl,
+        playlistIndex,
+        playlistShuffle,
+        queue,
+        queueIndex,
+        queueMeta,
         playTrack,
+        playPlaylistFromIndex,
+        playPlaylistShuffle,
+        startQueue,
+        playNextInQueue,
         pauseTrack,
+        resumeTrack,
         toggleMinimize,
         closePlayer,
         setPlaylistUrl,
@@ -15402,6 +15510,154 @@ function usePlayer() {
   if (!context) throw new Error("usePlayer must be used within PlayerProvider");
   return context;
 }
+const NotificationContext = reactExports.createContext(void 0);
+const useNotifications = () => {
+  const context = reactExports.useContext(NotificationContext);
+  if (!context) {
+    throw new Error("useNotifications must be used within NotificationProvider");
+  }
+  return context;
+};
+const NotificationProvider = ({ children }) => {
+  const [isSupported, setIsSupported] = reactExports.useState(false);
+  const [permission, setPermission] = reactExports.useState("default");
+  const [subscription, setSubscription] = reactExports.useState(null);
+  const [isSubscribed, setIsSubscribed] = reactExports.useState(false);
+  reactExports.useEffect(() => {
+    const checkSupport = () => {
+      const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+      setIsSupported(supported);
+      if (supported) {
+        setPermission(Notification.permission);
+        navigator.serviceWorker.ready.then((registration) => {
+          return registration.pushManager.getSubscription();
+        }).then((sub) => {
+          setSubscription(sub);
+          setIsSubscribed(!!sub);
+        }).catch((error) => {
+          console.error("Error checking subscription:", error);
+        });
+      }
+    };
+    checkSupport();
+  }, []);
+  const requestPermission = async () => {
+    if (!isSupported) {
+      console.warn("Push notifications not supported");
+      return false;
+    }
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+      return result === "granted";
+    } catch (error) {
+      console.error("Error requesting notification permission:", error);
+      return false;
+    }
+  };
+  const subscribeToNotifications = async () => {
+    if (!isSupported || permission !== "granted") {
+      console.warn("Permission not granted or not supported");
+      return null;
+    }
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array("BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E")
+      });
+      setSubscription(sub);
+      setIsSubscribed(true);
+      await sendSubscriptionToBackend(sub);
+      return sub;
+    } catch (error) {
+      console.error("Error subscribing to notifications:", error);
+      return null;
+    }
+  };
+  const unsubscribeFromNotifications = async () => {
+    if (!subscription) {
+      return;
+    }
+    try {
+      await subscription.unsubscribe();
+      setSubscription(null);
+      setIsSubscribed(false);
+      await removeSubscriptionFromBackend(subscription);
+    } catch (error) {
+      console.error("Error unsubscribing from notifications:", error);
+    }
+  };
+  const sendSubscriptionToBackend = async (subscription2) => {
+    try {
+      let language;
+      try {
+        if (typeof window !== "undefined") {
+          const stored = window.localStorage.getItem("cne_language");
+          if (stored === "en" || stored === "es") language = stored;
+        }
+      } catch {
+      }
+      const response = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          endpoint: subscription2.endpoint,
+          keys: {
+            p256dh: subscription2.getKey("p256dh") ? btoa(String.fromCharCode(...new Uint8Array(subscription2.getKey("p256dh")))) : "",
+            auth: subscription2.getKey("auth") ? btoa(String.fromCharCode(...new Uint8Array(subscription2.getKey("auth")))) : ""
+          },
+          language
+        })
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save subscription");
+      }
+    } catch (error) {
+      console.error("Error sending subscription to backend:", error);
+    }
+  };
+  const removeSubscriptionFromBackend = async (subscription2) => {
+    try {
+      const response = await fetch("https://prod-cne-sh82.encr.app/notifications/unsubscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          endpoint: subscription2.endpoint
+        })
+      });
+      if (!response.ok) {
+        throw new Error("Failed to remove subscription");
+      }
+    } catch (error) {
+      console.error("Error removing subscription from backend:", error);
+    }
+  };
+  function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+  const value = {
+    isSupported,
+    permission,
+    subscription,
+    requestPermission,
+    subscribeToNotifications,
+    unsubscribeFromNotifications,
+    isSubscribed
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(NotificationContext.Provider, { value, children });
+};
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15501,18 +15757,37 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$E = [
+const __iconNode$I = [
   ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
   ["path", { d: "M19 12H5", key: "x3x0zl" }]
 ];
-const ArrowLeft = createLucideIcon("arrow-left", __iconNode$E);
+const ArrowLeft = createLucideIcon("arrow-left", __iconNode$I);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$D = [
+const __iconNode$H = [
+  ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
+  [
+    "path",
+    {
+      d: "M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742",
+      key: "178tsu"
+    }
+  ],
+  ["path", { d: "m2 2 20 20", key: "1ooewy" }],
+  ["path", { d: "M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05", key: "1hqiys" }]
+];
+const BellOff = createLucideIcon("bell-off", __iconNode$H);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$G = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -15522,14 +15797,14 @@ const __iconNode$D = [
     }
   ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$D);
+const Bell = createLucideIcon("bell", __iconNode$G);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$C = [
+const __iconNode$F = [
   [
     "path",
     {
@@ -15552,14 +15827,14 @@ const __iconNode$C = [
   ["path", { d: "M6 18a4 4 0 0 1-1.967-.516", key: "2e4loj" }],
   ["path", { d: "M19.967 17.484A4 4 0 0 1 18 18", key: "159ez6" }]
 ];
-const Brain = createLucideIcon("brain", __iconNode$C);
+const Brain = createLucideIcon("brain", __iconNode$F);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$B = [
+const __iconNode$E = [
   ["path", { d: "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z", key: "1b4qmf" }],
   ["path", { d: "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2", key: "i71pzd" }],
   ["path", { d: "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2", key: "10jefs" }],
@@ -15568,82 +15843,82 @@ const __iconNode$B = [
   ["path", { d: "M10 14h4", key: "kelpxr" }],
   ["path", { d: "M10 18h4", key: "1ulq68" }]
 ];
-const Building2 = createLucideIcon("building-2", __iconNode$B);
+const Building2 = createLucideIcon("building-2", __iconNode$E);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$A = [
+const __iconNode$D = [
   ["path", { d: "M8 2v4", key: "1cmpym" }],
   ["path", { d: "M16 2v4", key: "4m81vk" }],
   ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
   ["path", { d: "M3 10h18", key: "8toen8" }]
 ];
-const Calendar = createLucideIcon("calendar", __iconNode$A);
+const Calendar = createLucideIcon("calendar", __iconNode$D);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$z = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$z);
+const __iconNode$C = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$C);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$y = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$y);
+const __iconNode$B = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$B);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$x = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$x);
+const __iconNode$A = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$A);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$w = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$w);
+const __iconNode$z = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$z);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$v = [
+const __iconNode$y = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
   ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
 ];
-const CircleAlert = createLucideIcon("circle-alert", __iconNode$v);
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$y);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$u = [
+const __iconNode$x = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
 ];
-const Clock = createLucideIcon("clock", __iconNode$u);
+const Clock = createLucideIcon("clock", __iconNode$x);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$t = [
+const __iconNode$w = [
   ["path", { d: "M10 2v2", key: "7u0qdc" }],
   ["path", { d: "M14 2v2", key: "6buw04" }],
   [
@@ -15655,38 +15930,38 @@ const __iconNode$t = [
   ],
   ["path", { d: "M6 2v2", key: "colzsn" }]
 ];
-const Coffee = createLucideIcon("coffee", __iconNode$t);
+const Coffee = createLucideIcon("coffee", __iconNode$w);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$s = [
+const __iconNode$v = [
   ["line", { x1: "12", x2: "12", y1: "2", y2: "22", key: "7eqyqh" }],
   ["path", { d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6", key: "1b0p4s" }]
 ];
-const DollarSign = createLucideIcon("dollar-sign", __iconNode$s);
+const DollarSign = createLucideIcon("dollar-sign", __iconNode$v);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$r = [
+const __iconNode$u = [
   [
     "path",
     { d: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z", key: "1jg4f8" }
   ]
 ];
-const Facebook = createLucideIcon("facebook", __iconNode$r);
+const Facebook = createLucideIcon("facebook", __iconNode$u);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$q = [
+const __iconNode$t = [
   ["line", { x1: "6", x2: "10", y1: "11", y2: "11", key: "1gktln" }],
   ["line", { x1: "8", x2: "8", y1: "9", y2: "13", key: "qnk9ow" }],
   ["line", { x1: "15", x2: "15.01", y1: "12", y2: "12", key: "krot7o" }],
@@ -15699,26 +15974,40 @@ const __iconNode$q = [
     }
   ]
 ];
-const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$q);
+const Gamepad2 = createLucideIcon("gamepad-2", __iconNode$t);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$p = [
+const __iconNode$s = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
   ["path", { d: "M2 12h20", key: "9i4pu4" }]
 ];
-const Globe = createLucideIcon("globe", __iconNode$p);
+const Globe = createLucideIcon("globe", __iconNode$s);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [
+const __iconNode$r = [
+  ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" }],
+  ["path", { d: "M3 9h18", key: "1pudct" }],
+  ["path", { d: "M3 15h18", key: "5xshup" }],
+  ["path", { d: "M9 3v18", key: "fh3hqa" }],
+  ["path", { d: "M15 3v18", key: "14nvp0" }]
+];
+const Grid3x3 = createLucideIcon("grid-3x3", __iconNode$r);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$q = [
   [
     "path",
     {
@@ -15727,14 +16016,14 @@ const __iconNode$o = [
     }
   ]
 ];
-const Heart = createLucideIcon("heart", __iconNode$o);
+const Heart = createLucideIcon("heart", __iconNode$q);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$n = [
+const __iconNode$p = [
   ["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", key: "5wwlr5" }],
   [
     "path",
@@ -15744,26 +16033,14 @@ const __iconNode$n = [
     }
   ]
 ];
-const House = createLucideIcon("house", __iconNode$n);
+const House = createLucideIcon("house", __iconNode$p);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$m = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "M12 16v-4", key: "1dtifu" }],
-  ["path", { d: "M12 8h.01", key: "e9boi3" }]
-];
-const Info = createLucideIcon("info", __iconNode$m);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$l = [
+const __iconNode$o = [
   ["path", { d: "m5 8 6 6", key: "1wu5hv" }],
   ["path", { d: "m4 14 6-6 2-3", key: "1k1g8d" }],
   ["path", { d: "M2 5h12", key: "or177f" }],
@@ -15771,25 +16048,33 @@ const __iconNode$l = [
   ["path", { d: "m22 22-5-10-5 10", key: "don7ne" }],
   ["path", { d: "M14 18h6", key: "1m8k6r" }]
 ];
-const Languages = createLucideIcon("languages", __iconNode$l);
+const Languages = createLucideIcon("languages", __iconNode$o);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$k = [
+const __iconNode$n = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
+const LoaderCircle = createLucideIcon("loader-circle", __iconNode$n);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$m = [
   ["rect", { width: "20", height: "16", x: "2", y: "4", rx: "2", key: "18n3k1" }],
   ["path", { d: "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7", key: "1ocrg3" }]
 ];
-const Mail = createLucideIcon("mail", __iconNode$k);
+const Mail = createLucideIcon("mail", __iconNode$m);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$j = [
+const __iconNode$l = [
   [
     "path",
     {
@@ -15799,7 +16084,31 @@ const __iconNode$j = [
   ],
   ["circle", { cx: "12", cy: "10", r: "3", key: "ilqhr7" }]
 ];
-const MapPin = createLucideIcon("map-pin", __iconNode$j);
+const MapPin = createLucideIcon("map-pin", __iconNode$l);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$k = [
+  ["polyline", { points: "15 3 21 3 21 9", key: "mznyad" }],
+  ["polyline", { points: "9 21 3 21 3 15", key: "1avn1i" }],
+  ["line", { x1: "21", x2: "14", y1: "3", y2: "10", key: "ota7mn" }],
+  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
+];
+const Maximize2 = createLucideIcon("maximize-2", __iconNode$k);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$j = [
+  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
+  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
+];
+const Megaphone = createLucideIcon("megaphone", __iconNode$j);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15807,12 +16116,9 @@ const MapPin = createLucideIcon("map-pin", __iconNode$j);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$i = [
-  ["polyline", { points: "15 3 21 3 21 9", key: "mznyad" }],
-  ["polyline", { points: "9 21 3 21 3 15", key: "1avn1i" }],
-  ["line", { x1: "21", x2: "14", y1: "3", y2: "10", key: "ota7mn" }],
-  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
+  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
 ];
-const Maximize2 = createLucideIcon("maximize-2", __iconNode$i);
+const MessageCircle = createLucideIcon("message-circle", __iconNode$i);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15820,10 +16126,12 @@ const Maximize2 = createLucideIcon("maximize-2", __iconNode$i);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$h = [
-  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
-  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
+  ["polyline", { points: "4 14 10 14 10 20", key: "11kfnr" }],
+  ["polyline", { points: "20 10 14 10 14 4", key: "rlmsce" }],
+  ["line", { x1: "14", x2: "21", y1: "10", y2: "3", key: "o5lafz" }],
+  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
 ];
-const Megaphone = createLucideIcon("megaphone", __iconNode$h);
+const Minimize2 = createLucideIcon("minimize-2", __iconNode$h);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15831,9 +16139,11 @@ const Megaphone = createLucideIcon("megaphone", __iconNode$h);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$g = [
-  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
+  ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
+  ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
+  ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }]
 ];
-const MessageCircle = createLucideIcon("message-circle", __iconNode$g);
+const Music = createLucideIcon("music", __iconNode$g);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15841,12 +16151,10 @@ const MessageCircle = createLucideIcon("message-circle", __iconNode$g);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$f = [
-  ["polyline", { points: "4 14 10 14 10 20", key: "11kfnr" }],
-  ["polyline", { points: "20 10 14 10 14 4", key: "rlmsce" }],
-  ["line", { x1: "14", x2: "21", y1: "10", y2: "3", key: "o5lafz" }],
-  ["line", { x1: "3", x2: "10", y1: "21", y2: "14", key: "1atl0r" }]
+  ["rect", { x: "14", y: "4", width: "4", height: "16", rx: "1", key: "zuxfzm" }],
+  ["rect", { x: "6", y: "4", width: "4", height: "16", rx: "1", key: "1okwgv" }]
 ];
-const Minimize2 = createLucideIcon("minimize-2", __iconNode$f);
+const Pause = createLucideIcon("pause", __iconNode$f);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15854,34 +16162,6 @@ const Minimize2 = createLucideIcon("minimize-2", __iconNode$f);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$e = [
-  ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
-  ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
-  ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }]
-];
-const Music = createLucideIcon("music", __iconNode$e);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$d = [
-  [
-    "path",
-    {
-      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
-      key: "1a8usu"
-    }
-  ]
-];
-const Pen = createLucideIcon("pen", __iconNode$d);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$c = [
   [
     "path",
     {
@@ -15890,15 +16170,37 @@ const __iconNode$c = [
     }
   ]
 ];
-const Phone = createLucideIcon("phone", __iconNode$c);
+const Phone = createLucideIcon("phone", __iconNode$e);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$b = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
-const Play = createLucideIcon("play", __iconNode$b);
+const __iconNode$d = [["polygon", { points: "6 3 20 12 6 21 6 3", key: "1oa8hb" }]];
+const Play = createLucideIcon("play", __iconNode$d);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$c = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
+];
+const Plus = createLucideIcon("plus", __iconNode$c);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$b = [
+  ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
+  ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
+];
+const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$b);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -15906,28 +16208,6 @@ const Play = createLucideIcon("play", __iconNode$b);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$a = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "M12 5v14", key: "s699le" }]
-];
-const Plus = createLucideIcon("plus", __iconNode$a);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$9 = [
-  ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
-  ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
-];
-const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$9);
-/**
- * @license lucide-react v0.484.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$8 = [
   [
     "path",
     {
@@ -15938,7 +16218,29 @@ const __iconNode$8 = [
   ["path", { d: "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7", key: "1ydtos" }],
   ["path", { d: "M7 3v4a1 1 0 0 0 1 1h7", key: "t51u73" }]
 ];
-const Save = createLucideIcon("save", __iconNode$8);
+const Save = createLucideIcon("save", __iconNode$a);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$9 = [
+  ["polygon", { points: "5 4 15 12 5 20 5 4", key: "16p6eg" }],
+  ["line", { x1: "19", x2: "19", y1: "5", y2: "19", key: "futhcm" }]
+];
+const SkipForward = createLucideIcon("skip-forward", __iconNode$9);
+/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$8 = [
+  ["rect", { width: "14", height: "20", x: "5", y: "2", rx: "2", ry: "2", key: "1yt0o3" }],
+  ["path", { d: "M12 18h.01", key: "mhygvu" }]
+];
+const Smartphone = createLucideIcon("smartphone", __iconNode$8);
 /**
  * @license lucide-react v0.484.0 - ISC
  *
@@ -19080,9 +19382,15 @@ function Navigation({ currentPage, onNavigate }) {
   const { t, language, toggleLanguage } = useLanguage();
   const {
     currentTrack: youtubeTrackUrl,
+    currentTrackTitle,
+    currentTrackArtist,
+    isPlaying,
     isMinimized,
     toggleMinimize,
-    closePlayer: closeYouTubePlayer
+    closePlayer: closeYouTubePlayer,
+    pauseTrack,
+    resumeTrack,
+    playNextInQueue
   } = usePlayer();
   const getEmbedUrl = (url) => {
     if (!url) return url;
@@ -19102,9 +19410,47 @@ function Navigation({ currentPage, onNavigate }) {
     }
     return url;
   };
-  const embedUrl = getEmbedUrl(youtubeTrackUrl);
+  const handlePlayClick = () => {
+    if (!playerRef.current) return;
+    const player = playerRef.current;
+    try {
+      if (typeof player.playVideo === "function") {
+        player.playVideo();
+      }
+    } catch {
+    }
+    resumeTrack();
+  };
+  const handlePauseClick = () => {
+    if (!playerRef.current) return;
+    const player = playerRef.current;
+    try {
+      if (typeof player.pauseVideo === "function") {
+        player.pauseVideo();
+      }
+    } catch {
+    }
+    pauseTrack();
+  };
+  const handleNextClick = () => {
+    playNextInQueue();
+  };
+  getEmbedUrl(youtubeTrackUrl);
+  const playerRef = reactExports.useRef(null);
+  const [playerReady, setPlayerReady] = reactExports.useState(false);
+  const [isDesktop, setIsDesktop] = reactExports.useState(false);
+  const lastLayoutIsDesktopRef = reactExports.useRef(null);
   const [desktopPlayerPosition, setDesktopPlayerPosition] = reactExports.useState({ top: 160, right: 16 });
   const [dragState, setDragState] = reactExports.useState(null);
+  reactExports.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const updateIsDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    updateIsDesktop();
+    window.addEventListener("resize", updateIsDesktop);
+    return () => window.removeEventListener("resize", updateIsDesktop);
+  }, []);
   reactExports.useEffect(() => {
     if (!dragState) return;
     const handleMouseMove = (event) => {
@@ -19125,6 +19471,108 @@ function Navigation({ currentPage, onNavigate }) {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragState]);
+  reactExports.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const w = window;
+    const prevIsDesktop = lastLayoutIsDesktopRef.current;
+    lastLayoutIsDesktopRef.current = isDesktop;
+    const layoutChanged = prevIsDesktop !== null && prevIsDesktop !== isDesktop;
+    if (!youtubeTrackUrl) {
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        try {
+          playerRef.current.destroy();
+        } catch {
+        }
+      }
+      playerRef.current = null;
+      setPlayerReady(false);
+      return;
+    }
+    if (layoutChanged && playerRef.current && typeof playerRef.current.destroy === "function") {
+      try {
+        playerRef.current.destroy();
+      } catch {
+      }
+      playerRef.current = null;
+      setPlayerReady(false);
+    }
+    const createPlayer = () => {
+      if (!w.YT || !w.YT.Player) return;
+      if (playerRef.current) return;
+      const container = document.getElementById("global-music-player");
+      if (!container) return;
+      playerRef.current = new w.YT.Player("global-music-player", {
+        height: "100%",
+        width: "100%",
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+          modestbranding: 1
+        },
+        events: {
+          onReady: () => {
+            setPlayerReady(true);
+          },
+          onStateChange: (event) => {
+            const YT = w.YT;
+            if (!YT || !YT.PlayerState) return;
+            if (event.data === YT.PlayerState.ENDED) {
+              playNextInQueue();
+            }
+          }
+        }
+      });
+    };
+    if (w.YT && w.YT.Player) {
+      createPlayer();
+    } else {
+      const prevReady = w.onYouTubeIframeAPIReady;
+      w.onYouTubeIframeAPIReady = () => {
+        if (typeof prevReady === "function") prevReady();
+        createPlayer();
+      };
+      const existingScript = document.querySelector(
+        "script[src='https://www.youtube.com/iframe_api']"
+      );
+      if (!existingScript) {
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+      }
+    }
+  }, [youtubeTrackUrl, playNextInQueue, isDesktop]);
+  reactExports.useEffect(() => {
+    if (!playerRef.current) return;
+    if (typeof window === "undefined") return;
+    if (!playerReady) return;
+    const player = playerRef.current;
+    if (youtubeTrackUrl) {
+      try {
+        if (typeof player.loadVideoById === "function") {
+          player.loadVideoById(youtubeTrackUrl);
+        } else {
+          player.loadVideoByUrl(`https://www.youtube.com/watch?v=${youtubeTrackUrl}`);
+        }
+        if (typeof player.playVideo === "function") {
+          player.playVideo();
+        }
+      } catch {
+      }
+    }
+  }, [youtubeTrackUrl, playerReady]);
+  reactExports.useEffect(() => {
+    if (!playerRef.current) return;
+    if (!playerReady) return;
+    if (!youtubeTrackUrl) return;
+    if (!isPlaying) return;
+    const player = playerRef.current;
+    try {
+      if (typeof player.playVideo === "function") {
+        player.playVideo();
+      }
+    } catch {
+    }
+  }, [isPlaying, playerReady, youtubeTrackUrl]);
   const handleDesktopPlayerMouseDown = (event) => {
     if (window.innerWidth < 768) {
       return;
@@ -19144,28 +19592,92 @@ function Navigation({ currentPage, onNavigate }) {
     { id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" },
     { id: "games", icon: Gamepad2, labelEn: "Games", labelEs: "Juegos" }
   ];
+  const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur transition-transform md:sticky md:top-0 md:border-b md:border-t-0", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
         className: cn("container mx-auto py-0"),
-        style: { paddingBottom: "env(safe-area-inset-bottom)" },
+        style: { paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" },
         children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full flex-col gap-1 md:flex-col-reverse", children: [
-          youtubeTrackUrl && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 pt-2 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/90", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between px-3 pt-2", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+          youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between px-3 pt-1.5 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-inner", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-w-0 flex-1 max-w-[65%]", children: currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
+            ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ml-2 flex flex-shrink-0 items-center gap-1.5", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: isPlaying ? handlePauseClick : handlePlayClick,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+                  children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleNextClick,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": t("Next song", "Siguiente canción"),
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-3.5 w-3.5" })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: toggleMinimize,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": t("Expand music player", "Expandir reproductor de música"),
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-3.5 w-3.5" })
+                }
+              )
+            ] })
+          ] }) }),
+          youtubeTrackUrl && !isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: cn("px-3 pt-1.5 md:hidden", isMinimized && "hidden"), children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1 pr-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
+                currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
+                ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-shrink-0 items-center gap-1.5", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: isPlaying ? handlePauseClick : handlePlayClick,
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+                    children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4" })
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: handleNextClick,
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    "aria-label": t("Next song", "Siguiente canción"),
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-4 w-4" })
+                  }
+                ),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   "button",
                   {
                     type: "button",
                     onClick: toggleMinimize,
-                    className: "rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50",
-                    "aria-label": t(
-                      isMinimized ? "Expand music player" : "Minimize music player",
-                      isMinimized ? "Expandir reproductor de música" : "Minimizar reproductor de música"
-                    ),
-                    children: isMinimized ? /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Minimize2, { className: "h-3.5 w-3.5" })
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    "aria-label": t("Minimize music player", "Minimizar reproductor de música"),
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Minimize2, { className: "h-4 w-4" })
                   }
                 ),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -19173,34 +19685,15 @@ function Navigation({ currentPage, onNavigate }) {
                   {
                     type: "button",
                     onClick: closeYouTubePlayer,
-                    className: "rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-red-500 hover:text-red-400",
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-red-500 hover:text-red-400",
                     "aria-label": t("Close music player", "Cerrar reproductor de música"),
                     children: "×"
                   }
                 )
               ] })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "div",
-              {
-                className: cn(
-                  "mt-2 w-full overflow-hidden transition-all",
-                  isMinimized ? "h-0" : "aspect-video"
-                ),
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  "iframe",
-                  {
-                    src: embedUrl || "",
-                    title: "YouTube player",
-                    className: "h-full w-full",
-                    allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-                    referrerPolicy: "strict-origin-when-cross-origin",
-                    allowFullScreen: true
-                  }
-                )
-              }
-            )
-          ] }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 h-40 w-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/90", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: "global-music-player", className: "h-full w-full" }) })
+          ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2", children: [
             navItems.map((item) => {
               const Icon2 = item.icon;
@@ -19214,7 +19707,7 @@ function Navigation({ currentPage, onNavigate }) {
                     isActive ? "text-red-500" : "text-neutral-400 hover:text-neutral-200"
                   ),
                   children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { className: cn("h-5.5 w-5.5", isActive && "text-red-500") }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { className: cn("h-6 w-6 md:h-5 md:w-5", isActive && "text-red-500") }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium whitespace-nowrap md:text-sm", children: t(item.labelEn, item.labelEs) })
                   ]
                 },
@@ -19232,7 +19725,7 @@ function Navigation({ currentPage, onNavigate }) {
                 ),
                 "aria-label": language === "en" ? "Switch to Spanish" : "Cambiar a inglés",
                 children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Languages, { className: "h-5.5 w-5.5" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Languages, { className: "h-6 w-6 md:h-5 md:w-5" }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium md:text-sm", children: language === "en" ? "ESP" : "ENG" })
                 ]
               }
@@ -19241,23 +19734,58 @@ function Navigation({ currentPage, onNavigate }) {
         ] })
       }
     ),
-    youtubeTrackUrl && /* @__PURE__ */ jsxRuntimeExports.jsx(
+    youtubeTrackUrl && isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
         className: cn(
-          "hidden md:block fixed z-40 w-80 transition-all",
+          "z-60 transition-all",
+          // Desktop: draggable floating card.
+          isDesktop ? "fixed w-80" : (
+            // Mobile: full-width bar pinned just above the nav.
+            "fixed bottom-16 left-2 right-2 w-auto"
+          ),
           isMinimized && "pointer-events-none opacity-0"
         ),
-        style: { top: desktopPlayerPosition.top, right: desktopPlayerPosition.right },
+        style: isDesktop ? { top: desktopPlayerPosition.top, right: desktopPlayerPosition.right } : void 0,
         children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/90 shadow-xl", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "div",
             {
-              className: "flex items-center justify-between px-3 pt-2 cursor-move",
-              onMouseDown: handleDesktopPlayerMouseDown,
+              className: cn(
+                "flex items-center justify-between gap-3 px-3 pt-2",
+                isDesktop && "cursor-move"
+              ),
+              onMouseDown: isDesktop ? handleDesktopPlayerMouseDown : void 0,
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
+                  currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
+                  ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) })
+                ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: isPlaying ? handlePauseClick : handlePlayClick,
+                      className: "rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50",
+                      "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+                      children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" })
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: handleNextClick,
+                      className: "rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50",
+                      "aria-label": t("Next song", "Siguiente canción"),
+                      children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-3.5 w-3.5" })
+                    }
+                  ),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     "button",
                     {
@@ -19287,37 +19815,51 @@ function Navigation({ currentPage, onNavigate }) {
             {
               className: cn(
                 "mt-2 w-full overflow-hidden transition-all",
-                isMinimized ? "h-0" : "aspect-video"
+                isMinimized ? "h-0" : isDesktop ? "aspect-video" : "h-40"
               ),
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "iframe",
-                {
-                  src: embedUrl || "",
-                  title: "YouTube player",
-                  className: "h-full w-full",
-                  allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-                  referrerPolicy: "strict-origin-when-cross-origin",
-                  allowFullScreen: true
-                }
-              )
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: "global-music-player", className: "h-full w-full" })
             }
           )
         ] })
       }
     ),
-    youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "button",
-      {
-        type: "button",
-        onClick: toggleMinimize,
-        className: "hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg hover:border-neutral-500 hover:text-neutral-50",
-        "aria-label": t("Expand YouTube player", "Expandir reproductor de YouTube"),
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "whitespace-nowrap", children: "Music" })
-        ]
-      }
-    )
+    youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg", children: [
+      currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-[10rem] text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
+      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: isPlaying ? handlePauseClick : handlePlayClick,
+          className: "rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+          "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+          children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: handleNextClick,
+          className: "rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+          "aria-label": t("Next song", "Siguiente canción"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-3.5 w-3.5" })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: toggleMinimize,
+          className: "rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+          "aria-label": t("Expand music player", "Expandir reproductor de YouTube"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-3.5 w-3.5" })
+        }
+      )
+    ] })
   ] });
 }
 function setRef(ref, value) {
@@ -19763,11 +20305,14 @@ class Client {
     this.options = options ?? {};
     const base = new BaseClient(this.target, this.options);
     this.announcements = new announcements.ServiceClient(base);
+    this.bulletin = new bulletin.ServiceClient(base);
     this.church = new church.ServiceClient(base);
     this.donations = new donations.ServiceClient(base);
     this.events = new events.ServiceClient(base);
     this.media = new media.ServiceClient(base);
+    this.notifications = new notifications.ServiceClient(base);
     this.prayers = new prayers.ServiceClient(base);
+    this.sermons = new sermons.ServiceClient(base);
   }
   /**
    * Creates a new Encore client with the given client options set.
@@ -19794,8 +20339,8 @@ var announcements;
      * Creates a new church announcement.
      */
     async create(params) {
-      const resp = await this.baseClient.callTypedAPI(`/announcements`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("POST", `/announcements`, JSON.stringify(params));
+      return await resp.json();
     }
     /**
      * Lists church announcements, ordered by priority and date.
@@ -19804,47 +20349,128 @@ var announcements;
       const query = makeRecord({
         limit: String(params.limit)
       });
-      const resp = await this.baseClient.callTypedAPI(`/announcements`, { query, method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("GET", `/announcements`, void 0, { query });
+      return await resp.json();
     }
-    /**
-     * Deletes an announcement.
-     */
-    async remove(params) {
+    async remove(id, params) {
       const query = makeRecord({
         passcode: params.passcode
       });
-      const resp = await this.baseClient.callTypedAPI(`/announcements/${encodeURIComponent(params.id)}`, {
-        method: "DELETE",
-        query,
-        body: void 0
-      });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/announcements/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
     }
   }
   announcements2.ServiceClient = ServiceClient;
 })(announcements || (announcements = {}));
+var bulletin;
+((bulletin2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.board = this.board.bind(this);
+      this.createComment = this.createComment.bind(this);
+      this.createPost = this.createPost.bind(this);
+      this.removePost = this.removePost.bind(this);
+    }
+    async board() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/bulletin/board`);
+      return await resp.json();
+    }
+    async createComment(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/bulletin/comments`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async createPost(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/bulletin/posts`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async removePost(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/bulletin/posts/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
+    }
+  }
+  bulletin2.ServiceClient = ServiceClient;
+})(bulletin || (bulletin = {}));
 var church;
 ((church2) => {
   class ServiceClient {
     constructor(baseClient) {
       this.baseClient = baseClient;
+      this.createLevel = this.createLevel.bind(this);
+      this.createQuestion = this.createQuestion.bind(this);
+      this.deleteLevel = this.deleteLevel.bind(this);
+      this.deleteQuestion = this.deleteQuestion.bind(this);
+      this.getTrivia = this.getTrivia.bind(this);
       this.info = this.info.bind(this);
+      this.setupTriviaTables = this.setupTriviaTables.bind(this);
+      this.testTriviaDB = this.testTriviaDB.bind(this);
       this.update = this.update.bind(this);
+    }
+    /**
+     * Create level
+     */
+    async createLevel(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/trivia/simple/level`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Create question
+     */
+    async createQuestion(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/trivia/simple/question`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Delete level
+     */
+    async deleteLevel(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/trivia/simple/level/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
+    }
+    /**
+     * Delete question
+     */
+    async deleteQuestion(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/trivia/simple/question/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
+    }
+    /**
+     * Get all trivia data
+     */
+    async getTrivia() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/trivia/simple`);
+      return await resp.json();
     }
     /**
      * Retrieves church contact information and location.
      */
     async info() {
-      const resp = await this.baseClient.callTypedAPI(`/church/info`, { method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("GET", `/church/info`);
+      return await resp.json();
+    }
+    async setupTriviaTables() {
+      const resp = await this.baseClient.callTypedAPI("POST", `/trivia/setup-tables`);
+      return await resp.json();
+    }
+    async testTriviaDB() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/trivia/test-db`);
+      return await resp.json();
     }
     /**
      * Updates church information.
      */
     async update(params) {
-      const resp = await this.baseClient.callTypedAPI(`/church/info`, { method: "PUT", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("PUT", `/church/info`, JSON.stringify(params));
+      return await resp.json();
     }
   }
   church2.ServiceClient = ServiceClient;
@@ -19861,19 +20487,16 @@ var donations;
     /**
      * Confirms a donation payment status.
      */
-    async confirm(params) {
-      const body = {
-        success: params.success
-      };
-      const resp = await this.baseClient.callTypedAPI(`/donations/${encodeURIComponent(params.donationId)}/confirm`, { method: "POST", body: JSON.stringify(body) });
-      return JSON.parse(await resp.text(), dateReviver);
+    async confirm(donationId, params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/donations/${encodeURIComponent(donationId)}/confirm`, JSON.stringify(params));
+      return await resp.json();
     }
     /**
      * Creates a new donation and returns a payment intent.
      */
     async create(params) {
-      const resp = await this.baseClient.callTypedAPI(`/donations`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("POST", `/donations`, JSON.stringify(params));
+      return await resp.json();
     }
     /**
      * Lists completed donations.
@@ -19882,8 +20505,8 @@ var donations;
       const query = makeRecord({
         limit: String(params.limit)
       });
-      const resp = await this.baseClient.callTypedAPI(`/donations`, { query, method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("GET", `/donations`, void 0, { query });
+      return await resp.json();
     }
   }
   donations2.ServiceClient = ServiceClient;
@@ -19895,37 +20518,23 @@ var events;
       this.baseClient = baseClient;
       this.cancelRsvp = this.cancelRsvp.bind(this);
       this.create = this.create.bind(this);
-      this.remove = this.remove.bind(this);
       this.list = this.list.bind(this);
+      this.remove = this.remove.bind(this);
       this.rsvp = this.rsvp.bind(this);
     }
     /**
      * Cancels an RSVP for an event.
      */
-    async cancelRsvp(params) {
-      const resp = await this.baseClient.callTypedAPI(`/events/${encodeURIComponent(params.eventId)}/rsvp`, { method: "DELETE", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
+    async cancelRsvp(eventId) {
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/events/${encodeURIComponent(eventId)}/rsvp`);
+      return await resp.json();
     }
     /**
      * Creates a new church event.
      */
     async create(params) {
-      const resp = await this.baseClient.callTypedAPI(`/events`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
-    }
-    /**
-     * Deletes an event.
-     */
-    async remove(params) {
-      const query = makeRecord({
-        passcode: params.passcode
-      });
-      const resp = await this.baseClient.callTypedAPI(`/events/${encodeURIComponent(params.id)}`, {
-        method: "DELETE",
-        query,
-        body: void 0
-      });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("POST", `/events`, JSON.stringify(params));
+      return await resp.json();
     }
     /**
      * Lists all church events.
@@ -19934,18 +20543,22 @@ var events;
       const query = makeRecord({
         upcoming: String(params.upcoming)
       });
-      const resp = await this.baseClient.callTypedAPI(`/events`, { query, method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("GET", `/events`, void 0, { query });
+      return await resp.json();
+    }
+    async remove(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/events/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
     }
     /**
      * Creates or updates an RSVP for an event.
      */
-    async rsvp(params) {
-      const body = {
-        attendees: params.attendees
-      };
-      const resp = await this.baseClient.callTypedAPI(`/events/${encodeURIComponent(params.eventId)}/rsvp`, { method: "POST", body: JSON.stringify(body) });
-      return JSON.parse(await resp.text(), dateReviver);
+    async rsvp(eventId, params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/events/${encodeURIComponent(eventId)}/rsvp`, JSON.stringify(params));
+      return await resp.json();
     }
   }
   events2.ServiceClient = ServiceClient;
@@ -19955,26 +20568,106 @@ var media;
   class ServiceClient {
     constructor(baseClient) {
       this.baseClient = baseClient;
+      this.browserUpload = this.browserUpload.bind(this);
+      this.deleteMedia = this.deleteMedia.bind(this);
+      this.get = this.get.bind(this);
       this.list = this.list.bind(this);
+      this.listTracks = this.listTracks.bind(this);
+      this.save = this.save.bind(this);
       this.uploadUrl = this.uploadUrl.bind(this);
+    }
+    async browserUpload(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/media/upload-browser`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async deleteMedia(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/media/delete`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async get() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/playlist`);
+      return await resp.json();
     }
     /**
      * Lists all media files in the gallery.
      */
     async list() {
-      const resp = await this.baseClient.callTypedAPI(`/media`, { method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("GET", `/media`);
+      return await resp.json();
+    }
+    /**
+     * Lists all audio tracks stored in the media bucket.
+     */
+    async listTracks() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/media/tracks`);
+      return await resp.json();
+    }
+    async save(params) {
+      await this.baseClient.callTypedAPI("POST", `/playlist`, JSON.stringify(params));
     }
     /**
      * Generates a signed URL for uploading media files.
      */
     async uploadUrl(params) {
-      const resp = await this.baseClient.callTypedAPI(`/media/upload-url`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("POST", `/media/upload-url`, JSON.stringify(params));
+      return await resp.json();
     }
   }
   media2.ServiceClient = ServiceClient;
 })(media || (media = {}));
+var notifications;
+((notifications2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.checkSubscriptions = this.checkSubscriptions.bind(this);
+      this.health = this.health.bind(this);
+      this.sendNotification = this.sendNotification.bind(this);
+      this.subscribe = this.subscribe.bind(this);
+      this.test = this.test.bind(this);
+      this.testNotification = this.testNotification.bind(this);
+    }
+    /**
+     * Check subscriptions endpoint for debugging
+     */
+    async checkSubscriptions() {
+      await this.baseClient.callTypedAPI("GET", `/notifications/subscriptions`);
+    }
+    /**
+     * Simple health check endpoint
+     */
+    async health() {
+      await this.baseClient.callTypedAPI("GET", `/notifications/health`);
+    }
+    /**
+     * Send notification to all subscribed users
+     */
+    async sendNotification(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/send`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Subscribe to push notifications
+     */
+    async subscribe(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/notifications/subscribe`, JSON.stringify(params));
+      return await resp.json();
+    }
+    /**
+     * Test endpoint to verify notifications service is working
+     */
+    async test() {
+      await this.baseClient.callTypedAPI("GET", `/notifications/test`);
+    }
+    /**
+     * Simple test notification endpoint
+     */
+    async testNotification() {
+      await this.baseClient.callTypedAPI("POST", `/notifications/test-send`);
+    }
+  }
+  notifications2.ServiceClient = ServiceClient;
+})(notifications || (notifications = {}));
 var prayers;
 ((prayers2) => {
   class ServiceClient {
@@ -19983,13 +20676,14 @@ var prayers;
       this.create = this.create.bind(this);
       this.list = this.list.bind(this);
       this.pray = this.pray.bind(this);
+      this.remove = this.remove.bind(this);
     }
     /**
      * Submits a new prayer request.
      */
     async create(params) {
-      const resp = await this.baseClient.callTypedAPI(`/prayers`, { method: "POST", body: JSON.stringify(params) });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("POST", `/prayers`, JSON.stringify(params));
+      return await resp.json();
     }
     /**
      * Lists prayer requests, ordered by most recent.
@@ -19998,29 +20692,49 @@ var prayers;
       const query = makeRecord({
         limit: String(params.limit)
       });
-      const resp = await this.baseClient.callTypedAPI(`/prayers`, { query, method: "GET", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
+      const resp = await this.baseClient.callTypedAPI("GET", `/prayers`, void 0, { query });
+      return await resp.json();
     }
     /**
      * Records that a user has prayed for a request.
      */
-    async pray(params) {
-      const resp = await this.baseClient.callTypedAPI(`/prayers/${encodeURIComponent(params.prayerId)}/pray`, { method: "POST", body: void 0 });
-      return JSON.parse(await resp.text(), dateReviver);
+    async pray(prayerId, params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/prayers/${encodeURIComponent(prayerId)}/pray`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async remove(id, params) {
+      const query = makeRecord({
+        passcode: params.passcode
+      });
+      const resp = await this.baseClient.callTypedAPI("DELETE", `/prayers/${encodeURIComponent(id)}`, void 0, { query });
+      return await resp.json();
     }
   }
   prayers2.ServiceClient = ServiceClient;
 })(prayers || (prayers = {}));
-function dateReviver(key, value) {
-  if (typeof value === "string" && value.length >= 10 && value.charCodeAt(0) >= 48 && // '0'
-  value.charCodeAt(0) <= 57) {
-    const parsedDate = new Date(value);
-    if (!isNaN(parsedDate.getTime())) {
-      return parsedDate;
+var sermons;
+((sermons2) => {
+  class ServiceClient {
+    constructor(baseClient) {
+      this.baseClient = baseClient;
+      this.create = this.create.bind(this);
+      this.list = this.list.bind(this);
+      this.remove = this.remove.bind(this);
+    }
+    async create(params) {
+      const resp = await this.baseClient.callTypedAPI("POST", `/sermons`, JSON.stringify(params));
+      return await resp.json();
+    }
+    async list() {
+      const resp = await this.baseClient.callTypedAPI("GET", `/sermons/recent`);
+      return await resp.json();
+    }
+    async remove(params) {
+      await this.baseClient.callTypedAPI("POST", `/sermons/delete`, JSON.stringify(params));
     }
   }
-  return value;
-}
+  sermons2.ServiceClient = ServiceClient;
+})(sermons || (sermons = {}));
 function encodeQuery(parts) {
   const pairs = [];
   for (const key in parts) {
@@ -20085,7 +20799,7 @@ class StreamInOut {
     this.buffer = [];
     this.socket = new WebSocketConnection(url, headers);
     this.socket.on("message", (event) => {
-      this.buffer.push(JSON.parse(event.data, dateReviver));
+      this.buffer.push(JSON.parse(event.data));
       this.socket.resolveHasUpdateHandlers();
     });
   }
@@ -20120,7 +20834,7 @@ class StreamIn {
     this.buffer = [];
     this.socket = new WebSocketConnection(url, headers);
     this.socket.on("message", (event) => {
-      this.buffer.push(JSON.parse(event.data, dateReviver));
+      this.buffer.push(JSON.parse(event.data));
       this.socket.resolveHasUpdateHandlers();
     });
   }
@@ -20148,7 +20862,7 @@ class StreamOut {
     this.responseValue = new Promise((resolve) => responseResolver = resolve);
     this.socket = new WebSocketConnection(url, headers);
     this.socket.on("message", (event) => {
-      responseResolver(JSON.parse(event.data, dateReviver));
+      responseResolver(JSON.parse(event.data));
     });
   }
   async response() {
@@ -20172,7 +20886,7 @@ class BaseClient {
     this.baseURL = baseURL;
     this.headers = {};
     if (!BROWSER) {
-      this.headers["User-Agent"] = "-Generated-TS-Client (Encore/1.50.6)";
+      this.headers["User-Agent"] = "bilingual-church-community-app-8dn2-Generated-TS-Client (Encore/v1.51.10)";
     }
     this.requestInit = options.requestInit ?? {};
     if (options.fetcher !== void 0) {
@@ -20254,18 +20968,20 @@ class BaseClient {
     return new StreamOut(this.baseURL + path + queryString, headers);
   }
   // callTypedAPI makes an API call, defaulting content type to "application/json"
-  async callTypedAPI(path, params) {
-    return this.callAPI(path, {
+  async callTypedAPI(method, path, body, params) {
+    return this.callAPI(method, path, body, {
       ...params,
       headers: { "Content-Type": "application/json", ...params == null ? void 0 : params.headers }
     });
   }
   // callAPI is used by each generated API method to actually make the request
-  async callAPI(path, params) {
+  async callAPI(method, path, body, params) {
     let { query, headers, ...rest } = params ?? {};
     const init = {
       ...this.requestInit,
-      ...rest
+      ...rest,
+      method,
+      body: body ?? null
     };
     init.headers = { ...this.headers, ...init.headers, ...headers };
     const authData = await this.getAuthData();
@@ -20280,23 +20996,23 @@ class BaseClient {
     const queryString = query ? "?" + encodeQuery(query) : "";
     const response = await this.fetcher(this.baseURL + path + queryString, init);
     if (!response.ok) {
-      let body = { code: "unknown", message: `request failed: status ${response.status}` };
+      let body2 = { code: "unknown", message: `request failed: status ${response.status}` };
       try {
         const text = await response.text();
         try {
           const jsonBody = JSON.parse(text);
           if (isAPIErrorResponse(jsonBody)) {
-            body = jsonBody;
+            body2 = jsonBody;
           } else {
-            body.message += ": " + JSON.stringify(jsonBody);
+            body2.message += ": " + JSON.stringify(jsonBody);
           }
         } catch {
-          body.message += ": " + text;
+          body2.message += ": " + text;
         }
       } catch (e) {
-        body.message += ": " + String(e);
+        body2.message += ": " + String(e);
       }
-      throw new APIError(response.status, body);
+      throw new APIError(response.status, body2);
     }
     return response;
   }
@@ -20348,8 +21064,8 @@ var ErrCode = /* @__PURE__ */ ((ErrCode2) => {
   ErrCode2["Unauthenticated"] = "unauthenticated";
   return ErrCode2;
 })(ErrCode || {});
-const resolvedTarget = "https://prod-cne-sh82.encr.app";
-const backend = new Client(resolvedTarget, { requestInit: { credentials: "include" } });
+const API_BASE$2 = "https://prod-cne-sh82.encr.app";
+const backend = new Client(API_BASE$2);
 function useBackend() {
   return backend;
 }
@@ -20648,6 +21364,16 @@ function CardTitle({ className, ...props }) {
     {
       "data-slot": "card-title",
       className: cn("leading-none font-semibold", className),
+      ...props
+    }
+  );
+}
+function CardDescription({ className, ...props }) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      "data-slot": "card-description",
+      className: cn("text-muted-foreground text-sm", className),
       ...props
     }
   );
@@ -26322,7 +27048,7 @@ function News() {
   const { toast: toast2 } = useToast();
   const queryClient2 = useQueryClient();
   const [announcementDialogOpen, setAnnouncementDialogOpen] = reactExports.useState(false);
-  const priorityOptions = ["low", "normal", "high", "urgent"];
+  const priorityOptions = ["normal", "urgent"];
   const normalizePriority = (value) => priorityOptions.includes(value) ? value : "normal";
   const [priority, setPriority] = reactExports.useState("normal");
   const [announcementPasscode, setAnnouncementPasscode] = reactExports.useState("");
@@ -26341,6 +27067,13 @@ function News() {
   const [rsvpName, setRsvpName] = reactExports.useState("");
   const [activeTab, setActiveTab] = reactExports.useState(() => {
     if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+      if (hash === "#news-events") {
+        return "events";
+      }
+      if (hash === "#news-announcements" || hash === "#news") {
+        return "announcements";
+      }
       const stored = window.localStorage.getItem(NEWS_DEFAULT_TAB_KEY);
       if (stored === "announcements" || stored === "events") {
         return stored;
@@ -26387,8 +27120,8 @@ function News() {
     return storedId;
   };
   const deleteEvent = useMutation({
-    mutationFn: async (data) => backend2.events.remove(data),
-    onSuccess: (_, variables) => {
+    mutationFn: async (data) => backend2.events.remove(data.id, { passcode: data.passcode }),
+    onSuccess: (data, variables) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         if (!oldData) return oldData;
         return {
@@ -26517,8 +27250,8 @@ function News() {
     }
   });
   const deleteAnnouncement = useMutation({
-    mutationFn: async (data) => backend2.announcements.remove(data),
-    onSuccess: (_, variables) => {
+    mutationFn: async (data) => backend2.announcements.remove(data.id, { passcode: data.passcode }),
+    onSuccess: (data, variables) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) return oldData;
         return {
@@ -26553,7 +27286,8 @@ function News() {
       contentEn: formData.get("contentEn"),
       contentEs: formData.get("contentEs"),
       priority,
-      passcode: announcementPasscode
+      passcode: announcementPasscode,
+      imageUrl: formData.get("imageUrl") || ""
     });
   };
   const handleCreateEvent = (e) => {
@@ -26594,27 +27328,17 @@ function News() {
   const getPriorityIcon = (priorityLevel) => {
     switch (priorityLevel) {
       case "urgent":
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-5 w-5 text-red-500" });
-      case "high":
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { className: "h-5 w-5 text-orange-500" });
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "h-5 w-5 text-orange-500" });
       case "normal":
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(Info, { className: "h-5 w-5 text-blue-500" });
-      case "low":
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "h-5 w-5 text-neutral-500" });
       default:
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(Info, { className: "h-5 w-5 text-blue-500" });
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-5 w-5 text-blue-500" });
     }
   };
   const getPriorityColor = (priorityLevel) => {
     switch (priorityLevel) {
       case "urgent":
-        return "border-red-600 bg-red-950/30";
-      case "high":
         return "border-orange-600 bg-orange-950/30";
       case "normal":
-        return "border-neutral-700 bg-neutral-900/50";
-      case "low":
-        return "border-neutral-800 bg-neutral-900/30";
       default:
         return "border-neutral-700 bg-neutral-900/50";
     }
@@ -26692,20 +27416,6 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "announcementPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      id: "announcementPasscode",
-                      type: "password",
-                      value: announcementPasscode,
-                      onChange: (event) => setAnnouncementPasscode(event.target.value),
-                      required: true,
-                      className: "border-neutral-700 bg-neutral-800 text-white"
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "contentEn", className: "text-neutral-200", children: t("Content (English)", "Contenido (Inglés)") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Textarea,
@@ -26730,14 +27440,36 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "imageUrl", className: "text-neutral-200", children: t("Image URL (optional)", "URL de imagen (opcional)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      id: "imageUrl",
+                      name: "imageUrl",
+                      className: "border-neutral-700 bg-neutral-800 text-white"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-200", children: t("Priority", "Prioridad") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: priority, onValueChange: (value) => setPriority(normalizePriority(value)), children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, {}) }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: priorityOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: option, children: t(
-                      option === "low" ? "Low" : option === "normal" ? "Normal" : option === "high" ? "High" : "Urgent",
-                      option === "low" ? "Baja" : option === "normal" ? "Normal" : option === "high" ? "Alta" : "Urgente"
-                    ) }, option)) })
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: priorityOptions.map((option) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: option, children: t(option === "normal" ? "Normal" : "Urgent", option === "normal" ? "Normal" : "Urgente") }, option)) })
                   ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "announcementPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      id: "announcementPasscode",
+                      type: "password",
+                      value: announcementPasscode,
+                      onChange: (event) => setAnnouncementPasscode(event.target.value),
+                      required: true,
+                      className: "border-neutral-700 bg-neutral-800 text-white"
+                    }
+                  )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { type: "submit", className: "w-full bg-red-600 hover:bg-red-700", children: t("Create Announcement", "Crear Anuncio") })
               ] })
@@ -26806,20 +27538,6 @@ function News() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Input,
-                    {
-                      id: "eventPasscode",
-                      type: "password",
-                      value: eventPasscode,
-                      onChange: (event) => setEventPasscode(event.target.value),
-                      required: true,
-                      className: "border-neutral-700 bg-neutral-800 text-white"
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventDate", className: "text-neutral-200", children: t("Date & Time", "Fecha y Hora") }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     Input,
@@ -26853,6 +27571,20 @@ function News() {
                       name: "maxAttendees",
                       type: "number",
                       min: "1",
+                      className: "border-neutral-700 bg-neutral-800 text-white"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "eventPasscode", className: "text-neutral-200", children: t("Passcode", "Código") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      id: "eventPasscode",
+                      type: "password",
+                      value: eventPasscode,
+                      onChange: (event) => setEventPasscode(event.target.value),
+                      required: true,
                       className: "border-neutral-700 bg-neutral-800 text-white"
                     }
                   )
@@ -26893,7 +27625,17 @@ function News() {
                   }
                 )
               ] }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "whitespace-pre-wrap text-neutral-300", children: language === "en" ? announcement.contentEn : announcement.contentEs }) })
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { children: [
+                announcement.imageUrl && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mb-3 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "img",
+                  {
+                    src: announcement.imageUrl,
+                    alt: language === "en" ? announcement.titleEn : announcement.titleEs,
+                    className: "max-h-64 w-full object-cover"
+                  }
+                ) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "whitespace-pre-wrap text-neutral-300", children: language === "en" ? announcement.contentEn : announcement.contentEs })
+              ] })
             ]
           },
           announcement.id
@@ -27161,7 +27903,12 @@ const createPost = async (data) => {
       "Content-Type": "application/json"
     },
     credentials: "include",
-    body: JSON.stringify(data)
+    body: JSON.stringify({
+      title: data.title,
+      content: data.content,
+      authorName: data.authorName,
+      imageUrl: data.imageUrl ?? null
+    })
   });
   if (!response.ok) {
     const message = await response.text();
@@ -27229,7 +27976,8 @@ function BulletinBoard() {
   const [newPost, setNewPost] = reactExports.useState({
     title: "",
     content: "",
-    authorName: ""
+    authorName: "",
+    imageUrl: ""
   });
   const [newPrayer, setNewPrayer] = reactExports.useState({
     title: "",
@@ -27334,7 +28082,7 @@ function BulletinBoard() {
   const createPostMutation = useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      setNewPost({ title: "", content: "", authorName: "" });
+      setNewPost({ title: "", content: "", authorName: "", imageUrl: "" });
       queryClient2.invalidateQueries({ queryKey: ["bulletin-board"] });
       setPostDialogOpen(false);
       toast2({
@@ -27445,7 +28193,8 @@ function BulletinBoard() {
     createPostMutation.mutate({
       title: newPost.title.trim(),
       content: newPost.content.trim(),
-      authorName: newPost.authorName.trim() || t("Anonymous", "Anónimo")
+      authorName: newPost.authorName.trim() || t("Anonymous", "Anónimo"),
+      imageUrl: newPost.imageUrl.trim() || null
     });
   };
   const handleSubmitPrayer = (event) => {
@@ -27560,6 +28309,14 @@ function BulletinBoard() {
                 )
               ] }) }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-4", children: [
+                post.imageUrl && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "img",
+                  {
+                    src: post.imageUrl,
+                    alt: post.title,
+                    className: "max-h-64 w-full object-cover"
+                  }
+                ) }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "whitespace-pre-wrap text-sm text-neutral-300", children: post.content }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", children: post.comments.length > 0 ? post.comments.map((comment) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-lg border border-neutral-800 bg-neutral-950/60 p-3 text-sm", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-1 flex items-center justify-between text-xs text-neutral-400", children: [
@@ -27664,6 +28421,19 @@ function BulletinBoard() {
                     value: newPost.authorName,
                     onChange: (event) => setNewPost((prev) => ({ ...prev, authorName: event.target.value })),
                     placeholder: t("Optional", "Opcional"),
+                    className: "border-neutral-700 bg-neutral-800 text-white"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "bulletin-image", className: "text-neutral-200", children: t("Image URL (optional)", "URL de imagen (opcional)") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Input,
+                  {
+                    id: "bulletin-image",
+                    value: newPost.imageUrl,
+                    onChange: (event) => setNewPost((prev) => ({ ...prev, imageUrl: event.target.value })),
+                    placeholder: t("https://example.com/image.jpg", "https://ejemplo.com/imagen.jpg"),
                     className: "border-neutral-700 bg-neutral-800 text-white"
                   }
                 )
@@ -28878,10 +29648,10 @@ function formatCountdown(milliseconds) {
 function Media({ onStartMusic }) {
   const { language, t } = useLanguage();
   const [now, setNow] = reactExports.useState(() => /* @__PURE__ */ new Date());
-  const [sermons, setSermons] = reactExports.useState([]);
+  const [sermons2, setSermons] = reactExports.useState([]);
   const [selectedSermonId, setSelectedSermonId] = reactExports.useState(null);
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
-  const { playTrack, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, startQueue, playlistUrl, livestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = reactExports.useState(false);
   const [isActuallyLive, setIsActuallyLive] = reactExports.useState(false);
   const [manualLiveOverride, setManualLiveOverride] = reactExports.useState(false);
@@ -28891,12 +29661,46 @@ function Media({ onStartMusic }) {
   const [uploadPasscode, setUploadPasscode] = reactExports.useState("");
   const [uploadStatus, setUploadStatus] = reactExports.useState(null);
   const [uploadBusy, setUploadBusy] = reactExports.useState(false);
+  const [playlistSongs, setPlaylistSongs] = reactExports.useState([]);
+  const [loadingPlaylistSongs, setLoadingPlaylistSongs] = reactExports.useState(false);
   reactExports.useEffect(() => {
     const interval = setInterval(() => {
       setNow(/* @__PURE__ */ new Date());
     }, 1e3);
     return () => clearInterval(interval);
   }, []);
+  reactExports.useEffect(() => {
+    const loadPlaylistSongs = async () => {
+      if (!playlistUrl) return;
+      setLoadingPlaylistSongs(true);
+      try {
+        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/playlist/items`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const rawItems = Array.isArray(data.items) ? data.items : [];
+        const songs = rawItems.map((it) => ({
+          id: it.id,
+          title: it.title || "",
+          artist: it.channelTitle || "",
+          position: typeof it.position === "number" ? it.position : 0
+        })).filter((s) => s.id && s.title);
+        setPlaylistSongs(songs);
+      } catch {
+      } finally {
+        setLoadingPlaylistSongs(false);
+      }
+    };
+    void loadPlaylistSongs();
+  }, [playlistUrl]);
+  const sortedPlaylistSongs = reactExports.useMemo(
+    () => playlistSongs.slice().sort((a, b) => a.position - b.position),
+    [playlistSongs]
+  );
+  const sortedSongIds = reactExports.useMemo(
+    () => sortedPlaylistSongs.map((song) => song.id),
+    [sortedPlaylistSongs]
+  );
   reactExports.useEffect(() => {
     const loadSermons = async () => {
       try {
@@ -28968,10 +29772,10 @@ function Media({ onStartMusic }) {
     };
   }, []);
   const selectedSermon = reactExports.useMemo(() => {
-    if (!Array.isArray(sermons) || sermons.length === 0) return null;
-    if (selectedSermonId == null) return sermons[0];
-    return sermons.find((s) => s.id === selectedSermonId) ?? sermons[0];
-  }, [sermons, selectedSermonId]);
+    if (!Array.isArray(sermons2) || sermons2.length === 0) return null;
+    if (selectedSermonId == null) return sermons2[0];
+    return sermons2.find((s) => s.id === selectedSermonId) ?? sermons2[0];
+  }, [sermons2, selectedSermonId]);
   const devSampleSermon = null;
   const effectiveSelectedSermon = selectedSermon ?? devSampleSermon;
   const getEmbedUrl = (url) => {
@@ -29382,8 +30186,8 @@ function Media({ onStartMusic }) {
               !loadingSermons && !effectiveSelectedSermon && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex h-full items-center justify-center text-xs text-neutral-500", children: t("No devotionals available yet.", "Todavía no hay devocionales disponibles.") })
             ] }),
             !loadingSermons && effectiveSelectedSermon && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500", children: t(
-              "Tap a devotional from the list on the right to watch a different message.",
-              "Toca un devocional de la lista de la derecha para ver un mensaje diferente."
+              "Tap a devotional from the list to watch a different message.",
+              "Toca un devocional de la lista para ver un mensaje diferente."
             ) })
           ] })
         ] }),
@@ -29391,8 +30195,8 @@ function Media({ onStartMusic }) {
           /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardTitle, { className: "text-sm font-semibold text-white", children: t("All Devotionals", "Todos los Devocionales") }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-h-80 space-y-1 overflow-y-auto text-xs", children: [
             loadingSermons && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-500", children: t("Loading sermons...", "Cargando sermones...") }),
-            !loadingSermons && sermons.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-500", children: t("No devotionals available yet.", "Todavía no hay devocionales disponibles.") }),
-            !loadingSermons && sermons.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons.map((sermon) => {
+            !loadingSermons && sermons2.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-500", children: t("No devotionals available yet.", "Todavía no hay devocionales disponibles.") }),
+            !loadingSermons && sermons2.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons2.map((sermon) => {
               const isActive = (selectedSermon == null ? void 0 : selectedSermon.id) === sermon.id;
               return /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 "button",
@@ -29429,52 +30233,145 @@ function Media({ onStartMusic }) {
         {
           type: "button",
           className: "bg-blue-600 hover:bg-blue-700",
-          onClick: () => playTrack(playlistUrl),
+          onClick: () => {
+            if (!sortedPlaylistSongs.length) return;
+            const shuffledSongs = sortedPlaylistSongs.slice().sort(() => Math.random() - 0.5);
+            const shuffledIds = shuffledSongs.map((song) => song.id);
+            const shuffledMeta = shuffledSongs.map((song) => ({
+              title: song.title,
+              artist: song.artist
+            }));
+            startQueue(shuffledIds, 0, shuffledMeta);
+          },
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "mr-2 h-4 w-4" }),
-            t("Play YouTube Worship Playlist", "Reproducir lista de adoración en YouTube")
+            t("Shuffle Worship Playlist", "Reproducir lista de adoración al azar")
           ]
         }
-      ) })
+      ) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-xs text-neutral-200", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Songs in this playlist", "Canciones en esta lista") }),
+        loadingPlaylistSongs && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("Loading songs...", "Cargando canciones...") }),
+        !loadingPlaylistSongs && playlistSongs.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.75rem] text-neutral-500", children: t("No songs found for this playlist.", "No se encontraron canciones para esta lista.") }),
+        !loadingPlaylistSongs && playlistSongs.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden md:max-h-none md:overflow-visible", children: sortedPlaylistSongs.map((song, index2) => {
+          var _a2, _b2;
+          const artist = ((_a2 = song.artist) == null ? void 0 : _a2.trim()) ?? "";
+          const title = ((_b2 = song.title) == null ? void 0 : _b2.trim()) ?? "";
+          const showArtist = artist.length > 0 && artist.toLowerCase() !== title.toLowerCase() && !title.toLowerCase().includes(artist.toLowerCase());
+          return /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => {
+                if (!sortedSongIds.length) return;
+                const meta = sortedPlaylistSongs.map((s) => ({
+                  title: s.title,
+                  artist: s.artist
+                }));
+                startQueue(sortedSongIds, index2, meta);
+              },
+              className: "flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.8rem] font-medium text-white leading-snug break-words whitespace-normal md:hidden", children: title }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "hidden text-[0.8rem] font-medium text-white truncate md:inline", children: title }),
+                showArtist && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mt-0.5 truncate text-[0.7rem] text-neutral-400", children: artist })
+              ]
+            }
+          ) }, song.id);
+        }) })
+      ] })
     ] }) })
   ] });
 }
-function TriviaGame() {
-  var _a2, _b2, _c2, _d2;
+function Games({ onNavigate }) {
   const { language, t } = useLanguage();
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Juegos" : "Games" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl", children: language === "es" ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirado." : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment." })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 text-red-400" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades." : "Test your Bible knowledge with fun and educational questions for all ages." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
+              t("Timed Questions", "Preguntas Cronometradas")
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
+              t("Multiple Levels", "Múltiples Niveles")
+            ] })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            onClick: () => onNavigate == null ? void 0 : onNavigate("triviaGame"),
+            className: "mt-4 w-full bg-red-600 hover:bg-red-700",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
+              t("Play Now", "Jugar Ahora")
+            ]
+          }
+        )
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-8 w-8 text-red-400" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Ideal para todas las edades." : "Find hidden Bible words in the grid. Great for all ages." })
+        ] }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            onClick: () => onNavigate == null ? void 0 : onNavigate("wordSearchGame"),
+            className: "mt-4 w-full bg-red-600 hover:bg-red-700",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
+              t("Play Word Search", "Jugar Sopa de Letras")
+            ]
+          }
+        )
+      ] }) })
+    ] })
+  ] });
+}
+function TriviaGamePage({ onNavigate } = {}) {
+  var _a2, _b2;
+  const { t, language } = useLanguage();
+  const [levels, setLevels] = reactExports.useState([]);
+  const [loading, setLoading] = reactExports.useState(true);
+  const [selectedLevelForConfirmation, setSelectedLevelForConfirmation] = reactExports.useState(null);
   const [gameState, setGameState] = reactExports.useState({
     status: "menu",
     selectedLevel: null,
     questions: [],
     currentQuestionIndex: 0,
+    userAnswers: [],
     score: 0,
-    answers: [],
+    isTimerActive: false,
     timeRemaining: 30,
-    isTimerActive: false
+    selectedAnswer: null,
+    showFeedback: false
   });
-  const [levels, setLevels] = reactExports.useState([]);
-  const [loading, setLoading] = reactExports.useState(true);
-  reactExports.useEffect(() => {
-    loadLevels();
-  }, []);
-  reactExports.useEffect(() => {
-    let interval;
-    if (gameState.isTimerActive && gameState.timeRemaining > 0) {
-      interval = setInterval(() => {
-        setGameState((prev) => ({
-          ...prev,
-          timeRemaining: prev.timeRemaining - 1
-        }));
-      }, 1e3);
-    } else if (gameState.timeRemaining === 0 && gameState.isTimerActive) {
-      handleTimeUp();
-    }
-    return () => clearInterval(interval);
-  }, [gameState.isTimerActive, gameState.timeRemaining]);
   const loadLevels = async () => {
     try {
-      const response = await fetch("/trivia/levels");
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
+      console.log("Game page - loaded levels:", data.levels.length);
       setLevels(data.levels);
     } catch (error) {
       console.error("Failed to load levels:", error);
@@ -29484,9 +30381,10 @@ function TriviaGame() {
   };
   const loadQuestions = async (levelId) => {
     try {
-      const response = await fetch(`/trivia/questions?level_id=${levelId}`);
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
       const data = await response.json();
-      return data.questions;
+      return data.questions.filter((q) => q.level_id === levelId);
     } catch (error) {
       console.error("Failed to load questions:", error);
       return [];
@@ -29499,55 +30397,94 @@ function TriviaGame() {
       return;
     }
     const shuffledQuestions = level.shuffle_questions ? [...questions].sort(() => Math.random() - 0.5) : questions;
+    const processedQuestions = shuffledQuestions.map((question) => {
+      if (!level.shuffle_questions) return question;
+      const options_en = typeof question.options_en === "string" ? JSON.parse(question.options_en) : question.options_en;
+      const options_es = typeof question.options_es === "string" ? JSON.parse(question.options_es) : question.options_es;
+      const optionIndices = Array.from({ length: options_en.length }, (_, i) => i);
+      const shuffledIndices = [...optionIndices].sort(() => Math.random() - 0.5);
+      const shuffledOptions_en = shuffledIndices.map((i) => options_en[i]);
+      const shuffledOptions_es = shuffledIndices.map((i) => options_es[i]);
+      const newCorrectIndex = shuffledIndices.indexOf(question.correct_answer);
+      return {
+        ...question,
+        options_en: JSON.stringify(shuffledOptions_en),
+        options_es: JSON.stringify(shuffledOptions_es),
+        correct_answer: newCorrectIndex
+      };
+    });
     setGameState({
       status: "playing",
       selectedLevel: level,
-      questions: shuffledQuestions,
+      questions: processedQuestions,
       currentQuestionIndex: 0,
+      userAnswers: [],
       score: 0,
-      answers: [],
+      isTimerActive: level.time_limit > 0,
+      // Only activate timer if time_limit > 0
       timeRemaining: level.time_limit,
-      isTimerActive: true
+      selectedAnswer: null,
+      showFeedback: false
     });
   };
-  const handleAnswer = (answerIndex) => {
+  const selectAnswer = (answerIndex) => {
+    if (gameState.status !== "playing" || gameState.showFeedback) return;
+    setGameState((prev) => ({
+      ...prev,
+      selectedAnswer: answerIndex
+    }));
+  };
+  const submitAnswer = () => {
+    if (gameState.selectedAnswer === null || gameState.status !== "playing") return;
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
-    const isCorrect = answerIndex === currentQuestion.correct_answer;
-    const newAnswers = [...gameState.answers, answerIndex];
-    const newScore = isCorrect ? gameState.score + 1 : gameState.score;
+    gameState.selectedAnswer === currentQuestion.correct_answer;
+    setGameState((prev) => ({
+      ...prev,
+      showFeedback: true,
+      isTimerActive: false
+      // Stop timer when showing feedback
+    }));
+  };
+  const nextQuestion = () => {
+    var _a3, _b3;
+    if (gameState.status !== "playing") return;
+    const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
+    const isCorrect = gameState.selectedAnswer === currentQuestion.correct_answer;
+    const newScore = gameState.score + (isCorrect ? 1 : 0);
+    const newAnswers = [...gameState.userAnswers, gameState.selectedAnswer !== null ? gameState.selectedAnswer : -1];
     if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
-      setGameState((prev) => ({
-        ...prev,
-        currentQuestionIndex: prev.currentQuestionIndex + 1,
-        answers: newAnswers,
+      setGameState({
+        ...gameState,
+        userAnswers: newAnswers,
         score: newScore,
-        timeRemaining: prev.selectedLevel.time_limit
-      }));
+        currentQuestionIndex: gameState.currentQuestionIndex + 1,
+        selectedAnswer: null,
+        showFeedback: false,
+        isTimerActive: (((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.time_limit) ?? 0) > 0,
+        // Preserve timer state based on level
+        timeRemaining: (((_b3 = gameState.selectedLevel) == null ? void 0 : _b3.time_limit) ?? 0) > 0 ? gameState.selectedLevel.time_limit : gameState.timeRemaining
+        // Reset time for timed levels, preserve for infinite
+      });
     } else {
-      endGame(newAnswers, newScore);
+      setGameState({
+        ...gameState,
+        userAnswers: newAnswers,
+        score: newScore,
+        status: "results",
+        isTimerActive: false
+      });
     }
   };
   const handleTimeUp = () => {
-    const newAnswers = [...gameState.answers, -1];
-    if (gameState.currentQuestionIndex < gameState.questions.length - 1) {
-      setGameState((prev) => ({
-        ...prev,
-        currentQuestionIndex: prev.currentQuestionIndex + 1,
-        answers: newAnswers,
-        timeRemaining: prev.selectedLevel.time_limit
-      }));
-    } else {
-      endGame(newAnswers, gameState.score);
-    }
-  };
-  const endGame = (finalAnswers, finalScore) => {
-    setGameState((prev) => ({
-      ...prev,
+    if (gameState.status !== "playing") return;
+    const remainingQuestions = gameState.questions.length - gameState.currentQuestionIndex - 1;
+    const newAnswers = [...gameState.userAnswers, -1, ...Array(remainingQuestions).fill(-1)];
+    setGameState({
+      ...gameState,
+      userAnswers: newAnswers,
       status: "results",
-      answers: finalAnswers,
-      score: finalScore,
       isTimerActive: false
-    }));
+    });
   };
   const resetGame = () => {
     setGameState({
@@ -29555,81 +30492,161 @@ function TriviaGame() {
       selectedLevel: null,
       questions: [],
       currentQuestionIndex: 0,
+      userAnswers: [],
       score: 0,
-      answers: [],
+      isTimerActive: false,
       timeRemaining: 30,
-      isTimerActive: false
+      selectedAnswer: null,
+      showFeedback: false
     });
   };
-  const calculatePercentage = () => {
-    return Math.round(gameState.score / gameState.questions.length * 100);
+  const restartLevel = async () => {
+    if (!gameState.selectedLevel) return;
+    const questions = await loadQuestions(gameState.selectedLevel.id);
+    if (questions.length === 0) return;
+    const shuffledQuestions = gameState.selectedLevel.shuffle_questions ? [...questions].sort(() => Math.random() - 0.5) : questions;
+    shuffledQuestions.map((question) => {
+      var _a3;
+      if (!((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.shuffle_questions)) return question;
+      const options_en = typeof question.options_en === "string" ? JSON.parse(question.options_en) : question.options_en;
+      const options_es = typeof question.options_es === "string" ? JSON.parse(question.options_es) : question.options_es;
+      const optionIndices = Array.from({ length: options_en.length }, (_, i) => i);
+      const shuffledIndices = [...optionIndices].sort(() => Math.random() - 0.5);
+      const shuffledOptions_en = shuffledIndices.map((i) => options_en[i]);
+      const shuffledOptions_es = shuffledIndices.map((i) => options_es[i]);
+      const newCorrectIndex = shuffledIndices.indexOf(question.correct_answer);
+      return {
+        ...question,
+        options_en: JSON.stringify(shuffledOptions_en),
+        options_es: JSON.stringify(shuffledOptions_es),
+        correct_answer: newCorrectIndex
+      };
+    });
+    setGameState((prev) => {
+      var _a3, _b3;
+      return {
+        ...prev,
+        status: "playing",
+        currentQuestionIndex: 0,
+        userAnswers: [],
+        score: 0,
+        isTimerActive: ((_a3 = prev.selectedLevel) == null ? void 0 : _a3.time_limit) ? prev.selectedLevel.time_limit > 0 : false,
+        timeRemaining: ((_b3 = prev.selectedLevel) == null ? void 0 : _b3.time_limit) || 0,
+        selectedAnswer: null,
+        showFeedback: false
+      };
+    });
   };
-  const hasPassed = () => {
-    var _a3;
-    return calculatePercentage() >= (((_a3 = gameState.selectedLevel) == null ? void 0 : _a3.passing_score) || 70);
-  };
+  reactExports.useEffect(() => {
+    loadLevels();
+  }, []);
+  reactExports.useEffect(() => {
+    const interval = setInterval(() => {
+      if (gameState.isTimerActive && gameState.timeRemaining > 0) {
+        setGameState((prev) => ({
+          ...prev,
+          timeRemaining: prev.timeRemaining - 1
+        }));
+      } else if (gameState.timeRemaining === 0 && gameState.isTimerActive) {
+        handleTimeUp();
+      }
+    }, 1e3);
+    return () => clearInterval(interval);
+  }, [gameState.isTimerActive, gameState.timeRemaining]);
   if (loading) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-16", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mt-4", children: t("Loading...", "Cargando...") })
-    ] });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center text-white", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-12 w-12 mx-auto mb-4 animate-pulse" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: t("Loading trivia...", "Cargando trivia...") })
+    ] }) });
   }
   if (gameState.status === "menu") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-8", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-16 w-16 text-red-500 mx-auto" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold text-white", children: t("Bible Trivia Challenge", "Desafío de Biblia Trivia") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl mx-auto", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con nuestro divertido juego de trivia. Elige tu nivel y ver cuántas preguntas puedes responder correctamente." : "Test your Bible knowledge with our fun trivia game. Choose your level and see how many questions you can answer correctly." })
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-8 px-4 py-8", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        Button,
+        {
+          onClick: () => onNavigate == null ? void 0 : onNavigate("games"),
+          variant: "outline",
+          className: "mb-6 border-neutral-700 hover:bg-neutral-800 text-white",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+            t("Back to Games", "Volver a Juegos")
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center space-y-6", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-center gap-3", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 text-red-400" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl mx-auto", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades." : "Test your Bible knowledge with fun and educational questions for all ages." })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-4 md:grid-cols-2 lg:grid-cols-3", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-500 transition-colors", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-xl font-bold text-white", children: level.name }),
-          level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm mt-1", children: level.description })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 text-sm", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-neutral-300", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              level.time_limit,
-              "s ",
-              t("per question", "por pregunta")
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-neutral-300", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              level.passing_score,
-              "% ",
-              t("to pass", "para aprobar")
-            ] })
-          ] }),
-          level.target_group && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-300", children: [
-            t("For", "Para"),
-            ": ",
-            level.target_group
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => startGame(level),
-            className: "w-full bg-red-600 hover:bg-red-700 text-white",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-              t("Start", "Empezar")
-            ]
-          }
-        )
-      ] }) }) }, level.id)) })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-6 max-w-4xl mx-auto", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: `bg-neutral-900 border-neutral-800 transition-all cursor-pointer group ${(selectedLevelForConfirmation == null ? void 0 : selectedLevelForConfirmation.id) === level.id ? "border-red-600 ring-2 ring-red-600/50" : "hover:border-red-600"}`,
+          onClick: () => setSelectedLevelForConfirmation(level),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-xl font-semibold text-white mb-2", children: language === "es" ? level.name : level.name }),
+              level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-3", children: language === "es" ? level.description : level.description }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
+                  level.time_limit,
+                  "s"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
+                  level.passing_score,
+                  "% ",
+                  t("to pass", "para aprobar")
+                ] })
+              ] })
+            ] }),
+            (selectedLevelForConfirmation == null ? void 0 : selectedLevelForConfirmation.id) === level.id && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-2", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Button,
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  startGame(level);
+                  setSelectedLevelForConfirmation(null);
+                },
+                className: "bg-red-600 hover:bg-red-700",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
+                  t("Play Now", "Jugar Ahora")
+                ]
+              }
+            ) })
+          ] }) })
+        },
+        level.id
+      )) }),
+      levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-12", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-16 w-16 mx-auto mb-4 text-neutral-600" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("No trivia levels available yet.", "No hay niveles de trivia disponibles aún.") })
+      ] })
     ] });
   }
   if (gameState.status === "playing" && gameState.questions.length > 0) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const question = language === "es" ? currentQuestion.question_es : currentQuestion.question_en;
-    const options = language === "es" ? currentQuestion.options_es : currentQuestion.options_en;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-3xl mx-auto space-y-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-400", children: [
+    const options = language === "es" ? typeof currentQuestion.options_es === "string" ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es : typeof currentQuestion.options_en === "string" ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-4 px-3 py-4 max-w-3xl h-screen md:h-auto flex flex-col md:block overflow-hidden", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        Button,
+        {
+          onClick: resetGame,
+          variant: "outline",
+          className: "border-neutral-700 hover:bg-neutral-800 text-white flex-shrink-0 mb-2",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+            t("Levels", "Niveles")
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between flex-shrink-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-400 text-sm", children: [
           t("Question", "Pregunta"),
           " ",
           gameState.currentQuestionIndex + 1,
@@ -29637,106 +30654,444 @@ function TriviaGame() {
           gameState.questions.length
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `flex items-center gap-2 ${gameState.timeRemaining <= 5 ? "text-red-500" : "text-neutral-300"}`, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-5 w-5" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-mono text-lg", children: [
-            gameState.timeRemaining,
-            "s"
-          ] })
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono text-lg", children: gameState.isTimerActive ? `${gameState.timeRemaining}s` : "∞" })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full bg-neutral-800 rounded-full h-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full bg-neutral-800 rounded-full h-1.5 flex-shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         "div",
         {
-          className: "bg-red-500 h-2 rounded-full transition-all duration-300",
+          className: "bg-red-500 h-1.5 rounded-full transition-all duration-300",
           style: { width: `${(gameState.currentQuestionIndex + 1) / gameState.questions.length * 100}%` }
         }
       ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-semibold text-white", children: question }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-3", children: options.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 flex-1 overflow-hidden md:overflow-visible", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-4 md:p-8 h-full flex flex-col", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4 flex-1 flex flex-col", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg md:text-2xl font-semibold text-white flex-shrink-0", children: question }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-2 md:gap-3 flex-1", children: options.map((option, index2) => {
+          const isSelected = gameState.selectedAnswer === index2;
+          const isCorrect = index2 === currentQuestion.correct_answer;
+          const showCorrect = gameState.showFeedback && isCorrect;
+          const showWrong = gameState.showFeedback && isSelected && !isCorrect;
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Button,
+            {
+              onClick: () => selectAnswer(index2),
+              variant: "outline",
+              disabled: gameState.showFeedback,
+              className: `justify-start h-auto p-3 md:p-4 text-left transition-all text-sm md:text-base relative ${gameState.showFeedback ? isCorrect ? "bg-green-600 border-green-400 text-white ring-2 ring-green-400/50" : isSelected ? "bg-red-600 border-red-400 text-white ring-2 ring-red-400/50" : "bg-neutral-800 border-neutral-600 text-neutral-400" : isSelected ? "bg-red-600 border-red-400 text-white ring-2 ring-red-400/50" : "bg-neutral-800 border-neutral-600 hover:bg-red-600 hover:border-red-400 hover:text-white"}`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-medium mr-3", children: [
+                  String.fromCharCode(65 + index2),
+                  "."
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: option }),
+                showCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-green-300", children: "✓" }),
+                showWrong && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-red-300", children: "✗" })
+              ]
+            },
+            index2
+          );
+        }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 pt-4", children: !gameState.showFeedback ? /* @__PURE__ */ jsxRuntimeExports.jsx(
           Button,
           {
-            onClick: () => handleAnswer(index2),
-            variant: "outline",
-            className: "justify-start h-auto p-4 text-left bg-neutral-800 border-neutral-700 hover:bg-red-600 hover:border-red-600 hover:text-white transition-all",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-medium", children: [
-                String.fromCharCode(65 + index2),
-                "."
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-3", children: option })
-            ]
-          },
-          index2
-        )) })
+            onClick: submitAnswer,
+            disabled: gameState.selectedAnswer === null,
+            className: "w-full bg-red-600 hover:bg-red-700 disabled:bg-neutral-700 disabled:text-neutral-500",
+            children: t("Submit Answer", "Enviar Respuesta")
+          }
+        ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            onClick: nextQuestion,
+            className: "w-full bg-red-600 hover:bg-red-700",
+            children: gameState.currentQuestionIndex < gameState.questions.length - 1 ? t("Next Question", "Siguiente Pregunta") : t("See Results", "Ver Resultados")
+          }
+        ) })
       ] }) }) })
     ] });
   }
   if (gameState.status === "results") {
-    const percentage = calculatePercentage();
-    const passed = hasPassed();
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-2xl mx-auto space-y-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-8 text-center space-y-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `w-20 h-20 rounded-full mx-auto flex items-center justify-center ${passed ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"}`, children: passed ? /* @__PURE__ */ jsxRuntimeExports.jsx(Trophy, { className: "h-10 w-10" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-10 w-10" }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold text-white", children: passed ? language === "es" ? "¡Felicidades!" : "Congratulations!" : language === "es" ? "Inténtalo de nuevo" : "Try Again" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: passed ? language === "es" ? `Has aprobado el nivel ${(_a2 = gameState.selectedLevel) == null ? void 0 : _a2.name} con ${percentage}%` : `You passed the ${(_b2 = gameState.selectedLevel) == null ? void 0 : _b2.name} level with ${percentage}%` : language === "es" ? `Obtuviste ${percentage}% - necesitas ${(_c2 = gameState.selectedLevel) == null ? void 0 : _c2.passing_score}% para aprobar` : `You got ${percentage}% - you need ${(_d2 = gameState.selectedLevel) == null ? void 0 : _d2.passing_score}% to pass` })
+    const percentage = Math.round(gameState.score / gameState.questions.length * 100);
+    const passed = percentage >= (((_a2 = gameState.selectedLevel) == null ? void 0 : _a2.passing_score) || 70);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto space-y-6 px-4 py-8 max-w-2xl", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: `bg-neutral-900 border-2 ${passed ? "border-green-600" : "border-red-600"}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-8 text-center space-y-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `flex items-center justify-center gap-3 ${passed ? "text-green-400" : "text-red-400"}`, children: [
+        passed ? /* @__PURE__ */ jsxRuntimeExports.jsx(Trophy, { className: "h-8 w-8" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-8 w-8" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-3xl font-bold", children: passed ? language === "es" ? "¡Aprobado!" : "Passed!" : language === "es" ? "¡Fracasado!" : "Failed!" })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-4xl font-bold text-white", children: [
-          gameState.score,
-          " / ",
-          gameState.questions.length
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xl text-neutral-400", children: [
+          percentage,
+          "% ",
+          t("correct", "correctas")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-neutral-300", children: t("Correct Answers", "Respuestas Correctas") })
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-sm text-neutral-500", children: [
+          t("Required", "Requerido"),
+          ": ",
+          ((_b2 = gameState.selectedLevel) == null ? void 0 : _b2.passing_score) || 70,
+          "%"
+        ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 justify-center", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: resetGame,
-            variant: "outline",
-            className: "border-neutral-700 hover:bg-neutral-800",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
-              t("Back to Menu", "Volver al Menú")
-            ]
-          }
-        ),
-        !passed && gameState.selectedLevel && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => startGame(gameState.selectedLevel),
-            className: "bg-red-600 hover:bg-red-700 text-white",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4 mr-2" }),
-              t("Try Again", "Inténtalo de Nuevo")
-            ]
-          }
-        )
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: restartLevel, className: "bg-red-600 hover:bg-red-700", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(RotateCcw, { className: "h-4 w-4 mr-2" }),
+          t("Restart", "Reiniciar")
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { onClick: resetGame, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800 text-white", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+          t("Back to Levels", "Volver a Niveles")
+        ] })
       ] })
     ] }) }) });
   }
   return null;
 }
-function Games() {
-  const { language, t } = useLanguage();
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
+function WordSearchGamePage({ onNavigate }) {
+  const { t, language } = useLanguage();
+  const [levels, setLevels] = reactExports.useState([]);
+  const [loadingLevels, setLoadingLevels] = reactExports.useState(true);
+  const [loadingPuzzle, setLoadingPuzzle] = reactExports.useState(false);
+  const [error, setError] = reactExports.useState(null);
+  const [puzzle, setPuzzle] = reactExports.useState(null);
+  const [foundWords, setFoundWords] = reactExports.useState(() => /* @__PURE__ */ new Set());
+  const [foundCells, setFoundCells] = reactExports.useState(() => /* @__PURE__ */ new Set());
+  const [selectedStart, setSelectedStart] = reactExports.useState(null);
+  const [foundSegments, setFoundSegments] = reactExports.useState([]);
+  const highlightColors = [
+    "#f97316",
+    // orange-500
+    "#22c55e",
+    // green-500
+    "#60a5fa",
+    // blue-400
+    "#eab308",
+    // yellow-500
+    "#ec4899",
+    // pink-500
+    "#a855f7"
+    // purple-500
+  ];
+  const base = "https://prod-cne-sh82.encr.app";
+  reactExports.useEffect(() => {
+    const loadLevels = async () => {
+      try {
+        setLoadingLevels(true);
+        setError(null);
+        const res = await fetch(`${base}/games/wordsearch/levels`);
+        if (!res.ok) throw new Error("Failed to load levels");
+        const data = await res.json();
+        setLevels(data.levels || []);
+      } catch (err) {
+        console.error(err);
+        setError(
+          t(
+            "Failed to load word search levels.",
+            "Error al cargar niveles de sopa de letras."
+          )
+        );
+      } finally {
+        setLoadingLevels(false);
+      }
+    };
+    loadLevels();
+  }, [base, t]);
+  const resetPuzzleState = () => {
+    setPuzzle(null);
+    setFoundWords(/* @__PURE__ */ new Set());
+    setFoundCells(/* @__PURE__ */ new Set());
+    setSelectedStart(null);
+    setFoundSegments([]);
+    setError(null);
+  };
+  const handleSelectLevel = async (levelId) => {
+    try {
+      setLoadingPuzzle(true);
+      setError(null);
+      setFoundWords(/* @__PURE__ */ new Set());
+      setFoundCells(/* @__PURE__ */ new Set());
+      setSelectedStart(null);
+      setFoundSegments([]);
+      const langParam = language === "es" ? "es" : "en";
+      const res = await fetch(
+        `${base}/games/wordsearch/puzzle/${encodeURIComponent(levelId)}?lang=${langParam}`
+      );
+      const data = await res.json();
+      if (!res.ok || data.error || !data.level || !data.grid || !data.words) {
+        throw new Error(data.error || "Failed to load puzzle");
+      }
+      setPuzzle(data);
+    } catch (err) {
+      console.error(err);
+      setError(
+        t("Failed to load puzzle.", "Error al cargar el rompecabezas.")
+      );
+    } finally {
+      setLoadingPuzzle(false);
+    }
+  };
+  const toggleCellSelection = (row, col) => {
+    if (!puzzle || !puzzle.level) return;
+    const cols = puzzle.level.cols;
+    const rows = puzzle.level.rows;
+    if (!selectedStart) {
+      setSelectedStart({ row, col });
+      return;
+    }
+    const start = selectedStart;
+    const end = { row, col };
+    const dr = Math.sign(end.row - start.row);
+    const dc = Math.sign(end.col - start.col);
+    if (dr === 0 && dc === 0) {
+      setSelectedStart(null);
+      return;
+    }
+    const length = Math.max(
+      Math.abs(end.row - start.row),
+      Math.abs(end.col - start.col)
+    ) + 1;
+    const validDirection = dr === 0 && dc !== 0 || dc === 0 && dr !== 0 || Math.abs(dr) === 1 && Math.abs(dc) === 1;
+    if (!validDirection) {
+      setSelectedStart(null);
+      return;
+    }
+    const coords = [];
+    for (let i = 0; i < length; i++) {
+      const r2 = start.row + dr * i;
+      const c = start.col + dc * i;
+      if (r2 < 0 || r2 >= rows || c < 0 || c >= cols) {
+        setSelectedStart(null);
+        return;
+      }
+      coords.push({ row: r2, col: c });
+    }
+    const letters = coords.map(({ row: r2, col: c }) => puzzle.grid[r2][c]).join("");
+    const candidate = letters.toUpperCase();
+    const reversed = candidate.split("").reverse().join("");
+    const upperWords = new Set(puzzle.words.map((w) => w.toUpperCase()));
+    let matched = "";
+    if (upperWords.has(candidate)) {
+      matched = candidate;
+    } else if (upperWords.has(reversed)) {
+      matched = reversed;
+    }
+    if (!matched) {
+      setSelectedStart(null);
+      return;
+    }
+    const segmentStart = matched === candidate ? start : end;
+    const segmentEnd = matched === candidate ? end : start;
+    setFoundWords((prev) => {
+      const next = new Set(prev);
+      next.add(matched);
+      return next;
+    });
+    setFoundCells((prev) => {
+      const next = new Set(prev);
+      coords.forEach(({ row: r2, col: c }) => {
+        next.add(`${r2},${c}`);
+      });
+      return next;
+    });
+    setFoundSegments((prev) => {
+      const id = `${matched}-${segmentStart.row},${segmentStart.col}-${segmentEnd.row},${segmentEnd.col}`;
+      if (prev.some((seg) => seg.id === id)) return prev;
+      return [
+        ...prev,
+        {
+          id,
+          start: segmentStart,
+          end: segmentEnd
+        }
+      ];
+    });
+    setSelectedStart(null);
+  };
+  const renderLevelList = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-8 px-4 py-8", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      Button,
+      {
+        onClick: () => onNavigate == null ? void 0 : onNavigate("games"),
+        variant: "outline",
+        className: "border-neutral-700 hover:bg-neutral-800 text-white mb-4",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+          t("Back to Games", "Volver a Juegos")
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-8 w-8 text-red-400" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-3xl font-bold text-white", children: language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl mt-1 text-sm", children: language === "es" ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Cada nivel tiene un conjunto diferente de palabras." : "Find hidden Bible words in the grid. Each level has its own set of themed words." })
+        ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Juegos" : "Games" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl", children: language === "es" ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirador." : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment." })
+      error && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-red-400", children: error }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-4 max-w-4xl", children: loadingLevels ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm", children: t("Loading levels...", "Cargando niveles...") }) : levels.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm", children: t("No word search levels yet.", "Aún no hay niveles de sopa de letras.") }) : levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: level.name }),
+              level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-400 max-w-xl", children: level.description }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[0.75rem] text-neutral-500", children: [
+                level.rows,
+                "x",
+                level.cols,
+                " - ",
+                level.words.length,
+                " ",
+                t("words", "palabras")
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Button,
+              {
+                onClick: () => handleSelectLevel(level.id),
+                className: "mt-2 sm:mt-0 sm:w-auto w-full bg-red-600 hover:bg-red-700",
+                disabled: loadingPuzzle,
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
+                  t("Play", "Jugar")
+                ]
+              }
+            )
+          ] })
+        },
+        level.id
+      )) })
+    ] })
+  ] });
+  if (!puzzle || !puzzle.level) {
+    return renderLevelList();
+  }
+  const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-4 px-3 py-4 max-w-4xl", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        Button,
+        {
+          onClick: resetPuzzleState,
+          variant: "outline",
+          className: "border-neutral-700 hover:bg-neutral-800 text-white",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+            t("Levels", "Niveles")
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-xs text-neutral-400", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          foundWords.size,
+          "/",
+          puzzle.words.length,
+          " ",
+          t("words found", "palabras encontradas")
+        ] })
+      ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "space-y-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaGame, {}) })
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { className: "text-2xl font-bold text-white flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-6 w-6 text-red-400" }),
+        puzzle.level.name
+      ] }),
+      puzzle.level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 max-w-2xl", children: puzzle.level.description }),
+      allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-green-400", children: language === "es" ? "¡Completado!" : "Completed!" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: language === "es" ? "Toca la primera y la última letra de la palabra en línea recta para marcarla." : "Tap the first and last letter of the word in a straight line to mark it." })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:gap-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative aspect-square", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "svg",
+          {
+            className: "absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900 p-1",
+            viewBox: `0 0 ${puzzle.level.cols} ${puzzle.level.rows}`,
+            preserveAspectRatio: "xMidYMid meet",
+            children: foundSegments.map((seg, i) => {
+              const color = highlightColors[i % highlightColors.length];
+              return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "line",
+                {
+                  x1: seg.start.col + 0.5,
+                  y1: seg.start.row + 0.5,
+                  x2: seg.end.col + 0.5,
+                  y2: seg.end.row + 0.5,
+                  stroke: color,
+                  strokeWidth: "0.8",
+                  strokeLinecap: "round",
+                  strokeOpacity: "0.6"
+                },
+                seg.id
+              );
+            })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: "absolute inset-0 grid rounded-lg z-10 p-1",
+            style: {
+              gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${puzzle.level.rows}, minmax(0, 1fr))`
+            },
+            children: puzzle.grid.map(
+              (rowStr, r2) => rowStr.split("").map((ch, c) => {
+                const key = `${r2},${c}`;
+                const isFound = foundCells.has(`${r2},${c}`);
+                const isSelectedStart = selectedStart && selectedStart.row === r2 && selectedStart.col === c;
+                return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => toggleCellSelection(r2, c),
+                    className: `relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "relative z-10", children: ch })
+                  },
+                  key
+                );
+              })
+            )
+          }
+        )
+      ] }) }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full md:w-64 space-y-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-sm font-semibold text-white flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
+          t("Words to Find", "Palabras a Encontrar")
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-neutral-800 bg-neutral-900/70 p-3 max-h-64 overflow-y-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 gap-2 text-xs", children: puzzle.words.map((w) => {
+          const upper = w.toUpperCase();
+          const isFound = foundWords.has(upper);
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              className: `flex items-center gap-1 ${isFound ? "text-green-400" : "text-neutral-200"}`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    className: `h-1.5 w-1.5 rounded-full ${isFound ? "bg-green-400" : "bg-neutral-500"}`
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate tracking-wide", children: upper })
+              ]
+            },
+            upper
+          );
+        }) }) })
+      ] })
+    ] })
   ] });
 }
 function Contact({ onNavigate }) {
   const { language, t } = useLanguage();
+  const backend2 = useBackend();
   const { data: churchInfo } = useQuery({
     queryKey: ["churchInfo"],
-    queryFn: () => backend.church.info()
+    queryFn: () => backend2.church.info()
   });
   if (!churchInfo) {
     return null;
@@ -30347,30 +31702,56 @@ const TabsContent = reactExports.forwardRef(({ className, ...props }, ref) => /*
   }
 ));
 TabsContent.displayName = Content.displayName;
-function TriviaAdminPanel({ passcode }) {
-  var _a2;
+function TriviaAdminPanelFinal({ passcode }) {
   const { t, language } = useLanguage();
   const [levels, setLevels] = reactExports.useState([]);
   const [questions, setQuestions] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
-  const [status, setStatus] = reactExports.useState(null);
+  const [status, setStatus] = reactExports.useState("");
+  const [expandedLevels, setExpandedLevels] = reactExports.useState(/* @__PURE__ */ new Set());
+  const [pendingOperations, setPendingOperations] = reactExports.useState({
+    levelsToAdd: [],
+    levelsToEdit: [],
+    levelsToDelete: [],
+    questionsToAdd: [],
+    questionsToEdit: [],
+    questionsToDelete: []
+  });
+  const [deletedLevelIds, setDeletedLevelIds] = reactExports.useState(() => {
+    const saved = localStorage.getItem("deletedLevelIds");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [deletedQuestionIds, setDeletedQuestionIds] = reactExports.useState(() => {
+    const saved = localStorage.getItem("deletedQuestionIds");
+    return saved ? JSON.parse(saved) : [];
+  });
+  reactExports.useEffect(() => {
+    localStorage.setItem("deletedLevelIds", JSON.stringify(deletedLevelIds));
+  }, [deletedLevelIds]);
+  reactExports.useEffect(() => {
+    localStorage.setItem("deletedQuestionIds", JSON.stringify(deletedQuestionIds));
+  }, [deletedQuestionIds]);
+  const [showLevelDialog, setShowLevelDialog] = reactExports.useState(false);
+  const [showQuestionDialog, setShowQuestionDialog] = reactExports.useState(false);
   const [editingLevel, setEditingLevel] = reactExports.useState(null);
   const [editingQuestion, setEditingQuestion] = reactExports.useState(null);
-  const [showNewLevelForm, setShowNewLevelForm] = reactExports.useState(false);
-  const [showNewQuestionForm, setShowNewQuestionForm] = reactExports.useState(false);
   reactExports.useEffect(() => {
     loadData();
   }, []);
   const loadData = async () => {
     try {
-      const [levelsRes, questionsRes] = await Promise.all([
-        fetch("/trivia/levels"),
-        fetch("/trivia/questions")
-      ]);
-      const levelsData = await levelsRes.json();
-      const questionsData = await questionsRes.json();
-      setLevels(levelsData.levels || []);
-      setQuestions(questionsData.questions || []);
+      console.log("=== LOADING DATA ===");
+      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      const response = await fetch(`${base}/trivia/simple`);
+      const data = await response.json();
+      console.log("Admin panel - loaded levels:", data.levels.length);
+      console.log("Admin panel - loaded questions:", data.questions.length);
+      console.log("Admin panel - level IDs:", data.levels.map((l) => l.id));
+      console.log("Admin panel - question IDs:", data.questions.map((q) => q.id));
+      setLevels(data.levels || []);
+      setQuestions(data.questions || []);
+      console.log("Levels after load:", data.levels);
+      console.log("=== DATA LOAD COMPLETE ===");
     } catch (error) {
       console.error("Failed to load trivia data:", error);
       setStatus("Failed to load data");
@@ -30378,278 +31759,688 @@ function TriviaAdminPanel({ passcode }) {
       setLoading(false);
     }
   };
-  const handleSaveLevel = async (level) => {
-    if (!passcode) {
-      setStatus("Admin passcode required");
-      return;
-    }
-    try {
-      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const url = editingLevel ? `/trivia/levels/${level.id}` : "/trivia/levels";
-      const method = editingLevel ? "PUT" : "POST";
-      const response = await fetch(`${base}${url}`, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(level)
-      });
-      if (!response.ok) {
-        throw new Error("Failed to save level");
-      }
-      await loadData();
-      setEditingLevel(null);
-      setShowNewLevelForm(false);
-      setStatus("Level saved successfully");
-    } catch (error) {
-      setStatus("Failed to save level");
-    }
-  };
   const handleDeleteLevel = async (id) => {
     if (!passcode) {
-      setStatus("Admin passcode required");
+      setStatus(
+        language === "es" ? "Se requiere código de administrador" : "Admin passcode required"
+      );
       return;
     }
-    if (!confirm("Are you sure you want to delete this level? All questions in this level will also be deleted.")) {
-      return;
-    }
+    const confirmed = window.confirm(
+      language === "es" ? "¿Seguro que deseas eliminar este nivel? Todas las preguntas de este nivel también se eliminarán." : "Are you sure you want to delete this level? All questions in this level will also be deleted."
+    );
+    if (!confirmed) return;
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/levels/${id}`, {
-        method: "DELETE"
+      const deleteUrl = `${base}/trivia/simple/level/${encodeURIComponent(
+        id
+      )}?passcode=${encodeURIComponent(passcode)}`;
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
       });
-      if (!response.ok) {
-        throw new Error("Failed to delete level");
+      const contentType = response.headers.get("content-type") || "";
+      let data = null;
+      if (contentType.includes("application/json")) {
+        data = await response.json().catch(() => null);
       }
+      if (!response.ok || data && data.success === false) {
+        throw new Error((data == null ? void 0 : data.message) || "Delete failed");
+      }
+      setStatus(
+        language === "es" ? "Nivel eliminado correctamente" : "Level deleted successfully"
+      );
       await loadData();
-      setStatus("Level deleted successfully");
     } catch (error) {
-      setStatus("Failed to delete level");
+      console.error("Failed to delete level", error);
+      setStatus(
+        language === "es" ? "Error al eliminar nivel" : "Failed to delete level"
+      );
     }
   };
-  const handleSaveQuestion = async (question) => {
-    if (!passcode) {
-      setStatus("Admin passcode required");
-      return;
+  const addLevelToBatch = (level) => {
+    if (editingLevel) {
+      setPendingOperations((prev) => ({
+        ...prev,
+        levelsToEdit: [...prev.levelsToEdit.filter((l) => l.id !== editingLevel.id), { ...level, id: editingLevel.id }]
+      }));
+    } else {
+      const levelWithId = { ...level, id: `temp-${Date.now()}` };
+      setPendingOperations((prev) => ({
+        ...prev,
+        levelsToAdd: [...prev.levelsToAdd, levelWithId]
+      }));
     }
-    try {
-      const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const url = editingQuestion ? `/trivia/questions/${question.id}` : "/trivia/questions";
-      const method = editingQuestion ? "PUT" : "POST";
-      const response = await fetch(`${base}${url}`, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(question)
-      });
-      if (!response.ok) {
-        throw new Error("Failed to save question");
-      }
-      await loadData();
+    setShowLevelDialog(false);
+    setEditingLevel(null);
+  };
+  const addQuestionToBatch = (question) => {
+    console.log("🔍 addQuestionToBatch called with:", question);
+    console.log("🔍 editingQuestion:", editingQuestion);
+    if (editingQuestion && editingQuestion.id !== 0) {
+      setPendingOperations((prev) => ({
+        ...prev,
+        questionsToEdit: [...prev.questionsToEdit.filter((q) => q.id !== editingQuestion.id), { ...question, id: editingQuestion.id }]
+      }));
+      setShowQuestionDialog(false);
       setEditingQuestion(null);
-      setShowNewQuestionForm(false);
-      setStatus("Question saved successfully");
-    } catch (error) {
-      setStatus("Failed to save question");
+    } else {
+      console.log("🔍 Adding new question to questionsToAdd");
+      setPendingOperations((prev) => {
+        const newQuestions = [...prev.questionsToAdd, question];
+        console.log("🔍 New questionsToAdd array:", newQuestions);
+        return {
+          ...prev,
+          questionsToAdd: newQuestions
+        };
+      });
+      setShowQuestionDialog(false);
+      setEditingQuestion(null);
     }
   };
-  const handleDeleteQuestion = async (id) => {
+  const executeBatchOperations = async () => {
     if (!passcode) {
       setStatus("Admin passcode required");
       return;
     }
-    if (!confirm("Are you sure you want to delete this question?")) {
-      return;
-    }
+    setStatus("Saving changes...");
+    console.log("=== STARTING BATCH OPERATIONS ===");
+    console.log("Pending operations:", JSON.stringify(pendingOperations, null, 2));
+    console.log("Passcode:", passcode);
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/questions/${id}`, {
-        method: "DELETE"
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete question");
+      const results = [];
+      console.log("Levels to delete:", pendingOperations.levelsToDelete);
+      console.log("Questions to delete:", pendingOperations.questionsToDelete);
+      for (const level of pendingOperations.levelsToAdd) {
+        try {
+          const payload = {
+            id: level.id,
+            name: level.name,
+            description: level.description || null,
+            shuffle_questions: level.shuffle_questions ?? true,
+            time_limit: level.time_limit === null ? 0 : level.time_limit,
+            passing_score: level.passing_score || 70
+          };
+          console.log("Creating level with payload:", payload);
+          const response = await fetch(`${base}/trivia/simple/level`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          console.log("Create level response status:", response.status);
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Create level response body:", result);
+            if (result.success) {
+              console.log("✅ Level created successfully:", level.id);
+              results.push({ success: true, id: level.id });
+            } else {
+              console.error("❌ Failed to create level:", result.message);
+              results.push({ success: false, error: result.message, id: level.id });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Create level failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id: level.id });
+          }
+        } catch (error) {
+          console.error("❌ Error creating level:", level.id, error);
+          results.push({ success: false, error: String(error), id: level.id });
+        }
       }
-      await loadData();
-      setStatus("Question deleted successfully");
+      for (const id of pendingOperations.levelsToDelete) {
+        try {
+          const deleteUrl = `${base}/trivia/simple/level/${id}?passcode=${passcode}`;
+          console.log("Attempting to delete level:", id);
+          console.log("Full delete URL:", deleteUrl);
+          const response = await fetch(deleteUrl, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" }
+          });
+          console.log("Delete level response status:", response.status);
+          console.log("Delete level response headers:", Object.fromEntries(response.headers.entries()));
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Delete level response body:", result);
+            if (result.success) {
+              console.log("✅ Level deleted successfully:", id);
+              results.push({ success: true, id });
+            } else {
+              console.error("❌ Failed to delete level:", result.message);
+              results.push({ success: false, error: result.message, id });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Delete level failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
+          }
+        } catch (error) {
+          console.error("❌ Error deleting level:", id, error);
+          results.push({ success: false, error: String(error), id });
+        }
+      }
+      for (const question of pendingOperations.questionsToAdd) {
+        try {
+          const payload = {
+            question_en: question.question_en,
+            question_es: question.question_es || null,
+            options_en: question.options_en,
+            options_es: question.options_es || question.options_en,
+            correct_answer: question.correct_answer,
+            category: question.category || "General",
+            level_id: question.level_id
+          };
+          console.log("Creating question with payload:", payload);
+          const response = await fetch(`${base}/trivia/simple/question`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          console.log("Create question response status:", response.status);
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Create question response body:", result);
+            if (result.success) {
+              console.log("✅ Question created successfully");
+              results.push({ success: true });
+            } else {
+              console.error("❌ Failed to create question:", result.message);
+              results.push({ success: false, error: result.message });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Create question failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}` });
+          }
+        } catch (error) {
+          console.error("❌ Error creating question:", error);
+          results.push({ success: false, error: String(error) });
+        }
+      }
+      for (const question of pendingOperations.questionsToEdit) {
+        try {
+          const payload = {
+            question_en: question.question_en,
+            question_es: question.question_es || null,
+            options_en: question.options_en,
+            options_es: question.options_es || question.options_en,
+            correct_answer: question.correct_answer,
+            category: question.category || "General",
+            level_id: question.level_id
+          };
+          console.log("Updating question with payload:", payload);
+          if (question.id === 0) {
+            console.log("Creating new question (id=0):", payload);
+            const response = await fetch(`${base}/trivia/simple/question`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            console.log("Create question response status:", response.status);
+            if (response.ok) {
+              const result = await response.json();
+              console.log("Create question response body:", result);
+              if (result.success) {
+                console.log("✅ Question created successfully");
+                results.push({ success: true });
+              } else {
+                console.error("❌ Failed to create question:", result.message);
+                results.push({ success: false, error: result.message });
+              }
+            } else {
+              const errorText = await response.text();
+              console.error("❌ Create question failed:", response.status, errorText);
+              results.push({ success: false, error: `HTTP ${response.status}: ${errorText}` });
+            }
+          } else {
+            console.log("Updating existing question:", question.id);
+            console.log("❌ Question update not implemented yet");
+            results.push({ success: false, error: "Question update not implemented" });
+          }
+        } catch (error) {
+          console.error("❌ Error editing question:", error);
+          results.push({ success: false, error: String(error) });
+        }
+      }
+      for (const id of pendingOperations.questionsToDelete) {
+        try {
+          const deleteUrl = `${base}/trivia/simple/question/${id}?passcode=${passcode}`;
+          console.log("Attempting to delete question:", id);
+          console.log("Full delete question URL:", deleteUrl);
+          const response = await fetch(deleteUrl, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" }
+          });
+          console.log("Delete question response status:", response.status);
+          console.log("Delete question response headers:", Object.fromEntries(response.headers.entries()));
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Delete question response body:", result);
+            if (result.success) {
+              console.log("✅ Question deleted successfully:", id);
+              results.push({ success: true, id });
+            } else {
+              console.error("❌ Failed to delete question:", result.message);
+              results.push({ success: false, error: result.message, id });
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("❌ Delete question failed:", response.status, errorText);
+            results.push({ success: false, error: `HTTP ${response.status}: ${errorText}`, id });
+          }
+        } catch (error) {
+          console.error("❌ Error deleting question:", id, error);
+          results.push({ success: false, error: String(error), id });
+        }
+      }
+      console.log("=== ALL DELETION RESULTS ===");
+      console.log("Results:", JSON.stringify(results, null, 2));
+      const errors = results.filter((r2) => !r2.success);
+      console.log("Errors found:", errors.length);
+      console.log("Error details:", JSON.stringify(errors, null, 2));
+      if (errors.length === 0) {
+        console.log("✅ All operations successful!");
+        setStatus("All changes saved successfully!");
+        console.log("About to call loadData after successful save");
+        setPendingOperations({
+          levelsToAdd: [],
+          levelsToEdit: [],
+          levelsToDelete: [],
+          questionsToAdd: [],
+          questionsToEdit: [],
+          questionsToDelete: []
+        });
+        console.log("Calling loadData...");
+        loadData();
+      } else {
+        console.log("❌ Some operations failed");
+        setStatus(`${errors.length} operations failed`);
+      }
     } catch (error) {
-      setStatus("Failed to delete question");
+      setStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
+  const toggleLevelExpansion = (levelId) => {
+    const newExpanded = new Set(expandedLevels);
+    if (newExpanded.has(levelId)) {
+      newExpanded.delete(levelId);
+    } else {
+      newExpanded.add(levelId);
+    }
+    setExpandedLevels(newExpanded);
+  };
+  const questionsByLevel = questions.reduce((acc, question) => {
+    if (!acc[question.level_id]) {
+      acc[question.level_id] = [];
+    }
+    acc[question.level_id].push(question);
+    return acc;
+  }, {});
+  const totalPendingOps = pendingOperations.levelsToAdd.length + pendingOperations.levelsToEdit.length + pendingOperations.levelsToDelete.length + pendingOperations.questionsToAdd.length + pendingOperations.questionsToEdit.length + pendingOperations.questionsToDelete.length;
   if (loading) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center py-8", children: "Loading..." });
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-8", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 mx-auto mb-2 animate-pulse text-red-400" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Loading trivia data...", "Cargando datos de trivia...") })
+    ] });
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-5 w-5" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Trivia Management", "Gestión de Trivia") })
-    ] }),
-    status && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `text-sm p-2 rounded ${status.includes("success") ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`, children: status }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: t("Difficulty Levels", "Niveles de Dificultad") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => setShowNewLevelForm(true),
-            className: "bg-red-600 hover:bg-red-700 text-white",
-            size: "sm",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-1" }),
-              t("Add Level", "Agregar Nivel")
-            ]
-          }
-        )
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-2xl font-bold text-white flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-6 w-6 text-red-400" }),
+        t("Trivia Management", "Gestión de Trivia")
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg p-4 bg-neutral-900/40", children: (editingLevel == null ? void 0 : editingLevel.id) === level.id ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-        LevelForm,
-        {
-          level: editingLevel,
-          onSave: handleSaveLevel,
-          onCancel: () => setEditingLevel(null)
-        }
-      ) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { className: "font-semibold text-white", children: level.name }),
-          level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: level.description }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-300", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-3 w-3" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                level.time_limit,
-                "s"
-              ] })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-3 w-3" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                level.passing_score,
-                "%"
-              ] })
-            ] }),
-            level.target_group && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: level.target_group })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-4", children: status && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `px-3 py-1 rounded text-sm ${status.includes("Error") ? "bg-red-900 text-red-200" : "bg-green-900 text-green-200"}`, children: status }) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-white flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Levels", "Niveles") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: showLevelDialog, onOpenChange: setShowLevelDialog, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
             Button,
             {
-              onClick: () => setEditingLevel(level),
-              variant: "outline",
-              size: "sm",
-              className: "border-neutral-700 hover:bg-neutral-800",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
+              onClick: () => setEditingLevel(null),
+              className: "bg-red-600 hover:bg-red-700",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-2" }),
+                t("Add Level", "Agregar Nivel")
+              ]
             }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button,
-            {
-              onClick: () => handleDeleteLevel(level.id),
-              variant: "outline",
-              size: "sm",
-              className: "border-red-700 hover:bg-red-700 text-red-400",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
-            }
-          )
-        ] })
-      ] }) }, level.id)) }),
-      showNewLevelForm && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg p-4 bg-neutral-900/40", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        LevelForm,
-        {
-          level: {
-            id: "",
-            name: "",
-            description: "",
-            target_group: "",
-            shuffle_questions: true,
-            time_limit: 30,
-            passing_score: 70
-          },
-          onSave: handleSaveLevel,
-          onCancel: () => setShowNewLevelForm(false)
-        }
-      ) })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-semibold text-white", children: t("Questions", "Preguntas") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => setShowNewQuestionForm(true),
-            className: "bg-red-600 hover:bg-red-700 text-white",
-            size: "sm",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 mr-1" }),
-              t("Add Question", "Agregar Pregunta")
-            ]
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2 max-h-96 overflow-y-auto", children: questions.map((question) => {
-        var _a3;
-        return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg p-4 bg-neutral-900/40", children: (editingQuestion == null ? void 0 : editingQuestion.id) === question.id ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-          QuestionForm,
-          {
-            question: editingQuestion,
-            levels,
-            onSave: handleSaveQuestion,
-            onCancel: () => setEditingQuestion(null)
-          }
-        ) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-medium text-white", children: language === "es" ? question.question_es : question.question_en }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-neutral-400 mt-1", children: [
-              t("Level", "Nivel"),
-              ": ",
-              ((_a3 = levels.find((l) => l.id === question.level_id)) == null ? void 0 : _a3.name) || question.level_id
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-neutral-500", children: [
-              t("Category", "Categoría"),
-              ": ",
-              question.category
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-2xl", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingLevel ? t("Edit Level", "Editar Nivel") : t("Add New Level", "Agregar Nuevo Nivel") }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
+              LevelForm,
               {
-                onClick: () => setEditingQuestion(question),
-                variant: "outline",
-                size: "sm",
-                className: "border-neutral-700 hover:bg-neutral-800",
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "h-3 w-3" })
+                level: editingLevel,
+                onSave: addLevelToBatch,
+                onCancel: () => {
+                  setShowLevelDialog(false);
+                  setEditingLevel(null);
+                }
+              }
+            )
+          ] })
+        ] })
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "space-y-3", children: [...levels, ...pendingOperations.levelsToAdd].filter((level) => typeof level.id === "string" && !pendingOperations.levelsToDelete.includes(level.id)).map((level) => {
+        const levelId = level.id;
+        const isExpanded = expandedLevels.has(levelId);
+        const levelQuestions = [
+          ...(questionsByLevel[levelId] || []).filter(
+            (question) => !pendingOperations.questionsToDelete.includes(question.id)
+          ),
+          ...pendingOperations.questionsToAdd.filter((question) => question.level_id === levelId),
+          ...pendingOperations.questionsToEdit.filter(
+            (question) => question.level_id === levelId && question.id === 0
+          )
+        ].filter(
+          (question, index2, array) => array.findIndex(
+            (q) => q.question_en === question.question_en && q.level_id === question.level_id
+          ) === index2
+        );
+        return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 hover:bg-neutral-800/50 transition-colors", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                className: "flex flex-1 items-center gap-2 text-left",
+                onClick: () => toggleLevelExpansion(levelId),
+                children: [
+                  isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400", children: [
+                    "(",
+                    levelQuestions.length,
+                    " ",
+                    t("questions", "preguntas"),
+                    ")"
+                  ] })
+                ]
               }
             ),
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               Button,
               {
-                onClick: () => handleDeleteQuestion(question.id),
-                variant: "outline",
-                size: "sm",
-                className: "border-red-700 hover:bg-red-700 text-red-400",
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
+                type: "button",
+                variant: "ghost",
+                size: "icon",
+                className: "h-7 w-7 text-neutral-400 hover:text-red-400 hover:bg-red-900/30",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  if (!level.id) return;
+                  void handleDeleteLevel(level.id);
+                },
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
+              }
+            )
+          ] }) }),
+          isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-neutral-800 p-4 space-y-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2 md:grid-cols-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Name", "Nombre") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Input,
+                  {
+                    value: level.name,
+                    onChange: (e) => {
+                    },
+                    className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1 flex gap-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Time Limit (s)", "Límite de Tiempo (s)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      type: "number",
+                      min: 0,
+                      value: level.time_limit || 0,
+                      onChange: (e) => {
+                      },
+                      className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Passing Score (%)", "Puntaje de Aprobación (%)") }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      type: "number",
+                      min: 0,
+                      max: 100,
+                      value: level.passing_score || 0,
+                      onChange: (e) => {
+                      },
+                      className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                    }
+                  )
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Description", "Descripción") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Textarea,
+                {
+                  value: level.description || "",
+                  onChange: (e) => {
+                  },
+                  className: "min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 mt-4", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Questions", "Preguntas") }),
+              levelQuestions.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center text-neutral-400", children: t("No questions in this level yet.", "No hay preguntas en este nivel aún.") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+                levelQuestions.map((question, idx) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "div",
+                  {
+                    className: "border border-neutral-700 rounded bg-neutral-800/50 p-3 flex flex-col gap-2",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        Input,
+                        {
+                          value: question.question_en,
+                          onChange: (e) => {
+                          },
+                          placeholder: t("Question", "Pregunta"),
+                          className: "mb-1 text-[0.9rem]"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mt-1", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            value: Array.isArray(question.options_en) ? question.options_en[0] || "" : "",
+                            onChange: (e) => {
+                            },
+                            placeholder: t("Option 1", "Opción 1"),
+                            className: "text-[0.9rem]"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            value: Array.isArray(question.options_en) ? question.options_en[1] || "" : "",
+                            onChange: (e) => {
+                            },
+                            placeholder: t("Option 2", "Opción 2"),
+                            className: "text-[0.9rem]"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            value: Array.isArray(question.options_en) ? question.options_en[2] || "" : "",
+                            onChange: (e) => {
+                            },
+                            placeholder: t("Option 3", "Opción 3"),
+                            className: "text-[0.9rem]"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            value: Array.isArray(question.options_en) ? question.options_en[3] || "" : "",
+                            onChange: (e) => {
+                            },
+                            placeholder: t("Option 4", "Opción 4"),
+                            className: "text-[0.9rem]"
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-1", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Correct Answer", "Respuesta correcta") }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          Select,
+                          {
+                            value: String(question.correct_answer ?? 0),
+                            onValueChange: (value) => {
+                            },
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-40 h-7 bg-neutral-950 border-neutral-700 text-[0.8rem]", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose option", "Elige opción") }) }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectContent, { className: "bg-neutral-950 border-neutral-700 text-[0.85rem]", children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "0", children: t("Option 1", "Opción 1") }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "1", children: t("Option 2", "Opción 2") }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "2", children: t("Option 3", "Opción 3") }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "3", children: t("Option 4", "Opción 4") })
+                              ] })
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Button,
+                          {
+                            type: "button",
+                            className: "ml-auto bg-red-700 px-2 h-7 text-xs",
+                            onClick: () => {
+                            },
+                            children: t("Delete", "Eliminar")
+                          }
+                        )
+                      ] })
+                    ]
+                  },
+                  question.id ?? `temp-${idx}`
+                )),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-dashed border-neutral-700 rounded bg-neutral-900/30 p-3 flex flex-col gap-2 mt-2", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Input,
+                    {
+                      value: "",
+                      onChange: () => {
+                      },
+                      placeholder: t("New Question", "Nueva Pregunta"),
+                      className: "mb-1 text-[0.9rem]"
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mt-1", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Input,
+                      {
+                        value: "",
+                        onChange: () => {
+                        },
+                        placeholder: t("Option 1", "Opción 1"),
+                        className: "text-[0.9rem]"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Input,
+                      {
+                        value: "",
+                        onChange: () => {
+                        },
+                        placeholder: t("Option 2", "Opción 2"),
+                        className: "text-[0.9rem]"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Input,
+                      {
+                        value: "",
+                        onChange: () => {
+                        },
+                        placeholder: t("Option 3", "Opción 3"),
+                        className: "text-[0.9rem]"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Input,
+                      {
+                        value: "",
+                        onChange: () => {
+                        },
+                        placeholder: t("Option 4", "Opción 4"),
+                        className: "text-[0.9rem]"
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-1", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Correct Answer", "Respuesta correcta") }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      Select,
+                      {
+                        defaultValue: "0",
+                        onValueChange: () => {
+                        },
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-40 h-7 bg-neutral-950 border-neutral-700 text-[0.8rem]", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose option", "Elige opción") }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectContent, { className: "bg-neutral-950 border-neutral-700 text-[0.85rem]", children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "0", children: t("Option 1", "Opción 1") }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "1", children: t("Option 2", "Opción 2") }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "2", children: t("Option 3", "Opción 3") }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "3", children: t("Option 4", "Opción 4") })
+                          ] })
+                        ]
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { type: "button", className: "bg-blue-700 px-2 h-7 text-xs mt-1", onClick: () => {
+                  }, children: t("Add Question", "Agregar Pregunta") })
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Button,
+              {
+                type: "button",
+                onClick: executeBatchOperations,
+                disabled: totalPendingOps === 0,
+                className: "mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed",
+                children: [
+                  t("Save Changes", "Guardar Cambios"),
+                  " ",
+                  totalPendingOps > 0 ? `(${totalPendingOps})` : ""
+                ]
               }
             )
           ] })
-        ] }) }) }, question.id);
-      }) }),
-      showNewQuestionForm && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg p-4 bg-neutral-900/40", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        ] }, levelId);
+      }) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showQuestionDialog, onOpenChange: setShowQuestionDialog, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "bg-neutral-900 border-neutral-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta") }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
         QuestionForm,
         {
-          question: {
-            id: 0,
-            question_en: "",
-            question_es: "",
-            options_en: ["", "", "", ""],
-            options_es: ["", "", "", ""],
-            correct_answer: 0,
-            category: "",
-            reference: "",
-            level_id: ((_a2 = levels[0]) == null ? void 0 : _a2.id) || ""
-          },
+          question: editingQuestion,
           levels,
-          onSave: handleSaveQuestion,
-          onCancel: () => setShowNewQuestionForm(false)
+          onSave: addQuestionToBatch,
+          onCancel: () => {
+            setShowQuestionDialog(false);
+            setEditingQuestion(null);
+          },
+          editingQuestion
         }
-      ) })
-    ] })
+      )
+    ] }) })
   ] });
 }
 function LevelForm({
@@ -30658,117 +32449,119 @@ function LevelForm({
   onCancel
 }) {
   const { t, language } = useLanguage();
-  const [formData, setFormData] = reactExports.useState(level);
+  const [formData, setFormData] = reactExports.useState({
+    id: (level == null ? void 0 : level.id) || "",
+    name: (level == null ? void 0 : level.name) || "",
+    description: (level == null ? void 0 : level.description) || "",
+    shuffle_questions: (level == null ? void 0 : level.shuffle_questions) ?? true,
+    time_limit: (level == null ? void 0 : level.time_limit) ?? 30,
+    passing_score: (level == null ? void 0 : level.passing_score) || 70,
+    disable_time_limit: (level == null ? void 0 : level.time_limit) === null
+  });
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const submissionData = {
+      ...formData,
+      time_limit: formData.disable_time_limit ? null : formData.time_limit
+    };
+    onSave(submissionData);
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Level ID", "ID del Nivel") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+          t("Level Name", "Nombre del Nivel"),
+          " *"
+        ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
+          Input,
           {
-            type: "text",
-            value: formData.id,
-            onChange: (e) => setFormData({ ...formData, id: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: "e.g., kids, youth, adults",
-            disabled: !!level.id
+            value: formData.name,
+            onChange: (e) => setFormData({ ...formData, name: e.target.value, id: e.target.value.toLowerCase().replace(/\s+/g, "-") }),
+            className: "bg-neutral-950 border-neutral-700 text-white",
+            placeholder: t("e.g., Kids, Youth, Adults", "ej., Niños, Jóvenes, Adultos"),
+            required: true
           }
         )
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Level Name", "Nombre del Nivel") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Time Limit (seconds)", "Límite de Tiempo (segundos)") }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
+          Input,
           {
-            type: "text",
-            value: formData.name,
-            onChange: (e) => setFormData({ ...formData, name: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: language === "es" ? "Niños" : "Kids"
+            type: "number",
+            value: formData.time_limit || 30,
+            onChange: (e) => setFormData({ ...formData, time_limit: parseInt(e.target.value) || 30 }),
+            className: "bg-neutral-950 border-neutral-700 text-white",
+            min: "10",
+            max: "300",
+            disabled: formData.disable_time_limit
           }
-        )
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-2 flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "input",
+            {
+              type: "checkbox",
+              id: "disable_time_limit",
+              checked: formData.disable_time_limit,
+              onChange: (e) => setFormData({ ...formData, disable_time_limit: e.target.checked, time_limit: e.target.checked ? null : formData.time_limit }),
+              className: "border-neutral-700 bg-neutral-950"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "disable_time_limit", className: "text-sm text-neutral-300", children: t("Disable time limit", "Desactivar límite de tiempo") })
+        ] })
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Description", "Descripción") }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Description", "Descripción") }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
+        Textarea,
         {
-          type: "text",
-          value: formData.description || "",
+          value: formData.description,
           onChange: (e) => setFormData({ ...formData, description: e.target.value }),
-          className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-          placeholder: language === "es" ? "Para niños de 6-12 años" : "For children ages 6-12"
+          className: "bg-neutral-950 border-neutral-700 text-white",
+          placeholder: t("Optional description for this level", "Descripción opcional para este nivel"),
+          rows: 2
         }
       )
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-3", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Time Limit (seconds)", "Límite de Tiempo (segundos)") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Passing Score (%)", "Puntuación para Aprobar (%)") }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "number",
-            value: formData.time_limit,
-            onChange: (e) => setFormData({ ...formData, time_limit: parseInt(e.target.value) || 30 }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            min: "5",
-            max: "120"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Passing Score (%)", "Puntuación para Aprobar (%)") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
+          Input,
           {
             type: "number",
             value: formData.passing_score,
             onChange: (e) => setFormData({ ...formData, passing_score: parseInt(e.target.value) || 70 }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
+            className: "bg-neutral-950 border-neutral-700 text-white",
             min: "0",
             max: "100"
           }
         )
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Target Group", "Grupo Objetivo") }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-6", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "input",
           {
-            type: "text",
-            value: formData.target_group || "",
-            onChange: (e) => setFormData({ ...formData, target_group: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: language === "es" ? "Niños" : "Children"
+            type: "checkbox",
+            id: "shuffle",
+            checked: formData.shuffle_questions,
+            onChange: (e) => setFormData({ ...formData, shuffle_questions: e.target.checked }),
+            className: "rounded border-neutral-700 bg-neutral-950"
           }
-        )
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { htmlFor: "shuffle", className: "text-sm text-neutral-300", children: t("Shuffle questions", "Mezclar preguntas") })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          type: "checkbox",
-          id: "shuffle",
-          checked: formData.shuffle_questions,
-          onChange: (e) => setFormData({ ...formData, shuffle_questions: e.target.checked }),
-          className: "rounded border-neutral-700 bg-neutral-950"
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { htmlFor: "shuffle", className: "text-sm text-neutral-300", children: t("Shuffle questions", "Mezclar preguntas") })
-    ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700 text-white", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-1" }),
-        t("Save", "Guardar")
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
+        t("Add to Changes", "Agregar a Cambios")
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", onClick: onCancel, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-1" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-2" }),
         t("Cancel", "Cancelar")
       ] })
     ] })
@@ -30778,157 +32571,473 @@ function QuestionForm({
   question,
   levels,
   onSave,
-  onCancel
+  onCancel,
+  editingQuestion
 }) {
   const { t, language } = useLanguage();
-  const [formData, setFormData] = reactExports.useState(question);
+  const initializeFormData = (q) => {
+    var _a2;
+    return {
+      id: (q == null ? void 0 : q.id) || 0,
+      question: (q == null ? void 0 : q.question_en) || (q == null ? void 0 : q.question_es) || "",
+      options: typeof (q == null ? void 0 : q.options_en) === "string" ? JSON.parse(q.options_en) : (q == null ? void 0 : q.options_en) || ["", "", "", ""],
+      correct_answer: (q == null ? void 0 : q.correct_answer) || 0,
+      category: (q == null ? void 0 : q.category) || "General",
+      level_id: (q == null ? void 0 : q.level_id) || (((_a2 = levels[0]) == null ? void 0 : _a2.id) || "")
+    };
+  };
+  const [formData, setFormData] = reactExports.useState(initializeFormData(question));
+  reactExports.useEffect(() => {
+    setFormData(initializeFormData(question));
+  }, [question, levels]);
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const submissionData = {
+      ...formData,
+      question_en: formData.question,
+      question_es: formData.question,
+      options_en: formData.options,
+      options_es: formData.options,
+      level_id: formData.level_id
+      // Explicitly include level_id
+    };
+    console.log("🔍 QuestionForm submitting:", submissionData);
+    onSave(submissionData);
+    setFormData({
+      ...initializeFormData(null),
+      level_id: formData.level_id
+      // Preserve the level_id
+    });
   };
-  const updateOption = (lang, index2, value) => {
-    const options = lang === "en" ? [...formData.options_en] : [...formData.options_es];
+  const updateOption = (index2, value) => {
+    const options = [...formData.options];
     options[index2] = value;
     setFormData({
       ...formData,
-      [`options_${lang}`]: options
+      options
     });
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Question (English)", "Pregunta (Inglés)") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "textarea",
-          {
-            value: formData.question_en,
-            onChange: (e) => setFormData({ ...formData, question_en: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            rows: 2,
-            placeholder: "What is the first book of the Bible?"
-          }
-        )
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+        t("Question", "Pregunta"),
+        " *"
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Question (Spanish)", "Pregunta (Español)") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "textarea",
-          {
-            value: formData.question_es,
-            onChange: (e) => setFormData({ ...formData, question_es: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            rows: 2,
-            placeholder: "¿Cuál es el primer libro de la Biblia?"
-          }
-        )
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Level", "Nivel") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "select",
-          {
-            value: formData.level_id,
-            onChange: (e) => setFormData({ ...formData, level_id: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            children: levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: level.id, children: level.name }, level.id))
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Category", "Categoría") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: formData.category,
-            onChange: (e) => setFormData({ ...formData, category: e.target.value }),
-            className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: "Old Testament, New Testament, Jesus, etc."
-          }
-        )
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Options (English)", "Opciones (Inglés)") }),
-      formData.options_en.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
-          String.fromCharCode(65 + index2),
-          "."
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: option,
-            onChange: (e) => updateOption("en", index2, e.target.value),
-            className: "flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: `Option ${index2 + 1}`
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "radio",
-            name: "correct-en",
-            checked: formData.correct_answer === index2,
-            onChange: () => setFormData({ ...formData, correct_answer: index2 }),
-            className: "text-red-500"
-          }
-        )
-      ] }, `en-${index2}`))
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Options (Spanish)", "Opciones (Español)") }),
-      formData.options_es.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
-          String.fromCharCode(65 + index2),
-          "."
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "text",
-            value: option,
-            onChange: (e) => updateOption("es", index2, e.target.value),
-            className: "flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-            placeholder: `Opción ${index2 + 1}`
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "input",
-          {
-            type: "radio",
-            name: "correct-es",
-            checked: formData.correct_answer === index2,
-            onChange: () => setFormData({ ...formData, correct_answer: index2 }),
-            className: "text-red-500"
-          }
-        )
-      ] }, `es-${index2}`))
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Reference (optional)", "Referencia (opcional)") }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
+        Textarea,
         {
-          type: "text",
-          value: formData.reference || "",
-          onChange: (e) => setFormData({ ...formData, reference: e.target.value }),
-          className: "w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white",
-          placeholder: "Genesis 1:1"
+          value: formData.question,
+          onChange: (e) => setFormData({ ...formData, question: e.target.value }),
+          className: "bg-neutral-950 border-neutral-700 text-white",
+          placeholder: t("Enter question", "Ingresa la pregunta"),
+          rows: 2,
+          required: true
         }
       )
     ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: t("Category", "Categoría") }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Input,
+        {
+          value: formData.category,
+          onChange: (e) => setFormData({ ...formData, category: e.target.value }),
+          className: "bg-neutral-950 border-neutral-700 text-white",
+          placeholder: t("e.g., Old Testament, New Testament", "ej., Antiguo Testamento, Nuevo Testamento")
+        }
+      )
+    ] }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Label, { className: "block text-sm font-medium text-neutral-300 mb-1", children: [
+        t("Answer Options", "Opciones de Respuesta"),
+        " *"
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: formData.options.map((option, index2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400 w-4", children: [
+          String.fromCharCode(65 + index2),
+          "."
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Input,
+          {
+            value: option,
+            onChange: (e) => updateOption(index2, e.target.value),
+            className: "flex-1 bg-neutral-950 border-neutral-700 text-white",
+            placeholder: `Option ${index2 + 1}`,
+            required: true
+          }
+        )
+      ] }, index2)) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-3 flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-sm text-neutral-300", children: t("Correct Answer", "Respuesta correcta") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Select,
+          {
+            value: String(formData.correct_answer ?? 0),
+            onValueChange: (value) => setFormData({ ...formData, correct_answer: parseInt(value, 10) || 0 }),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-40 bg-neutral-950 border-neutral-700 text-[0.9rem] h-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Choose option", "Elige opción") }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectContent, { className: "bg-neutral-950 border-neutral-700 text-[0.9rem]", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "0", children: t("Option 1", "Opción 1") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "1", children: t("Option 2", "Opción 2") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "2", children: t("Option 3", "Opción 3") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: "3", children: t("Option 4", "Opción 4") })
+              ] })
+            ]
+          }
+        )
+      ] })
+    ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700 text-white", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-1" }),
-        t("Save", "Guardar")
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "submit", className: "bg-red-600 hover:bg-red-700", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "h-4 w-4 mr-2" }),
+        editingQuestion ? t("Update", "Actualizar") : t("Add Question", "Agregar Pregunta")
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { type: "button", onClick: onCancel, variant: "outline", className: "border-neutral-700 hover:bg-neutral-800", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-1" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4 mr-2" }),
         t("Cancel", "Cancelar")
+      ] })
+    ] })
+  ] });
+}
+function WordSearchAdminPanel({ passcode }) {
+  const { t, language } = useLanguage();
+  const [levels, setLevels] = reactExports.useState([]);
+  const [selectedLevelId, setSelectedLevelId] = reactExports.useState(null);
+  const [openLevelId, setOpenLevelId] = reactExports.useState(null);
+  const [loading, setLoading] = reactExports.useState(false);
+  const [status, setStatus] = reactExports.useState(null);
+  const [isCreatingNew, setIsCreatingNew] = reactExports.useState(false);
+  const [name, setName] = reactExports.useState("");
+  const [description, setDescription] = reactExports.useState("");
+  const [rows, setRows] = reactExports.useState(12);
+  const [cols, setCols] = reactExports.useState(12);
+  const [wordsText, setWordsText] = reactExports.useState("");
+  const base = "https://prod-cne-sh82.encr.app";
+  const loadLevels = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${base}/games/wordsearch/levels`);
+      if (!res.ok) throw new Error("Failed to load levels");
+      const data = await res.json();
+      setLevels(data.levels || []);
+    } catch (err) {
+      console.error(err);
+      setStatus(t("Failed to load word search levels", "Error al cargar niveles de sopa de letras"));
+    } finally {
+      setLoading(false);
+    }
+  };
+  reactExports.useEffect(() => {
+    loadLevels();
+  }, []);
+  const selectLevel = (level) => {
+    setIsCreatingNew(false);
+    setSelectedLevelId(level.id);
+    setOpenLevelId((current) => current === level.id ? null : level.id);
+    setName(level.name);
+    setDescription(level.description || "");
+    setRows(level.rows || 12);
+    setCols(level.cols || 12);
+    setWordsText(
+      level.words.map((w) => language === "es" && w.word_es ? `${w.word_en}|${w.word_es}` : w.word_en).join("\n")
+    );
+  };
+  const handleNewLevel = () => {
+    setIsCreatingNew(true);
+    setSelectedLevelId(null);
+    setOpenLevelId(null);
+    setName("");
+    setDescription("");
+    setStatus(null);
+  };
+  const handleSaveLevel = async () => {
+    setStatus(null);
+    if (!passcode) {
+      setStatus(t("Enter admin passcode first", "Ingresa el código de admin primero"));
+      return;
+    }
+    if (!name.trim()) {
+      setStatus(t("Enter a level name", "Ingresa un nombre de nivel"));
+      return;
+    }
+    try {
+      const res = await fetch(`${base}/games/wordsearch/levels`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedLevelId || void 0,
+          name: name.trim(),
+          description: description.trim() || void 0,
+          passcode
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error("Save failed");
+      }
+      await loadLevels();
+      setStatus(t("Level saved", "Nivel guardado"));
+      if (!selectedLevelId) {
+        setSelectedLevelId(data.id);
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus(t("Failed to save level", "Error al guardar nivel"));
+    }
+  };
+  const handleDeleteLevel = async (levelId) => {
+    setStatus(null);
+    if (!passcode) {
+      setStatus(t("Enter admin passcode first", "Ingresa el código de admin primero"));
+      return;
+    }
+    const confirmed = window.confirm(
+      t(
+        "Are you sure you want to delete this level?",
+        "¿Seguro que deseas eliminar este nivel?"
+      )
+    );
+    if (!confirmed) return;
+    try {
+      const url = `${base}/games/wordsearch/levels/${encodeURIComponent(
+        levelId
+      )}?passcode=${encodeURIComponent(passcode)}`;
+      const res = await fetch(url, {
+        method: "DELETE"
+      });
+      const contentType = res.headers.get("content-type") || "";
+      let data = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json().catch(() => null);
+      }
+      if (!res.ok || data && data.success === false) {
+        throw new Error((data == null ? void 0 : data.message) || "Delete failed");
+      }
+      await loadLevels();
+      setStatus(t("Level deleted", "Nivel eliminado"));
+      if (selectedLevelId === levelId) {
+        setSelectedLevelId(null);
+        setOpenLevelId(null);
+        setWordsText("");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus(t("Failed to delete level", "Error al eliminar nivel"));
+    }
+  };
+  const handleSaveWords = async () => {
+    setStatus(null);
+    if (!passcode) {
+      setStatus(t("Enter admin passcode first", "Ingresa el código de admin primero"));
+      return;
+    }
+    if (!selectedLevelId) {
+      setStatus(t("Save the level first", "Guarda el nivel primero"));
+      return;
+    }
+    const lines = wordsText.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+    const words = lines.map((line) => {
+      const [en, es] = line.split("|");
+      return { word_en: en.trim(), word_es: es == null ? void 0 : es.trim() };
+    });
+    try {
+      const res = await fetch(`${base}/games/wordsearch/levels/${selectedLevelId}/words`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: selectedLevelId, passcode, words })
+      });
+      const contentType = res.headers.get("content-type") || "";
+      let data = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      }
+      if (!res.ok || data && data.success === false) {
+        throw new Error("Save failed");
+      }
+      await loadLevels();
+      setStatus(t("Words saved", "Palabras guardadas"));
+    } catch (err) {
+      console.error(err);
+      setStatus(t("Failed to save words", "Error al guardar palabras"));
+    }
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-2xl font-bold text-white", children: t("Word Search Management", "Gestión de Sopa de Letras") }),
+      status && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1 rounded text-xs bg-neutral-800 text-neutral-200", children: status })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-white flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Levels", "Niveles") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            type: "button",
+            className: "bg-red-600 hover:bg-red-700",
+            onClick: handleNewLevel,
+            children: t("New Level", "Nuevo Nivel")
+          }
+        )
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-400", children: t(
+          "Create levels and word lists. The game will auto-generate the puzzles.",
+          "Crea niveles y listas de palabras. El juego generará los rompecabezas automáticamente."
+        ) }),
+        loading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading levels...", "Cargando niveles...") }),
+        !loading && levels.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.") }),
+        !loading && levels.map((level) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 hover:bg-neutral-800/50 transition-colors", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                className: "flex flex-1 items-center gap-2 text-left",
+                onClick: () => selectLevel(level),
+                children: [
+                  openLevelId === level.id ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-block w-4 text-red-400", children: "▼" }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-block w-4 text-neutral-400", children: "▶" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-semibold text-white", children: level.name }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-neutral-400", children: [
+                    "(",
+                    level.words.length,
+                    " ",
+                    t("words", "palabras"),
+                    ")"
+                  ] })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                type: "button",
+                variant: "ghost",
+                size: "icon",
+                className: "h-7 w-7 text-neutral-400 hover:text-red-400 hover:bg-red-900/30",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleDeleteLevel(level.id);
+                },
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
+              }
+            )
+          ] }) }),
+          openLevelId === level.id && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-neutral-800 p-4 space-y-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2 md:grid-cols-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Name", "Nombre") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Input,
+                  {
+                    value: name,
+                    onChange: (e) => setName(e.target.value),
+                    className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-end", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+                "Grid size is chosen automatically based on your words (max 9x9).",
+                "El tamaño de la cuadrícula se elige automáticamente según tus palabras (máx. 9x9)."
+              ) }) })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Description", "Descripción") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Textarea,
+                {
+                  value: description,
+                  onChange: (e) => setDescription(e.target.value),
+                  className: "min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 mt-4", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Words", "Palabras") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+                "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
+                "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Textarea,
+                {
+                  value: wordsText,
+                  onChange: (e) => setWordsText(e.target.value),
+                  className: "min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                type: "button",
+                onClick: async () => {
+                  await handleSaveLevel();
+                  await handleSaveWords();
+                },
+                className: "mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700",
+                children: t("Save Changes", "Guardar Cambios")
+              }
+            )
+          ] })
+        ] }, level.id)),
+        isCreatingNew && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "border border-neutral-800 rounded-lg bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-4 space-y-4", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-2 md:grid-cols-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Name", "Nombre") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Input,
+                {
+                  value: name,
+                  onChange: (e) => setName(e.target.value),
+                  className: "h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-end", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+              "Grid size is chosen automatically based on your words (max 9x9).",
+              "El tamaño de la cuadrícula se elige automáticamente según tus palabras (máx. 9x9)."
+            ) }) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-[0.7rem] text-neutral-400", children: t("Description", "Descripción") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Textarea,
+              {
+                value: description,
+                onChange: (e) => setDescription(e.target.value),
+                className: "min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2 mt-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-neutral-300", children: t("Words", "Palabras") }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
+              "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
+              "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
+            ) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Textarea,
+              {
+                value: wordsText,
+                onChange: (e) => setWordsText(e.target.value),
+                className: "min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              type: "button",
+              onClick: async () => {
+                await handleSaveLevel();
+                await handleSaveWords();
+              },
+              className: "mt-4 h-7 bg-red-600 px-3 text-[0.75rem] font-semibold hover:bg-red-700",
+              children: t("Save Level", "Guardar Nivel")
+            }
+          )
+        ] }) })
       ] })
     ] })
   ] });
@@ -30938,12 +33047,13 @@ function AdminUpload() {
   const { playlistUrl, setPlaylistUrl, livestreamUrl, setLivestreamUrl } = usePlayer();
   const [uploadPasscode, setUploadPasscode] = reactExports.useState("");
   const [playlistStatus, setPlaylistStatus] = reactExports.useState(null);
-  const [sermons, setSermons] = reactExports.useState([]);
+  const [sermons2, setSermons] = reactExports.useState([]);
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
   const [sermonTitle, setSermonTitle] = reactExports.useState("");
   const [sermonUrl, setSermonUrl] = reactExports.useState("");
   const [sermonStatus, setSermonStatus] = reactExports.useState(null);
   const [livestreamStatus, setLivestreamStatus] = reactExports.useState(null);
+  const [openGameAdmin, setOpenGameAdmin] = reactExports.useState(null);
   reactExports.useEffect(() => {
     document.title = t("Admin Upload", "Carga de Admin");
   }, [t]);
@@ -31097,7 +33207,7 @@ function AdminUpload() {
       /* @__PURE__ */ jsxRuntimeExports.jsxs(TabsList, { className: "grid w-full grid-cols-3", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "media", children: t("Music", "Música") }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "other", children: t("Media", "Medios") }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "trivia", children: t("Trivia", "Trivia") })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TabsTrigger, { value: "games", children: t("Games", "Juegos") })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "media", className: "space-y-4 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500", children: t("Music Playlist", "Lista de Música") }),
@@ -31278,8 +33388,8 @@ function AdminUpload() {
           sermonStatus && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-2 text-[0.7rem] text-neutral-400", children: sermonStatus }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950/40 p-2", children: [
             loadingSermons && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("Loading devotionals...", "Cargando devocionales...") }),
-            !loadingSermons && sermons.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No devotionals found.", "No se encontraron devocionales.") }),
-            !loadingSermons && sermons.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons.map((sermon) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            !loadingSermons && sermons2.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t("No devotionals found.", "No se encontraron devocionales.") }),
+            !loadingSermons && sermons2.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1", children: sermons2.map((sermon) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
               "li",
               {
                 className: "flex items-center justify-between rounded-md bg-neutral-900/80 px-2 py-1.5",
@@ -31349,7 +33459,7 @@ function AdminUpload() {
                           );
                         }
                       },
-                      children: t("Delete", "Eliminar")
+                      children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3 w-3" })
                     }
                   )
                 ]
@@ -31359,7 +33469,34 @@ function AdminUpload() {
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "trivia", className: "space-y-4 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaAdminPanel, { passcode: uploadPasscode }) })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(TabsContent, { value: "games", className: "space-y-3 mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            type: "button",
+            className: "flex w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-neutral-100 hover:border-red-500",
+            onClick: () => setOpenGameAdmin((prev) => prev === "trivia" ? null : "trivia"),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Bible Trivia", "Trivia Bíblica") }),
+              openGameAdmin === "trivia" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4 text-neutral-400" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4 text-neutral-400" })
+            ]
+          }
+        ),
+        openGameAdmin === "trivia" && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-neutral-800 bg-neutral-950/60 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaAdminPanelFinal, { passcode: uploadPasscode }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            type: "button",
+            className: "mt-2 flex w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-neutral-100 hover:border-red-500",
+            onClick: () => setOpenGameAdmin((prev) => prev === "wordSearch" ? null : "wordSearch"),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Word Search", "Sopa de Letras") }),
+              openGameAdmin === "wordSearch" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "h-4 w-4 text-neutral-400" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "h-4 w-4 text-neutral-400" })
+            ]
+          }
+        ),
+        openGameAdmin === "wordSearch" && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-neutral-800 bg-neutral-950/60 p-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(WordSearchAdminPanel, { passcode: uploadPasscode }) })
+      ] }) })
     ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: t(
       "Tip: Bookmark this URL. It is not linked from the main site.",
@@ -31367,6 +33504,463 @@ function AdminUpload() {
     ) })
   ] });
 }
+const Switch = reactExports.forwardRef(
+  ({ className, checked = false, onCheckedChange, disabled, ...props }, ref) => {
+    const handleClick = () => {
+      if (!disabled && onCheckedChange) {
+        onCheckedChange(!checked);
+      }
+    };
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "button",
+      {
+        type: "button",
+        role: "switch",
+        "aria-checked": checked,
+        disabled,
+        ref,
+        onClick: handleClick,
+        className: cn(
+          "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+          checked ? "bg-red-600" : "bg-neutral-700",
+          className
+        ),
+        ...props,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "span",
+          {
+            className: cn(
+              "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform",
+              checked ? "translate-x-5" : "translate-x-0"
+            )
+          }
+        )
+      }
+    );
+  }
+);
+Switch.displayName = "Switch";
+const NotificationSettings = () => {
+  const { isSupported, permission, requestPermission, subscribeToNotifications, unsubscribeFromNotifications, isSubscribed } = useNotifications();
+  const { t, language } = useLanguage();
+  const [isLoading, setIsLoading] = reactExports.useState(false);
+  const handleEnableNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const granted = await requestPermission();
+      if (granted) {
+        await subscribeToNotifications();
+      }
+    } catch (error) {
+      console.error("Error enabling notifications:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleDisableNotifications = async () => {
+    setIsLoading(true);
+    try {
+      await unsubscribeFromNotifications();
+    } catch (error) {
+      console.error("Error disabling notifications:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  if (!isSupported) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 text-neutral-400", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { className: "h-5 w-5" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: language === "es" ? "Las notificaciones push no son compatibles con este navegador." : "Push notifications are not supported on this browser." })
+    ] }) }) });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: "bg-neutral-900 border-neutral-800", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-white flex items-center gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-5 w-5" }),
+      t("Notification Settings", "Configuración de Notificaciones")
+    ] }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "space-y-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-white font-medium", children: t("Push Notifications", "Notificaciones Push") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400", children: language === "es" ? "Recibir notificaciones sobre noticias, anuncios y recordatorios de transmisión en vivo." : "Receive notifications about news, announcements, and livestream reminders." })
+        ] }),
+        permission === "granted" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Switch,
+            {
+              checked: isSubscribed,
+              onCheckedChange: (checked) => {
+                if (checked) {
+                  handleEnableNotifications();
+                } else {
+                  handleDisableNotifications();
+                }
+              },
+              disabled: isLoading
+            }
+          ),
+          isSubscribed ? /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-4 w-4 text-green-400" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(BellOff, { className: "h-4 w-4 text-neutral-400" })
+        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            onClick: handleEnableNotifications,
+            disabled: isLoading,
+            className: "bg-red-600 hover:bg-red-700",
+            children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: t("Enabling...", "Activando...") }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-4 w-4 mr-2" }),
+              t("Enable Notifications", "Activar Notificaciones")
+            ] })
+          }
+        )
+      ] }),
+      permission === "denied" && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 p-3 bg-red-900/20 border border-red-800 rounded-lg", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { className: "h-5 w-5 text-red-400" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-red-400 font-medium", children: t("Notifications Blocked", "Notificaciones Bloqueadas") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-red-300 mt-1", children: language === "es" ? "Las notificaciones están bloqueadas. Por favor, actívalas en la configuración de tu navegador." : "Notifications are blocked. Please enable them in your browser settings." })
+        ] })
+      ] }),
+      isSubscribed && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { className: "text-white font-medium", children: t("Notification Types", "Tipos de Notificaciones") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-3", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-2 w-2 bg-blue-400 rounded-full" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-neutral-300", children: t("News & Updates", "Noticias y Actualizaciones") })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-2 w-2 bg-green-400 rounded-full" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-neutral-300", children: t("Announcements", "Anuncios") })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-2 w-2 bg-red-400 rounded-full" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-neutral-300", children: t("Livestream Reminders", "Recordatorios de Transmisión en Vivo") })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 p-3 bg-blue-900/20 border border-blue-800 rounded-lg", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Smartphone, { className: "h-5 w-5 text-blue-400" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-blue-400 font-medium", children: t("Install as App", "Instalar como Aplicación") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-blue-300 mt-1", children: language === "es" ? "Para la mejor experiencia, instala esta aplicación en tu pantalla de inicio." : "For the best experience, install this app on your home screen." })
+        ] })
+      ] })
+    ] })
+  ] });
+};
+const usePushNotifications = () => {
+  const { language } = useLanguage();
+  const [isSupported, setIsSupported] = reactExports.useState(false);
+  const [isSubscribed, setIsSubscribed] = reactExports.useState(false);
+  const [permission, setPermission] = reactExports.useState("default");
+  const [isLoading, setIsLoading] = reactExports.useState(false);
+  const [error, setError] = reactExports.useState(null);
+  const [initialized, setInitialized] = reactExports.useState(false);
+  const VAPID_PUBLIC_KEY = "BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E";
+  reactExports.useEffect(() => {
+    const init = async () => {
+      try {
+        const supported = "serviceWorker" in navigator && "PushManager" in window;
+        setIsSupported(supported);
+        console.log("Push notifications supported:", supported);
+        if (supported) {
+          setPermission(Notification.permission);
+          console.log("Current notification permission:", Notification.permission);
+          await checkSubscriptionStatus();
+        }
+      } catch (err) {
+        console.error("❌ Error during push notifications init:", err);
+      } finally {
+        setInitialized(true);
+      }
+    };
+    void init();
+  }, []);
+  const checkSubscriptionStatus = async () => {
+    try {
+      console.log("Checking subscription status...");
+      const registration = await navigator.serviceWorker.ready;
+      console.log("Service worker ready:", registration);
+      const subscription = await registration.pushManager.getSubscription();
+      console.log("Existing subscription:", subscription);
+      if (subscription) {
+        console.log("🔔 Found existing subscription, saving to database...");
+        const p256dhKey = subscription.getKey ? subscription.getKey("p256dh") : null;
+        const authKey = subscription.getKey ? subscription.getKey("auth") : null;
+        const subscriptionData = {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
+            auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ""
+          },
+          userAgent: navigator.userAgent,
+          language
+        };
+        console.log("🔔 Saving existing subscription to backend:", {
+          endpoint: subscriptionData.endpoint.substring(0, 50) + "...",
+          hasP256dh: !!subscriptionData.keys.p256dh,
+          hasAuth: !!subscriptionData.keys.auth,
+          userAgent: subscriptionData.userAgent
+        });
+        const response = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(subscriptionData)
+        });
+        if (response.ok) {
+          const result = await response.json();
+          console.log("✅ Existing subscription saved to database:", result);
+        } else {
+          console.warn("⚠️ Failed to save existing subscription:", response.status);
+        }
+      }
+      setIsSubscribed(!!subscription);
+    } catch (err) {
+      console.error("❌ Error checking subscription status:", err);
+    }
+  };
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = "=".repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+  const subscribe = async () => {
+    if (!isSupported) {
+      console.error("🚫 Push notifications not supported on this device");
+      setError("Push notifications are not supported in this browser");
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    console.log("🔔 Starting subscription process...");
+    console.log("🔔 User Agent:", navigator.userAgent);
+    console.log("🔔 Is PWA mode:", window.matchMedia("(display-mode: standalone)").matches);
+    try {
+      console.log("Requesting notification permission...");
+      const permissionResult = await Notification.requestPermission();
+      console.log("Permission result:", permissionResult);
+      setPermission(permissionResult);
+      if (permissionResult !== "granted") {
+        setError("Permission denied for notifications");
+        setIsLoading(false);
+        return;
+      }
+      console.log("Getting service worker registration...");
+      const registration = await navigator.serviceWorker.ready;
+      console.log("Service worker registration:", registration);
+      const existingSubscription = await registration.pushManager.getSubscription();
+      if (existingSubscription) {
+        console.log("🔔 User already subscribed locally, saving to database...");
+        const subscription2 = existingSubscription;
+        const p256dhKey2 = subscription2.getKey ? subscription2.getKey("p256dh") : null;
+        const authKey2 = subscription2.getKey ? subscription2.getKey("auth") : null;
+        const subscriptionData2 = {
+          endpoint: subscription2.endpoint,
+          keys: {
+            p256dh: p256dhKey2 ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey2)))) : "",
+            auth: authKey2 ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey2)))) : ""
+          },
+          userAgent: navigator.userAgent
+        };
+        console.log("🔔 Saving existing subscription to backend:", {
+          endpoint: subscriptionData2.endpoint.substring(0, 50) + "...",
+          hasP256dh: !!subscriptionData2.keys.p256dh,
+          hasAuth: !!subscriptionData2.keys.auth,
+          userAgent: subscriptionData2.userAgent
+        });
+        console.log("🔔 Saving existing subscription via direct fetch...");
+        const response2 = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(subscriptionData2)
+        });
+        if (!response2.ok) {
+          throw new Error(`HTTP ${response2.status}: ${response2.statusText}`);
+        }
+        const result2 = await response2.json();
+        console.log("✅ Existing subscription saved via direct fetch:", result2);
+        setIsSubscribed(true);
+        setIsLoading(false);
+        console.log("✅ Existing subscription saved to database successfully");
+        return;
+      }
+      console.log("Subscribing to push notifications...");
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+      console.log("Push subscription created:", subscription);
+      const p256dhKey = subscription.getKey("p256dh");
+      const authKey = subscription.getKey("auth");
+      const subscriptionData = {
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : "",
+          auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ""
+        },
+        userAgent: navigator.userAgent,
+        language
+      };
+      console.log("🔔 Sending subscription to backend:", {
+        endpoint: subscriptionData.endpoint.substring(0, 50) + "...",
+        hasP256dh: !!subscriptionData.keys.p256dh,
+        hasAuth: !!subscriptionData.keys.auth,
+        userAgent: subscriptionData.userAgent
+      });
+      console.log("🔔 Saving new subscription via direct fetch...");
+      const response = await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(subscriptionData)
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const result = await response.json();
+      console.log("✅ New subscription saved via direct fetch:", result);
+      console.log("✅ Subscription saved to backend successfully");
+      setIsSubscribed(true);
+      console.log("✅ Successfully subscribed to push notifications");
+    } catch (err) {
+      console.error("❌ Error subscribing to push notifications:", err);
+      console.error("❌ Error details:", {
+        name: err instanceof Error ? err.name : "Unknown",
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : void 0
+      });
+      const errorMessage = err instanceof Error ? err.message : "Failed to subscribe to notifications";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const unsubscribe = async () => {
+    if (!isSupported || !isSubscribed) {
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (subscription) {
+        await subscription.unsubscribe();
+        setIsSubscribed(false);
+        console.log("Successfully unsubscribed from push notifications");
+      }
+    } catch (err) {
+      console.error("Error unsubscribing from push notifications:", err);
+      setError("Failed to unsubscribe from notifications");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return {
+    isSupported,
+    isSubscribed,
+    permission,
+    isLoading,
+    error,
+    subscribe,
+    unsubscribe,
+    initialized
+  };
+};
+const PushNotificationPrompt = ({ className }) => {
+  const [dismissed, setDismissed] = reactExports.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("cne-notif-dismissed") === "1";
+  });
+  const [everSubscribed, setEverSubscribed] = reactExports.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("cne-notif-ever-subscribed") === "1";
+  });
+  const { isSupported, isSubscribed, permission, isLoading, error, subscribe, initialized } = usePushNotifications();
+  reactExports.useEffect(() => {
+    if (isSubscribed) {
+      setEverSubscribed(true);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("cne-notif-ever-subscribed", "1");
+      }
+    }
+  }, [isSubscribed]);
+  if (!initialized) {
+    return null;
+  }
+  if (!isSupported || permission === "denied" || isSubscribed || everSubscribed) {
+    return null;
+  }
+  const isPWA = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: minimal-ui)").matches || window.navigator.standalone === true);
+  if (!isPWA || dismissed) {
+    return null;
+  }
+  const handleSubscribe = async () => {
+    try {
+      await subscribe();
+    } catch (err) {
+      console.error("Failed to subscribe:", err);
+    }
+  };
+  const handleDismiss = () => {
+    setDismissed(true);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("cne-notif-dismissed", "1");
+    }
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { className: `bg-blue-50 border-blue-200 ${className}`, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "pb-3", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "text-sm text-blue-800 flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-4 w-4" }),
+        "Stay Updated"
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(CardDescription, { className: "text-xs text-blue-600", children: "Get notified about new announcements and when livestream starts" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "pt-0", children: [
+      error && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mb-3 p-2 bg-red-50 rounded text-red-700 text-xs", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { className: "h-3 w-3" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: error })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            size: "sm",
+            onClick: handleSubscribe,
+            disabled: isLoading,
+            className: "bg-blue-600 hover:bg-blue-700 text-white",
+            children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-4 w-4 animate-spin mr-2" }),
+              "Enabling..."
+            ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "h-4 w-4 mr-2" }),
+              "Enable Notifications"
+            ] })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            variant: "ghost",
+            size: "sm",
+            onClick: handleDismiss,
+            className: "text-blue-600 hover:bg-blue-100",
+            children: "Maybe Later"
+          }
+        )
+      ] })
+    ] })
+  ] });
+};
 var PROVIDER_NAME = "ToastProvider";
 var [Collection, useCollection, createCollectionScope] = createCollection("Toast");
 var [createToastContext] = createContextScope("Toast", [createCollectionScope]);
@@ -32085,8 +34679,16 @@ function AppInner() {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
   reactExports.useEffect(() => {
-    if (window.location.hash === "#admin-upload") {
+    const hash = window.location.hash;
+    const path = window.location.pathname;
+    if (hash === "#admin-upload") {
       setCurrentPage("adminUpload");
+    } else if (path === "/trivia-game" || hash === "#trivia-game") {
+      setCurrentPage("triviaGame");
+    } else if (hash === "#media") {
+      setCurrentPage("media");
+    } else if (hash === "#news" || hash === "#news-announcements" || hash === "#news-events") {
+      setCurrentPage("news");
     }
   }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen bg-neutral-950", children: [
@@ -32099,52 +34701,43 @@ function AppInner() {
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: currentPage === "media" ? "block" : "hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Media, {}) }),
       currentPage === "adminUpload" && /* @__PURE__ */ jsxRuntimeExports.jsx(AdminUpload, {}),
       currentPage === "contact" && /* @__PURE__ */ jsxRuntimeExports.jsx(Contact, { onNavigate: handleNavigate }),
-      currentPage === "games" && /* @__PURE__ */ jsxRuntimeExports.jsx(Games, {}),
-      currentPage === "newHere" && /* @__PURE__ */ jsxRuntimeExports.jsx(NewHere, { onNavigate: handleNavigate })
+      currentPage === "games" && /* @__PURE__ */ jsxRuntimeExports.jsx(Games, { onNavigate: handleNavigate }),
+      currentPage === "triviaGame" && /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaGamePage, { onNavigate: handleNavigate }),
+      currentPage === "wordSearchGame" && /* @__PURE__ */ jsxRuntimeExports.jsx(WordSearchGamePage, { onNavigate: handleNavigate }),
+      currentPage === "newHere" && /* @__PURE__ */ jsxRuntimeExports.jsx(NewHere, { onNavigate: handleNavigate }),
+      currentPage === "notifications" && /* @__PURE__ */ jsxRuntimeExports.jsx(NotificationSettings, {})
     ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40", children: /* @__PURE__ */ jsxRuntimeExports.jsx(PushNotificationPrompt, {}) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Toaster, {})
   ] });
 }
 const queryClient = new QueryClient();
 function App() {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsxRuntimeExports.jsx(LanguageProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(PlayerProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "dark", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AppInner, {}) }) }) }) });
+  const [showSplash, setShowSplash] = reactExports.useState(true);
+  reactExports.useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setShowSplash(false);
+    }, 800);
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, []);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsxRuntimeExports.jsx(LanguageProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(PlayerProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(NotificationProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "dark", children: [
+    showSplash && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "app-splash", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "img",
+        {
+          src: "./cne_logo_black.svg",
+          alt: "Centro de Nueva Esperanza",
+          className: "app-splash-logo",
+          style: { filter: "invert(1)" }
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "app-splash-spinner", "aria-hidden": "true" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(AppInner, {})
+  ] }) }) }) }) });
 }
-const hideSplashScreen = () => {
-  const splash = document.querySelector(".app-splash");
-  const body = document.body;
-  if (splash && body) {
-    const hideSplash = () => {
-      body.classList.add("app-loaded");
-      splash.style.opacity = "0";
-      splash.style.transition = "opacity 0.5s ease-out";
-      setTimeout(() => {
-        splash.remove();
-      }, 500);
-    };
-    const checkResourcesLoaded = () => {
-      const images = Array.from(document.images);
-      const imagesLoaded = images.every((img) => {
-        return img.complete && img.naturalHeight !== 0;
-      });
-      const fontsLoaded = document.fonts.ready;
-      const minLoadTime = 8e3;
-      const startTime = Date.now();
-      const checkComplete = () => {
-        const elapsed = Date.now() - startTime;
-        const minTimePassed = elapsed >= minLoadTime;
-        fontsLoaded.then(() => {
-          if (minTimePassed && imagesLoaded) {
-            hideSplash();
-          } else {
-            setTimeout(checkComplete, 100);
-          }
-        });
-      };
-      checkComplete();
-    };
-    setTimeout(checkResourcesLoaded, 100);
-  }
-};
 if (typeof window !== "undefined") {
   window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   if ("scrollRestoration" in history) {
@@ -32154,7 +34747,6 @@ if (typeof window !== "undefined") {
 ReactDOM$1.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsxRuntimeExports.jsx(React.StrictMode, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(App, {}) })
 );
-hideSplashScreen();
 if ("serviceWorker" in navigator && true) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/cne-app/sw.js").then((registration) => {
