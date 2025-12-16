@@ -29725,6 +29725,30 @@ function Media({ onStartMusic }) {
     if (typeof window === "undefined") return;
     const w = window;
     let cancelled = false;
+    let checkInterval = null;
+    const checkIfLive = () => {
+      if (!playerRef.current) return;
+      try {
+        const player = playerRef.current;
+        const duration = player.getDuration();
+        const playerState = player.getPlayerState();
+        const videoData = player.getVideoData();
+        console.log("Checking if live - duration:", duration, "state:", playerState, "videoData:", videoData);
+        const hasValidVideo = videoData && videoData.video_id;
+        const isLiveDuration = duration === 0 || isNaN(duration) || duration > 7200;
+        const YT = w.YT;
+        const isActiveState = YT && YT.PlayerState && (playerState === YT.PlayerState.PLAYING || playerState === YT.PlayerState.BUFFERING || playerState === YT.PlayerState.CUED);
+        if (hasValidVideo && (isLiveDuration || isActiveState)) {
+          console.log("Stream detected as live");
+          setIsActuallyLive(true);
+        } else {
+          console.log("Stream not live");
+          setIsActuallyLive(false);
+        }
+      } catch (error) {
+        console.error("Error checking if live:", error);
+      }
+    };
     const createPlayer = () => {
       if (cancelled) return;
       if (!w.YT || !w.YT.Player) return;
@@ -29735,22 +29759,8 @@ function Media({ onStartMusic }) {
         events: {
           onReady: (event) => {
             console.log("Livestream player ready");
-            try {
-              const player = event.target;
-              const duration = player.getDuration();
-              const videoData = player.getVideoData();
-              console.log("Player ready - duration:", duration, "videoData:", videoData);
-              if (videoData && videoData.video_id && (duration === 0 || duration > 7200)) {
-                console.log("Livestream detected as available");
-                setIsActuallyLive(true);
-              } else {
-                console.log("Video loaded but not a livestream (duration:", duration, ")");
-                setIsActuallyLive(false);
-              }
-            } catch (error) {
-              console.error("Error checking stream availability:", error);
-              setIsActuallyLive(false);
-            }
+            checkIfLive();
+            checkInterval = setInterval(checkIfLive, 1e4);
           },
           onStateChange: (event) => {
             const YT = w.YT;
@@ -29761,8 +29771,9 @@ function Media({ onStartMusic }) {
               setIsActuallyLive(true);
             } else if (event.data === YT.PlayerState.ENDED) {
               setIsStreamPlaying(false);
+              setIsActuallyLive(false);
             } else if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.CUED) {
-              setIsActuallyLive(true);
+              checkIfLive();
             }
           },
           onError: (event) => {
@@ -29791,6 +29802,9 @@ function Media({ onStartMusic }) {
     }
     return () => {
       cancelled = true;
+      if (checkInterval) {
+        clearInterval(checkInterval);
+      }
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
         playerRef.current.destroy();
         playerRef.current = null;

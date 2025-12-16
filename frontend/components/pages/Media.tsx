@@ -180,6 +180,43 @@ export function Media({ onStartMusic }: MediaProps) {
 
     const w = window as any;
     let cancelled = false;
+    let checkInterval: NodeJS.Timeout | null = null;
+
+    const checkIfLive = () => {
+      if (!playerRef.current) return;
+      
+      try {
+        const player = playerRef.current;
+        const duration = player.getDuration();
+        const playerState = player.getPlayerState();
+        const videoData = player.getVideoData();
+        
+        console.log('Checking if live - duration:', duration, 'state:', playerState, 'videoData:', videoData);
+        
+        // Check multiple indicators for a live stream:
+        // 1. Duration is 0 or NaN (livestreams have no fixed duration)
+        // 2. Player state is PLAYING, BUFFERING, or CUED
+        // 3. Video data exists
+        const hasValidVideo = videoData && videoData.video_id;
+        const isLiveDuration = duration === 0 || isNaN(duration) || duration > 7200;
+        const YT = w.YT;
+        const isActiveState = YT && YT.PlayerState && (
+          playerState === YT.PlayerState.PLAYING ||
+          playerState === YT.PlayerState.BUFFERING ||
+          playerState === YT.PlayerState.CUED
+        );
+        
+        if (hasValidVideo && (isLiveDuration || isActiveState)) {
+          console.log('Stream detected as live');
+          setIsActuallyLive(true);
+        } else {
+          console.log('Stream not live');
+          setIsActuallyLive(false);
+        }
+      } catch (error) {
+        console.error('Error checking if live:', error);
+      }
+    };
 
     const createPlayer = () => {
       if (cancelled) return;
@@ -193,28 +230,9 @@ export function Media({ onStartMusic }: MediaProps) {
         events: {
           onReady: (event: any) => {
             console.log('Livestream player ready');
-            // Check if there's a livestream available
-            try {
-              const player = event.target;
-              const duration = player.getDuration();
-              const videoData = player.getVideoData();
-              console.log('Player ready - duration:', duration, 'videoData:', videoData);
-              
-              // Only consider it live if:
-              // 1. Duration is 0 (livestreams have no duration)
-              // 2. OR duration is very long (2+ hours, likely a long stream)
-              // Don't just check for video existence - check if it's actually a live stream
-              if (videoData && videoData.video_id && (duration === 0 || duration > 7200)) {
-                console.log('Livestream detected as available');
-                setIsActuallyLive(true);
-              } else {
-                console.log('Video loaded but not a livestream (duration:', duration, ')');
-                setIsActuallyLive(false);
-              }
-            } catch (error) {
-              console.error('Error checking stream availability:', error);
-              setIsActuallyLive(false);
-            }
+            checkIfLive();
+            // Check periodically for live status
+            checkInterval = setInterval(checkIfLive, 10000); // Check every 10 seconds
           },
           onStateChange: (event: any) => {
             const YT = w.YT;
@@ -226,9 +244,10 @@ export function Media({ onStartMusic }: MediaProps) {
               setIsActuallyLive(true);
             } else if (event.data === YT.PlayerState.ENDED) {
               setIsStreamPlaying(false);
+              setIsActuallyLive(false);
             } else if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.CUED) {
-              // Stream is buffering or cued, which means it's available
-              setIsActuallyLive(true);
+              // Check if it's actually live when buffering/cued
+              checkIfLive();
             }
           },
           onError: (event: any) => {
@@ -260,6 +279,9 @@ export function Media({ onStartMusic }: MediaProps) {
 
     return () => {
       cancelled = true;
+      if (checkInterval) {
+        clearInterval(checkInterval);
+      }
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
         playerRef.current.destroy();
         playerRef.current = null;
