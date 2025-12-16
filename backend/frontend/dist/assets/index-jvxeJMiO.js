@@ -32929,6 +32929,10 @@ function AdminUpload() {
   const [sermonStatus, setSermonStatus] = reactExports.useState(null);
   const [livestreamStatus, setLivestreamStatus] = reactExports.useState(null);
   const [openGameAdmin, setOpenGameAdmin] = reactExports.useState(null);
+  const [localLivestreamUrl, setLocalLivestreamUrl] = reactExports.useState("");
+  reactExports.useEffect(() => {
+    setLocalLivestreamUrl(livestreamUrl || "");
+  }, []);
   reactExports.useEffect(() => {
     document.title = t("Admin Upload", "Carga de Admin");
   }, [t]);
@@ -33019,13 +33023,13 @@ function AdminUpload() {
     }
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      console.log("Saving livestream URL:", livestreamUrl.trim(), "to", base);
+      console.log("Saving livestream URL:", localLivestreamUrl.trim(), "to", base);
       const res = await fetch(`${base}/livestream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           passcode: trimmedPasscode,
-          url: livestreamUrl.trim()
+          url: localLivestreamUrl.trim()
         })
       });
       console.log("Livestream save response status:", res.status, "ok:", res.ok);
@@ -33040,6 +33044,7 @@ function AdminUpload() {
         );
         return;
       }
+      setLivestreamUrl(localLivestreamUrl.trim());
       setLivestreamStatus(
         t(
           "Livestream URL saved successfully.",
@@ -33132,8 +33137,8 @@ function AdminUpload() {
               "input",
               {
                 type: "text",
-                value: livestreamUrl,
-                onChange: (e) => setLivestreamUrl(e.target.value),
+                value: localLivestreamUrl,
+                onChange: (e) => setLocalLivestreamUrl(e.target.value),
                 className: "w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500",
                 placeholder: "https://youtube.com/watch?v=... or https://youtu.be/..."
               }

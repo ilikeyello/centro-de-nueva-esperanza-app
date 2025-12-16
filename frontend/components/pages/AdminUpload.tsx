@@ -21,6 +21,12 @@ export function AdminUpload() {
   const [sermonStatus, setSermonStatus] = useState<string | null>(null);
   const [livestreamStatus, setLivestreamStatus] = useState<string | null>(null);
   const [openGameAdmin, setOpenGameAdmin] = useState<"trivia" | "wordSearch" | null>(null);
+  const [localLivestreamUrl, setLocalLivestreamUrl] = useState("");
+
+  // Initialize local livestream URL from context on mount
+  useEffect(() => {
+    setLocalLivestreamUrl(livestreamUrl || "");
+  }, []);
 
   useEffect(() => {
     document.title = t("Admin Upload", "Carga de Admin");
@@ -139,13 +145,13 @@ export function AdminUpload() {
       const base = import.meta.env.DEV
         ? "http://127.0.0.1:4000"
         : "https://prod-cne-sh82.encr.app";
-      console.log('Saving livestream URL:', livestreamUrl.trim(), 'to', base);
+      console.log('Saving livestream URL:', localLivestreamUrl.trim(), 'to', base);
       const res = await fetch(`${base}/livestream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           passcode: trimmedPasscode,
-          url: livestreamUrl.trim(),
+          url: localLivestreamUrl.trim(),
         }),
       });
 
@@ -162,6 +168,9 @@ export function AdminUpload() {
         );
         return;
       }
+
+      // Update the context with the saved URL
+      setLivestreamUrl(localLivestreamUrl.trim());
 
       setLivestreamStatus(
         t(
@@ -278,8 +287,8 @@ export function AdminUpload() {
         <div className="mt-3 space-y-2 text-[0.75rem]">
                 <input
                   type="text"
-                  value={livestreamUrl}
-                  onChange={(e) => setLivestreamUrl(e.target.value)}
+                  value={localLivestreamUrl}
+                  onChange={(e) => setLocalLivestreamUrl(e.target.value)}
                   className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                   placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
                 />
