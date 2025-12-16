@@ -193,28 +193,21 @@ export function Media({ onStartMusic }: MediaProps) {
         
         console.log('Checking if live - duration:', duration, 'state:', playerState, 'videoData:', videoData);
         
-        // Check multiple indicators for a live stream:
-        // 1. Duration is 0 or NaN (livestreams have no fixed duration)
-        // 2. Player state is PLAYING, BUFFERING, or CUED
-        // 3. Video data exists
+        // Only consider it live if duration is 0 or NaN (the most reliable indicator)
+        // Duration > 0 means it's a regular video, not a livestream
         const hasValidVideo = videoData && videoData.video_id;
-        const isLiveDuration = duration === 0 || isNaN(duration) || duration > 7200;
-        const YT = w.YT;
-        const isActiveState = YT && YT.PlayerState && (
-          playerState === YT.PlayerState.PLAYING ||
-          playerState === YT.PlayerState.BUFFERING ||
-          playerState === YT.PlayerState.CUED
-        );
+        const isLiveDuration = duration === 0 || isNaN(duration);
         
-        if (hasValidVideo && (isLiveDuration || isActiveState)) {
-          console.log('Stream detected as live');
+        if (hasValidVideo && isLiveDuration) {
+          console.log('Stream detected as live (duration is 0 or NaN)');
           setIsActuallyLive(true);
         } else {
-          console.log('Stream not live');
+          console.log('Stream not live (duration:', duration, ')');
           setIsActuallyLive(false);
         }
       } catch (error) {
         console.error('Error checking if live:', error);
+        setIsActuallyLive(false);
       }
     };
 

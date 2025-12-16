@@ -29735,18 +29735,17 @@ function Media({ onStartMusic }) {
         const videoData = player.getVideoData();
         console.log("Checking if live - duration:", duration, "state:", playerState, "videoData:", videoData);
         const hasValidVideo = videoData && videoData.video_id;
-        const isLiveDuration = duration === 0 || isNaN(duration) || duration > 7200;
-        const YT = w.YT;
-        const isActiveState = YT && YT.PlayerState && (playerState === YT.PlayerState.PLAYING || playerState === YT.PlayerState.BUFFERING || playerState === YT.PlayerState.CUED);
-        if (hasValidVideo && (isLiveDuration || isActiveState)) {
-          console.log("Stream detected as live");
+        const isLiveDuration = duration === 0 || isNaN(duration);
+        if (hasValidVideo && isLiveDuration) {
+          console.log("Stream detected as live (duration is 0 or NaN)");
           setIsActuallyLive(true);
         } else {
-          console.log("Stream not live");
+          console.log("Stream not live (duration:", duration, ")");
           setIsActuallyLive(false);
         }
       } catch (error) {
         console.error("Error checking if live:", error);
+        setIsActuallyLive(false);
       }
     };
     const createPlayer = () => {
