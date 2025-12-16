@@ -139,6 +139,7 @@ export function AdminUpload() {
       const base = import.meta.env.DEV
         ? "http://127.0.0.1:4000"
         : "https://prod-cne-sh82.encr.app";
+      console.log('Saving livestream URL:', livestreamUrl.trim(), 'to', base);
       const res = await fetch(`${base}/livestream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,6 +148,10 @@ export function AdminUpload() {
           url: livestreamUrl.trim(),
         }),
       });
+
+      console.log('Livestream save response status:', res.status, 'ok:', res.ok);
+      const responseText = await res.text();
+      console.log('Livestream save response body:', responseText);
 
       if (!res.ok) {
         setLivestreamStatus(
@@ -164,7 +169,8 @@ export function AdminUpload() {
           "URL de transmisión en vivo guardada correctamente."
         )
       );
-    } catch {
+    } catch (error) {
+      console.error('Error saving livestream:', error);
       setLivestreamStatus(
         t(
           "An unexpected error occurred while saving the livestream URL.",
