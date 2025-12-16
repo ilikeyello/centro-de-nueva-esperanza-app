@@ -397,10 +397,11 @@ export function Media({ onStartMusic }: MediaProps) {
         const latest = (data?.url || "").trim();
         if (cancelled) return;
         if (typeof latest === "string" && latest !== (livestreamUrl || "")) {
+          console.log('Livestream URL changed from', livestreamUrl, 'to', latest);
           setLivestreamUrl(latest);
         }
-      } catch {
-        // Ignore errors; we'll try again on the next interval.
+      } catch (error) {
+        console.error('Error fetching livestream URL:', error);
       }
     };
 
@@ -412,7 +413,7 @@ export function Media({ onStartMusic }: MediaProps) {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [livestreamUrl, setLivestreamUrl]);
+  }, [setLivestreamUrl]);
 
   // When countdown ends and we are in the current live window, try to start playback once.
   useEffect(() => {
@@ -580,6 +581,7 @@ export function Media({ onStartMusic }: MediaProps) {
                 </div>
               )}
               <iframe
+                key={getEmbedUrl(livestreamUrl)}
                 id="cne-livestream-player"
                 src={getEmbedUrl(livestreamUrl)}
                 title={t("CNE Live Stream", "Transmisión en Vivo de CNE")}

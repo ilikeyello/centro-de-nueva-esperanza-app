@@ -29879,9 +29879,11 @@ function Media({ onStartMusic }) {
         const latest = ((data == null ? void 0 : data.url) || "").trim();
         if (cancelled) return;
         if (typeof latest === "string" && latest !== (livestreamUrl || "")) {
+          console.log("Livestream URL changed from", livestreamUrl, "to", latest);
           setLivestreamUrl(latest);
         }
-      } catch {
+      } catch (error) {
+        console.error("Error fetching livestream URL:", error);
       }
     };
     void fetchLatestLivestream();
@@ -29890,7 +29892,7 @@ function Media({ onStartMusic }) {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [livestreamUrl, setLivestreamUrl]);
+  }, [setLivestreamUrl]);
   reactExports.useEffect(() => {
     if (!isInCurrentLivestreamWindow) return;
     if (showCountdown) return;
@@ -30027,7 +30029,8 @@ function Media({ onStartMusic }) {
             onError: () => {
               console.error("Livestream iframe failed to load with src:", getEmbedUrl(livestreamUrl));
             }
-          }
+          },
+          getEmbedUrl(livestreamUrl)
         )
       ] }) })
     ] }) }),
