@@ -191,14 +191,43 @@ export function Media({ onStartMusic }: MediaProps) {
 
       playerRef.current = new w.YT.Player("cne-livestream-player", {
         events: {
+          onReady: (event: any) => {
+            console.log('Livestream player ready');
+            // Check if there's a video loaded (indicates stream is available)
+            try {
+              const player = event.target;
+              const duration = player.getDuration();
+              const videoData = player.getVideoData();
+              console.log('Player ready - duration:', duration, 'videoData:', videoData);
+              
+              // If duration is 0 or very long, it's likely a livestream
+              // If there's video data, a stream is available
+              if (videoData && videoData.video_id) {
+                console.log('Stream detected as available');
+                setIsActuallyLive(true);
+              }
+            } catch (error) {
+              console.error('Error checking stream availability:', error);
+            }
+          },
           onStateChange: (event: any) => {
             const YT = w.YT;
             if (!YT || !YT.PlayerState) return;
+            console.log('Player state changed:', event.data);
+            
             if (event.data === YT.PlayerState.PLAYING) {
               setIsStreamPlaying(true);
+              setIsActuallyLive(true);
             } else if (event.data === YT.PlayerState.ENDED) {
               setIsStreamPlaying(false);
+            } else if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.CUED) {
+              // Stream is buffering or cued, which means it's available
+              setIsActuallyLive(true);
             }
+          },
+          onError: (event: any) => {
+            console.error('Player error:', event.data);
+            setIsActuallyLive(false);
           },
         },
       });
@@ -347,21 +376,26 @@ export function Media({ onStartMusic }: MediaProps) {
   const isInCurrentLivestreamWindow =
     now >= previousLivestreamStart && now <= previousLivestreamEnd;
 
-  // Show countdown only when we're before the *next* livestream AND
-  // not currently within the previous service's live window AND
-  // the stream is not actually live (unless manually overridden).
-  // Before we enter the current livestream window, show a countdown.
+  // Show countdown only when:
+  // - We're not in the current livestream window
+  // - There's time until the next stream
+  // - The stream is not playing
+  // - The stream is not actually live (even if early)
+  // - Manual override is not active
   const showCountdown =
     !isInCurrentLivestreamWindow &&
     millisecondsUntilStream > 0 &&
     !isStreamPlaying &&
+    !isActuallyLive &&
     !manualLiveOverride;
 
   // Once we're in the current livestream window but the player isn't
   // playing yet, show a "Starting Soon" overlay instead of a countdown.
+  // Also hide if the stream is actually live (detected by player).
   const showStartingSoon =
     isInCurrentLivestreamWindow &&
     !isStreamPlaying &&
+    !isActuallyLive &&
     !manualLiveOverride &&
     livestreamUrl; // Only show if there's a livestream URL
 

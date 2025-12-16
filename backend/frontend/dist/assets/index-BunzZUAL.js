@@ -29733,14 +29733,37 @@ function Media({ onStartMusic }) {
       if (!existing) return;
       playerRef.current = new w.YT.Player("cne-livestream-player", {
         events: {
+          onReady: (event) => {
+            console.log("Livestream player ready");
+            try {
+              const player = event.target;
+              const duration = player.getDuration();
+              const videoData = player.getVideoData();
+              console.log("Player ready - duration:", duration, "videoData:", videoData);
+              if (videoData && videoData.video_id) {
+                console.log("Stream detected as available");
+                setIsActuallyLive(true);
+              }
+            } catch (error) {
+              console.error("Error checking stream availability:", error);
+            }
+          },
           onStateChange: (event) => {
             const YT = w.YT;
             if (!YT || !YT.PlayerState) return;
+            console.log("Player state changed:", event.data);
             if (event.data === YT.PlayerState.PLAYING) {
               setIsStreamPlaying(true);
+              setIsActuallyLive(true);
             } else if (event.data === YT.PlayerState.ENDED) {
               setIsStreamPlaying(false);
+            } else if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.CUED) {
+              setIsActuallyLive(true);
             }
+          },
+          onError: (event) => {
+            console.error("Player error:", event.data);
+            setIsActuallyLive(false);
           }
         }
       });
@@ -29855,8 +29878,8 @@ function Media({ onStartMusic }) {
   }, [previousLivestreamStart]);
   const millisecondsUntilStream = nextLivestream.getTime() - now.getTime();
   const isInCurrentLivestreamWindow = now >= previousLivestreamStart && now <= previousLivestreamEnd;
-  const showCountdown = !isInCurrentLivestreamWindow && millisecondsUntilStream > 0 && !isStreamPlaying && !manualLiveOverride;
-  const showStartingSoon = isInCurrentLivestreamWindow && !isStreamPlaying && !manualLiveOverride && livestreamUrl;
+  const showCountdown = !isInCurrentLivestreamWindow && millisecondsUntilStream > 0 && !isStreamPlaying && !isActuallyLive && !manualLiveOverride;
+  const showStartingSoon = isInCurrentLivestreamWindow && !isStreamPlaying && !isActuallyLive && !manualLiveOverride && livestreamUrl;
   const countdownLabel = formatCountdown(Math.max(millisecondsUntilStream, 0));
   const nextServiceFormatted = reactExports.useMemo(() => {
     return nextLivestream.toLocaleString(language === "en" ? "en-US" : "es-MX", {
