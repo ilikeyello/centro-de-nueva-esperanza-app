@@ -6,7 +6,12 @@ interface UpdateLivestreamRequest {
   url: string;
 }
 
-export const update = api<UpdateLivestreamRequest, void>(
+interface UpdateLivestreamResponse {
+  success: boolean;
+  message: string;
+}
+
+export const update = api<UpdateLivestreamRequest, UpdateLivestreamResponse>(
   { expose: true, method: "POST", path: "/livestream" },
   async (req) => {
     if (req.passcode !== "78598") {
@@ -44,5 +49,6 @@ export const update = api<UpdateLivestreamRequest, void>(
     }
 
     setLivestreamUrl(embedUrl || null);
+    return { success: true, message: "Livestream URL saved successfully" };
   }
 );

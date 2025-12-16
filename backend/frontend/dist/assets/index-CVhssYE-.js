@@ -15427,15 +15427,7 @@ function PlayerProvider({ children }) {
   const playNextInQueue = () => {
     if (!queue || queue.length === 0) return;
     if (queueIndex == null) return;
-    const nextIndex = queueIndex + 1;
-    if (nextIndex >= queue.length) {
-      setCurrentTrack(null);
-      setQueueIndex(null);
-      setCurrentTrackTitle(null);
-      setCurrentTrackArtist(null);
-      setIsPlaying(false);
-      return;
-    }
+    const nextIndex = queueIndex + 1 >= queue.length ? 0 : queueIndex + 1;
     setQueueIndex(nextIndex);
     setCurrentTrack(queue[nextIndex]);
     const metaForTrack = queueMeta[nextIndex];
@@ -29627,7 +29619,6 @@ const LIVESTREAM_DAY = 0;
 const LIVESTREAM_HOUR = 15;
 const LIVESTREAM_MINUTE = 30;
 const LIVESTREAM_DURATION_MINUTES = 120;
-let liveCheckInterval = null;
 function getNextLivestream(reference) {
   const next = new Date(reference);
   next.setSeconds(0, 0);
@@ -29659,12 +29650,12 @@ function Media({ onStartMusic }) {
   const [sermons2, setSermons] = reactExports.useState([]);
   const [selectedSermonId, setSelectedSermonId] = reactExports.useState(null);
   const [loadingSermons, setLoadingSermons] = reactExports.useState(false);
-  const { playTrack, startQueue, playlistUrl, livestreamUrl } = usePlayer();
+  const { playTrack, startQueue, playlistUrl, livestreamUrl, setLivestreamUrl } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = reactExports.useState(false);
   const [isActuallyLive, setIsActuallyLive] = reactExports.useState(false);
   const [manualLiveOverride, setManualLiveOverride] = reactExports.useState(false);
   const playerRef = reactExports.useRef(null);
-  const youtubePlayerRef = reactExports.useRef(null);
+  reactExports.useRef(null);
   const [uploadFiles, setUploadFiles] = reactExports.useState([]);
   const [uploadPasscode, setUploadPasscode] = reactExports.useState("");
   const [uploadStatus, setUploadStatus] = reactExports.useState(null);
@@ -29864,8 +29855,8 @@ function Media({ onStartMusic }) {
   }, [previousLivestreamStart]);
   const millisecondsUntilStream = nextLivestream.getTime() - now.getTime();
   const isInCurrentLivestreamWindow = now >= previousLivestreamStart && now <= previousLivestreamEnd;
-  const showCountdown = millisecondsUntilStream > 0 && now >= previousLivestreamEnd && !isStreamPlaying && !isActuallyLive && !manualLiveOverride;
-  const showStartingSoon = millisecondsUntilStream <= 0 && now >= previousLivestreamEnd && !isStreamPlaying && !isActuallyLive && !manualLiveOverride && livestreamUrl;
+  const showCountdown = !isInCurrentLivestreamWindow && millisecondsUntilStream > 0 && !isStreamPlaying && !manualLiveOverride;
+  const showStartingSoon = isInCurrentLivestreamWindow && !isStreamPlaying && !manualLiveOverride && livestreamUrl;
   const countdownLabel = formatCountdown(Math.max(millisecondsUntilStream, 0));
   const nextServiceFormatted = reactExports.useMemo(() => {
     return nextLivestream.toLocaleString(language === "en" ? "en-US" : "es-MX", {
@@ -29876,6 +29867,31 @@ function Media({ onStartMusic }) {
   }, [language, nextLivestream]);
   const nextStreamMessage = language === "en" ? `Next stream: ${nextServiceFormatted}` : `Próxima transmisión: ${nextServiceFormatted}`;
   reactExports.useEffect(() => {
+    let cancelled = false;
+    const fetchLatestLivestream = async () => {
+      try {
+        const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+        const res = await fetch(`${base}/livestream?ts=${Date.now()}`, {
+          cache: "no-store"
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const latest = ((data == null ? void 0 : data.url) || "").trim();
+        if (cancelled) return;
+        if (typeof latest === "string" && latest !== (livestreamUrl || "")) {
+          setLivestreamUrl(latest);
+        }
+      } catch {
+      }
+    };
+    void fetchLatestLivestream();
+    const intervalId = window.setInterval(fetchLatestLivestream, 3e4);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [livestreamUrl, setLivestreamUrl]);
+  reactExports.useEffect(() => {
     if (!isInCurrentLivestreamWindow) return;
     if (showCountdown) return;
     if (isStreamPlaying) return;
@@ -29885,158 +29901,6 @@ function Media({ onStartMusic }) {
     } catch {
     }
   }, [isInCurrentLivestreamWindow, showCountdown, isStreamPlaying]);
-  reactExports.useEffect(() => {
-    var _a2;
-    if (!livestreamUrl) {
-      console.log("No livestream URL provided");
-      return;
-    }
-    console.log("Initializing YouTube livestream detection for:", livestreamUrl);
-    if (!window.YT) {
-      console.log("Loading YouTube IFrame API...");
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      (_a2 = firstScriptTag.parentNode) == null ? void 0 : _a2.insertBefore(tag, firstScriptTag);
-    } else {
-      console.log("YouTube API already loaded");
-    }
-    window.onYouTubeIframeAPIReady = () => {
-      console.log("YouTube IFrame API ready");
-      initializeLivestreamDetection();
-    };
-    if (window.YT && window.YT.Player) {
-      console.log("YouTube API already available, initializing immediately");
-      initializeLivestreamDetection();
-    }
-    function initializeLivestreamDetection() {
-      var _a3;
-      if (!livestreamUrl || youtubePlayerRef.current) {
-        console.log("Livestream detection already initialized or no URL");
-        return;
-      }
-      console.log("Initializing livestream detection...");
-      let videoId = "";
-      let isChannelLive = false;
-      try {
-        const url = new URL(livestreamUrl);
-        console.log("Parsing URL:", url);
-        if (url.pathname.includes("/embed/live_stream") && url.searchParams.get("channel")) {
-          videoId = url.searchParams.get("channel") || "";
-          isChannelLive = true;
-        } else if (url.hostname.includes("youtu.be")) {
-          videoId = url.pathname.replace("/", "");
-        } else if (url.searchParams.get("v")) {
-          videoId = url.searchParams.get("v") || "";
-        } else if (url.pathname.includes("/embed/")) {
-          videoId = ((_a3 = url.pathname.split("/embed/")[1]) == null ? void 0 : _a3.split("?")[0]) || "";
-        }
-        console.log("Extracted video ID/channel:", videoId, "Is channel live:", isChannelLive);
-      } catch (error) {
-        console.error("Error extracting video ID:", error);
-        return;
-      }
-      if (!videoId) {
-        console.error("No video ID/channel found in URL");
-        return;
-      }
-      console.log("Creating YouTube player for:", isChannelLive ? "channel" : "video ID", videoId);
-      if (isChannelLive) {
-        console.log("Channel live stream detected, checking if actually live");
-        setIsActuallyLive(false);
-        liveCheckInterval = setInterval(() => {
-          const iframe = document.querySelector("#cne-livestream-player");
-          if (iframe) {
-            try {
-              console.log("Channel live stream iframe exists, checking if live...");
-              setIsActuallyLive(false);
-            } catch (error) {
-              console.log("Channel live stream iframe check failed, assuming not live");
-              setIsActuallyLive(false);
-            }
-          }
-        }, 3e4);
-      } else {
-        youtubePlayerRef.current = new window.YT.Player("youtube-livestream-detector", {
-          videoId,
-          events: {
-            onReady: (event) => {
-              console.log("YouTube player ready for livestream detection");
-              checkLivestreamStatus();
-              liveCheckInterval = setInterval(checkLivestreamStatus, 1e4);
-            },
-            onError: (error) => {
-              console.error("YouTube player error:", error);
-              setIsActuallyLive(false);
-            },
-            onStateChange: (event) => {
-              console.log("YouTube player state changed:", event.data);
-              setTimeout(checkLivestreamStatus, 1e3);
-            }
-          }
-        });
-      }
-    }
-    function checkLivestreamStatus() {
-      var _a3, _b2, _c2, _d2;
-      const url = new URL(livestreamUrl);
-      if (url.pathname.includes("/embed/live_stream")) {
-        console.log("Skipping API-based check for channel stream");
-        return;
-      }
-      if (!youtubePlayerRef.current) {
-        console.log("YouTube player not ready for livestream check");
-        return;
-      }
-      try {
-        const player = youtubePlayerRef.current;
-        const playerState = player.getPlayerState();
-        const playerInfo = player.getVideoData();
-        const videoData = (_a3 = player.getVideoData) == null ? void 0 : _a3.call(player);
-        console.log("Livestream check:", {
-          playerState,
-          playerInfo,
-          videoData,
-          isLive: playerInfo == null ? void 0 : playerInfo.isLive,
-          duration: (_b2 = player.getDuration) == null ? void 0 : _b2.call(player),
-          currentTime: (_c2 = player.getCurrentTime) == null ? void 0 : _c2.call(player)
-        });
-        let isLive = false;
-        if ((playerInfo == null ? void 0 : playerInfo.isLive) === true) {
-          isLive = true;
-        }
-        const duration = (_d2 = player.getDuration) == null ? void 0 : _d2.call(player);
-        if (duration === 0 || isNaN(duration) || duration > 7200) {
-          isLive = true;
-        }
-        const YT = window.YT;
-        if (YT && YT.PlayerState && playerState === YT.PlayerState.BUFFERING) {
-          isLive = true;
-        }
-        if (playerInfo && playerInfo.title && (playerInfo.title.toLowerCase().includes("live") || playerInfo.title.toLowerCase().includes("en vivo"))) {
-          isLive = true;
-        }
-        if (playerState === (YT == null ? void 0 : YT.PlayerState.ENDED) && duration === 0) {
-          isLive = true;
-        }
-        console.log("Setting isActuallyLive to:", isLive, "(detection methods used)");
-        setIsActuallyLive(isLive);
-      } catch (error) {
-        console.error("Error checking livestream status:", error);
-        setIsActuallyLive(false);
-      }
-    }
-    return () => {
-      if (liveCheckInterval) {
-        clearInterval(liveCheckInterval);
-        liveCheckInterval = null;
-      }
-      if (youtubePlayerRef.current) {
-        youtubePlayerRef.current.destroy();
-        youtubePlayerRef.current = null;
-      }
-    };
-  }, [livestreamUrl]);
   reactExports.useEffect(() => {
     if (!livestreamUrl) return;
     const detectorDiv = document.createElement("div");
@@ -33085,6 +32949,7 @@ function AdminUpload() {
   }, []);
   const handleSavePlaylist = async () => {
     setPlaylistStatus(null);
+    const trimmedPasscode = uploadPasscode.trim();
     if (!playlistUrl.trim()) {
       setPlaylistStatus(
         t(
@@ -33094,7 +32959,7 @@ function AdminUpload() {
       );
       return;
     }
-    if (!uploadPasscode) {
+    if (!trimmedPasscode) {
       setPlaylistStatus(
         t(
           "Enter the upload passcode before saving.",
@@ -33109,7 +32974,7 @@ function AdminUpload() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          passcode: uploadPasscode,
+          passcode: trimmedPasscode,
           url: playlistUrl.trim()
         })
       });
@@ -33139,7 +33004,8 @@ function AdminUpload() {
   };
   const handleSaveLivestream = async () => {
     setLivestreamStatus(null);
-    if (!uploadPasscode) {
+    const trimmedPasscode = uploadPasscode.trim();
+    if (!trimmedPasscode) {
       setLivestreamStatus(
         t(
           "Enter the upload passcode before saving.",
@@ -33154,7 +33020,7 @@ function AdminUpload() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          passcode: uploadPasscode,
+          passcode: trimmedPasscode,
           url: livestreamUrl.trim()
         })
       });
