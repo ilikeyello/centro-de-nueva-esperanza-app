@@ -193,21 +193,27 @@ export function Media({ onStartMusic }: MediaProps) {
         events: {
           onReady: (event: any) => {
             console.log('Livestream player ready');
-            // Check if there's a video loaded (indicates stream is available)
+            // Check if there's a livestream available
             try {
               const player = event.target;
               const duration = player.getDuration();
               const videoData = player.getVideoData();
               console.log('Player ready - duration:', duration, 'videoData:', videoData);
               
-              // If duration is 0 or very long, it's likely a livestream
-              // If there's video data, a stream is available
-              if (videoData && videoData.video_id) {
-                console.log('Stream detected as available');
+              // Only consider it live if:
+              // 1. Duration is 0 (livestreams have no duration)
+              // 2. OR duration is very long (2+ hours, likely a long stream)
+              // Don't just check for video existence - check if it's actually a live stream
+              if (videoData && videoData.video_id && (duration === 0 || duration > 7200)) {
+                console.log('Livestream detected as available');
                 setIsActuallyLive(true);
+              } else {
+                console.log('Video loaded but not a livestream (duration:', duration, ')');
+                setIsActuallyLive(false);
               }
             } catch (error) {
               console.error('Error checking stream availability:', error);
+              setIsActuallyLive(false);
             }
           },
           onStateChange: (event: any) => {

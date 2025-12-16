@@ -29740,12 +29740,16 @@ function Media({ onStartMusic }) {
               const duration = player.getDuration();
               const videoData = player.getVideoData();
               console.log("Player ready - duration:", duration, "videoData:", videoData);
-              if (videoData && videoData.video_id) {
-                console.log("Stream detected as available");
+              if (videoData && videoData.video_id && (duration === 0 || duration > 7200)) {
+                console.log("Livestream detected as available");
                 setIsActuallyLive(true);
+              } else {
+                console.log("Video loaded but not a livestream (duration:", duration, ")");
+                setIsActuallyLive(false);
               }
             } catch (error) {
               console.error("Error checking stream availability:", error);
+              setIsActuallyLive(false);
             }
           },
           onStateChange: (event) => {
