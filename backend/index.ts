@@ -5,7 +5,7 @@ import "./church";
 import "./db";
 import "./donations";
 import "./events";
-import "./livestream";
+import "./livestream/index";
 import "./media";
 import "./notifications";
 import "./prayers";

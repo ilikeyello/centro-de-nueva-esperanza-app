@@ -29879,9 +29879,11 @@ function Media({ onStartMusic }) {
         const latest = ((data == null ? void 0 : data.url) || "").trim();
         if (cancelled) return;
         if (typeof latest === "string" && latest !== (livestreamUrl || "")) {
+          console.log("Livestream URL changed from", livestreamUrl, "to", latest);
           setLivestreamUrl(latest);
         }
-      } catch {
+      } catch (error) {
+        console.error("Error fetching livestream URL:", error);
       }
     };
     void fetchLatestLivestream();
@@ -29890,7 +29892,7 @@ function Media({ onStartMusic }) {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [livestreamUrl, setLivestreamUrl]);
+  }, [setLivestreamUrl]);
   reactExports.useEffect(() => {
     if (!isInCurrentLivestreamWindow) return;
     if (showCountdown) return;
@@ -30027,7 +30029,8 @@ function Media({ onStartMusic }) {
             onError: () => {
               console.error("Livestream iframe failed to load with src:", getEmbedUrl(livestreamUrl));
             }
-          }
+          },
+          getEmbedUrl(livestreamUrl)
         )
       ] }) })
     ] }) }),
@@ -33016,6 +33019,7 @@ function AdminUpload() {
     }
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
+      console.log("Saving livestream URL:", livestreamUrl.trim(), "to", base);
       const res = await fetch(`${base}/livestream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33024,6 +33028,9 @@ function AdminUpload() {
           url: livestreamUrl.trim()
         })
       });
+      console.log("Livestream save response status:", res.status, "ok:", res.ok);
+      const responseText = await res.text();
+      console.log("Livestream save response body:", responseText);
       if (!res.ok) {
         setLivestreamStatus(
           t(
@@ -33039,7 +33046,8 @@ function AdminUpload() {
           "URL de transmisión en vivo guardada correctamente."
         )
       );
-    } catch {
+    } catch (error) {
+      console.error("Error saving livestream:", error);
       setLivestreamStatus(
         t(
           "An unexpected error occurred while saving the livestream URL.",
