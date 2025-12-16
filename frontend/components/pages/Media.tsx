@@ -177,6 +177,7 @@ export function Media({ onStartMusic }: MediaProps) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!livestreamUrl) return;
 
     const w = window as any;
     let cancelled = false;
@@ -214,17 +215,25 @@ export function Media({ onStartMusic }: MediaProps) {
     const createPlayer = () => {
       if (cancelled) return;
       if (!w.YT || !w.YT.Player) return;
-      if (playerRef.current) return;
+
+      // Destroy existing player if it exists
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        console.log('Destroying existing player');
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
 
       const existing = document.getElementById("cne-livestream-player");
       if (!existing) return;
 
+      console.log('Creating new player for URL:', livestreamUrl);
       playerRef.current = new w.YT.Player("cne-livestream-player", {
         events: {
           onReady: (event: any) => {
             console.log('Livestream player ready');
             checkIfLive();
             // Check periodically for live status
+            if (checkInterval) clearInterval(checkInterval);
             checkInterval = setInterval(checkIfLive, 10000); // Check every 10 seconds
           },
           onStateChange: (event: any) => {
@@ -280,7 +289,7 @@ export function Media({ onStartMusic }: MediaProps) {
         playerRef.current = null;
       }
     };
-  }, []);
+  }, [livestreamUrl]);
 
   const selectedSermon = useMemo(() => {
     if (!Array.isArray(sermons) || sermons.length === 0) return null;
