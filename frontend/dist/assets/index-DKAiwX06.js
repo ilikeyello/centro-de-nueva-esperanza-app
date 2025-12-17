@@ -33489,6 +33489,7 @@ function AdminUpload() {
   ] });
 }
 const BIBLE_API_BASE = "https://bible-api.com";
+const BIBLE_STORAGE_KEY = "cne:bible:selection";
 const BIBLE_VERSIONS = [
   { id: "web", name: "World English Bible", abbreviation: "WEB" },
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
@@ -33567,9 +33568,46 @@ const BIBLE_BOOKS = [
 function Bible({ onNavigate }) {
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
-  const [selectedVersion, setSelectedVersion] = reactExports.useState("kjv");
-  const [selectedBook, setSelectedBook] = reactExports.useState("john");
-  const [selectedChapter, setSelectedChapter] = reactExports.useState(3);
+  const [selectedVersion, setSelectedVersion] = reactExports.useState(() => {
+    try {
+      if (typeof window === "undefined") return "kjv";
+      const raw = localStorage.getItem(BIBLE_STORAGE_KEY);
+      if (!raw) return "kjv";
+      const parsed = JSON.parse(raw);
+      const version = typeof (parsed == null ? void 0 : parsed.version) === "string" ? parsed.version : "kjv";
+      return BIBLE_VERSIONS.some((v) => v.id === version) ? version : "kjv";
+    } catch {
+      return "kjv";
+    }
+  });
+  const [selectedBook, setSelectedBook] = reactExports.useState(() => {
+    try {
+      if (typeof window === "undefined") return "john";
+      const raw = localStorage.getItem(BIBLE_STORAGE_KEY);
+      if (!raw) return "john";
+      const parsed = JSON.parse(raw);
+      const book = typeof (parsed == null ? void 0 : parsed.book) === "string" ? parsed.book : "john";
+      return BIBLE_BOOKS.some((b) => b.id === book) ? book : "john";
+    } catch {
+      return "john";
+    }
+  });
+  const [selectedChapter, setSelectedChapter] = reactExports.useState(() => {
+    try {
+      if (typeof window === "undefined") return 3;
+      const raw = localStorage.getItem(BIBLE_STORAGE_KEY);
+      if (!raw) return 3;
+      const parsed = JSON.parse(raw);
+      const book = typeof (parsed == null ? void 0 : parsed.book) === "string" ? parsed.book : "john";
+      const currentBook2 = BIBLE_BOOKS.find((b) => b.id === book) ?? BIBLE_BOOKS.find((b) => b.id === "john");
+      const maxChapters = (currentBook2 == null ? void 0 : currentBook2.chapters) ?? 21;
+      const chapter2 = typeof (parsed == null ? void 0 : parsed.chapter) === "number" ? parsed.chapter : parseInt(String(parsed == null ? void 0 : parsed.chapter));
+      if (!Number.isFinite(chapter2)) return 3;
+      return Math.min(Math.max(chapter2, 1), maxChapters);
+    } catch {
+      return 3;
+    }
+  });
   const [chapter, setChapter] = reactExports.useState(null);
   const [loading, setLoading] = reactExports.useState(false);
   const [searchQuery, setSearchQuery] = reactExports.useState("");
@@ -33611,6 +33649,20 @@ function Bible({ onNavigate }) {
       fetchChapter(selectedBook, selectedChapter, selectedVersion);
     }
   }, [selectedBook, selectedChapter, selectedVersion]);
+  reactExports.useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      localStorage.setItem(
+        BIBLE_STORAGE_KEY,
+        JSON.stringify({
+          version: selectedVersion,
+          book: selectedBook,
+          chapter: selectedChapter
+        })
+      );
+    } catch {
+    }
+  }, [selectedVersion, selectedBook, selectedChapter]);
   const handlePreviousChapter = () => {
     if (selectedChapter > 1) {
       setSelectedChapter(selectedChapter - 1);

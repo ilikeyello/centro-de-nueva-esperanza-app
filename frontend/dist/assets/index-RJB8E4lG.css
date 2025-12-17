@@ -2139,16 +2139,6 @@
     }
   }
 
-  .bg-red-950\/20 {
-    background-color: #46080933;
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-red-950\/20 {
-      background-color: color-mix(in oklab, var(--color-red-950) 20%, transparent);
-    }
-  }
-
   .bg-secondary {
     background-color: var(--secondary);
   }
