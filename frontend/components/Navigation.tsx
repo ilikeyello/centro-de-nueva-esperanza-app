@@ -305,6 +305,21 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         className={cn("container mx-auto py-0")}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" }}
       >
+        {/* Mobile-only translate button in top-right */}
+        {!isDesktop && (
+          <div className="absolute top-4 right-4 z-60">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 p-2 text-neutral-200 shadow-lg hover:border-neutral-500 hover:text-neutral-50"
+              aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
+            >
+              <Languages className="h-5 w-5" />
+              <span className="sr-only">{language === "en" ? "ESP" : "ENG"}</span>
+            </button>
+          </div>
+        )}
+        
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
           {/* Mobile: minimized pill in navbar */}
           {youtubeTrackUrl && isMinimized && (
