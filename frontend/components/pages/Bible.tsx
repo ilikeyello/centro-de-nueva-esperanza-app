@@ -240,12 +240,14 @@ export function Bible({ onNavigate }: BibleProps) {
 
   const handlePreviousChapter = () => {
     if (selectedChapter > 1) {
+      setHighlightedVerse(null);
       setSelectedChapter(selectedChapter - 1);
     }
   };
 
   const handleNextChapter = () => {
     if (currentBook && selectedChapter < currentBook.chapters) {
+      setHighlightedVerse(null);
       setSelectedChapter(selectedChapter + 1);
     }
   };
@@ -413,6 +415,7 @@ export function Bible({ onNavigate }: BibleProps) {
               <Select
                 value={selectedBook}
                 onValueChange={(value) => {
+                  setHighlightedVerse(null);
                   setSelectedBook(value);
                   setSelectedChapter(1);
                 }}
@@ -441,6 +444,7 @@ export function Bible({ onNavigate }: BibleProps) {
               <Select
                 value={selectedChapter.toString()}
                 onValueChange={(value) => {
+                  setHighlightedVerse(null);
                   setSelectedChapter(parseInt(value));
                   setSelectorsOpen(false);
                 }}

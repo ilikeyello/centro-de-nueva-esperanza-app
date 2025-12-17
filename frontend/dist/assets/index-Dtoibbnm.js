@@ -33672,11 +33672,13 @@ function Bible({ onNavigate }) {
   }, [selectedVersion, selectedBook, selectedChapter]);
   const handlePreviousChapter = () => {
     if (selectedChapter > 1) {
+      setHighlightedVerse(null);
       setSelectedChapter(selectedChapter - 1);
     }
   };
   const handleNextChapter = () => {
     if (currentBook && selectedChapter < currentBook.chapters) {
+      setHighlightedVerse(null);
       setSelectedChapter(selectedChapter + 1);
     }
   };
@@ -33816,6 +33818,7 @@ function Bible({ onNavigate }) {
               {
                 value: selectedBook,
                 onValueChange: (value) => {
+                  setHighlightedVerse(null);
                   setSelectedBook(value);
                   setSelectedChapter(1);
                 },
@@ -33835,6 +33838,7 @@ function Bible({ onNavigate }) {
               {
                 value: selectedChapter.toString(),
                 onValueChange: (value) => {
+                  setHighlightedVerse(null);
                   setSelectedChapter(parseInt(value));
                   setSelectorsOpen(false);
                 },
