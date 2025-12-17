@@ -11,6 +11,7 @@ import {
   Minimize2,
   Maximize2,
   Bell,
+  BookOpen,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
@@ -291,6 +292,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   const navItems = [
     { id: "home", icon: Home, labelEn: "Home", labelEs: "Inicio" },
+    { id: "bible", icon: BookOpen, labelEn: "Bible", labelEs: "Biblia" },
     { id: "media", icon: Play, labelEn: "Media", labelEs: "Medios" },
     { id: "news", icon: Megaphone, labelEn: "News", labelEs: "Noticias" },
     { id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" },

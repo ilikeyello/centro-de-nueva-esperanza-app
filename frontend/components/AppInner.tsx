@@ -11,12 +11,14 @@ import { WordSearchGamePage } from "./pages/WordSearchGamePage";
 import { Contact } from "./pages/Contact";
 import { NewHere } from "./pages/NewHere";
 import { AdminUpload } from "./pages/AdminUpload";
+import { Bible } from "./pages/Bible";
 import { NotificationSettings } from "./notifications/NotificationSettings";
 import { PushNotificationPrompt } from "./PushNotificationPrompt";
 import { Toaster } from "@/components/ui/toaster";
 
 type Page =
   | "home"
+  | "bible"
   | "media"
   | "bulletin"
   | "news"
@@ -61,6 +63,7 @@ export function AppInner() {
       <Navigation currentPage={currentPage} onNavigate={handleNavigate} />
       <main className="pb-24 md:pb-20">
         {currentPage === "home" && <Home onNavigate={handleNavigate} />}
+        {currentPage === "bible" && <Bible onNavigate={handleNavigate} />}
         {currentPage === "bulletin" && <BulletinBoard />}
         {currentPage === "news" && <News />}
         {currentPage === "donations" && <Donations onNavigate={handleNavigate} />}
