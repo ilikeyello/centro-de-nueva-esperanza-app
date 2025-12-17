@@ -170,6 +170,7 @@ export function Bible({ onNavigate }: BibleProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectorsOpen, setSelectorsOpen] = useState<boolean>(false);
+  const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
 
   const currentBook = BIBLE_BOOKS.find(book => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
@@ -215,6 +216,13 @@ export function Bible({ onNavigate }: BibleProps) {
   }, [selectedBook, selectedChapter, selectedVersion]);
 
   useEffect(() => {
+    if (!chapter || highlightedVerse == null) return;
+    const el = document.getElementById(`verse-${highlightedVerse}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [chapter, highlightedVerse]);
+
+  useEffect(() => {
     try {
       if (typeof window === "undefined") return;
       localStorage.setItem(
@@ -242,8 +250,48 @@ export function Bible({ onNavigate }: BibleProps) {
     }
   };
 
+  const tryParsePassageQuery = (query: string): { bookId: string; chapter: number; verse?: number } | null => {
+    const trimmed = query.trim();
+    if (!trimmed) return null;
+
+    const match = trimmed.match(/^(.+?)\s+(\d+)(?::(\d+))?$/);
+    if (!match) return null;
+
+    const bookPart = match[1].trim();
+    const chapterNum = parseInt(match[2], 10);
+    const verseNum = match[3] ? parseInt(match[3], 10) : undefined;
+
+    if (!Number.isFinite(chapterNum) || chapterNum < 1) return null;
+    if (verseNum != null && (!Number.isFinite(verseNum) || verseNum < 1)) return null;
+
+    const normalizedBook = bookPart.toLowerCase().replace(/\./g, "").replace(/\s+/g, " ").trim();
+
+    const found = BIBLE_BOOKS.find((b) => b.name.toLowerCase() === normalizedBook)
+      ?? BIBLE_BOOKS.find((b) => b.id.toLowerCase() === normalizedBook)
+      ?? BIBLE_BOOKS.find((b) => b.name.toLowerCase().replace(/\s+/g, " ").trim() === normalizedBook);
+
+    if (!found) return null;
+
+    const boundedChapter = Math.min(Math.max(chapterNum, 1), found.chapters);
+
+    return {
+      bookId: found.id,
+      chapter: boundedChapter,
+      verse: verseNum,
+    };
+  };
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
+
+    const passage = tryParsePassageQuery(searchQuery);
+    if (passage) {
+      setHighlightedVerse(passage.verse ?? null);
+      setSelectedBook(passage.bookId);
+      setSelectedChapter(passage.chapter);
+      setSelectorsOpen(false);
+      return;
+    }
     
     setLoading(true);
     try {
@@ -311,10 +359,11 @@ export function Bible({ onNavigate }: BibleProps) {
           onClick={handlePreviousChapter}
           disabled={selectedChapter <= 1 || loading}
           variant="outline"
+          size="icon"
           className="border-neutral-700 bg-neutral-800 text-white hover:bg-neutral-700"
+          aria-label={t("Previous chapter", "Capítulo anterior")}
         >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          {t("Previous", "Anterior")}
+          <ChevronLeft className="h-4 w-4" />
         </Button>
 
         <Dialog open={selectorsOpen} onOpenChange={setSelectorsOpen}>
@@ -415,10 +464,11 @@ export function Bible({ onNavigate }: BibleProps) {
           onClick={handleNextChapter}
           disabled={!currentBook || selectedChapter >= currentBook.chapters || loading}
           variant="outline"
+          size="icon"
           className="border-neutral-700 bg-neutral-800 text-white hover:bg-neutral-700"
+          aria-label={t("Next chapter", "Siguiente capítulo")}
         >
-          {t("Next", "Siguiente")}
-          <ChevronRight className="h-4 w-4 ml-2" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
@@ -436,7 +486,14 @@ export function Bible({ onNavigate }: BibleProps) {
         <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/50">
           <div className="space-y-3">
             {chapter.verses.map((verse) => (
-              <div key={verse.number} className="flex items-start gap-4">
+              <div
+                key={verse.number}
+                id={`verse-${verse.number}`}
+                className={
+                  `flex items-start gap-4 rounded-md px-2 py-1 ` +
+                  (highlightedVerse === verse.number ? "bg-red-950/30 ring-1 ring-red-500/60" : "")
+                }
+              >
                 <span className="text-red-400 font-semibold min-w-[3rem] text-sm">
                   {verse.number}
                 </span>
