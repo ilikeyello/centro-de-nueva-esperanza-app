@@ -33490,12 +33490,11 @@ function AdminUpload() {
 }
 const BIBLE_API_BASE = "https://bible-api.com";
 const BIBLE_VERSIONS = [
+  { id: "web", name: "World English Bible", abbreviation: "WEB" },
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
-  { id: "esv", name: "English Standard Version", abbreviation: "ESV" },
-  { id: "niv", name: "New International Version", abbreviation: "NIV" },
-  { id: "nlt", name: "New Living Translation", abbreviation: "NLT" },
-  { id: "rvr1960", name: "Reina-Valera 1960", abbreviation: "RVR1960" },
-  { id: "nvi", name: "Nueva Versión Internacional", abbreviation: "NVI" }
+  { id: "bbe", name: "Bible in Basic English", abbreviation: "BBE" },
+  { id: "almeida", name: "Almeida Atualizada (Portuguese)", abbreviation: "AA" },
+  { id: "schlachter", name: "Schlachter 1951 (German)", abbreviation: "SCH1951" }
 ];
 const BIBLE_BOOKS = [
   // Old Testament
