@@ -33492,9 +33492,7 @@ const BIBLE_API_BASE = "https://bible-api.com";
 const BIBLE_VERSIONS = [
   { id: "web", name: "World English Bible", abbreviation: "WEB" },
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
-  { id: "bbe", name: "Bible in Basic English", abbreviation: "BBE" },
-  { id: "almeida", name: "Almeida Atualizada (Portuguese)", abbreviation: "AA" },
-  { id: "schlachter", name: "Schlachter 1951 (German)", abbreviation: "SCH1951" }
+  { id: "bbe", name: "Bible in Basic English", abbreviation: "BBE" }
 ];
 const BIBLE_BOOKS = [
   // Old Testament
@@ -33567,15 +33565,15 @@ const BIBLE_BOOKS = [
   { id: "revelation", name: "Revelation", testament: "NT", chapters: 22 }
 ];
 function Bible({ onNavigate }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const [selectedVersion, setSelectedVersion] = reactExports.useState("kjv");
   const [selectedBook, setSelectedBook] = reactExports.useState("john");
   const [selectedChapter, setSelectedChapter] = reactExports.useState(3);
-  const [selectedVerse, setSelectedVerse] = reactExports.useState(16);
   const [chapter, setChapter] = reactExports.useState(null);
   const [loading, setLoading] = reactExports.useState(false);
   const [searchQuery, setSearchQuery] = reactExports.useState("");
+  const [selectorsOpen, setSelectorsOpen] = reactExports.useState(false);
   const currentBook = BIBLE_BOOKS.find((book) => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
   const fetchChapter = async (bookId, chapterNum, version) => {
@@ -33616,13 +33614,11 @@ function Bible({ onNavigate }) {
   const handlePreviousChapter = () => {
     if (selectedChapter > 1) {
       setSelectedChapter(selectedChapter - 1);
-      setSelectedVerse(1);
     }
   };
   const handleNextChapter = () => {
     if (currentBook && selectedChapter < currentBook.chapters) {
       setSelectedChapter(selectedChapter + 1);
-      setSelectedVerse(1);
     }
   };
   const handleSearch = async () => {
@@ -33659,64 +33655,19 @@ function Bible({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-3xl font-bold text-white mb-2", children: t("Bible", "Biblia") }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Read and explore God's Word", "Lee y explora la Palabra de Dios") })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-6 space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-1 md:grid-cols-4 gap-4", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedVersion, onValueChange: setSelectedVersion, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Version", "Versión") }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: BIBLE_VERSIONS.map((version) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: version.id, className: "text-white", children: [
-            version.name,
-            " (",
-            version.abbreviation,
-            ")"
-          ] }, version.id)) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedBook, onValueChange: (value) => {
-          setSelectedBook(value);
-          setSelectedChapter(1);
-          setSelectedVerse(1);
-        }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Book", "Libro") }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2", children: t("Old Testament", "Antiguo Testamento") }),
-            BIBLE_BOOKS.filter((book) => book.testament === "OT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: book.name }, book.id)),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2 mt-4", children: t("New Testament", "Nuevo Testamento") }),
-            BIBLE_BOOKS.filter((book) => book.testament === "NT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: book.name }, book.id))
-          ] }) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedChapter.toString(), onValueChange: (value) => {
-          setSelectedChapter(parseInt(value));
-          setSelectedVerse(1);
-        }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Chapter", "Capítulo") }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: chapters.map((chapter2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: chapter2.toString(), className: "text-white", children: [
-            t("Chapter", "Capítulo"),
-            " ",
-            chapter2
-          ] }, chapter2)) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(Select, { value: selectedVerse.toString(), onValueChange: (value) => setSelectedVerse(parseInt(value)), children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Verse", "Versículo") }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: chapter && Array.from({ length: Math.max(...chapter.verses.map((v) => v.number)) }, (_, i) => i + 1).map((verse) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: verse.toString(), className: "text-white", children: [
-            t("Verse", "Versículo"),
-            " ",
-            verse
-          ] }, verse)) })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Input,
-          {
-            placeholder: t("Search verses... (e.g., John 3:16)", "Buscar versículos... (ej: Juan 3:16)"),
-            value: searchQuery,
-            onChange: (e) => setSearchQuery(e.target.value),
-            onKeyPress: (e) => e.key === "Enter" && handleSearch(),
-            className: "border-neutral-700 bg-neutral-800 text-white placeholder:text-neutral-500"
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: handleSearch, disabled: loading, className: "bg-red-600 hover:bg-red-700", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { className: "h-4 w-4" }) })
-      ] })
-    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mb-6 space-y-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Input,
+        {
+          placeholder: t("Search verses... (e.g., John 3:16)", "Buscar versículos... (ej: Juan 3:16)"),
+          value: searchQuery,
+          onChange: (e) => setSearchQuery(e.target.value),
+          onKeyPress: (e) => e.key === "Enter" && handleSearch(),
+          className: "border-neutral-700 bg-neutral-800 text-white placeholder:text-neutral-500"
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: handleSearch, disabled: loading, className: "bg-red-600 hover:bg-red-700", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { className: "h-4 w-4" }) })
+    ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-6 flex items-center justify-between", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
@@ -33731,16 +33682,87 @@ function Bible({ onNavigate }) {
           ]
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-xl font-semibold text-white", children: [
-          currentBook == null ? void 0 : currentBook.name,
-          " ",
-          selectedChapter
-        ] }),
-        chapter && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-neutral-400", children: [
-          chapter.verses.length,
-          " ",
-          t("verses", "versículos")
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Dialog, { open: selectorsOpen, onOpenChange: setSelectorsOpen, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            type: "button",
+            disabled: loading,
+            className: "text-center px-3 py-2 rounded-md hover:bg-neutral-800/60 transition-colors disabled:opacity-50",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-xl font-semibold text-white", children: [
+                currentBook == null ? void 0 : currentBook.name,
+                " ",
+                selectedChapter
+              ] }),
+              chapter && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-neutral-400", children: [
+                chapter.verses.length,
+                " ",
+                t("verses", "versículos")
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500 mt-1", children: t("Tap to change", "Toca para cambiar") })
+            ]
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "border-neutral-700 bg-neutral-900 text-white", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("Select passage", "Seleccionar pasaje") }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-1 gap-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Select,
+              {
+                value: selectedVersion,
+                onValueChange: (value) => {
+                  setSelectedVersion(value);
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Version", "Versión") }) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: BIBLE_VERSIONS.map((version) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: version.id, className: "text-white", children: [
+                    version.name,
+                    " (",
+                    version.abbreviation,
+                    ")"
+                  ] }, version.id)) })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Select,
+              {
+                value: selectedBook,
+                onValueChange: (value) => {
+                  setSelectedBook(value);
+                  setSelectedChapter(1);
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Book", "Libro") }) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-2", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2", children: t("Old Testament", "Antiguo Testamento") }),
+                    BIBLE_BOOKS.filter((book) => book.testament === "OT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: book.name }, book.id)),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2 mt-4", children: t("New Testament", "Nuevo Testamento") }),
+                    BIBLE_BOOKS.filter((book) => book.testament === "NT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: book.name }, book.id))
+                  ] }) })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              Select,
+              {
+                value: selectedChapter.toString(),
+                onValueChange: (value) => {
+                  setSelectedChapter(parseInt(value));
+                  setSelectorsOpen(false);
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Chapter", "Capítulo") }) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: chapters.map((chapter2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: chapter2.toString(), className: "text-white", children: [
+                    t("Chapter", "Capítulo"),
+                    " ",
+                    chapter2
+                  ] }, chapter2)) })
+                ]
+              }
+            )
+          ] })
         ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -33760,17 +33782,10 @@ function Bible({ onNavigate }) {
     loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-4", children: Array.from({ length: 10 }).map((_, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "animate-pulse", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 bg-neutral-800 rounded w-3/4 mb-2" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 bg-neutral-800 rounded w-full mb-2" })
-    ] }, i)) }) : chapter ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-6", children: chapter.verses.map((verse) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: `p-4 rounded-lg border ${verse.number === selectedVerse ? "border-red-500 bg-red-950/20" : "border-neutral-800 bg-neutral-900/50"}`,
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-4", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-red-400 font-semibold min-w-[3rem] text-sm", children: verse.number }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-200 leading-relaxed flex-1", children: verse.text })
-        ] })
-      },
-      verse.number
-    )) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-12", children: [
+    ] }, i)) }) : chapter ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 rounded-lg border border-neutral-800 bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", children: chapter.verses.map((verse) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-4", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-red-400 font-semibold min-w-[3rem] text-sm", children: verse.number }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-200 leading-relaxed flex-1", children: verse.text })
+    ] }, verse.number)) }) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-12", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(BookOpen, { className: "h-16 w-16 text-neutral-600 mx-auto mb-4" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Select a book and chapter to begin reading", "Selecciona un libro y capítulo para comenzar a leer") })
     ] })

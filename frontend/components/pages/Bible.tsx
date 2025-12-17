@@ -3,6 +3,7 @@ import { Search, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -36,8 +37,6 @@ const BIBLE_VERSIONS: BibleVersion[] = [
   { id: "web", name: "World English Bible", abbreviation: "WEB" },
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
   { id: "bbe", name: "Bible in Basic English", abbreviation: "BBE" },
-  { id: "almeida", name: "Almeida Atualizada (Portuguese)", abbreviation: "AA" },
-  { id: "schlachter", name: "Schlachter 1951 (German)", abbreviation: "SCH1951" },
 ];
 
 // Books of the Bible
@@ -117,16 +116,16 @@ interface BibleProps {
 }
 
 export function Bible({ onNavigate }: BibleProps) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { toast } = useToast();
 
   const [selectedVersion, setSelectedVersion] = useState<string>("kjv");
   const [selectedBook, setSelectedBook] = useState<string>("john");
   const [selectedChapter, setSelectedChapter] = useState<number>(3);
-  const [selectedVerse, setSelectedVerse] = useState<number>(16);
   const [chapter, setChapter] = useState<BibleChapter | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectorsOpen, setSelectorsOpen] = useState<boolean>(false);
 
   const currentBook = BIBLE_BOOKS.find(book => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
@@ -174,14 +173,12 @@ export function Bible({ onNavigate }: BibleProps) {
   const handlePreviousChapter = () => {
     if (selectedChapter > 1) {
       setSelectedChapter(selectedChapter - 1);
-      setSelectedVerse(1);
     }
   };
 
   const handleNextChapter = () => {
     if (currentBook && selectedChapter < currentBook.chapters) {
       setSelectedChapter(selectedChapter + 1);
-      setSelectedVerse(1);
     }
   };
 
@@ -233,80 +230,6 @@ export function Bible({ onNavigate }: BibleProps) {
 
       {/* Controls */}
       <div className="mb-6 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Version Selector */}
-          <Select value={selectedVersion} onValueChange={setSelectedVersion}>
-            <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
-              <SelectValue placeholder={t("Version", "Versión")} />
-            </SelectTrigger>
-            <SelectContent className="border-neutral-700 bg-neutral-800">
-              {BIBLE_VERSIONS.map((version) => (
-                <SelectItem key={version.id} value={version.id} className="text-white">
-                  {version.name} ({version.abbreviation})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Book Selector */}
-          <Select value={selectedBook} onValueChange={(value) => {
-            setSelectedBook(value);
-            setSelectedChapter(1);
-            setSelectedVerse(1);
-          }}>
-            <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
-              <SelectValue placeholder={t("Book", "Libro")} />
-            </SelectTrigger>
-            <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
-              <div className="p-2">
-                <div className="text-xs font-semibold text-neutral-400 mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
-                {BIBLE_BOOKS.filter(book => book.testament === "OT").map((book) => (
-                  <SelectItem key={book.id} value={book.id} className="text-white">
-                    {book.name}
-                  </SelectItem>
-                ))}
-                <div className="text-xs font-semibold text-neutral-400 mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
-                {BIBLE_BOOKS.filter(book => book.testament === "NT").map((book) => (
-                  <SelectItem key={book.id} value={book.id} className="text-white">
-                    {book.name}
-                  </SelectItem>
-                ))}
-              </div>
-            </SelectContent>
-          </Select>
-
-          {/* Chapter Selector */}
-          <Select value={selectedChapter.toString()} onValueChange={(value) => {
-            setSelectedChapter(parseInt(value));
-            setSelectedVerse(1);
-          }}>
-            <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
-              <SelectValue placeholder={t("Chapter", "Capítulo")} />
-            </SelectTrigger>
-            <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
-              {chapters.map((chapter) => (
-                <SelectItem key={chapter} value={chapter.toString()} className="text-white">
-                  {t("Chapter", "Capítulo")} {chapter}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Verse Selector */}
-          <Select value={selectedVerse.toString()} onValueChange={(value) => setSelectedVerse(parseInt(value))}>
-            <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
-              <SelectValue placeholder={t("Verse", "Versículo")} />
-            </SelectTrigger>
-            <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
-              {chapter && Array.from({ length: Math.max(...chapter.verses.map(v => v.number)) }, (_, i) => i + 1).map((verse) => (
-                <SelectItem key={verse} value={verse.toString()} className="text-white">
-                  {t("Verse", "Versículo")} {verse}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Search */}
         <div className="flex gap-2">
           <Input
@@ -333,17 +256,100 @@ export function Bible({ onNavigate }: BibleProps) {
           <ChevronLeft className="h-4 w-4 mr-2" />
           {t("Previous", "Anterior")}
         </Button>
-        
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white">
-            {currentBook?.name} {selectedChapter}
-          </h2>
-          {chapter && (
-            <p className="text-sm text-neutral-400">
-              {chapter.verses.length} {t("verses", "versículos")}
-            </p>
-          )}
-        </div>
+
+        <Dialog open={selectorsOpen} onOpenChange={setSelectorsOpen}>
+          <DialogTrigger asChild>
+            <button
+              type="button"
+              disabled={loading}
+              className="text-center px-3 py-2 rounded-md hover:bg-neutral-800/60 transition-colors disabled:opacity-50"
+            >
+              <h2 className="text-xl font-semibold text-white">
+                {currentBook?.name} {selectedChapter}
+              </h2>
+              {chapter && (
+                <p className="text-sm text-neutral-400">
+                  {chapter.verses.length} {t("verses", "versículos")}
+                </p>
+              )}
+              <p className="text-xs text-neutral-500 mt-1">
+                {t("Tap to change", "Toca para cambiar")}
+              </p>
+            </button>
+          </DialogTrigger>
+          <DialogContent className="border-neutral-700 bg-neutral-900 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-white">{t("Select passage", "Seleccionar pasaje")}</DialogTitle>
+            </DialogHeader>
+
+            <div className="grid grid-cols-1 gap-4">
+              <Select
+                value={selectedVersion}
+                onValueChange={(value) => {
+                  setSelectedVersion(value);
+                }}
+              >
+                <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                  <SelectValue placeholder={t("Version", "Versión")} />
+                </SelectTrigger>
+                <SelectContent className="border-neutral-700 bg-neutral-800">
+                  {BIBLE_VERSIONS.map((version) => (
+                    <SelectItem key={version.id} value={version.id} className="text-white">
+                      {version.name} ({version.abbreviation})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={selectedBook}
+                onValueChange={(value) => {
+                  setSelectedBook(value);
+                  setSelectedChapter(1);
+                }}
+              >
+                <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                  <SelectValue placeholder={t("Book", "Libro")} />
+                </SelectTrigger>
+                <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
+                  <div className="p-2">
+                    <div className="text-xs font-semibold text-neutral-400 mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
+                    {BIBLE_BOOKS.filter(book => book.testament === "OT").map((book) => (
+                      <SelectItem key={book.id} value={book.id} className="text-white">
+                        {book.name}
+                      </SelectItem>
+                    ))}
+                    <div className="text-xs font-semibold text-neutral-400 mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
+                    {BIBLE_BOOKS.filter(book => book.testament === "NT").map((book) => (
+                      <SelectItem key={book.id} value={book.id} className="text-white">
+                        {book.name}
+                      </SelectItem>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={selectedChapter.toString()}
+                onValueChange={(value) => {
+                  setSelectedChapter(parseInt(value));
+                  setSelectorsOpen(false);
+                }}
+              >
+                <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                  <SelectValue placeholder={t("Chapter", "Capítulo")} />
+                </SelectTrigger>
+                <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
+                  {chapters.map((chapter) => (
+                    <SelectItem key={chapter} value={chapter.toString()} className="text-white">
+                      {t("Chapter", "Capítulo")} {chapter}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </DialogContent>
+        </Dialog>
         
         <Button
           onClick={handleNextChapter}
@@ -367,17 +373,10 @@ export function Bible({ onNavigate }: BibleProps) {
           ))}
         </div>
       ) : chapter ? (
-        <div className="space-y-6">
-          {chapter.verses.map((verse) => (
-            <div
-              key={verse.number}
-              className={`p-4 rounded-lg border ${
-                verse.number === selectedVerse
-                  ? "border-red-500 bg-red-950/20"
-                  : "border-neutral-800 bg-neutral-900/50"
-              }`}
-            >
-              <div className="flex items-start gap-4">
+        <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/50">
+          <div className="space-y-3">
+            {chapter.verses.map((verse) => (
+              <div key={verse.number} className="flex items-start gap-4">
                 <span className="text-red-400 font-semibold min-w-[3rem] text-sm">
                   {verse.number}
                 </span>
@@ -385,8 +384,8 @@ export function Bible({ onNavigate }: BibleProps) {
                   {verse.text}
                 </p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       ) : (
         <div className="text-center py-12">

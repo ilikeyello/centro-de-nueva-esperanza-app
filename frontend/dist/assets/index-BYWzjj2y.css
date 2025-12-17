@@ -3254,6 +3254,16 @@
       }
     }
 
+    .hover\:bg-neutral-800\/60:hover {
+      background-color: #26262699;
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-neutral-800\/60:hover {
+        background-color: color-mix(in oklab, var(--color-neutral-800) 60%, transparent);
+      }
+    }
+
     .hover\:bg-neutral-800\/80:hover {
       background-color: #262626cc;
     }
