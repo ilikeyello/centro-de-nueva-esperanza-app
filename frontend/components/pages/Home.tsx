@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { Calendar, DollarSign, MapPin, Megaphone, MessageCircle } from "lucide-react";
+import { Calendar, DollarSign, MapPin, Megaphone, MessageCircle, Languages } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ interface HomeProps {
 const NEWS_DEFAULT_TAB_KEY = "cne-news-default-tab";
 
 export function Home({ onNavigate }: HomeProps) {
-  const { t, language } = useLanguage();
+  const { t, language, toggleLanguage } = useLanguage();
   const backend = useBackend();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -120,6 +120,18 @@ export function Home({ onNavigate }: HomeProps) {
         <div className="absolute inset-0 bg-neutral-950/35 backdrop-blur-[1.5px]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-950/30 to-neutral-950" />
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding">
+          {/* Mobile-only translate button in top-right corner */}
+          <div className="absolute top-4 right-4 md:hidden">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 p-2 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
+              aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
+            >
+              <Languages className="h-5 w-5" />
+              <span className="sr-only">{language === "en" ? "ESP" : "ENG"}</span>
+            </button>
+          </div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-400">
             {t("Welcome to", "Bienvenidos a")}
           </p>

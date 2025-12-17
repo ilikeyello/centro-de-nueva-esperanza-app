@@ -19594,41 +19594,70 @@ function Navigation({ currentPage, onNavigate }) {
   ];
   const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur transition-transform md:sticky md:top-0 md:border-b md:border-t-0", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
         className: cn("container mx-auto py-0"),
         style: { paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" },
-        children: [
-          !isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute top-4 right-4 z-60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "button",
-            {
-              type: "button",
-              onClick: toggleLanguage,
-              className: "flex items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 p-2 text-neutral-200 shadow-lg hover:border-neutral-500 hover:text-neutral-50",
-              "aria-label": language === "en" ? "Switch to Spanish" : "Cambiar a inglés",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Languages, { className: "h-5 w-5" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "sr-only", children: language === "en" ? "ESP" : "ENG" })
-              ]
-            }
-          ) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full flex-col gap-1 md:flex-col-reverse", children: [
-            youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between px-3 pt-1.5 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-inner", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-w-0 flex-1 max-w-[65%]", children: currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
-              ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ml-2 flex flex-shrink-0 items-center gap-1.5", children: [
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full flex-col gap-1 md:flex-col-reverse", children: [
+          youtubeTrackUrl && isMinimized && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between px-3 pt-1.5 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-inner", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-w-0 flex-1 max-w-[65%]", children: currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
+            ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ml-2 flex flex-shrink-0 items-center gap-1.5", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: isPlaying ? handlePauseClick : handlePlayClick,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
+                  children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleNextClick,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": t("Next song", "Siguiente canción"),
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-3.5 w-3.5" })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: toggleMinimize,
+                  className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                  "aria-label": t("Expand music player", "Expandir reproductor de música"),
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-3.5 w-3.5" })
+                }
+              )
+            ] })
+          ] }) }),
+          youtubeTrackUrl && !isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: cn("px-3 pt-1.5 md:hidden", isMinimized && "hidden"), children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1 pr-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
+                currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
+                ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-shrink-0 items-center gap-1.5", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
                   "button",
                   {
                     type: "button",
                     onClick: isPlaying ? handlePauseClick : handlePlayClick,
-                    className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
                     "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
-                    children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-3.5 w-3.5" })
+                    children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4" })
                   }
                 ),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -19636,9 +19665,9 @@ function Navigation({ currentPage, onNavigate }) {
                   {
                     type: "button",
                     onClick: handleNextClick,
-                    className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
                     "aria-label": t("Next song", "Siguiente canción"),
-                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-3.5 w-3.5" })
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-4 w-4" })
                   }
                 ),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -19646,107 +19675,63 @@ function Navigation({ currentPage, onNavigate }) {
                   {
                     type: "button",
                     onClick: toggleMinimize,
-                    className: "flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
-                    "aria-label": t("Expand music player", "Expandir reproductor de música"),
-                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-3.5 w-3.5" })
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+                    "aria-label": t("Minimize music player", "Minimizar reproductor de música"),
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Minimize2, { className: "h-4 w-4" })
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: closeYouTubePlayer,
+                    className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-red-500 hover:text-red-400",
+                    "aria-label": t("Close music player", "Cerrar reproductor de música"),
+                    children: "×"
                   }
                 )
               ] })
-            ] }) }),
-            youtubeTrackUrl && !isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: cn("px-3 pt-1.5 md:hidden", isMinimized && "hidden"), children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1 pr-2", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400", children: t("Music", "Música") }),
-                  currentTrackTitle && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container", children: shouldScrollTitle ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "marquee-track", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", children: currentTrackTitle }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item", "aria-hidden": "true", children: currentTrackTitle })
-                  ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "marquee-item truncate", children: currentTrackTitle }) })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-shrink-0 items-center gap-1.5", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: isPlaying ? handlePauseClick : handlePlayClick,
-                      className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
-                      "aria-label": isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música"),
-                      children: isPlaying ? /* @__PURE__ */ jsxRuntimeExports.jsx(Pause, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4" })
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: handleNextClick,
-                      className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
-                      "aria-label": t("Next song", "Siguiente canción"),
-                      children: /* @__PURE__ */ jsxRuntimeExports.jsx(SkipForward, { className: "h-4 w-4" })
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: toggleMinimize,
-                      className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
-                      "aria-label": t("Minimize music player", "Minimizar reproductor de música"),
-                      children: /* @__PURE__ */ jsxRuntimeExports.jsx(Minimize2, { className: "h-4 w-4" })
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: closeYouTubePlayer,
-                      className: "flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-red-500 hover:text-red-400",
-                      "aria-label": t("Close music player", "Cerrar reproductor de música"),
-                      children: "×"
-                    }
-                  )
-                ] })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 h-40 w-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/90", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: "global-music-player", className: "h-full w-full" }) })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2", children: [
-              navItems.map((item) => {
-                const Icon2 = item.icon;
-                const isActive = currentPage === item.id;
-                return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                  "button",
-                  {
-                    onClick: () => onNavigate(item.id),
-                    className: cn(
-                      "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
-                      isActive ? "text-red-500" : "text-neutral-400 hover:text-neutral-200"
-                    ),
-                    children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { className: cn("h-6 w-6 md:h-5 md:w-5", isActive && "text-red-500") }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium whitespace-nowrap md:text-sm", children: t(item.labelEn, item.labelEs) })
-                    ]
-                  },
-                  item.id
-                );
-              }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 h-40 w-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/90", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: "global-music-player", className: "h-full w-full" }) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2", children: [
+            navItems.map((item) => {
+              const Icon2 = item.icon;
+              const isActive = currentPage === item.id;
+              return /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 "button",
                 {
-                  type: "button",
-                  onClick: toggleLanguage,
+                  onClick: () => onNavigate(item.id),
                   className: cn(
-                    "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
-                    "border border-transparent md:border-neutral-700 md:bg-neutral-900"
+                    "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
+                    isActive ? "text-red-500" : "text-neutral-400 hover:text-neutral-200"
                   ),
-                  "aria-label": language === "en" ? "Switch to Spanish" : "Cambiar a inglés",
                   children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(Languages, { className: "h-6 w-6 md:h-5 md:w-5" }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium md:text-sm", children: language === "en" ? "ESP" : "ENG" })
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { className: cn("h-6 w-6 md:h-5 md:w-5", isActive && "text-red-500") }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium whitespace-nowrap md:text-sm", children: t(item.labelEn, item.labelEs) })
                   ]
-                }
-              )
-            ] })
+                },
+                item.id
+              );
+            }),
+            isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                onClick: toggleLanguage,
+                className: cn(
+                  "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
+                  "border border-transparent md:border-neutral-700 md:bg-neutral-900"
+                ),
+                "aria-label": language === "en" ? "Switch to Spanish" : "Cambiar a inglés",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Languages, { className: "h-6 w-6 md:h-5 md:w-5" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-medium md:text-sm", children: language === "en" ? "ESP" : "ENG" })
+                ]
+              }
+            )
           ] })
-        ]
+        ] })
       }
     ),
     youtubeTrackUrl && isDesktop && /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -21087,7 +21072,7 @@ function useBackend() {
 const NEWS_DEFAULT_TAB_KEY$1 = "cne-news-default-tab";
 function Home({ onNavigate }) {
   var _a2;
-  const { t, language } = useLanguage();
+  const { t, language, toggleLanguage } = useLanguage();
   const backend2 = useBackend();
   const queryClient2 = useQueryClient();
   const { toast: toast2 } = useToast();
@@ -21182,6 +21167,19 @@ function Home({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-neutral-950/35 backdrop-blur-[1.5px]" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-transparent via-neutral-950/30 to-neutral-950" }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute top-4 right-4 md:hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            type: "button",
+            onClick: toggleLanguage,
+            className: "flex items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 p-2 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50",
+            "aria-label": language === "en" ? "Switch to Spanish" : "Cambiar a inglés",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Languages, { className: "h-5 w-5" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "sr-only", children: language === "en" ? "ESP" : "ENG" })
+            ]
+          }
+        ) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold uppercase tracking-[0.2em] text-red-400", children: t("Welcome to", "Bienvenidos a") }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "mt-2 hero-title text-3xl font-bold text-white sm:text-4xl md:text-5xl", children: t("Center of New Hope", "Centro de Nueva Esperanza") }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-4 max-w-2xl hero-subtitle text-base text-neutral-200 md:text-lg", children: t(

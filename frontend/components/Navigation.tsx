@@ -305,20 +305,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         className={cn("container mx-auto py-0")}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" }}
       >
-        {/* Mobile-only translate button in top-right */}
-        {!isDesktop && (
-          <div className="absolute top-4 right-4 z-60">
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              className="flex items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 p-2 text-neutral-200 shadow-lg hover:border-neutral-500 hover:text-neutral-50"
-              aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
-            >
-              <Languages className="h-5 w-5" />
-              <span className="sr-only">{language === "en" ? "ESP" : "ENG"}</span>
-            </button>
-          </div>
-        )}
         
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
           {/* Mobile: minimized pill in navbar */}
@@ -475,18 +461,21 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 </button>
               );
             })}
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
-                "border border-transparent md:border-neutral-700 md:bg-neutral-900"
-              )}
-              aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
-            >
-              <Languages className="h-6 w-6 md:h-5 md:w-5" />
-              <span className="text-xs font-medium md:text-sm">{language === "en" ? "ESP" : "ENG"}</span>
-            </button>
+            {/* Desktop-only translate button */}
+            {isDesktop && (
+              <button
+                type="button"
+                onClick={toggleLanguage}
+                className={cn(
+                  "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
+                  "border border-transparent md:border-neutral-700 md:bg-neutral-900"
+                )}
+                aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
+              >
+                <Languages className="h-6 w-6 md:h-5 md:w-5" />
+                <span className="text-xs font-medium md:text-sm">{language === "en" ? "ESP" : "ENG"}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
