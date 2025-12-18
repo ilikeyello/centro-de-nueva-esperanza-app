@@ -30,15 +30,17 @@ interface BibleVerse {
   text: string;
 }
 
-const BIBLE_API_BASE = "https://bible-api.com";
+const API_BASE =
+  import.meta.env.VITE_CLIENT_TARGET ??
+  (import.meta.env.DEV ? "http://localhost:4000" : "https://prod-cne-sh82.encr.app");
 
 const BIBLE_STORAGE_KEY = "cne:bible:selection";
 
 // Common Bible versions that work with the API
 const BIBLE_VERSIONS: BibleVersion[] = [
-  { id: "web", name: "World English Bible", abbreviation: "WEB" },
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
-  { id: "bbe", name: "Bible in Basic English", abbreviation: "BBE" },
+  { id: "rv1909", name: "Reina-Valera 1909", abbreviation: "RV1909" },
+  { id: "spnbes", name: "La Biblia en Español Sencillo", abbreviation: "SPNBES" },
 ];
 
 // Books of the Bible
@@ -178,8 +180,11 @@ export function Bible({ onNavigate }: BibleProps) {
   const fetchChapter = async (bookId: string, chapterNum: number, version: string) => {
     setLoading(true);
     try {
-      const bookName = BIBLE_BOOKS.find(book => book.id === bookId)?.name || bookId;
-      const response = await fetch(`${BIBLE_API_BASE}/${bookName}+${chapterNum}?translation=${version}`);
+      const response = await fetch(
+        `${API_BASE}/bible/chapter?translation=${encodeURIComponent(version)}&book=${encodeURIComponent(
+          bookId
+        )}&chapter=${encodeURIComponent(String(chapterNum))}`
+      );
       
       if (!response.ok) {
         throw new Error('Failed to fetch chapter');
@@ -189,7 +194,7 @@ export function Bible({ onNavigate }: BibleProps) {
       
       if (data.verses) {
         const verses: BibleVerse[] = data.verses.map((verse: any) => ({
-          number: verse.verse,
+          number: verse.number,
           text: verse.text,
         }));
         
@@ -294,37 +299,15 @@ export function Bible({ onNavigate }: BibleProps) {
       setSelectorsOpen(false);
       return;
     }
-    
-    setLoading(true);
-    try {
-      const response = await fetch(`${BIBLE_API_BASE}/${encodeURIComponent(searchQuery)}?translation=${selectedVersion}`);
-      
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-      
-      const data = await response.json();
-      
-      if (data.verses) {
-        const verses: BibleVerse[] = data.verses.map((verse: any) => ({
-          number: verse.verse,
-          text: verse.text,
-        }));
-        
-        setChapter({
-          number: 1,
-          verses,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: t("Search Error", "Error de Búsqueda"),
-        description: t("Failed to search verses", "No se pudieron buscar los versículos"),
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+
+    toast({
+      title: t("Search", "Búsqueda"),
+      description: t(
+        "Use a passage format like: John 3:16",
+        "Usa un formato como: Juan 3:16"
+      ),
+      variant: "destructive",
+    });
   };
 
   return (
@@ -506,6 +489,16 @@ export function Bible({ onNavigate }: BibleProps) {
                 </p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-neutral-800">
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              {BIBLE_VERSIONS.find(v => v.id === selectedVersion)?.id === "spnbes"
+                ? "La Biblia en Español Sencillo. © 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)."
+                : BIBLE_VERSIONS.find(v => v.id === selectedVersion)?.id === "rv1909"
+                  ? "Reina-Valera 1909 (RV1909), Public Domain in the United States."
+                  : "King James Version (KJV), Public Domain."}
+            </p>
           </div>
         </div>
       ) : (

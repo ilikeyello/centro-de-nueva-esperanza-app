@@ -21101,8 +21101,8 @@ var ErrCode = /* @__PURE__ */ ((ErrCode2) => {
   ErrCode2["Unauthenticated"] = "unauthenticated";
   return ErrCode2;
 })(ErrCode || {});
-const API_BASE$2 = "https://prod-cne-sh82.encr.app";
-const backend = new Client(API_BASE$2);
+const API_BASE$3 = "https://prod-cne-sh82.encr.app";
+const backend = new Client(API_BASE$3);
 function useBackend() {
   return backend;
 }
@@ -27068,13 +27068,13 @@ function SelectScrollDownButton({
     }
   );
 }
-const API_BASE$1 = "https://prod-cne-sh82.encr.app";
+const API_BASE$2 = "https://prod-cne-sh82.encr.app";
 const RSVP_PARTICIPANT_ID_KEY = "cne-event-participant-id";
 const RSVP_EVENTS_KEY = "cne-rsvped-event-ids";
 const RSVP_NAME_KEY = "cne-rsvp-name";
 const NEWS_DEFAULT_TAB_KEY = "cne-news-default-tab";
 const postEventRsvp = async (data) => {
-  const response = await fetch(`${API_BASE$1}/events/${data.eventId}/rsvp`, {
+  const response = await fetch(`${API_BASE$2}/events/${data.eventId}/rsvp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27919,11 +27919,11 @@ function News() {
     )
   ] });
 }
-const API_BASE = "https://prod-cne-sh82.encr.app";
+const API_BASE$1 = "https://prod-cne-sh82.encr.app";
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
 const fetchBoard = async () => {
-  const response = await fetch(`${API_BASE}/bulletin/board`, {
+  const response = await fetch(`${API_BASE$1}/bulletin/board`, {
     credentials: "include"
   });
   if (!response.ok) {
@@ -27932,7 +27932,7 @@ const fetchBoard = async () => {
   return response.json();
 };
 const postComment = async (data) => {
-  const response = await fetch(`${API_BASE}/bulletin/comments`, {
+  const response = await fetch(`${API_BASE$1}/bulletin/comments`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27947,7 +27947,7 @@ const postComment = async (data) => {
   return response.json();
 };
 const createPost = async (data) => {
-  const response = await fetch(`${API_BASE}/bulletin/posts`, {
+  const response = await fetch(`${API_BASE$1}/bulletin/posts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -27967,7 +27967,7 @@ const createPost = async (data) => {
   return response.json();
 };
 const deletePost = async (data) => {
-  const response = await fetch(`${API_BASE}/bulletin/posts/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
+  const response = await fetch(`${API_BASE$1}/bulletin/posts/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
     method: "DELETE",
     credentials: "include"
   });
@@ -27978,7 +27978,7 @@ const deletePost = async (data) => {
   return response.json();
 };
 const deletePrayer = async (data) => {
-  const response = await fetch(`${API_BASE}/prayers/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
+  const response = await fetch(`${API_BASE$1}/prayers/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
     method: "DELETE",
     credentials: "include"
   });
@@ -27989,7 +27989,7 @@ const deletePrayer = async (data) => {
   return response.json();
 };
 const prayForPrayer = async (data) => {
-  const response = await fetch(`${API_BASE}/prayers/${data.prayerId}/pray`, {
+  const response = await fetch(`${API_BASE$1}/prayers/${data.prayerId}/pray`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -33488,12 +33488,12 @@ function AdminUpload() {
     ) })
   ] });
 }
-const BIBLE_API_BASE = "https://bible-api.com";
+const API_BASE = "https://prod-cne-sh82.encr.app";
 const BIBLE_STORAGE_KEY = "cne:bible:selection";
 const BIBLE_VERSIONS = [
-  { id: "web", name: "World English Bible", abbreviation: "WEB" },
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
-  { id: "bbe", name: "Bible in Basic English", abbreviation: "BBE" }
+  { id: "rv1909", name: "Reina-Valera 1909", abbreviation: "RV1909" },
+  { id: "spnbes", name: "La Biblia en Español Sencillo", abbreviation: "SPNBES" }
 ];
 const BIBLE_BOOKS = [
   // Old Testament
@@ -33566,6 +33566,7 @@ const BIBLE_BOOKS = [
   { id: "revelation", name: "Revelation", testament: "NT", chapters: 22 }
 ];
 function Bible({ onNavigate }) {
+  var _a2, _b2;
   const { t } = useLanguage();
   const { toast: toast2 } = useToast();
   const [selectedVersion, setSelectedVersion] = reactExports.useState(() => {
@@ -33616,18 +33617,20 @@ function Bible({ onNavigate }) {
   const currentBook = BIBLE_BOOKS.find((book) => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
   const fetchChapter = async (bookId, chapterNum, version) => {
-    var _a2;
     setLoading(true);
     try {
-      const bookName = ((_a2 = BIBLE_BOOKS.find((book) => book.id === bookId)) == null ? void 0 : _a2.name) || bookId;
-      const response = await fetch(`${BIBLE_API_BASE}/${bookName}+${chapterNum}?translation=${version}`);
+      const response = await fetch(
+        `${API_BASE}/bible/chapter?translation=${encodeURIComponent(version)}&book=${encodeURIComponent(
+          bookId
+        )}&chapter=${encodeURIComponent(String(chapterNum))}`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch chapter");
       }
       const data = await response.json();
       if (data.verses) {
         const verses = data.verses.map((verse) => ({
-          number: verse.verse,
+          number: verse.number,
           text: verse.text
         }));
         setChapter({
@@ -33712,32 +33715,14 @@ function Bible({ onNavigate }) {
       setSelectorsOpen(false);
       return;
     }
-    setLoading(true);
-    try {
-      const response = await fetch(`${BIBLE_API_BASE}/${encodeURIComponent(searchQuery)}?translation=${selectedVersion}`);
-      if (!response.ok) {
-        throw new Error("Search failed");
-      }
-      const data = await response.json();
-      if (data.verses) {
-        const verses = data.verses.map((verse) => ({
-          number: verse.verse,
-          text: verse.text
-        }));
-        setChapter({
-          number: 1,
-          verses
-        });
-      }
-    } catch (error) {
-      toast2({
-        title: t("Search Error", "Error de Búsqueda"),
-        description: t("Failed to search verses", "No se pudieron buscar los versículos"),
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+    toast2({
+      title: t("Search", "Búsqueda"),
+      description: t(
+        "Use a passage format like: John 3:16",
+        "Usa un formato como: Juan 3:16"
+      ),
+      variant: "destructive"
+    });
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 py-8 pb-24 md:pb-20", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-8", children: [
@@ -33871,18 +33856,21 @@ function Bible({ onNavigate }) {
     loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-4", children: Array.from({ length: 10 }).map((_, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "animate-pulse", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 bg-neutral-800 rounded w-3/4 mb-2" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-4 bg-neutral-800 rounded w-full mb-2" })
-    ] }, i)) }) : chapter ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "p-4 rounded-lg border border-neutral-800 bg-neutral-900/50", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", children: chapter.verses.map((verse) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        id: `verse-${verse.number}`,
-        className: `flex items-start gap-4 rounded-md px-2 py-1 ` + (highlightedVerse === verse.number ? "bg-red-950/30 ring-1 ring-red-500/60" : ""),
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-red-400 font-semibold min-w-[3rem] text-sm", children: verse.number }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-200 leading-relaxed flex-1", children: verse.text })
-        ]
-      },
-      verse.number
-    )) }) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-12", children: [
+    ] }, i)) }) : chapter ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-4 rounded-lg border border-neutral-800 bg-neutral-900/50", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", children: chapter.verses.map((verse) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          id: `verse-${verse.number}`,
+          className: `flex items-start gap-4 rounded-md px-2 py-1 ` + (highlightedVerse === verse.number ? "bg-red-950/30 ring-1 ring-red-500/60" : ""),
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-red-400 font-semibold min-w-[3rem] text-sm", children: verse.number }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-200 leading-relaxed flex-1", children: verse.text })
+          ]
+        },
+        verse.number
+      )) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-6 pt-4 border-t border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500 leading-relaxed", children: ((_a2 = BIBLE_VERSIONS.find((v) => v.id === selectedVersion)) == null ? void 0 : _a2.id) === "spnbes" ? "La Biblia en Español Sencillo. © 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)." : ((_b2 = BIBLE_VERSIONS.find((v) => v.id === selectedVersion)) == null ? void 0 : _b2.id) === "rv1909" ? "Reina-Valera 1909 (RV1909), Public Domain in the United States." : "King James Version (KJV), Public Domain." }) })
+    ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-12", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(BookOpen, { className: "h-16 w-16 text-neutral-600 mx-auto mb-4" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Select a book and chapter to begin reading", "Selecciona un libro y capítulo para comenzar a leer") })
     ] })

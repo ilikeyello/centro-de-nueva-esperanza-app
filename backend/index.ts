@@ -9,3 +9,4 @@ import "./livestream/index";
 import "./media";
 import "./notifications";
 import "./prayers";
+import "./bible";
