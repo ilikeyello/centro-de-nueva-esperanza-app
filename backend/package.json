@@ -9,10 +9,12 @@
   "dependencies": {
     "@clerk/backend": "^1.27.0",
     "encore.dev": "^1.51.10",
+    "pg": "^8.16.3",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "@types/pg": "^8.16.0",
     "@types/web-push": "^3.6.4",
     "typescript": "^5.8.3"
   }
