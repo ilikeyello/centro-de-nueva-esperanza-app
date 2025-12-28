@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seed Bible Data</title>
+</head>
+<body>
+    <h1>Seed Bible Data</h1>
+    <button onclick="seedData()">Seed Bible Data</button>
+    <div id="result"></div>
+
+    <script>
+        async function seedData() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Seeding...';
+            
+            try {
+                const response = await fetch('https://prod-cne-sh82.encr.app/bible/seed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ passcode: '78598' })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.textContent = `Success! Seeded ${data.seeded} verses.`;
+                } else {
+                    const error = await response.json();
+                    resultDiv.textContent = `Error: ${error.message}`;
+                }
+            } catch (error) {
+                resultDiv.textContent = `Network error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
