@@ -39,6 +39,12 @@ export const importTranslation = api<ImportRequest, ImportResponse>(
       throw APIError.invalidArgument("translation and directory are required");
     }
 
+    // Only allow specific translations
+    const allowedTranslations = ["kjv", "rv1909", "spnbes"];
+    if (!allowedTranslations.includes(translation)) {
+      throw APIError.invalidArgument("Invalid translation");
+    }
+
     const entries = await readdir(directory, { withFileTypes: true });
     const usfmFiles = entries
       .filter((e) => e.isFile() && e.name.toLowerCase().endsWith(".usfm"))
