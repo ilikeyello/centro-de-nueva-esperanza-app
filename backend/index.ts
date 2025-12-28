@@ -10,3 +10,4 @@ import "./media";
 import "./notifications";
 import "./prayers";
 import "./bible";
+import "./bible/seed_comprehensive";
