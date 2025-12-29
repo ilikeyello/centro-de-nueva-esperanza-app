@@ -43,77 +43,8 @@ const BIBLE_VERSIONS: BibleVersion[] = [
   { id: "spnbes", name: "La Biblia en Español Sencillo", abbreviation: "SPNBES" },
 ];
 
-// Books of the Bible
-const BIBLE_BOOKS: BibleBook[] = [
-  // Old Testament
-  { id: "genesis", name: "Genesis", testament: "OT", chapters: 50 },
-  { id: "exodus", name: "Exodus", testament: "OT", chapters: 40 },
-  { id: "leviticus", name: "Leviticus", testament: "OT", chapters: 27 },
-  { id: "numbers", name: "Numbers", testament: "OT", chapters: 36 },
-  { id: "deuteronomy", name: "Deuteronomy", testament: "OT", chapters: 34 },
-  { id: "joshua", name: "Joshua", testament: "OT", chapters: 24 },
-  { id: "judges", name: "Judges", testament: "OT", chapters: 21 },
-  { id: "ruth", name: "Ruth", testament: "OT", chapters: 4 },
-  { id: "1-samuel", name: "1 Samuel", testament: "OT", chapters: 31 },
-  { id: "2-samuel", name: "2 Samuel", testament: "OT", chapters: 24 },
-  { id: "1-kings", name: "1 Kings", testament: "OT", chapters: 22 },
-  { id: "2-kings", name: "2 Kings", testament: "OT", chapters: 25 },
-  { id: "1-chronicles", name: "1 Chronicles", testament: "OT", chapters: 29 },
-  { id: "2-chronicles", name: "2 Chronicles", testament: "OT", chapters: 36 },
-  { id: "ezra", name: "Ezra", testament: "OT", chapters: 10 },
-  { id: "nehemiah", name: "Nehemiah", testament: "OT", chapters: 13 },
-  { id: "esther", name: "Esther", testament: "OT", chapters: 10 },
-  { id: "job", name: "Job", testament: "OT", chapters: 42 },
-  { id: "psalms", name: "Psalms", testament: "OT", chapters: 150 },
-  { id: "proverbs", name: "Proverbs", testament: "OT", chapters: 31 },
-  { id: "ecclesiastes", name: "Ecclesiastes", testament: "OT", chapters: 12 },
-  { id: "song-of-solomon", name: "Song of Solomon", testament: "OT", chapters: 8 },
-  { id: "isaiah", name: "Isaiah", testament: "OT", chapters: 66 },
-  { id: "jeremiah", name: "Jeremiah", testament: "OT", chapters: 52 },
-  { id: "lamentations", name: "Lamentations", testament: "OT", chapters: 5 },
-  { id: "ezekiel", name: "Ezekiel", testament: "OT", chapters: 48 },
-  { id: "daniel", name: "Daniel", testament: "OT", chapters: 12 },
-  { id: "hosea", name: "Hosea", testament: "OT", chapters: 14 },
-  { id: "joel", name: "Joel", testament: "OT", chapters: 3 },
-  { id: "amos", name: "Amos", testament: "OT", chapters: 9 },
-  { id: "obadiah", name: "Obadiah", testament: "OT", chapters: 1 },
-  { id: "jonah", name: "Jonah", testament: "OT", chapters: 4 },
-  { id: "micah", name: "Micah", testament: "OT", chapters: 7 },
-  { id: "nahum", name: "Nahum", testament: "OT", chapters: 3 },
-  { id: "habakkuk", name: "Habakkuk", testament: "OT", chapters: 3 },
-  { id: "zephaniah", name: "Zephaniah", testament: "OT", chapters: 3 },
-  { id: "haggai", name: "Haggai", testament: "OT", chapters: 2 },
-  { id: "zechariah", name: "Zechariah", testament: "OT", chapters: 14 },
-  { id: "malachi", name: "Malachi", testament: "OT", chapters: 4 },
-  // New Testament
-  { id: "matthew", name: "Matthew", testament: "NT", chapters: 28 },
-  { id: "mark", name: "Mark", testament: "NT", chapters: 16 },
-  { id: "luke", name: "Luke", testament: "NT", chapters: 24 },
-  { id: "john", name: "John", testament: "NT", chapters: 21 },
-  { id: "acts", name: "Acts", testament: "NT", chapters: 28 },
-  { id: "romans", name: "Romans", testament: "NT", chapters: 16 },
-  { id: "1-corinthians", name: "1 Corinthians", testament: "NT", chapters: 16 },
-  { id: "2-corinthians", name: "2 Corinthians", testament: "NT", chapters: 13 },
-  { id: "galatians", name: "Galatians", testament: "NT", chapters: 6 },
-  { id: "ephesians", name: "Ephesians", testament: "NT", chapters: 6 },
-  { id: "philippians", name: "Philippians", testament: "NT", chapters: 4 },
-  { id: "colossians", name: "Colossians", testament: "NT", chapters: 4 },
-  { id: "1-thessalonians", name: "1 Thessalonians", testament: "NT", chapters: 5 },
-  { id: "2-thessalonians", name: "2 Thessalonians", testament: "NT", chapters: 3 },
-  { id: "1-timothy", name: "1 Timothy", testament: "NT", chapters: 6 },
-  { id: "2-timothy", name: "2 Timothy", testament: "NT", chapters: 4 },
-  { id: "titus", name: "Titus", testament: "NT", chapters: 3 },
-  { id: "philemon", name: "Philemon", testament: "NT", chapters: 1 },
-  { id: "hebrews", name: "Hebrews", testament: "NT", chapters: 13 },
-  { id: "james", name: "James", testament: "NT", chapters: 5 },
-  { id: "1-peter", name: "1 Peter", testament: "NT", chapters: 5 },
-  { id: "2-peter", name: "2 Peter", testament: "NT", chapters: 3 },
-  { id: "1-john", name: "1 John", testament: "NT", chapters: 5 },
-  { id: "2-john", name: "2 John", testament: "NT", chapters: 1 },
-  { id: "3-john", name: "3 John", testament: "NT", chapters: 1 },
-  { id: "jude", name: "Jude", testament: "NT", chapters: 1 },
-  { id: "revelation", name: "Revelation", testament: "NT", chapters: 22 },
-];
+// Books of the Bible - will be loaded from API
+const BIBLE_BOOKS: BibleBook[] = [];
 
 interface BibleProps {
   onNavigate: (page: string) => void;
@@ -143,7 +74,8 @@ export function Bible({ onNavigate }: BibleProps) {
       if (!raw) return "john";
       const parsed = JSON.parse(raw);
       const book = typeof parsed?.book === "string" ? parsed.book : "john";
-      return BIBLE_BOOKS.some(b => b.id === book) ? book : "john";
+      // We'll validate this after books are loaded
+      return book;
     } catch {
       return "john";
     }
@@ -170,12 +102,35 @@ export function Bible({ onNavigate }: BibleProps) {
   });
   const [chapter, setChapter] = useState<BibleChapter | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [booksLoading, setBooksLoading] = useState<boolean>(true);
+  const [bibleBooks, setBibleBooks] = useState<BibleBook[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectorsOpen, setSelectorsOpen] = useState<boolean>(false);
   const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
 
-  const currentBook = BIBLE_BOOKS.find(book => book.id === selectedBook);
+  const currentBook = bibleBooks.find(book => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
+
+  const fetchBooks = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/bible/books`);
+      if (response.ok) {
+        const data = await response.json();
+        setBibleBooks(data.books);
+        
+        // Validate selected book exists in loaded books
+        const bookExists = data.books.some((b: BibleBook) => b.id === selectedBook);
+        if (!bookExists && data.books.length > 0) {
+          setSelectedBook(data.books[0].id); // Default to first book
+          setSelectedChapter(1);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch books:', error);
+    } finally {
+      setBooksLoading(false);
+    }
+  };
 
   const fetchChapter = async (bookId: string, chapterNum: number, version: string) => {
     setLoading(true);
@@ -213,6 +168,10 @@ export function Bible({ onNavigate }: BibleProps) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
 
   useEffect(() => {
     if (selectedBook && selectedChapter) {
@@ -273,9 +232,9 @@ export function Bible({ onNavigate }: BibleProps) {
 
     const normalizedBook = bookPart.toLowerCase().replace(/\./g, "").replace(/\s+/g, " ").trim();
 
-    const found = BIBLE_BOOKS.find((b) => b.name.toLowerCase() === normalizedBook)
-      ?? BIBLE_BOOKS.find((b) => b.id.toLowerCase() === normalizedBook)
-      ?? BIBLE_BOOKS.find((b) => b.name.toLowerCase().replace(/\s+/g, " ").trim() === normalizedBook);
+    const found = bibleBooks.find((b) => b.name.toLowerCase() === normalizedBook)
+      ?? bibleBooks.find((b) => b.id.toLowerCase() === normalizedBook)
+      ?? bibleBooks.find((b) => b.name.toLowerCase().replace(/\s+/g, " ").trim() === normalizedBook);
 
     if (!found) return null;
 
@@ -402,6 +361,7 @@ export function Bible({ onNavigate }: BibleProps) {
                   setSelectedBook(value);
                   setSelectedChapter(1);
                 }}
+                disabled={booksLoading}
               >
                 <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
                   <SelectValue placeholder={t("Book", "Libro")} />
@@ -409,13 +369,13 @@ export function Bible({ onNavigate }: BibleProps) {
                 <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
                   <div className="p-2">
                     <div className="text-xs font-semibold text-neutral-400 mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
-                    {BIBLE_BOOKS.filter(book => book.testament === "OT").map((book) => (
+                    {bibleBooks.filter(book => book.testament === "OT").map((book) => (
                       <SelectItem key={book.id} value={book.id} className="text-white">
                         {book.name}
                       </SelectItem>
                     ))}
                     <div className="text-xs font-semibold text-neutral-400 mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
-                    {BIBLE_BOOKS.filter(book => book.testament === "NT").map((book) => (
+                    {bibleBooks.filter(book => book.testament === "NT").map((book) => (
                       <SelectItem key={book.id} value={book.id} className="text-white">
                         {book.name}
                       </SelectItem>
