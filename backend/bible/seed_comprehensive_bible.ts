@@ -262,7 +262,7 @@ const COMPREHENSIVE_KJV = {
 };
 
 export const seedComprehensiveBible = api<SeedRequest, SeedResponse>(
-  { expose: true, method: "POST", path: "/bible/seed/comprehensive", auth: false },
+  { expose: true, method: "POST", path: "/bible/seed/extended", auth: false },
   async (req) => {
     if (req.passcode !== "78598") {
       throw APIError.permissionDenied("invalid passcode");
