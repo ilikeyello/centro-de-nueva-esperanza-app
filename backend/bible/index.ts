@@ -5,3 +5,4 @@ export { importTranslation } from "./import";
 export { seedBibleData } from "./seed";
 export { seedAllBibleBooks } from "./seed_all_books";
 export { seedRealBibleData } from "./seed_real_bible";
+export { seedComprehensiveBible } from "./seed_comprehensive_bible";
