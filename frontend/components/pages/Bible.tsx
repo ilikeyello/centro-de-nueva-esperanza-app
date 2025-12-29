@@ -11,6 +11,7 @@ interface BibleVersion {
   id: string;
   name: string;
   abbreviation: string;
+  attribution?: string;
 }
 
 interface BibleBook {
@@ -37,7 +38,7 @@ const API_BASE =
 const BIBLE_STORAGE_KEY = "cne:bible:selection";
 
 // Common Bible versions that work with the API
-const BIBLE_VERSIONS: BibleVersion[] = [
+const FALLBACK_BIBLE_VERSIONS: BibleVersion[] = [
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
   { id: "rv1909", name: "Reina-Valera 1909", abbreviation: "RV1909" },
   { id: "spnbes", name: "La Biblia en Español Sencillo", abbreviation: "SPNBES" },
@@ -130,7 +131,7 @@ export function Bible({ onNavigate }: BibleProps) {
       if (!raw) return "kjv";
       const parsed = JSON.parse(raw);
       const version = typeof parsed?.version === "string" ? parsed.version : "kjv";
-      return BIBLE_VERSIONS.some(v => v.id === version) ? version : "kjv";
+      return version || "kjv";
     } catch {
       return "kjv";
     }
@@ -158,7 +159,9 @@ export function Bible({ onNavigate }: BibleProps) {
       const parsed = JSON.parse(raw);
 
       const book = typeof parsed?.book === "string" ? parsed.book : "john";
-      const currentBook = BIBLE_BOOKS.find(b => b.id === book) ?? BIBLE_BOOKS.find(b => b.id === "john");
+      const currentBook =
+        FALLBACK_BIBLE_BOOKS.find((b) => b.id === book) ??
+        FALLBACK_BIBLE_BOOKS.find((b) => b.id === "john");
       const maxChapters = currentBook?.chapters ?? 21;
 
       const chapter = typeof parsed?.chapter === "number" ? parsed.chapter : parseInt(String(parsed?.chapter));
@@ -173,6 +176,8 @@ export function Bible({ onNavigate }: BibleProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [booksLoading, setBooksLoading] = useState<boolean>(true);
   const [bibleBooks, setBibleBooks] = useState<BibleBook[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState<boolean>(true);
+  const [bibleVersions, setBibleVersions] = useState<BibleVersion[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectorsOpen, setSelectorsOpen] = useState<boolean>(false);
   const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
@@ -180,6 +185,35 @@ export function Bible({ onNavigate }: BibleProps) {
   const currentBook = bibleBooks.find(book => book.id === selectedBook) || FALLBACK_BIBLE_BOOKS.find(book => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
   const displayBooks = bibleBooks.length > 0 ? bibleBooks : FALLBACK_BIBLE_BOOKS;
+  const displayVersions = bibleVersions.length > 0 ? bibleVersions : FALLBACK_BIBLE_VERSIONS;
+
+  const fetchTranslations = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/bible/translations`);
+      if (response.ok) {
+        const data = await response.json();
+        const apiVersions: BibleVersion[] = Array.isArray(data?.translations)
+          ? data.translations.map((v: any) => ({
+              id: String(v.id),
+              name: String(v.name ?? v.id),
+              abbreviation: String(v.id ?? "").toUpperCase(),
+              attribution: typeof v.attribution === "string" ? v.attribution : undefined,
+            }))
+          : [];
+
+        setBibleVersions(apiVersions);
+
+        const valid = apiVersions.some((v) => v.id === selectedVersion);
+        if (!valid && apiVersions.length > 0) {
+          setSelectedVersion(apiVersions[0].id);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch translations:", error);
+    } finally {
+      setVersionsLoading(false);
+    }
+  };
 
   const fetchBooks = async () => {
     try {
@@ -241,6 +275,7 @@ export function Bible({ onNavigate }: BibleProps) {
 
   useEffect(() => {
     fetchBooks();
+    fetchTranslations();
   }, []);
 
   useEffect(() => {
@@ -411,12 +446,13 @@ export function Bible({ onNavigate }: BibleProps) {
                 onValueChange={(value) => {
                   setSelectedVersion(value);
                 }}
+                disabled={versionsLoading}
               >
                 <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
                   <SelectValue placeholder={t("Version", "Versión")} />
                 </SelectTrigger>
                 <SelectContent className="border-neutral-700 bg-neutral-800">
-                  {BIBLE_VERSIONS.map((version) => (
+                  {displayVersions.map((version) => (
                     <SelectItem key={version.id} value={version.id} className="text-white">
                       {version.name} ({version.abbreviation})
                     </SelectItem>
@@ -523,11 +559,12 @@ export function Bible({ onNavigate }: BibleProps) {
 
           <div className="mt-6 pt-4 border-t border-neutral-800">
             <p className="text-xs text-neutral-500 leading-relaxed">
-              {BIBLE_VERSIONS.find(v => v.id === selectedVersion)?.id === "spnbes"
-                ? "La Biblia en Español Sencillo. © 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)."
-                : BIBLE_VERSIONS.find(v => v.id === selectedVersion)?.id === "rv1909"
-                  ? "Reina-Valera 1909 (RV1909), Public Domain in the United States."
-                  : "King James Version (KJV), Public Domain."}
+              {displayVersions.find((v) => v.id === selectedVersion)?.attribution
+                ?? (selectedVersion === "spnbes"
+                  ? "La Biblia en Español Sencillo. © 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)."
+                  : selectedVersion === "rv1909"
+                    ? "Reina-Valera 1909 (RV1909), Public Domain in the United States."
+                    : "King James Version (KJV), Public Domain.")}
             </p>
           </div>
         </div>
