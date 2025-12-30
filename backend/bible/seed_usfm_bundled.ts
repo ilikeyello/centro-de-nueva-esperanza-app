@@ -126,7 +126,19 @@ function parseUsfmFile(contents: string): ParsedVerse[] {
 }
 
 async function collectUsfmFiles(dir: string): Promise<string[]> {
-  const entries = await readdir(dir, { withFileTypes: true });
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch (err: any) {
+    const code = typeof err?.code === "string" ? err.code : "";
+    if (code === "ENOENT") {
+      throw APIError.invalidArgument(`Bundled USFM directory not found: ${dir}`);
+    }
+    if (code === "EACCES") {
+      throw APIError.invalidArgument(`Bundled USFM directory not accessible: ${dir}`);
+    }
+    throw err;
+  }
   return entries
     .filter((e) => e.isFile() && e.name.toLowerCase().endsWith(".usfm"))
     .map((e) => path.join(dir, e.name));
