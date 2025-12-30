@@ -152,6 +152,36 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out;
 }
 
+async function resolveBundledUsfmBaseDir(here: string): Promise<string> {
+  const cwd = process.cwd();
+
+  const candidates = [
+    // Local dev expectation (relative to this file)
+    path.resolve(here, "usfm_data"),
+
+    // Encore combined bundle often places service files under a shared root;
+    // our data is under the bible service folder.
+    path.resolve(here, "bible", "usfm_data"),
+    path.resolve(cwd, "bible", "usfm_data"),
+    path.resolve(cwd, "backend", "bible", "usfm_data"),
+  ];
+
+  for (const baseDir of candidates) {
+    try {
+      const kjv = await collectUsfmFiles(path.join(baseDir, "kjv"));
+      const rv = await collectUsfmFiles(path.join(baseDir, "rv1909"));
+      const sp = await collectUsfmFiles(path.join(baseDir, "spnbes"));
+      if (kjv.length > 0 && rv.length > 0 && sp.length > 0) return baseDir;
+    } catch {
+      // keep trying
+    }
+  }
+
+  throw APIError.invalidArgument(
+    `Bundled USFM directories not found. Tried: ${candidates.join(", ")}`
+  );
+}
+
 export const seedUsfmBundled = api<SeedRequest, SeedResponse>(
   { expose: true, method: "POST", path: "/bible/seed/usfm-bundled", auth: false },
   async (req) => {
@@ -159,12 +189,8 @@ export const seedUsfmBundled = api<SeedRequest, SeedResponse>(
       throw APIError.permissionDenied("invalid passcode");
     }
 
-    // Expect datasets to be committed into the repo under:
-    // backend/bible/usfm_data/kjv
-    // backend/bible/usfm_data/rv1909
-    // backend/bible/usfm_data/spnbes
     const here = path.dirname(fileURLToPath(import.meta.url));
-    const baseDir = path.resolve(here, "usfm_data");
+    const baseDir = await resolveBundledUsfmBaseDir(here);
 
     const translations: Array<{ id: string; dir: string }> = [
       { id: "kjv", dir: path.join(baseDir, "kjv") },
