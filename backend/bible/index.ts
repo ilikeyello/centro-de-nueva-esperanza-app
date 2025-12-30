@@ -7,3 +7,4 @@ export { seedAllBibleBooks } from "./seed_all_books";
 export { seedRealBibleData } from "./seed_real_bible";
 export { seedComprehensiveBible } from "./seed_comprehensive_bible";
 export { coverage } from "./coverage";
+export { seedUsfmBundled } from "./seed_usfm_bundled";
