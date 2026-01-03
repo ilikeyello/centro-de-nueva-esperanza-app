@@ -42,35 +42,24 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
       {/* Game Container */}
       <Card className="bg-neutral-900 border-neutral-800">
         <CardContent className="p-6">
-          <div className="flex flex-col items-center justify-center py-12 space-y-6">
-            <div className="text-center space-y-4">
-              <Gamepad2 className="h-16 w-16 text-red-400 mx-auto" />
-              <h3 className="text-2xl font-bold text-white">
-                {t("Ready to Play?", "¿Listo para Jugar?")}
-              </h3>
-              <p className="text-neutral-400 max-w-md">
+          <div className="flex justify-center">
+            <iframe
+              src="https://v6p9d9t4.ssl.hwcdn.net/html/5985963/webgl/index.html"
+              width="100%"
+              height="600"
+              frameBorder="0"
+              className="border border-neutral-700 rounded-lg max-w-4xl"
+              allowFullScreen
+              allow="fullscreen; autoplay; encrypted-media; picture-in-picture; gamepad"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock"
+            >
+              <p>
                 {language === 'es' 
-                  ? 'Graveyard Shift se abrirá en una nueva pestaña para la mejor experiencia de juego.'
-                  : 'Graveyard Shift will open in a new tab for the best gaming experience.'
+                  ? 'Tu navegador no soporta iframes. Por favor abre el juego en itch.io.'
+                  : 'Your browser does not support iframes. Please open the game on itch.io.'
                 }
               </p>
-            </div>
-            
-            <Button
-              onClick={openGameInNewTab}
-              className="bg-red-600 hover:bg-red-700 text-lg px-8 py-4"
-              size="lg"
-            >
-              <Maximize2 className="h-5 w-5 mr-2" />
-              {t("Play Game", "Jugar")}
-            </Button>
-            
-            <p className="text-sm text-neutral-500 text-center">
-              {language === 'es' 
-                ? 'El juego se abrirá en una nueva ventana. Puedes volver a esta página cuando termines.'
-                : 'Game will open in a new window. You can return to this page when done.'
-              }
-            </p>
+            </iframe>
           </div>
           
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-neutral-800">

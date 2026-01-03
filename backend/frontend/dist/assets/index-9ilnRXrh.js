@@ -31102,9 +31102,6 @@ function WordSearchGamePage({ onNavigate }) {
 }
 function GraveyardShiftGamePage({ onNavigate }) {
   const { language, t } = useLanguage();
-  const openGameInNewTab = () => {
-    window.open("https://yellogames.itch.io/graveyard-shift", "_blank", "noopener,noreferrer");
-  };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 py-8", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-6", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -31126,26 +31123,20 @@ function GraveyardShiftGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl", children: language === "es" ? "Un juego de aventuras y misterio. ¡Embárcate en una experiencia emocionante!" : "An adventure and mystery game. Embark on an exciting experience!" })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center justify-center py-12 space-y-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center space-y-4", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Gamepad2, { className: "h-16 w-16 text-red-400 mx-auto" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: t("Ready to Play?", "¿Listo para Jugar?") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-md", children: language === "es" ? "Graveyard Shift se abrirá en una nueva pestaña para la mejor experiencia de juego." : "Graveyard Shift will open in a new tab for the best gaming experience." })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: openGameInNewTab,
-            className: "bg-red-600 hover:bg-red-700 text-lg px-8 py-4",
-            size: "lg",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-5 w-5 mr-2" }),
-              t("Play Game", "Jugar")
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-500 text-center", children: language === "es" ? "El juego se abrirá en una nueva ventana. Puedes volver a esta página cuando termines." : "Game will open in a new window. You can return to this page when done." })
-      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "iframe",
+        {
+          src: "https://v6p9d9t4.ssl.hwcdn.net/html/5985963/webgl/index.html",
+          width: "100%",
+          height: "600",
+          frameBorder: "0",
+          className: "border border-neutral-700 rounded-lg max-w-4xl",
+          allowFullScreen: true,
+          allow: "fullscreen; autoplay; encrypted-media; picture-in-picture; gamepad",
+          sandbox: "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: language === "es" ? "Tu navegador no soporta iframes. Por favor abre el juego en itch.io." : "Your browser does not support iframes. Please open the game on itch.io." })
+        }
+      ) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-neutral-800", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-500", children: language === "es" ? "Creado por Yello Games" : "Created by Yello Games" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
