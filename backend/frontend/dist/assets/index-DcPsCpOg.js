@@ -33696,6 +33696,9 @@ function Bible({ onNavigate }) {
   const displayBooks = bibleBooks.length > 0 ? bibleBooks : FALLBACK_BIBLE_BOOKS;
   const displayVersions = bibleVersions.length > 0 ? bibleVersions : FALLBACK_BIBLE_VERSIONS;
   const getLocalizedName = (book) => {
+    if ((selectedVersion === "rv1909" || selectedVersion === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
     if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
       return SPANISH_BOOK_NAMES[book.id];
     }

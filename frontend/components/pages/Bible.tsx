@@ -264,6 +264,11 @@ export function Bible({ onNavigate }: BibleProps) {
 
   // Helper to get localized book name
   const getLocalizedName = (book: BibleBook): string => {
+    // Show Spanish names for Spanish Bible translations (RV1909, SPNBES)
+    if ((selectedVersion === "rv1909" || selectedVersion === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
+    // Otherwise, show Spanish names only when UI language is Spanish
     if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
       return SPANISH_BOOK_NAMES[book.id];
     }
