@@ -33836,15 +33836,196 @@ function Bible({ onNavigate }) {
     const verseNum = match[3] ? parseInt(match[3], 10) : void 0;
     if (!Number.isFinite(chapterNum) || chapterNum < 1) return null;
     if (verseNum != null && (!Number.isFinite(verseNum) || verseNum < 1)) return null;
-    const normalizedBook = bookPart.toLowerCase().replace(/\./g, "").replace(/\s+/g, " ").trim();
-    const found = displayBooks.find((b) => b.name.toLowerCase() === normalizedBook) ?? displayBooks.find((b) => b.id.toLowerCase() === normalizedBook) ?? displayBooks.find((b) => b.name.toLowerCase().replace(/\s+/g, " ").trim() === normalizedBook);
-    if (!found) return null;
-    const boundedChapter = Math.min(Math.max(chapterNum, 1), found.chapters);
-    return {
-      bookId: found.id,
-      chapter: boundedChapter,
-      verse: verseNum
+    const normalizeBookName = (name) => {
+      return name.toLowerCase().replace(/[áÁ]/g, "a").replace(/[éÉ]/g, "e").replace(/[íÍ]/g, "i").replace(/[óÓ]/g, "o").replace(/[úÚüÜ]/g, "u").replace(/[ñÑ]/g, "n").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
     };
+    const normalizedSearch = normalizeBookName(bookPart);
+    const searchMap = /* @__PURE__ */ new Map();
+    displayBooks.forEach((book) => {
+      searchMap.set(normalizeBookName(book.name), book.id);
+      const spanishName = SPANISH_BOOK_NAMES[book.id];
+      if (spanishName) {
+        searchMap.set(normalizeBookName(spanishName), book.id);
+      }
+      const variations = getBookNameVariations(book.name, spanishName);
+      variations.forEach((variation) => {
+        searchMap.set(normalizeBookName(variation), book.id);
+      });
+    });
+    if (searchMap.has(normalizedSearch)) {
+      const bookId = searchMap.get(normalizedSearch);
+      const found = displayBooks.find((b) => b.id === bookId);
+      if (found) {
+        const boundedChapter = Math.min(Math.max(chapterNum, 1), found.chapters);
+        return {
+          bookId: found.id,
+          chapter: boundedChapter,
+          verse: verseNum
+        };
+      }
+    }
+    for (const [key, bookId] of searchMap.entries()) {
+      if (key.includes(normalizedSearch) || normalizedSearch.includes(key)) {
+        const found = displayBooks.find((b) => b.id === bookId);
+        if (found) {
+          const boundedChapter = Math.min(Math.max(chapterNum, 1), found.chapters);
+          return {
+            bookId: found.id,
+            chapter: boundedChapter,
+            verse: verseNum
+          };
+        }
+      }
+    }
+    return null;
+  };
+  const getBookNameVariations = (englishName, spanishName) => {
+    const variations = [];
+    const abbreviations = {
+      "Genesis": ["gen", "gn"],
+      "Exodus": ["exo", "ex"],
+      "Leviticus": ["lev", "lv"],
+      "Numbers": ["num", "nm"],
+      "Deuteronomy": ["deut", "dt"],
+      "Joshua": ["josh", "jos"],
+      "Judges": ["judg", "jdg"],
+      "Ruth": ["rut"],
+      "1 Samuel": ["1 sam", "1sa", "i samuel"],
+      "2 Samuel": ["2 sam", "2sa", "ii samuel"],
+      "1 Kings": ["1 king", "1ki", "i kings"],
+      "2 Kings": ["2 king", "2ki", "ii kings"],
+      "1 Chronicles": ["1 chr", "1ch", "i chronicles"],
+      "2 Chronicles": ["2 chr", "2ch", "ii chronicles"],
+      "Ezra": ["ezr"],
+      "Nehemiah": ["neh", "nh"],
+      "Esther": ["est", "esth"],
+      "Job": ["job"],
+      "Psalms": ["psalm", "ps", "psal"],
+      "Proverbs": ["prov", "prv"],
+      "Ecclesiastes": ["eccl", "ecc"],
+      "Song of Solomon": ["song", "songs", "cant"],
+      "Isaiah": ["isa", "is"],
+      "Jeremiah": ["jer", "jr"],
+      "Lamentations": ["lam", "lm"],
+      "Ezekiel": ["eze", "ez"],
+      "Daniel": ["dan", "dn"],
+      "Hosea": ["hos", "ho"],
+      "Joel": ["joel", "jl"],
+      "Amos": ["amos", "am"],
+      "Obadiah": ["oba", "ob"],
+      "Jonah": ["jon", "jn"],
+      "Micah": ["mic", "mi"],
+      "Nahum": ["nah", "na"],
+      "Habakkuk": ["hab", "hb"],
+      "Zephaniah": ["zep", "zp"],
+      "Haggai": ["hag", "hg"],
+      "Zechariah": ["zech", "zc"],
+      "Malachi": ["mal", "ml"],
+      "Matthew": ["matt", "mt"],
+      "Mark": ["mark", "mk", "mr"],
+      "Luke": ["luke", "lk"],
+      "John": ["john", "jn", "jhn"],
+      "Acts": ["acts", "act"],
+      "Romans": ["rom", "rm", "ro"],
+      "1 Corinthians": ["1 cor", "1co", "i corinthians"],
+      "2 Corinthians": ["2 cor", "2co", "ii corinthians"],
+      "Galatians": ["gal", "ga"],
+      "Ephesians": ["eph", "ep"],
+      "Philippians": ["phil", "php", "pp"],
+      "Colossians": ["col", "cl"],
+      "1 Thessalonians": ["1 thess", "1th", "i thessalonians"],
+      "2 Thessalonians": ["2 thess", "2th", "ii thessalonians"],
+      "1 Timothy": ["1 tim", "1ti", "i timothy"],
+      "2 Timothy": ["2 tim", "2ti", "ii timothy"],
+      "Titus": ["tit", "tt"],
+      "Philemon": ["philem", "phm", "pm"],
+      "Hebrews": ["heb", "he"],
+      "James": ["jam", "ja", "jm"],
+      "1 Peter": ["1 pet", "1pe", "i peter"],
+      "2 Peter": ["2 pet", "2pe", "ii peter"],
+      "1 John": ["1 john", "1jn", "i john"],
+      "2 John": ["2 john", "2jn", "ii john"],
+      "3 John": ["3 john", "3jn", "iii john"],
+      "Jude": ["jude", "jd"],
+      "Revelation": ["rev", "rv", "revelations"]
+    };
+    if (abbreviations[englishName]) {
+      variations.push(...abbreviations[englishName]);
+    }
+    if (spanishName) {
+      const spanishAbbreviations = {
+        "Génesis": ["gen", "gn"],
+        "Éxodo": ["exo", "ex"],
+        "Levítico": ["lev", "lv"],
+        "Números": ["num", "nm"],
+        "Deuteronomio": ["deut", "dt"],
+        "Josué": ["josh", "jos"],
+        "Jueces": ["juez", "jdg"],
+        "Rut": ["rut"],
+        "1 Samuel": ["1 sam", "1sa"],
+        "2 Samuel": ["2 sam", "2sa"],
+        "1 Reyes": ["1 rey", "1rey", "1 reyes"],
+        "2 Reyes": ["2 rey", "2rey", "2 reyes"],
+        "1 Crónicas": ["1 cron", "1cr", "1 cronicas"],
+        "2 Crónicas": ["2 cron", "2cr", "2 cronicas"],
+        "Esdras": ["ezr"],
+        "Nehemías": ["neh", "nh"],
+        "Ester": ["est", "esth"],
+        "Job": ["job"],
+        "Salmos": ["sal", "salmo", "sal"],
+        "Proverbios": ["prov", "prv"],
+        "Eclesiastés": ["ecl", "ecc"],
+        "Cantares": ["cant", "cantar"],
+        "Isaías": ["isa", "is"],
+        "Jeremías": ["jer", "jr"],
+        "Lamentaciones": ["lam", "lm"],
+        "Ezequiel": ["eze", "ez"],
+        "Daniel": ["dan", "dn"],
+        "Oseas": ["ose", "hos"],
+        "Joel": ["joel", "jl"],
+        "Amós": ["amos", "am"],
+        "Abdías": ["abd", "ob"],
+        "Jonás": ["jon", "jn"],
+        "Miqueas": ["mic", "mi"],
+        "Nahúm": ["nah", "na"],
+        "Habacuc": ["hab", "hb"],
+        "Sofonías": ["sof", "zp"],
+        "Hageo": ["hag", "hg"],
+        "Zacarías": ["zac", "zc"],
+        "Malaquías": ["mal", "ml"],
+        "Mateo": ["mat", "mt"],
+        "Marcos": ["mar", "mr", "mc"],
+        "Lucas": ["luc", "lk"],
+        "Juan": ["juan", "jn", "jhn"],
+        "Hechos": ["hech", "act"],
+        "Romanos": ["rom", "rm", "ro"],
+        "1 Corintios": ["1 cor", "1co"],
+        "2 Corintios": ["2 cor", "2co"],
+        "Gálatas": ["gal", "ga"],
+        "Efesios": ["efe", "ef"],
+        "Filipenses": ["fil", "php", "pp"],
+        "Colosenses": ["col", "cl"],
+        "1 Tesalonicenses": ["1 tes", "1th"],
+        "2 Tesalonicenses": ["2 tes", "2th"],
+        "1 Timoteo": ["1 tim", "1ti"],
+        "2 Timoteo": ["2 tim", "2ti"],
+        "Tito": ["tit", "tt"],
+        "Filemón": ["file", "phm"],
+        "Hebreos": ["heb", "he"],
+        "Santiago": ["sant", "ja", "sdg"],
+        "1 Pedro": ["1 ped", "1pe"],
+        "2 Pedro": ["2 ped", "2pe"],
+        "1 Juan": ["1 juan", "1jn"],
+        "2 Juan": ["2 juan", "2jn"],
+        "3 Juan": ["3 juan", "3jn"],
+        "Judas": ["jud", "jd"],
+        "Apocalipsis": ["apo", "apoc", "rev", "rv"]
+      };
+      if (spanishAbbreviations[spanishName]) {
+        variations.push(...spanishAbbreviations[spanishName]);
+      }
+    }
+    return variations;
   };
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
