@@ -1,10 +1,26 @@
-import { ArrowLeft, Gamepad2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Gamepad2, ExternalLink, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useState } from "react";
 
 export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const { language, t } = useLanguage();
+  const [isReloading, setIsReloading] = useState(false);
+
+  const handleReload = () => {
+    setIsReloading(true);
+    // Force iframe reload by changing src
+    const iframe = document.getElementById('game-iframe') as HTMLIFrameElement;
+    if (iframe) {
+      const currentSrc = iframe.src;
+      iframe.src = '';
+      setTimeout(() => {
+        iframe.src = currentSrc;
+        setIsReloading(false);
+      }, 100);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -37,8 +53,9 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
       {/* Game Container */}
       <Card className="bg-neutral-900 border-neutral-800">
         <CardContent className="p-6">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-4">
             <iframe
+              id="game-iframe"
               height="600"
               frameBorder="0"
               src="https://itch.io/embed-upload/3897661"
@@ -46,6 +63,7 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
               className="border border-neutral-700 rounded-lg max-w-4xl"
               allowFullScreen
               allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+              loading="lazy"
             >
               <a href="https://yellogames.itch.io/graveyard-shift">
                 Graveyard Shift by Yello Games
@@ -54,9 +72,21 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
           </div>
           
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-neutral-500">
-              {language === 'es' ? 'Creado por Yello Games' : 'Created by Yello Games'}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-neutral-500">
+                {language === 'es' ? 'Creado por Yello Games' : 'Created by Yello Games'}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReload}
+                disabled={isReloading}
+                className="border-neutral-600 text-neutral-400 hover:text-white"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isReloading ? 'animate-spin' : ''}`} />
+                {t("Reload Game", "Recargar Juego")}
+              </Button>
+            </div>
             
             <a 
               href="https://yellogames.itch.io/graveyard-shift" 
@@ -67,6 +97,25 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
               <ExternalLink className="h-4 w-4" />
               {language === 'es' ? 'Ver en itch.io' : 'View on itch.io'}
             </a>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Loading Help */}
+      <Card className="bg-neutral-900 border-neutral-800 mt-6">
+        <CardContent className="p-6">
+          <h3 className="text-xl font-semibold text-white mb-3">
+            {t("Game Loading Help", "Ayuda con la Carga del Juego")}
+          </h3>
+          <div className="text-neutral-400 space-y-2">
+            <p>• {t("If the game is loading slowly, it may be due to:", "Si el juego carga lentamente, puede deberse a:")}</p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>{t("Slow internet connection", "Conexión a internet lenta")}</li>
+              <li>{t("High traffic on itch.io servers", "Alto tráfico en los servidores de itch.io")}</li>
+              <li>{t("First-time loading of game assets", "Carga por primera vez de los assets del juego")}</li>
+            </ul>
+            <p className="mt-3">• {t("Try the Reload button above or wait 1-2 minutes", "Intenta el botón Recargar arriba o espera 1-2 minutos")}</p>
+            <p>• {t("For best experience, play on a stable WiFi connection", "Para mejor experiencia, juega con una conexión WiFi estable")}</p>
           </div>
         </CardContent>
       </Card>
