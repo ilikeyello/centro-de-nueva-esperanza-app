@@ -8,6 +8,7 @@ import { Media } from "./pages/Media";
 import { Games } from "./pages/Games";
 import { TriviaGamePage } from "./pages/TriviaGamePage";
 import { WordSearchGamePage } from "./pages/WordSearchGamePage";
+import { GraveyardShiftGamePage } from "./pages/GraveyardShiftGamePage";
 import { Contact } from "./pages/Contact";
 import { NewHere } from "./pages/NewHere";
 import { AdminUpload } from "./pages/AdminUpload";
@@ -27,6 +28,7 @@ type Page =
   | "games"
   | "triviaGame"
   | "wordSearchGame"
+  | "graveyardShiftGame"
   | "newHere"
   | "adminUpload"
   | "notifications";
@@ -75,6 +77,7 @@ export function AppInner() {
         {currentPage === "games" && <Games onNavigate={handleNavigate} />}        
         {currentPage === "triviaGame" && <TriviaGamePage onNavigate={handleNavigate} />}
         {currentPage === "wordSearchGame" && <WordSearchGamePage onNavigate={handleNavigate} />}
+        {currentPage === "graveyardShiftGame" && <GraveyardShiftGamePage onNavigate={handleNavigate} />}
         {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
         {currentPage === "notifications" && <NotificationSettings />}
       </main>
