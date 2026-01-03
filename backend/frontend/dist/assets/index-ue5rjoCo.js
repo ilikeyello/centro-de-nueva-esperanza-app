@@ -33699,16 +33699,10 @@ function Bible({ onNavigate }) {
     if ((selectedVersion === "rv1909" || selectedVersion === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
       return SPANISH_BOOK_NAMES[book.id];
     }
-    if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
-      return SPANISH_BOOK_NAMES[book.id];
-    }
     return book.name;
   };
   const getLocalizedNameForVersion = (book, version) => {
     if ((version === "rv1909" || version === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
-      return SPANISH_BOOK_NAMES[book.id];
-    }
-    if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
       return SPANISH_BOOK_NAMES[book.id];
     }
     return book.name;

@@ -268,10 +268,7 @@ export function Bible({ onNavigate }: BibleProps) {
     if ((selectedVersion === "rv1909" || selectedVersion === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
       return SPANISH_BOOK_NAMES[book.id];
     }
-    // Otherwise, show Spanish names only when UI language is Spanish
-    if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
-      return SPANISH_BOOK_NAMES[book.id];
-    }
+    // For English versions (KJV), always show English names regardless of UI language
     return book.name;
   };
 
@@ -281,10 +278,7 @@ export function Bible({ onNavigate }: BibleProps) {
     if ((version === "rv1909" || version === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
       return SPANISH_BOOK_NAMES[book.id];
     }
-    // Otherwise, show Spanish names only when UI language is Spanish
-    if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
-      return SPANISH_BOOK_NAMES[book.id];
-    }
+    // For English versions (KJV), always show English names regardless of UI language
     return book.name;
   };
 
