@@ -30326,27 +30326,17 @@ function Games({ onNavigate }) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "iframe",
           {
-            height: "167",
+            height: "600",
             frameBorder: "0",
-            src: "https://itch.io/embed/3897661",
-            width: "552",
-            className: "border border-neutral-700 rounded-lg",
+            src: "https://itch.io/embed-upload/3897661",
+            width: "100%",
+            className: "border border-neutral-700 rounded-lg max-w-4xl",
+            allowFullScreen: true,
+            allow: "fullscreen; autoplay; encrypted-media; picture-in-picture",
             children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://yellogames.itch.io/graveyard-shift", children: "Graveyard Shift by Yello Games" })
           }
         ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 text-center", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-500", children: language === "es" ? "Creado por Yello Games" : "Created by Yello Games" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "a",
-            {
-              href: "https://yellogames.itch.io/graveyard-shift",
-              target: "_blank",
-              rel: "noopener noreferrer",
-              className: "text-red-400 hover:text-red-300 text-sm underline",
-              children: language === "es" ? "Jugar en itch.io" : "Play on itch.io"
-            }
-          )
-        ] })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-4 text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-500", children: language === "es" ? "Creado por Yello Games" : "Created by Yello Games" }) })
       ] }) })
     ] })
   ] });
