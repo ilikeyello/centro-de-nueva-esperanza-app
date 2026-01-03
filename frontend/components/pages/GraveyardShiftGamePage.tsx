@@ -1,15 +1,33 @@
-import { ArrowLeft, Gamepad2, ExternalLink, Maximize2 } from "lucide-react";
+import { ArrowLeft, Gamepad2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const { language, t } = useLanguage();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const openGameInNewTab = () => {
-    window.open('https://yellogames.itch.io/graveyard-shift', '_blank', 'noopener,noreferrer');
-  };
+  useEffect(() => {
+    // Try to enable fullscreen on mobile by adding touch event listener
+    const handleTouchStart = () => {
+      if (iframeRef.current) {
+        // Force the iframe to be interactive
+        iframeRef.current.style.pointerEvents = 'auto';
+      }
+    };
+
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener('touchstart', handleTouchStart, { passive: true });
+    }
+
+    return () => {
+      if (iframe) {
+        iframe.removeEventListener('touchstart', handleTouchStart);
+      }
+    };
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -44,41 +62,25 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
         <CardContent className="p-6">
           <div className="flex justify-center">
             <iframe
+              ref={iframeRef}
               frameBorder="0"
               src="https://itch.io/embed-upload/15184635?color=010028"
               allowFullScreen
-              width="800"
-              height="600"
-              className="border border-neutral-700 rounded-lg max-w-4xl w-full"
-              style={{ minHeight: '400px' }}
+              width="350"
+              height="640"
+              className="border border-neutral-700 rounded-lg"
+              style={{ 
+                maxWidth: '100%',
+                height: 'auto',
+                aspectRatio: '350/640',
+                pointerEvents: 'auto'
+              }}
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-fullscreen"
             >
               <a href="https://yellogames.itch.io/graveyard-shift">
                 Play Graveyard Shift on itch.io
               </a>
             </iframe>
-          </div>
-          
-          <div className="mt-4 text-center">
-            <Button
-              onClick={() => {
-                const iframe = document.querySelector('iframe') as HTMLIFrameElement;
-                if (iframe && iframe.requestFullscreen) {
-                  iframe.requestFullscreen();
-                } else if (iframe && (iframe as any).webkitRequestFullscreen) {
-                  (iframe as any).webkitRequestFullscreen();
-                } else if (iframe && (iframe as any).mozRequestFullScreen) {
-                  (iframe as any).mozRequestFullScreen();
-                } else if (iframe && (iframe as any).msRequestFullscreen) {
-                  (iframe as any).msRequestFullscreen();
-                }
-              }}
-              variant="outline"
-              size="sm"
-              className="border-neutral-600 text-neutral-400 hover:text-white"
-            >
-              <Maximize2 className="h-4 w-4 mr-2" />
-              {t("Fullscreen", "Pantalla Completa")}
-            </Button>
           </div>
           
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-neutral-800">

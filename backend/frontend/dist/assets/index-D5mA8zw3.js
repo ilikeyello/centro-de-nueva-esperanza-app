@@ -31102,6 +31102,23 @@ function WordSearchGamePage({ onNavigate }) {
 }
 function GraveyardShiftGamePage({ onNavigate }) {
   const { language, t } = useLanguage();
+  const iframeRef = reactExports.useRef(null);
+  reactExports.useEffect(() => {
+    const handleTouchStart = () => {
+      if (iframeRef.current) {
+        iframeRef.current.style.pointerEvents = "auto";
+      }
+    };
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener("touchstart", handleTouchStart, { passive: true });
+    }
+    return () => {
+      if (iframe) {
+        iframe.removeEventListener("touchstart", handleTouchStart);
+      }
+    };
+  }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 py-8", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-6", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -31126,38 +31143,21 @@ function GraveyardShiftGamePage({ onNavigate }) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         "iframe",
         {
+          ref: iframeRef,
           frameBorder: "0",
           src: "https://itch.io/embed-upload/15184635?color=010028",
           allowFullScreen: true,
-          width: "800",
-          height: "600",
-          className: "border border-neutral-700 rounded-lg max-w-4xl w-full",
-          style: { minHeight: "400px" },
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://yellogames.itch.io/graveyard-shift", children: "Play Graveyard Shift on itch.io" })
-        }
-      ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-4 text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        Button,
-        {
-          onClick: () => {
-            const iframe = document.querySelector("iframe");
-            if (iframe && iframe.requestFullscreen) {
-              iframe.requestFullscreen();
-            } else if (iframe && iframe.webkitRequestFullscreen) {
-              iframe.webkitRequestFullscreen();
-            } else if (iframe && iframe.mozRequestFullScreen) {
-              iframe.mozRequestFullScreen();
-            } else if (iframe && iframe.msRequestFullscreen) {
-              iframe.msRequestFullscreen();
-            }
+          width: "350",
+          height: "640",
+          className: "border border-neutral-700 rounded-lg",
+          style: {
+            maxWidth: "100%",
+            height: "auto",
+            aspectRatio: "350/640",
+            pointerEvents: "auto"
           },
-          variant: "outline",
-          size: "sm",
-          className: "border-neutral-600 text-neutral-400 hover:text-white",
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-4 w-4 mr-2" }),
-            t("Fullscreen", "Pantalla Completa")
-          ]
+          sandbox: "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-fullscreen",
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://yellogames.itch.io/graveyard-shift", children: "Play Graveyard Shift on itch.io" })
         }
       ) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-neutral-800", children: [
