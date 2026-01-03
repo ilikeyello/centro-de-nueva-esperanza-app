@@ -33495,6 +33495,76 @@ const FALLBACK_BIBLE_VERSIONS = [
   { id: "rv1909", name: "Reina-Valera 1909", abbreviation: "RV1909" },
   { id: "spnbes", name: "La Biblia en Español Sencillo", abbreviation: "SPNBES" }
 ];
+const SPANISH_BOOK_NAMES = {
+  // Old Testament
+  genesis: "Génesis",
+  exodus: "Éxodo",
+  leviticus: "Levítico",
+  numbers: "Números",
+  deuteronomy: "Deuteronomio",
+  joshua: "Josué",
+  judges: "Jueces",
+  ruth: "Rut",
+  "1-samuel": "1 Samuel",
+  "2-samuel": "2 Samuel",
+  "1-kings": "1 Reyes",
+  "2-kings": "2 Reyes",
+  "1-chronicles": "1 Crónicas",
+  "2-chronicles": "2 Crónicas",
+  ezra: "Esdras",
+  nehemiah: "Nehemías",
+  esther: "Ester",
+  job: "Job",
+  psalms: "Salmos",
+  proverbs: "Proverbios",
+  ecclesiastes: "Eclesiastés",
+  "song-of-solomon": "Cantares",
+  isaiah: "Isaías",
+  jeremiah: "Jeremías",
+  lamentations: "Lamentaciones",
+  ezekiel: "Ezequiel",
+  daniel: "Daniel",
+  hosea: "Oseas",
+  joel: "Joel",
+  amos: "Amós",
+  obadiah: "Abdías",
+  jonah: "Jonás",
+  micah: "Miqueas",
+  nahum: "Nahúm",
+  habakkuk: "Habacuc",
+  zephaniah: "Sofonías",
+  haggai: "Hageo",
+  zechariah: "Zacarías",
+  malachi: "Malaquías",
+  // New Testament
+  matthew: "Mateo",
+  mark: "Marcos",
+  luke: "Lucas",
+  john: "Juan",
+  acts: "Hechos",
+  romans: "Romanos",
+  "1-corinthians": "1 Corintios",
+  "2-corinthians": "2 Corintios",
+  galatians: "Gálatas",
+  ephesians: "Efesios",
+  philippians: "Filipenses",
+  colossians: "Colosenses",
+  "1-thessalonians": "1 Tesalonicenses",
+  "2-thessalonians": "2 Tesalonicenses",
+  "1-timothy": "1 Timoteo",
+  "2-timothy": "2 Timoteo",
+  titus: "Tito",
+  philemon: "Filemón",
+  hebrews: "Hebreos",
+  james: "Santiago",
+  "1-peter": "1 Pedro",
+  "2-peter": "2 Pedro",
+  "1-john": "1 Juan",
+  "2-john": "2 Juan",
+  "3-john": "3 Juan",
+  jude: "Judas",
+  revelation: "Apocalipsis"
+};
 const FALLBACK_BIBLE_BOOKS = [
   // Old Testament
   { id: "genesis", name: "Genesis", testament: "OT", chapters: 50 },
@@ -33567,7 +33637,7 @@ const FALLBACK_BIBLE_BOOKS = [
 ];
 function Bible({ onNavigate }) {
   var _a2;
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast: toast2 } = useToast();
   const [selectedVersion, setSelectedVersion] = reactExports.useState(() => {
     try {
@@ -33618,10 +33688,19 @@ function Bible({ onNavigate }) {
   const [searchQuery, setSearchQuery] = reactExports.useState("");
   const [selectorsOpen, setSelectorsOpen] = reactExports.useState(false);
   const [highlightedVerse, setHighlightedVerse] = reactExports.useState(null);
+  const [pendingVersion, setPendingVersion] = reactExports.useState(selectedVersion);
+  const [pendingBook, setPendingBook] = reactExports.useState(selectedBook);
+  const [pendingChapter, setPendingChapter] = reactExports.useState(selectedChapter);
   const currentBook = bibleBooks.find((book) => book.id === selectedBook) || FALLBACK_BIBLE_BOOKS.find((book) => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
   const displayBooks = bibleBooks.length > 0 ? bibleBooks : FALLBACK_BIBLE_BOOKS;
   const displayVersions = bibleVersions.length > 0 ? bibleVersions : FALLBACK_BIBLE_VERSIONS;
+  const getLocalizedName = (book) => {
+    if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
+    return book.name;
+  };
   const fetchTranslations = async () => {
     try {
       const response = await fetch(`${API_BASE}/bible/translations`);
@@ -33699,6 +33778,11 @@ function Bible({ onNavigate }) {
     fetchBooks();
     fetchTranslations();
   }, []);
+  reactExports.useEffect(() => {
+    setPendingVersion(selectedVersion);
+    setPendingBook(selectedBook);
+    setPendingChapter(selectedChapter);
+  }, [selectedVersion, selectedBook, selectedChapter]);
   reactExports.useEffect(() => {
     if (selectedBook && selectedChapter) {
       fetchChapter(selectedBook, selectedChapter, selectedVersion);
@@ -33815,7 +33899,7 @@ function Bible({ onNavigate }) {
             className: "text-center px-3 py-2 rounded-md hover:bg-neutral-800/60 transition-colors disabled:opacity-50",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-xl font-semibold text-white", children: [
-                currentBook == null ? void 0 : currentBook.name,
+                getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0]),
                 " ",
                 selectedChapter
               ] }),
@@ -33831,65 +33915,76 @@ function Bible({ onNavigate }) {
         /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "border-neutral-700 bg-neutral-900 text-white", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("Select passage", "Seleccionar pasaje") }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-1 gap-4", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              Select,
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-3 gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: pendingVersion,
+                  onValueChange: setPendingVersion,
+                  disabled: versionsLoading,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Version", "Versión") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: displayVersions.map((version) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: version.id, className: "text-white", children: [
+                      version.name,
+                      " (",
+                      version.abbreviation,
+                      ")"
+                    ] }, version.id)) })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: pendingBook,
+                  onValueChange: (value) => {
+                    setPendingBook(value);
+                    setPendingChapter(1);
+                  },
+                  disabled: booksLoading,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Book", "Libro") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-2", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2", children: t("Old Testament", "Antiguo Testamento") }),
+                      displayBooks.filter((book) => book.testament === "OT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: getLocalizedName(book) }, book.id)),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2 mt-4", children: t("New Testament", "Nuevo Testamento") }),
+                      displayBooks.filter((book) => book.testament === "NT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: getLocalizedName(book) }, book.id))
+                    ] }) })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: pendingChapter.toString(),
+                  onValueChange: (value) => {
+                    setPendingChapter(parseInt(value));
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Chapter", "Capítulo") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: chapters.map((chapter2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: chapter2.toString(), className: "text-white", children: [
+                      t("Chapter", "Capítulo"),
+                      " ",
+                      chapter2
+                    ] }, chapter2)) })
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-end pt-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
               {
-                value: selectedVersion,
-                onValueChange: (value) => {
-                  setSelectedVersion(value);
-                },
-                disabled: versionsLoading,
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Version", "Versión") }) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: displayVersions.map((version) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: version.id, className: "text-white", children: [
-                    version.name,
-                    " (",
-                    version.abbreviation,
-                    ")"
-                  ] }, version.id)) })
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              Select,
-              {
-                value: selectedBook,
-                onValueChange: (value) => {
+                onClick: () => {
                   setHighlightedVerse(null);
-                  setSelectedBook(value);
-                  setSelectedChapter(1);
-                },
-                disabled: booksLoading,
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Book", "Libro") }) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-2", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2", children: t("Old Testament", "Antiguo Testamento") }),
-                    displayBooks.filter((book) => book.testament === "OT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: book.name }, book.id)),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2 mt-4", children: t("New Testament", "Nuevo Testamento") }),
-                    displayBooks.filter((book) => book.testament === "NT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: book.name }, book.id))
-                  ] }) })
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              Select,
-              {
-                value: selectedChapter.toString(),
-                onValueChange: (value) => {
-                  setHighlightedVerse(null);
-                  setSelectedChapter(parseInt(value));
+                  setSelectedVersion(pendingVersion);
+                  setSelectedBook(pendingBook);
+                  setSelectedChapter(pendingChapter);
                   setSelectorsOpen(false);
                 },
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Chapter", "Capítulo") }) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: chapters.map((chapter2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: chapter2.toString(), className: "text-white", children: [
-                    t("Chapter", "Capítulo"),
-                    " ",
-                    chapter2
-                  ] }, chapter2)) })
-                ]
+                className: "bg-red-600 hover:bg-red-700",
+                children: t("Apply", "Aplicar")
               }
-            )
+            ) })
           ] })
         ] })
       ] }),
