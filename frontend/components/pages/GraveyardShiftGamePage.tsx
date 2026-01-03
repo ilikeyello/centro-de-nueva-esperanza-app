@@ -58,12 +58,11 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
               id="game-iframe"
               height="600"
               frameBorder="0"
-              src="https://itch.io/embed-upload/3897661"
+              src="https://itch.io/embed/3897661"
               width="100%"
               className="border border-neutral-700 rounded-lg max-w-4xl"
               allowFullScreen
               allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
-              loading="lazy"
             >
               <a href="https://yellogames.itch.io/graveyard-shift">
                 Graveyard Shift by Yello Games
@@ -97,25 +96,6 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
               <ExternalLink className="h-4 w-4" />
               {language === 'es' ? 'Ver en itch.io' : 'View on itch.io'}
             </a>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Loading Help */}
-      <Card className="bg-neutral-900 border-neutral-800 mt-6">
-        <CardContent className="p-6">
-          <h3 className="text-xl font-semibold text-white mb-3">
-            {t("Game Loading Help", "Ayuda con la Carga del Juego")}
-          </h3>
-          <div className="text-neutral-400 space-y-2">
-            <p>• {t("If the game is loading slowly, it may be due to:", "Si el juego carga lentamente, puede deberse a:")}</p>
-            <ul className="ml-4 list-disc space-y-1">
-              <li>{t("Slow internet connection", "Conexión a internet lenta")}</li>
-              <li>{t("High traffic on itch.io servers", "Alto tráfico en los servidores de itch.io")}</li>
-              <li>{t("First-time loading of game assets", "Carga por primera vez de los assets del juego")}</li>
-            </ul>
-            <p className="mt-3">• {t("Try the Reload button above or wait 1-2 minutes", "Intenta el botón Recargar arriba o espera 1-2 minutos")}</p>
-            <p>• {t("For best experience, play on a stable WiFi connection", "Para mejor experiencia, juega con una conexión WiFi estable")}</p>
           </div>
         </CardContent>
       </Card>

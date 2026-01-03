@@ -31155,12 +31155,11 @@ function GraveyardShiftGamePage({ onNavigate }) {
           id: "game-iframe",
           height: "600",
           frameBorder: "0",
-          src: "https://itch.io/embed-upload/3897661",
+          src: "https://itch.io/embed/3897661",
           width: "100%",
           className: "border border-neutral-700 rounded-lg max-w-4xl",
           allowFullScreen: true,
           allow: "fullscreen; autoplay; encrypted-media; picture-in-picture",
-          loading: "lazy",
           children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://yellogames.itch.io/graveyard-shift", children: "Graveyard Shift by Yello Games" })
         }
       ) }),
@@ -31195,28 +31194,6 @@ function GraveyardShiftGamePage({ onNavigate }) {
             ]
           }
         )
-      ] })
-    ] }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 mt-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-xl font-semibold text-white mb-3", children: t("Game Loading Help", "Ayuda con la Carga del Juego") }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-400 space-y-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
-          "• ",
-          t("If the game is loading slowly, it may be due to:", "Si el juego carga lentamente, puede deberse a:")
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("ul", { className: "ml-4 list-disc space-y-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: t("Slow internet connection", "Conexión a internet lenta") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: t("High traffic on itch.io servers", "Alto tráfico en los servidores de itch.io") }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: t("First-time loading of game assets", "Carga por primera vez de los assets del juego") })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "mt-3", children: [
-          "• ",
-          t("Try the Reload button above or wait 1-2 minutes", "Intenta el botón Recargar arriba o espera 1-2 minutos")
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
-          "• ",
-          t("For best experience, play on a stable WiFi connection", "Para mejor experiencia, juega con una conexión WiFi estable")
-        ] })
       ] })
     ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 mt-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
