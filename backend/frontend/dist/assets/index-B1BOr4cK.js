@@ -33704,6 +33704,15 @@ function Bible({ onNavigate }) {
     }
     return book.name;
   };
+  const getLocalizedNameForVersion = (book, version) => {
+    if ((version === "rv1909" || version === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
+    if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
+    return book.name;
+  };
   const fetchTranslations = async () => {
     try {
       const response = await fetch(`${API_BASE}/bible/translations`);
@@ -33918,7 +33927,7 @@ function Bible({ onNavigate }) {
         /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "border-neutral-700 bg-neutral-900 text-white", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("Select passage", "Seleccionar pasaje") }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-1 gap-4", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-3 gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 Select,
                 {
@@ -33926,7 +33935,7 @@ function Bible({ onNavigate }) {
                   onValueChange: setPendingVersion,
                   disabled: versionsLoading,
                   children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Version", "Versión") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-full border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Version", "Versión") }) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: displayVersions.map((version) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: version.id, className: "text-white", children: [
                       version.name,
                       " (",
@@ -33946,12 +33955,12 @@ function Bible({ onNavigate }) {
                   },
                   disabled: booksLoading,
                   children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Book", "Libro") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-full border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Book", "Libro") }) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-2", children: [
                       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2", children: t("Old Testament", "Antiguo Testamento") }),
-                      displayBooks.filter((book) => book.testament === "OT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: getLocalizedName(book) }, book.id)),
+                      displayBooks.filter((book) => book.testament === "OT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: getLocalizedNameForVersion(book, pendingVersion) }, book.id)),
                       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2 mt-4", children: t("New Testament", "Nuevo Testamento") }),
-                      displayBooks.filter((book) => book.testament === "NT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: getLocalizedName(book) }, book.id))
+                      displayBooks.filter((book) => book.testament === "NT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: getLocalizedNameForVersion(book, pendingVersion) }, book.id))
                     ] }) })
                   ]
                 }
@@ -33964,7 +33973,7 @@ function Bible({ onNavigate }) {
                     setPendingChapter(parseInt(value));
                   },
                   children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Chapter", "Capítulo") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-full border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Chapter", "Capítulo") }) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: chapters.map((chapter2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: chapter2.toString(), className: "text-white", children: [
                       t("Chapter", "Capítulo"),
                       " ",

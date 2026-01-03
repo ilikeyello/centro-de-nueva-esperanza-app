@@ -275,6 +275,19 @@ export function Bible({ onNavigate }: BibleProps) {
     return book.name;
   };
 
+  // Helper to get localized book name for a specific version
+  const getLocalizedNameForVersion = (book: BibleBook, version: string): string => {
+    // Show Spanish names for Spanish Bible translations (RV1909, SPNBES)
+    if ((version === "rv1909" || version === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
+    // Otherwise, show Spanish names only when UI language is Spanish
+    if (language === "es" && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
+    return book.name;
+  };
+
   const fetchTranslations = async () => {
     try {
       const response = await fetch(`${API_BASE}/bible/translations`);
@@ -535,13 +548,13 @@ export function Bible({ onNavigate }: BibleProps) {
             </DialogHeader>
 
             <div className="grid grid-cols-1 gap-4">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-2">
                 <Select
                   value={pendingVersion}
                   onValueChange={setPendingVersion}
                   disabled={versionsLoading}
                 >
-                  <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                  <SelectTrigger className="w-full border-neutral-700 bg-neutral-800 text-white">
                     <SelectValue placeholder={t("Version", "Versión")} />
                   </SelectTrigger>
                   <SelectContent className="border-neutral-700 bg-neutral-800">
@@ -561,7 +574,7 @@ export function Bible({ onNavigate }: BibleProps) {
                   }}
                   disabled={booksLoading}
                 >
-                  <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                  <SelectTrigger className="w-full border-neutral-700 bg-neutral-800 text-white">
                     <SelectValue placeholder={t("Book", "Libro")} />
                   </SelectTrigger>
                   <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
@@ -569,13 +582,13 @@ export function Bible({ onNavigate }: BibleProps) {
                       <div className="text-xs font-semibold text-neutral-400 mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
                       {displayBooks.filter(book => book.testament === "OT").map((book) => (
                         <SelectItem key={book.id} value={book.id} className="text-white">
-                          {getLocalizedName(book)}
+                          {getLocalizedNameForVersion(book, pendingVersion)}
                         </SelectItem>
                       ))}
                       <div className="text-xs font-semibold text-neutral-400 mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
                       {displayBooks.filter(book => book.testament === "NT").map((book) => (
                         <SelectItem key={book.id} value={book.id} className="text-white">
-                          {getLocalizedName(book)}
+                          {getLocalizedNameForVersion(book, pendingVersion)}
                         </SelectItem>
                       ))}
                     </div>
@@ -588,7 +601,7 @@ export function Bible({ onNavigate }: BibleProps) {
                     setPendingChapter(parseInt(value));
                   }}
                 >
-                  <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                  <SelectTrigger className="w-full border-neutral-700 bg-neutral-800 text-white">
                     <SelectValue placeholder={t("Chapter", "Capítulo")} />
                   </SelectTrigger>
                   <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
