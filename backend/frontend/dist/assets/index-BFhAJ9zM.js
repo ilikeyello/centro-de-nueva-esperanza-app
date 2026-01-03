@@ -30316,6 +30316,37 @@ function Games({ onNavigate }) {
             ]
           }
         )
+      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-4", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Gamepad2, { className: "h-8 w-8 text-red-400" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: "Graveyard Shift" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-6", children: language === "es" ? "Un juego de aventuras y misterio. ¡Embárcate en una experiencia emocionante!" : "An adventure and mystery game. Embark on an exciting experience!" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "iframe",
+          {
+            height: "167",
+            frameBorder: "0",
+            src: "https://itch.io/embed/3897661",
+            width: "552",
+            className: "border border-neutral-700 rounded-lg",
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://yellogames.itch.io/graveyard-shift", children: "Graveyard Shift by Yello Games" })
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 text-center", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-500", children: language === "es" ? "Creado por Yello Games" : "Created by Yello Games" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "a",
+            {
+              href: "https://yellogames.itch.io/graveyard-shift",
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "text-red-400 hover:text-red-300 text-sm underline",
+              children: language === "es" ? "Jugar en itch.io" : "Play on itch.io"
+            }
+          )
+        ] })
       ] }) })
     ] })
   ] });

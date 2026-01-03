@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Sparkles, Brain, Play, Clock, Target, Grid3X3 } from "lucide-react";
+import { Sparkles, Brain, Play, Clock, Target, Grid3X3, Gamepad2 } from "lucide-react";
 
 export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const { language, t } = useLanguage();
@@ -88,6 +88,49 @@ export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
               <Play className="h-4 w-4 mr-2" />
               {t("Play Word Search", "Jugar Sopa de Letras")}
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-neutral-900 border-neutral-800">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Gamepad2 className="h-8 w-8 text-red-400" />
+              <h3 className="text-2xl font-bold text-white">
+                Graveyard Shift
+              </h3>
+            </div>
+            <p className="text-neutral-400 mb-6">
+              {language === 'es' 
+                ? 'Un juego de aventuras y misterio. ¡Embárcate en una experiencia emocionante!'
+                : 'An adventure and mystery game. Embark on an exciting experience!'
+              }
+            </p>
+            <div className="flex justify-center">
+              <iframe
+                height="167"
+                frameBorder="0"
+                src="https://itch.io/embed/3897661"
+                width="552"
+                className="border border-neutral-700 rounded-lg"
+              >
+                <a href="https://yellogames.itch.io/graveyard-shift">
+                  Graveyard Shift by Yello Games
+                </a>
+              </iframe>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-sm text-neutral-500">
+                {language === 'es' ? 'Creado por Yello Games' : 'Created by Yello Games'}
+              </p>
+              <a 
+                href="https://yellogames.itch.io/graveyard-shift" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-red-400 hover:text-red-300 text-sm underline"
+              >
+                {language === 'es' ? 'Jugar en itch.io' : 'Play on itch.io'}
+              </a>
+            </div>
           </CardContent>
         </Card>
       </section>
