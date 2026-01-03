@@ -1,4 +1,4 @@
-import { ArrowLeft, Gamepad2, ExternalLink, RefreshCw } from "lucide-react";
+import { ArrowLeft, Gamepad2, ExternalLink, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -6,20 +6,9 @@ import { useState } from "react";
 
 export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const { language, t } = useLanguage();
-  const [isReloading, setIsReloading] = useState(false);
 
-  const handleReload = () => {
-    setIsReloading(true);
-    // Force iframe reload by changing src
-    const iframe = document.getElementById('game-iframe') as HTMLIFrameElement;
-    if (iframe) {
-      const currentSrc = iframe.src;
-      iframe.src = '';
-      setTimeout(() => {
-        iframe.src = currentSrc;
-        setIsReloading(false);
-      }, 100);
-    }
+  const openGameInNewTab = () => {
+    window.open('https://yellogames.itch.io/graveyard-shift', '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -53,39 +42,41 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
       {/* Game Container */}
       <Card className="bg-neutral-900 border-neutral-800">
         <CardContent className="p-6">
-          <div className="flex justify-center mb-4">
-            <iframe
-              id="game-iframe"
-              height="600"
-              frameBorder="0"
-              src="https://itch.io/embed/3897661"
-              width="100%"
-              className="border border-neutral-700 rounded-lg max-w-4xl"
-              allowFullScreen
-              allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+          <div className="flex flex-col items-center justify-center py-12 space-y-6">
+            <div className="text-center space-y-4">
+              <Gamepad2 className="h-16 w-16 text-red-400 mx-auto" />
+              <h3 className="text-2xl font-bold text-white">
+                {t("Ready to Play?", "¿Listo para Jugar?")}
+              </h3>
+              <p className="text-neutral-400 max-w-md">
+                {language === 'es' 
+                  ? 'Graveyard Shift se abrirá en una nueva pestaña para la mejor experiencia de juego.'
+                  : 'Graveyard Shift will open in a new tab for the best gaming experience.'
+                }
+              </p>
+            </div>
+            
+            <Button
+              onClick={openGameInNewTab}
+              className="bg-red-600 hover:bg-red-700 text-lg px-8 py-4"
+              size="lg"
             >
-              <a href="https://yellogames.itch.io/graveyard-shift">
-                Graveyard Shift by Yello Games
-              </a>
-            </iframe>
+              <Maximize2 className="h-5 w-5 mr-2" />
+              {t("Play Game", "Jugar")}
+            </Button>
+            
+            <p className="text-sm text-neutral-500 text-center">
+              {language === 'es' 
+                ? 'El juego se abrirá en una nueva ventana. Puedes volver a esta página cuando termines.'
+                : 'Game will open in a new window. You can return to this page when done.'
+              }
+            </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-neutral-500">
-                {language === 'es' ? 'Creado por Yello Games' : 'Created by Yello Games'}
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReload}
-                disabled={isReloading}
-                className="border-neutral-600 text-neutral-400 hover:text-white"
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isReloading ? 'animate-spin' : ''}`} />
-                {t("Reload Game", "Recargar Juego")}
-              </Button>
-            </div>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-neutral-800">
+            <p className="text-sm text-neutral-500">
+              {language === 'es' ? 'Creado por Yello Games' : 'Created by Yello Games'}
+            </p>
             
             <a 
               href="https://yellogames.itch.io/graveyard-shift" 
