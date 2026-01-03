@@ -9,22 +9,46 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    // Try to enable fullscreen on mobile by adding touch event listener
+    // PWA and mobile fullscreen fixes
     const handleTouchStart = () => {
       if (iframeRef.current) {
         // Force the iframe to be interactive
         iframeRef.current.style.pointerEvents = 'auto';
+        
+        // Try to trigger fullscreen for PWA
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+          // This is a PWA, set up for fullscreen
+          iframeRef.current.allowFullscreen = true;
+        }
+      }
+    };
+
+    const handleUserInteraction = () => {
+      // Enable fullscreen after user interaction (required for PWA)
+      if (iframeRef.current) {
+        iframeRef.current.allowFullscreen = true;
       }
     };
 
     const iframe = iframeRef.current;
     if (iframe) {
       iframe.addEventListener('touchstart', handleTouchStart, { passive: true });
+      iframe.addEventListener('click', handleUserInteraction, { passive: true });
+      
+      // PWA-specific: Check if running as standalone app
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        // Add PWA-specific styles
+        iframe.style.width = '100%';
+        iframe.style.maxWidth = '350px';
+        iframe.style.margin = '0 auto';
+        iframe.style.display = 'block';
+      }
     }
 
     return () => {
       if (iframe) {
         iframe.removeEventListener('touchstart', handleTouchStart);
+        iframe.removeEventListener('click', handleUserInteraction);
       }
     };
   }, []);
@@ -73,9 +97,12 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
                 maxWidth: '100%',
                 height: 'auto',
                 aspectRatio: '350/640',
-                pointerEvents: 'auto'
+                pointerEvents: 'auto',
+                WebkitUserSelect: 'none',
+                WebkitTouchCallout: 'none'
               }}
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-fullscreen"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-fullscreen allow-presentation"
+              allow="autoplay *; fullscreen *; gamepad *; gyroscope *; magnetometer *; accelerometer *; clipboard-read *; clipboard-write *; camera *; microphone *; display-capture *"
             >
               <a href="https://yellogames.itch.io/graveyard-shift">
                 Play Graveyard Shift on itch.io

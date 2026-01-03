@@ -31107,15 +31107,31 @@ function GraveyardShiftGamePage({ onNavigate }) {
     const handleTouchStart = () => {
       if (iframeRef.current) {
         iframeRef.current.style.pointerEvents = "auto";
+        if (window.matchMedia("(display-mode: standalone)").matches) {
+          iframeRef.current.allowFullscreen = true;
+        }
+      }
+    };
+    const handleUserInteraction = () => {
+      if (iframeRef.current) {
+        iframeRef.current.allowFullscreen = true;
       }
     };
     const iframe = iframeRef.current;
     if (iframe) {
       iframe.addEventListener("touchstart", handleTouchStart, { passive: true });
+      iframe.addEventListener("click", handleUserInteraction, { passive: true });
+      if (window.matchMedia("(display-mode: standalone)").matches) {
+        iframe.style.width = "100%";
+        iframe.style.maxWidth = "350px";
+        iframe.style.margin = "0 auto";
+        iframe.style.display = "block";
+      }
     }
     return () => {
       if (iframe) {
         iframe.removeEventListener("touchstart", handleTouchStart);
+        iframe.removeEventListener("click", handleUserInteraction);
       }
     };
   }, []);
@@ -31154,9 +31170,12 @@ function GraveyardShiftGamePage({ onNavigate }) {
             maxWidth: "100%",
             height: "auto",
             aspectRatio: "350/640",
-            pointerEvents: "auto"
+            pointerEvents: "auto",
+            WebkitUserSelect: "none",
+            WebkitTouchCallout: "none"
           },
-          sandbox: "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-fullscreen",
+          sandbox: "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-fullscreen allow-presentation",
+          allow: "autoplay *; fullscreen *; gamepad *; gyroscope *; magnetometer *; accelerometer *; clipboard-read *; clipboard-write *; camera *; microphone *; display-capture *",
           children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://yellogames.itch.io/graveyard-shift", children: "Play Graveyard Shift on itch.io" })
         }
       ) }),
