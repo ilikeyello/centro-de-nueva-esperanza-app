@@ -44,21 +44,16 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
         <CardContent className="p-6">
           <div className="flex justify-center">
             <iframe
-              src="https://v6p9d9t4.ssl.hwcdn.net/html/5985963/webgl/index.html"
-              width="100%"
-              height="600"
               frameBorder="0"
-              className="border border-neutral-700 rounded-lg max-w-4xl"
+              src="https://itch.io/embed-upload/15184635?color=010028"
               allowFullScreen
-              allow="fullscreen; autoplay; encrypted-media; picture-in-picture; gamepad"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock"
+              width="640"
+              height="380"
+              className="border border-neutral-700 rounded-lg max-w-4xl w-full"
             >
-              <p>
-                {language === 'es' 
-                  ? 'Tu navegador no soporta iframes. Por favor abre el juego en itch.io.'
-                  : 'Your browser does not support iframes. Please open the game on itch.io.'
-                }
-              </p>
+              <a href="https://yellogames.itch.io/graveyard-shift">
+                Play Graveyard Shift on itch.io
+              </a>
             </iframe>
           </div>
           
