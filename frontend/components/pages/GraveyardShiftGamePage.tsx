@@ -47,14 +47,38 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
               frameBorder="0"
               src="https://itch.io/embed-upload/15184635?color=010028"
               allowFullScreen
-              width="640"
-              height="380"
+              width="800"
+              height="600"
               className="border border-neutral-700 rounded-lg max-w-4xl w-full"
+              style={{ minHeight: '400px' }}
             >
               <a href="https://yellogames.itch.io/graveyard-shift">
                 Play Graveyard Shift on itch.io
               </a>
             </iframe>
+          </div>
+          
+          <div className="mt-4 text-center">
+            <Button
+              onClick={() => {
+                const iframe = document.querySelector('iframe') as HTMLIFrameElement;
+                if (iframe && iframe.requestFullscreen) {
+                  iframe.requestFullscreen();
+                } else if (iframe && (iframe as any).webkitRequestFullscreen) {
+                  (iframe as any).webkitRequestFullscreen();
+                } else if (iframe && (iframe as any).mozRequestFullScreen) {
+                  (iframe as any).mozRequestFullScreen();
+                } else if (iframe && (iframe as any).msRequestFullscreen) {
+                  (iframe as any).msRequestFullscreen();
+                }
+              }}
+              variant="outline"
+              size="sm"
+              className="border-neutral-600 text-neutral-400 hover:text-white"
+            >
+              <Maximize2 className="h-4 w-4 mr-2" />
+              {t("Fullscreen", "Pantalla Completa")}
+            </Button>
           </div>
           
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-neutral-800">
