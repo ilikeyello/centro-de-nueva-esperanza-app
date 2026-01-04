@@ -31095,28 +31095,47 @@ function GraveyardShiftGamePage({ onNavigate }) {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
+    const isPWA = window.matchMedia("(display-mode: standalone)").matches;
+    const isIOSPWA = window.navigator.standalone === true;
     const handleTouchStart = () => {
       if (iframeRef.current) {
         iframeRef.current.style.pointerEvents = "auto";
-        if (window.matchMedia("(display-mode: standalone)").matches) {
+        if (isPWA || isIOSPWA) {
           iframeRef.current.allowFullscreen = true;
+          iframeRef.current.setAttribute("allowfullscreen", "true");
+          iframeRef.current.focus();
         }
       }
     };
     const handleUserInteraction = () => {
       if (iframeRef.current) {
         iframeRef.current.allowFullscreen = true;
+        if (isPWA || isIOSPWA) {
+          const iframe2 = iframeRef.current;
+          if (iframe2.requestFullscreen) {
+            iframe2.requestFullscreen().catch(() => {
+              console.log("Fullscreen blocked in PWA mode");
+            });
+          }
+        }
       }
     };
     const iframe = iframeRef.current;
     if (iframe) {
       iframe.addEventListener("touchstart", handleTouchStart, { passive: true });
       iframe.addEventListener("click", handleUserInteraction, { passive: true });
-      if (window.matchMedia("(display-mode: standalone)").matches) {
+      if (isPWA || isIOSPWA) {
         iframe.style.width = "100%";
         iframe.style.maxWidth = "350px";
         iframe.style.margin = "0 auto";
         iframe.style.display = "block";
+        iframe.style.position = "relative";
+        iframe.style.zIndex = "1";
+        iframe.setAttribute("allowfullscreen", "true");
+        iframe.setAttribute("webkitallowfullscreen", "true");
+        iframe.setAttribute("mozallowfullscreen", "true");
+        iframe.setAttribute("msallowfullscreen", "true");
+        setTimeout(() => iframe.focus(), 100);
       }
     }
     return () => {
@@ -31139,6 +31158,10 @@ function GraveyardShiftGamePage({ onNavigate }) {
         ]
       }
     ) }),
+    window.matchMedia("(display-mode: standalone)").matches && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 px-4 pb-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500 text-center", children: t(
+      "PWA Mode: For best experience, tap the game and use device fullscreen",
+      "Modo PWA: Para mejor experiencia, toca el juego y usa pantalla completa del dispositivo"
+    ) }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center px-4 pb-2 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
       "iframe",
       {

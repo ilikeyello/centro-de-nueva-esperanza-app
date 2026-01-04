@@ -13,13 +13,22 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
     
+    // Check if running as PWA
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSPWA = (window.navigator as any).standalone === true;
+    
     // PWA and mobile fullscreen fixes
     const handleTouchStart = () => {
       if (iframeRef.current) {
         iframeRef.current.style.pointerEvents = 'auto';
         
-        if (window.matchMedia('(display-mode: standalone)').matches) {
+        if (isPWA || isIOSPWA) {
+          // For PWA, try to enable fullscreen with more aggressive approach
           iframeRef.current.allowFullscreen = true;
+          iframeRef.current.setAttribute('allowfullscreen', 'true');
+          
+          // Try to focus the iframe for PWA
+          iframeRef.current.focus();
         }
       }
     };
@@ -27,6 +36,19 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
     const handleUserInteraction = () => {
       if (iframeRef.current) {
         iframeRef.current.allowFullscreen = true;
+        
+        // For PWA, try additional fullscreen methods
+        if (isPWA || isIOSPWA) {
+          const iframe = iframeRef.current;
+          
+          // Try to trigger fullscreen on user interaction
+          if (iframe.requestFullscreen) {
+            iframe.requestFullscreen().catch(() => {
+              // Fallback for PWA restrictions
+              console.log('Fullscreen blocked in PWA mode');
+            });
+          }
+        }
       }
     };
 
@@ -35,11 +57,23 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
       iframe.addEventListener('touchstart', handleTouchStart, { passive: true });
       iframe.addEventListener('click', handleUserInteraction, { passive: true });
       
-      if (window.matchMedia('(display-mode: standalone)').matches) {
+      if (isPWA || isIOSPWA) {
+        // PWA-specific styling and setup
         iframe.style.width = '100%';
         iframe.style.maxWidth = '350px';
         iframe.style.margin = '0 auto';
         iframe.style.display = 'block';
+        iframe.style.position = 'relative';
+        iframe.style.zIndex = '1';
+        
+        // Add PWA-specific attributes
+        iframe.setAttribute('allowfullscreen', 'true');
+        iframe.setAttribute('webkitallowfullscreen', 'true');
+        iframe.setAttribute('mozallowfullscreen', 'true');
+        iframe.setAttribute('msallowfullscreen', 'true');
+        
+        // Try to focus iframe for PWA
+        setTimeout(() => iframe.focus(), 100);
       }
     }
 
@@ -64,6 +98,16 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
           {t("Back to Games", "Volver a Juegos")}
         </Button>
       </div>
+
+      {/* PWA Notice */}
+      {window.matchMedia('(display-mode: standalone)').matches && (
+        <div className="flex-shrink-0 px-4 pb-2">
+          <p className="text-xs text-neutral-500 text-center">
+            {t("PWA Mode: For best experience, tap the game and use device fullscreen", 
+               "Modo PWA: Para mejor experiencia, toca el juego y usa pantalla completa del dispositivo")}
+          </p>
+        </div>
+      )}
 
       {/* Game Container - Takes remaining space with minimal padding */}
       <div className="flex-1 flex items-center justify-center px-4 pb-2 overflow-hidden">
