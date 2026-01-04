@@ -30970,8 +30970,8 @@ function WordSearchGamePage({ onNavigate }) {
       ] }),
       allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-green-400 font-bold animate-pulse", children: language === "es" ? "¡Completado!" : "Completed!" })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col md:flex-row gap-0.5 px-3 pb-3 min-h-0 overflow-hidden", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center min-h-0 relative", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative w-full h-full max-w-[min(100%,100vh-220px)] aspect-square mx-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 aspect-square", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col md:flex-row gap-0 px-3 pb-3 min-h-0 overflow-hidden", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 flex items-center justify-center min-h-0 relative", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative w-full aspect-square mx-auto max-w-[min(100%,100vh-250px)]", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 aspect-square", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "svg",
           {
@@ -31025,8 +31025,8 @@ function WordSearchGamePage({ onNavigate }) {
           }
         )
       ] }) }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 md:w-48 flex flex-col min-h-0 max-h-[30%] md:max-h-full", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-[10px] font-semibold text-neutral-500 flex items-center gap-2 mb-1 uppercase tracking-widest", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 md:w-48 flex flex-col min-h-0 mt-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-[10px] font-semibold text-neutral-500 flex items-center gap-2 mb-0.5 uppercase tracking-widest flex-shrink-0", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-3 w-3" }),
           t("Words", "Palabras")
         ] }),
