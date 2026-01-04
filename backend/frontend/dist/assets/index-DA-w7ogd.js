@@ -31123,20 +31123,20 @@ function GraveyardShiftGamePage({ onNavigate }) {
       }
     };
   }, []);
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 py-8", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-screen w-full flex flex-col bg-neutral-950 overflow-hidden", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Button,
       {
         variant: "ghost",
         onClick: () => onNavigate == null ? void 0 : onNavigate("games"),
-        className: "mb-6 text-neutral-400 hover:text-white",
+        className: "text-neutral-400 hover:text-white",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
           t("Back to Games", "Volver a Juegos")
         ]
       }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+    ) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center p-4 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
       "iframe",
       {
         ref: iframeRef,
@@ -31145,10 +31145,12 @@ function GraveyardShiftGamePage({ onNavigate }) {
         allowFullScreen: true,
         width: "350",
         height: "640",
-        className: "border border-neutral-700 rounded-lg",
+        className: "border border-neutral-700 rounded-lg max-w-full max-h-full",
         style: {
-          maxWidth: "100%",
-          height: "auto",
+          width: "100%",
+          maxWidth: "350px",
+          height: "100%",
+          maxHeight: "640px",
           aspectRatio: "350/640",
           pointerEvents: "auto",
           WebkitUserSelect: "none",

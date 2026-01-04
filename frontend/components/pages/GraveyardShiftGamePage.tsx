@@ -47,19 +47,21 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="h-screen w-full flex flex-col bg-neutral-950 overflow-hidden">
       {/* Back Button */}
-      <Button
-        variant="ghost"
-        onClick={() => onNavigate?.("games")}
-        className="mb-6 text-neutral-400 hover:text-white"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        {t("Back to Games", "Volver a Juegos")}
-      </Button>
+      <div className="flex-shrink-0 p-4">
+        <Button
+          variant="ghost"
+          onClick={() => onNavigate?.("games")}
+          className="text-neutral-400 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("Back to Games", "Volver a Juegos")}
+        </Button>
+      </div>
 
-      {/* Game Only */}
-      <div className="flex justify-center">
+      {/* Game Container - Takes remaining space */}
+      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
         <iframe
           ref={iframeRef}
           frameBorder="0"
@@ -67,10 +69,12 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
           allowFullScreen
           width="350"
           height="640"
-          className="border border-neutral-700 rounded-lg"
+          className="border border-neutral-700 rounded-lg max-w-full max-h-full"
           style={{ 
-            maxWidth: '100%',
-            height: 'auto',
+            width: '100%',
+            maxWidth: '350px',
+            height: '100%',
+            maxHeight: '640px',
             aspectRatio: '350/640',
             pointerEvents: 'auto',
             WebkitUserSelect: 'none',
