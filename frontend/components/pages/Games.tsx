@@ -7,125 +7,81 @@ export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const { language, t } = useLanguage();
 
   return (
-    <div className="container mx-auto space-y-10 px-4 py-8">
-      <section className="space-y-4">
-        <div className="flex items-center gap-2 text-red-400">
-          <Sparkles className="h-5 w-5" />
-          <span className="text-sm font-semibold uppercase tracking-[0.2em]">
+    <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      {/* Header - Condensed */}
+      <section className="flex-shrink-0 px-4 pt-4 pb-2 text-center md:text-left">
+        <div className="flex items-center justify-center md:justify-start gap-2 text-red-400 mb-1">
+          <Sparkles className="h-4 w-4" />
+          <span className="text-xs font-semibold uppercase tracking-[0.2em]">
             {t("Faith-filled Fun", "Diversión con Fe")}
           </span>
         </div>
-        <h1 className="text-4xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-white mb-1">
           {language === "es" ? "Juegos" : "Games"}
         </h1>
-        <p className="text-neutral-400 max-w-2xl">
+        <p className="text-neutral-400 text-sm max-w-2xl mx-auto md:mx-0">
           {language === "es"
-            ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirado."
-            : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment."}
+            ? "Actividades divertidas para toda la familia."
+            : "Fun activities for the whole family."}
         </p>
       </section>
 
-      <section className="space-y-6">
-        <Card className="bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <Brain className="h-8 w-8 text-red-400" />
-                  <h3 className="text-2xl font-bold text-white">
-                    {language === 'es' ? 'Trivia Bíblica' : 'Bible Trivia'}
-                  </h3>
-                </div>
-                <p className="text-neutral-400 mb-4">
-                  {language === 'es' 
-                    ? 'Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades.'
-                    : 'Test your Bible knowledge with fun and educational questions for all ages.'
-                  }
-                </p>
-                <div className="flex gap-4 text-sm text-neutral-500">
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {t("Timed Questions", "Preguntas Cronometradas")}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Target className="h-4 w-4" />
-                    {t("Multiple Levels", "Múltiples Niveles")}
-                  </span>
-                </div>
-              </div>
+      {/* Games List - Fits all without scrolling */}
+      <section className="flex-1 flex flex-col gap-3 px-4 pb-4 overflow-hidden">
+        <Card 
+          className="bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0"
+          onClick={() => onNavigate?.("triviaGame")}
+        >
+          <CardContent className="p-3 h-full flex flex-col justify-center">
+            <div className="flex items-center gap-3 mb-2">
+              <Brain className="h-6 w-6 text-red-400" />
+              <h3 className="text-lg font-bold text-white">
+                {language === 'es' ? 'Trivia Bíblica' : 'Bible Trivia'}
+              </h3>
             </div>
-            <Button 
-              onClick={() => onNavigate?.("triviaGame")}
-              className="mt-4 w-full bg-red-600 hover:bg-red-700"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              {t("Play Now", "Jugar Ahora")}
-            </Button>
+            <p className="text-neutral-400 text-xs line-clamp-2">
+              {language === 'es' 
+                ? 'Pon a prueba tu conocimiento de la Biblia con preguntas divertidas.'
+                : 'Test your Bible knowledge with fun questions.'}
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <Grid3X3 className="h-8 w-8 text-red-400" />
-                  <h3 className="text-2xl font-bold text-white">
-                    {language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search"}
-                  </h3>
-                </div>
-                <p className="text-neutral-400 mb-4">
-                  {language === "es"
-                    ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Ideal para todas las edades."
-                    : "Find hidden Bible words in the grid. Great for all ages."}
-                </p>
-              </div>
+        <Card 
+          className="bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0"
+          onClick={() => onNavigate?.("wordSearchGame")}
+        >
+          <CardContent className="p-3 h-full flex flex-col justify-center">
+            <div className="flex items-center gap-3 mb-2">
+              <Grid3X3 className="h-6 w-6 text-red-400" />
+              <h3 className="text-lg font-bold text-white">
+                {language === "es" ? "Sopa de Letras" : "Word Search"}
+              </h3>
             </div>
-            <Button
-              onClick={() => onNavigate?.("wordSearchGame")}
-              className="mt-4 w-full bg-red-600 hover:bg-red-700"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              {t("Play Word Search", "Jugar Sopa de Letras")}
-            </Button>
+            <p className="text-neutral-400 text-xs line-clamp-2">
+              {language === "es"
+                ? "Encuentra palabras bíblicas escondidas en la cuadrícula."
+                : "Find hidden Bible words in the grid."}
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <Gamepad2 className="h-8 w-8 text-red-400" />
-                  <h3 className="text-2xl font-bold text-white">
-                    Graveyard Shift
-                  </h3>
-                </div>
-                <p className="text-neutral-400 mb-4">
-                  {language === 'es' 
-                    ? 'Un juego de aventuras y misterio. ¡Embárcate en una experiencia emocionante!'
-                    : 'An adventure and mystery game. Embark on an exciting experience!'
-                  }
-                </p>
-                <div className="flex gap-4 text-sm text-neutral-500">
-                  <span className="flex items-center gap-1">
-                    <Gamepad2 className="h-4 w-4" />
-                    {t("Adventure Game", "Juego de Aventuras")}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Play className="h-4 w-4" />
-                    {t("Web Game", "Juego Web")}
-                  </span>
-                </div>
-              </div>
+        <Card 
+          className="bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0"
+          onClick={() => onNavigate?.("graveyardShiftGame")}
+        >
+          <CardContent className="p-3 h-full flex flex-col justify-center">
+            <div className="flex items-center gap-3 mb-2">
+              <Gamepad2 className="h-6 w-6 text-red-400" />
+              <h3 className="text-lg font-bold text-white">
+                Graveyard Shift
+              </h3>
             </div>
-            <Button 
-              onClick={() => onNavigate?.("graveyardShiftGame")}
-              className="mt-4 w-full bg-red-600 hover:bg-red-700"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              {t("Play Now", "Jugar Ahora")}
-            </Button>
+            <p className="text-neutral-400 text-xs line-clamp-2">
+              {language === 'es' 
+                ? 'Un juego de aventuras y misterio emocionante.'
+                : 'An exciting adventure and mystery game.'}
+            </p>
           </CardContent>
         </Card>
       </section>

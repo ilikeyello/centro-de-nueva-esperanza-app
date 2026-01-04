@@ -30257,96 +30257,58 @@ function Media({ onStartMusic }) {
 }
 function Games({ onNavigate }) {
   const { language, t } = useLanguage();
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "flex-shrink-0 px-4 pt-4 pb-2 text-center md:text-left", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-center md:justify-start gap-2 text-red-400 mb-1", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Juegos" : "Games" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl", children: language === "es" ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirado." : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment." })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-2xl font-bold text-white mb-1", children: language === "es" ? "Juegos" : "Games" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm max-w-2xl mx-auto md:mx-0", children: language === "es" ? "Actividades divertidas para toda la familia." : "Fun activities for the whole family." })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 text-red-400" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades." : "Test your Bible knowledge with fun and educational questions for all ages." }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
-              t("Timed Questions", "Preguntas Cronometradas")
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "flex-1 flex flex-col gap-3 px-4 pb-4 overflow-hidden", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0",
+          onClick: () => onNavigate == null ? void 0 : onNavigate("triviaGame"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-3 h-full flex flex-col justify-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-6 w-6 text-red-400" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
-              t("Multiple Levels", "Múltiples Niveles")
-            ] })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-xs line-clamp-2", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas." : "Test your Bible knowledge with fun questions." })
           ] })
-        ] }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => onNavigate == null ? void 0 : onNavigate("triviaGame"),
-            className: "mt-4 w-full bg-red-600 hover:bg-red-700",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-              t("Play Now", "Jugar Ahora")
-            ]
-          }
-        )
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-8 w-8 text-red-400" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Ideal para todas las edades." : "Find hidden Bible words in the grid. Great for all ages." })
-        ] }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => onNavigate == null ? void 0 : onNavigate("wordSearchGame"),
-            className: "mt-4 w-full bg-red-600 hover:bg-red-700",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-              t("Play Word Search", "Jugar Sopa de Letras")
-            ]
-          }
-        )
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Gamepad2, { className: "h-8 w-8 text-red-400" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: "Graveyard Shift" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Un juego de aventuras y misterio. ¡Embárcate en una experiencia emocionante!" : "An adventure and mystery game. Embark on an exciting experience!" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Gamepad2, { className: "h-4 w-4" }),
-              t("Adventure Game", "Juego de Aventuras")
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0",
+          onClick: () => onNavigate == null ? void 0 : onNavigate("wordSearchGame"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-3 h-full flex flex-col justify-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-6 w-6 text-red-400" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-bold text-white", children: language === "es" ? "Sopa de Letras" : "Word Search" })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4" }),
-              t("Web Game", "Juego Web")
-            ] })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-xs line-clamp-2", children: language === "es" ? "Encuentra palabras bíblicas escondidas en la cuadrícula." : "Find hidden Bible words in the grid." })
           ] })
-        ] }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => onNavigate == null ? void 0 : onNavigate("graveyardShiftGame"),
-            className: "mt-4 w-full bg-red-600 hover:bg-red-700",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-              t("Play Now", "Jugar Ahora")
-            ]
-          }
-        )
-      ] }) })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0",
+          onClick: () => onNavigate == null ? void 0 : onNavigate("graveyardShiftGame"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-3 h-full flex flex-col justify-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Gamepad2, { className: "h-6 w-6 text-red-400" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-bold text-white", children: "Graveyard Shift" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-xs line-clamp-2", children: language === "es" ? "Un juego de aventuras y misterio emocionante." : "An exciting adventure and mystery game." })
+          ] })
+        }
+      )
     ] })
   ] });
 }
