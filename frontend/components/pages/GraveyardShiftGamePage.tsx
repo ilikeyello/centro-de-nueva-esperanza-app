@@ -9,46 +9,31 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
 
   useEffect(() => {
     // Scroll to top immediately when page loads
-    window.scrollTo(0, 0);
-    document.body.scrollTop = 0;
-    document.documentElement.scrollTop = 0;
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      // PWAs sometimes need a slight delay for scroll to work
+      const mainElement = document.querySelector('main');
+      if (mainElement) mainElement.scrollTop = 0;
+    };
+
+    scrollToTop();
+    const timeoutId = setTimeout(scrollToTop, 100);
     
     // Check if running as PWA
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
-    const isIOSPWA = (window.navigator as any).standalone === true;
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
     
-    // PWA and mobile fullscreen fixes
+    // PWA and mobile fixes
     const handleTouchStart = () => {
       if (iframeRef.current) {
         iframeRef.current.style.pointerEvents = 'auto';
-        
-        if (isPWA || isIOSPWA) {
-          // For PWA, try to enable fullscreen with more aggressive approach
-          iframeRef.current.allowFullscreen = true;
-          iframeRef.current.setAttribute('allowfullscreen', 'true');
-          
-          // Try to focus the iframe for PWA
-          iframeRef.current.focus();
-        }
       }
     };
 
     const handleUserInteraction = () => {
       if (iframeRef.current) {
         iframeRef.current.allowFullscreen = true;
-        
-        // For PWA, try additional fullscreen methods
-        if (isPWA || isIOSPWA) {
-          const iframe = iframeRef.current;
-          
-          // Try to trigger fullscreen on user interaction
-          if (iframe.requestFullscreen) {
-            iframe.requestFullscreen().catch(() => {
-              // Fallback for PWA restrictions
-              console.log('Fullscreen blocked in PWA mode');
-            });
-          }
-        }
       }
     };
 
@@ -57,27 +42,16 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
       iframe.addEventListener('touchstart', handleTouchStart, { passive: true });
       iframe.addEventListener('click', handleUserInteraction, { passive: true });
       
-      if (isPWA || isIOSPWA) {
-        // PWA-specific styling and setup
+      if (isPWA) {
         iframe.style.width = '100%';
         iframe.style.maxWidth = '350px';
         iframe.style.margin = '0 auto';
         iframe.style.display = 'block';
-        iframe.style.position = 'relative';
-        iframe.style.zIndex = '1';
-        
-        // Add PWA-specific attributes
-        iframe.setAttribute('allowfullscreen', 'true');
-        iframe.setAttribute('webkitallowfullscreen', 'true');
-        iframe.setAttribute('mozallowfullscreen', 'true');
-        iframe.setAttribute('msallowfullscreen', 'true');
-        
-        // Try to focus iframe for PWA
-        setTimeout(() => iframe.focus(), 100);
       }
     }
 
     return () => {
+      clearTimeout(timeoutId);
       if (iframe) {
         iframe.removeEventListener('touchstart', handleTouchStart);
         iframe.removeEventListener('click', handleUserInteraction);
@@ -86,31 +60,21 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
   }, []);
 
   return (
-    <div className="h-screen w-full flex flex-col bg-neutral-950 overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Back Button - Minimal spacing */}
-      <div className="flex-shrink-0 px-4 pt-2 pb-1">
+      <div className="flex-shrink-0 px-4 pt-1 pb-0">
         <Button
           variant="ghost"
           onClick={() => onNavigate?.("games")}
-          className="text-neutral-400 hover:text-white"
+          className="text-neutral-400 hover:text-white h-8"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t("Back to Games", "Volver a Juegos")}
         </Button>
       </div>
 
-      {/* PWA Notice */}
-      {window.matchMedia('(display-mode: standalone)').matches && (
-        <div className="flex-shrink-0 px-4 pb-2">
-          <p className="text-xs text-neutral-500 text-center">
-            {t("PWA Mode: For best experience, tap the game and use device fullscreen", 
-               "Modo PWA: Para mejor experiencia, toca el juego y usa pantalla completa del dispositivo")}
-          </p>
-        </div>
-      )}
-
       {/* Game Container - Takes remaining space with minimal padding */}
-      <div className="flex-1 flex items-center justify-center px-4 pb-2 overflow-hidden">
+      <div className="flex-1 flex items-start justify-center px-4 pb-2 overflow-hidden pt-0">
         <iframe
           ref={iframeRef}
           frameBorder="0"
@@ -118,7 +82,7 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
           allowFullScreen
           width="350"
           height="640"
-          className="border border-neutral-700 rounded-lg max-w-full max-h-full"
+          className="border border-neutral-700 rounded-lg max-w-full max-h-[calc(100vh-60px)]"
           style={{ 
             width: '100%',
             maxWidth: '350px',
