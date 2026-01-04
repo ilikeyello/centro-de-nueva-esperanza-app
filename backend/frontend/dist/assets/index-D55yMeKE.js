@@ -30596,83 +30596,89 @@ function TriviaGamePage({ onNavigate } = {}) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const question = language === "es" ? currentQuestion.question_es : currentQuestion.question_en;
     const options = language === "es" ? typeof currentQuestion.options_es === "string" ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es : typeof currentQuestion.options_en === "string" ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-4 px-3 py-4 max-w-3xl h-screen md:h-auto flex flex-col md:block overflow-hidden", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        Button,
-        {
-          onClick: resetGame,
-          variant: "outline",
-          className: "border-neutral-700 hover:bg-neutral-800 text-white flex-shrink-0 mb-2",
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
-            t("Levels", "Niveles")
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between flex-shrink-0", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-400 text-sm", children: [
-          t("Question", "Pregunta"),
-          " ",
-          gameState.currentQuestionIndex + 1,
-          " / ",
-          gameState.questions.length
-        ] }),
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 pt-2 flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            onClick: resetGame,
+            variant: "outline",
+            className: "border-neutral-700 hover:bg-neutral-800 text-white h-8 text-xs",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-3 w-3 mr-1" }),
+              t("Levels", "Niveles")
+            ]
+          }
+        ),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `flex items-center gap-2 ${gameState.timeRemaining <= 5 ? "text-red-500" : "text-neutral-300"}`, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono text-lg", children: gameState.isTimerActive ? `${gameState.timeRemaining}s` : "∞" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono text-base", children: gameState.isTimerActive ? `${gameState.timeRemaining}s` : "∞" })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full bg-neutral-800 rounded-full h-1.5 flex-shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "div",
-        {
-          className: "bg-red-500 h-1.5 rounded-full transition-all duration-300",
-          style: { width: `${(gameState.currentQuestionIndex + 1) / gameState.questions.length * 100}%` }
-        }
-      ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 flex-1 overflow-hidden md:overflow-visible", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-4 md:p-8 h-full flex flex-col", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4 flex-1 flex flex-col", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg md:text-2xl font-semibold text-white flex-shrink-0", children: question }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-2 md:gap-3 flex-1", children: options.map((option, index2) => {
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-3 pt-2 flex-shrink-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex justify-between text-[10px] text-neutral-500 mb-1 uppercase tracking-wider", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            t("Question", "Pregunta"),
+            " ",
+            gameState.currentQuestionIndex + 1,
+            " / ",
+            gameState.questions.length
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            Math.round((gameState.currentQuestionIndex + 1) / gameState.questions.length * 100),
+            "%"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full bg-neutral-800 rounded-full h-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: "bg-red-500 h-1 rounded-full transition-all duration-300",
+            style: { width: `${(gameState.currentQuestionIndex + 1) / gameState.questions.length * 100}%` }
+          }
+        ) })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 p-3 overflow-hidden flex flex-col min-h-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 flex flex-col h-full min-h-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-3 md:p-6 flex flex-col h-full min-h-0", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col justify-between gap-2 min-h-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-base md:text-xl font-semibold text-white leading-tight flex-shrink-0", children: question }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-1.5 md:gap-2 flex-1 overflow-y-auto pr-1 custom-scrollbar", children: options.map((option, index2) => {
           const isSelected = gameState.selectedAnswer === index2;
           const isCorrect = index2 === currentQuestion.correct_answer;
-          const showCorrect = gameState.showFeedback && isCorrect;
-          const showWrong = gameState.showFeedback && isSelected && !isCorrect;
           return /* @__PURE__ */ jsxRuntimeExports.jsxs(
             Button,
             {
               onClick: () => selectAnswer(index2),
               variant: "outline",
               disabled: gameState.showFeedback,
-              className: `justify-start h-auto p-3 md:p-4 text-left transition-all text-sm md:text-base relative ${gameState.showFeedback ? isCorrect ? "bg-green-600 border-green-400 text-white ring-2 ring-green-400/50" : isSelected ? "bg-red-600 border-red-400 text-white ring-2 ring-red-400/50" : "bg-neutral-800 border-neutral-600 text-neutral-400" : isSelected ? "bg-red-600 border-red-400 text-white ring-2 ring-red-400/50" : "bg-neutral-800 border-neutral-600 hover:bg-red-600 hover:border-red-400 hover:text-white"}`,
+              className: `justify-start h-auto p-2.5 md:p-4 text-left transition-all text-xs md:text-base relative min-h-[44px] ${gameState.showFeedback ? isCorrect ? "bg-green-600 border-green-400 text-white opacity-100" : isSelected ? "bg-red-600 border-red-400 text-white opacity-100" : "bg-neutral-800 border-neutral-700 text-neutral-500 opacity-50" : isSelected ? "bg-red-600 border-red-400 text-white ring-2 ring-red-400/50" : "bg-neutral-800 border-neutral-700 hover:bg-neutral-800 hover:border-red-600 text-neutral-200"}`,
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-medium mr-3", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-bold mr-2 opacity-50", children: [
                   String.fromCharCode(65 + index2),
                   "."
                 ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: option }),
-                showCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-green-300", children: "✓" }),
-                showWrong && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-red-300", children: "✗" })
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "flex-1 pr-4", children: option }),
+                gameState.showFeedback && isCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-white", children: "✓" }),
+                gameState.showFeedback && isSelected && !isCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-white", children: "✗" })
               ]
             },
             index2
           );
         }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 pt-4", children: !gameState.showFeedback ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 pt-2 border-t border-neutral-800/50", children: !gameState.showFeedback ? /* @__PURE__ */ jsxRuntimeExports.jsx(
           Button,
           {
             onClick: submitAnswer,
             disabled: gameState.selectedAnswer === null,
-            className: "w-full bg-red-600 hover:bg-red-700 disabled:bg-neutral-700 disabled:text-neutral-500",
+            className: "w-full bg-red-600 hover:bg-red-700 h-10 md:h-12 font-bold disabled:opacity-50",
             children: t("Submit Answer", "Enviar Respuesta")
           }
         ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
           Button,
           {
             onClick: nextQuestion,
-            className: "w-full bg-red-600 hover:bg-red-700",
+            className: "w-full bg-red-600 hover:bg-red-700 h-10 md:h-12 font-bold",
             children: gameState.currentQuestionIndex < gameState.questions.length - 1 ? t("Next Question", "Siguiente Pregunta") : t("See Results", "Ver Resultados")
           }
         ) })
-      ] }) }) })
+      ] }) }) }) })
     ] });
   }
   if (gameState.status === "results") {
@@ -30932,42 +30938,40 @@ function WordSearchGamePage({ onNavigate }) {
     return renderLevelList();
   }
   const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-4 px-3 py-4 max-w-4xl", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 pt-2 flex items-center justify-between gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
         {
           onClick: resetPuzzleState,
           variant: "outline",
-          className: "border-neutral-700 hover:bg-neutral-800 text-white",
+          className: "border-neutral-700 hover:bg-neutral-800 text-white h-8 text-xs",
           children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-3 w-3 mr-1" }),
             t("Levels", "Niveles")
           ]
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-xs text-neutral-400", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-[10px] text-neutral-400 uppercase tracking-wider", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-3 w-3 text-red-400" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           foundWords.size,
           "/",
           puzzle.words.length,
           " ",
-          t("words found", "palabras encontradas")
+          t("found", "encontradas")
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { className: "text-2xl font-bold text-white flex items-center gap-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-6 w-6 text-red-400" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 py-1", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { className: "text-lg font-bold text-white flex items-center gap-2 truncate", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-4 w-4 text-red-400" }),
         puzzle.level.name
       ] }),
-      puzzle.level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 max-w-2xl", children: puzzle.level.description }),
-      allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-green-400", children: language === "es" ? "¡Completado!" : "Completed!" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: language === "es" ? "Toca la primera y la última letra de la palabra en línea recta para marcarla." : "Tap the first and last letter of the word in a straight line to mark it." })
+      allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-green-400 font-bold animate-pulse", children: language === "es" ? "¡Completado!" : "Completed!" })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:gap-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative aspect-square", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col md:flex-row gap-2 px-3 pb-3 min-h-0 overflow-hidden", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center min-h-0 relative", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative w-full h-full max-w-[min(100%,100vh-250px)] aspect-square mx-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 aspect-square", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "svg",
           {
@@ -31011,7 +31015,7 @@ function WordSearchGamePage({ onNavigate }) {
                   {
                     type: "button",
                     onClick: () => toggleCellSelection(r2, c),
-                    className: `relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
+                    className: `relative flex w-full h-full items-center justify-center text-[min(3vw,14px)] font-bold transition-colors ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white bg-green-400/20" : "text-neutral-300 hover:text-white"}`,
                     children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "relative z-10", children: ch })
                   },
                   key
@@ -31021,26 +31025,26 @@ function WordSearchGamePage({ onNavigate }) {
           }
         )
       ] }) }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full md:w-64 space-y-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-sm font-semibold text-white flex items-center gap-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
-          t("Words to Find", "Palabras a Encontrar")
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 md:w-48 flex flex-col min-h-0 max-h-[30%] md:max-h-full", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-[10px] font-semibold text-neutral-500 flex items-center gap-2 mb-1 uppercase tracking-widest", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-3 w-3" }),
+          t("Words", "Palabras")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-neutral-800 bg-neutral-900/70 p-3 max-h-64 overflow-y-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 gap-2 text-xs", children: puzzle.words.map((w) => {
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 rounded-lg border border-neutral-800 bg-neutral-900/50 p-2 overflow-y-auto custom-scrollbar", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-3 md:grid-cols-1 gap-1 text-[10px]", children: puzzle.words.map((w) => {
           const upper = w.toUpperCase();
           const isFound = foundWords.has(upper);
           return /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "div",
             {
-              className: `flex items-center gap-1 ${isFound ? "text-green-400" : "text-neutral-200"}`,
+              className: `flex items-center gap-1.5 p-1 rounded transition-colors ${isFound ? "bg-green-500/10 text-green-400" : "text-neutral-400"}`,
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  "span",
+                  "div",
                   {
-                    className: `h-1.5 w-1.5 rounded-full ${isFound ? "bg-green-400" : "bg-neutral-500"}`
+                    className: `h-1.5 w-1.5 rounded-full flex-shrink-0 ${isFound ? "bg-green-400" : "bg-neutral-700"}`
                   }
                 ),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate tracking-wide", children: upper })
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `truncate tracking-tight ${isFound ? "line-through opacity-50" : ""}`, children: upper })
               ]
             },
             upper

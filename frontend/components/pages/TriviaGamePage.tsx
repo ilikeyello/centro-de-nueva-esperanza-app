@@ -410,97 +410,102 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       : (typeof currentQuestion.options_en === 'string' ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en);
 
     return (
-      <div className="container mx-auto space-y-4 px-3 py-4 max-w-3xl h-screen md:h-auto flex flex-col md:block overflow-hidden">
-        {/* Back Button */}
-        <Button 
-          onClick={resetGame}
-          variant="outline" 
-          className="border-neutral-700 hover:bg-neutral-800 text-white flex-shrink-0 mb-2"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t("Levels", "Niveles")}
-        </Button>
-
-        <div className="flex items-center justify-between flex-shrink-0">
-          <div className="text-neutral-400 text-sm">
-            {t("Question", "Pregunta")} {gameState.currentQuestionIndex + 1} / {gameState.questions.length}
-          </div>
+      <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        {/* Header/Back Button */}
+        <div className="flex-shrink-0 px-3 pt-2 flex items-center justify-between">
+          <Button 
+            onClick={resetGame}
+            variant="outline" 
+            className="border-neutral-700 hover:bg-neutral-800 text-white h-8 text-xs"
+          >
+            <ArrowLeft className="h-3 w-3 mr-1" />
+            {t("Levels", "Niveles")}
+          </Button>
           <div className={`flex items-center gap-2 ${gameState.timeRemaining <= 5 ? 'text-red-500' : 'text-neutral-300'}`}>
             <Clock className="h-4 w-4" />
-            <span className="font-mono text-lg">{gameState.isTimerActive ? `${gameState.timeRemaining}s` : '∞'}</span>
+            <span className="font-mono text-base">{gameState.isTimerActive ? `${gameState.timeRemaining}s` : '∞'}</span>
           </div>
         </div>
 
-        <div className="w-full bg-neutral-800 rounded-full h-1.5 flex-shrink-0">
-          <div 
-            className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${((gameState.currentQuestionIndex + 1) / gameState.questions.length) * 100}%` }}
-          />
+        {/* Progress Bar */}
+        <div className="px-3 pt-2 flex-shrink-0">
+          <div className="flex justify-between text-[10px] text-neutral-500 mb-1 uppercase tracking-wider">
+            <span>{t("Question", "Pregunta")} {gameState.currentQuestionIndex + 1} / {gameState.questions.length}</span>
+            <span>{Math.round(((gameState.currentQuestionIndex + 1) / gameState.questions.length) * 100)}%</span>
+          </div>
+          <div className="w-full bg-neutral-800 rounded-full h-1">
+            <div 
+              className="bg-red-500 h-1 rounded-full transition-all duration-300"
+              style={{ width: `${((gameState.currentQuestionIndex + 1) / gameState.questions.length) * 100}%` }}
+            />
+          </div>
         </div>
 
-        <Card className="bg-neutral-900 border-neutral-800 flex-1 overflow-hidden md:overflow-visible">
-          <CardContent className="p-4 md:p-8 h-full flex flex-col">
-            <div className="space-y-4 flex-1 flex flex-col">
-              <h3 className="text-lg md:text-2xl font-semibold text-white flex-shrink-0">{question}</h3>
-              
-              <div className="grid gap-2 md:gap-3 flex-1">
-                {options.map((option: string, index: number) => {
-                  const isSelected = gameState.selectedAnswer === index;
-                  const isCorrect = index === currentQuestion.correct_answer;
-                  const showCorrect = gameState.showFeedback && isCorrect;
-                  const showWrong = gameState.showFeedback && isSelected && !isCorrect;
-                  
-                  return (
-                    <Button
-                      key={index}
-                      onClick={() => selectAnswer(index)}
-                      variant="outline"
-                      disabled={gameState.showFeedback}
-                      className={`justify-start h-auto p-3 md:p-4 text-left transition-all text-sm md:text-base relative ${
-                        gameState.showFeedback
-                          ? isCorrect
-                            ? 'bg-green-600 border-green-400 text-white ring-2 ring-green-400/50'
+        <div className="flex-1 p-3 overflow-hidden flex flex-col min-h-0">
+          <Card className="bg-neutral-900 border-neutral-800 flex flex-col h-full min-h-0">
+            <CardContent className="p-3 md:p-6 flex flex-col h-full min-h-0">
+              <div className="flex-1 flex flex-col justify-between gap-2 min-h-0">
+                <h3 className="text-base md:text-xl font-semibold text-white leading-tight flex-shrink-0">
+                  {question}
+                </h3>
+                
+                <div className="grid gap-1.5 md:gap-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                  {options.map((option: string, index: number) => {
+                    const isSelected = gameState.selectedAnswer === index;
+                    const isCorrect = index === currentQuestion.correct_answer;
+                    
+                    return (
+                      <Button
+                        key={index}
+                        onClick={() => selectAnswer(index)}
+                        variant="outline"
+                        disabled={gameState.showFeedback}
+                        className={`justify-start h-auto p-2.5 md:p-4 text-left transition-all text-xs md:text-base relative min-h-[44px] ${
+                          gameState.showFeedback
+                            ? isCorrect
+                              ? 'bg-green-600 border-green-400 text-white opacity-100'
+                              : isSelected
+                              ? 'bg-red-600 border-red-400 text-white opacity-100'
+                              : 'bg-neutral-800 border-neutral-700 text-neutral-500 opacity-50'
                             : isSelected
                             ? 'bg-red-600 border-red-400 text-white ring-2 ring-red-400/50'
-                            : 'bg-neutral-800 border-neutral-600 text-neutral-400'
-                          : isSelected
-                          ? 'bg-red-600 border-red-400 text-white ring-2 ring-red-400/50'
-                          : 'bg-neutral-800 border-neutral-600 hover:bg-red-600 hover:border-red-400 hover:text-white'
-                      }`}
-                    >
-                      <span className="font-medium mr-3">{String.fromCharCode(65 + index)}.</span>
-                      <span>{option}</span>
-                      {showCorrect && <span className="ml-auto text-green-300">✓</span>}
-                      {showWrong && <span className="ml-auto text-red-300">✗</span>}
-                    </Button>
-                  );
-                })}
-              </div>
+                            : 'bg-neutral-800 border-neutral-700 hover:bg-neutral-800 hover:border-red-600 text-neutral-200'
+                        }`}
+                      >
+                        <span className="font-bold mr-2 opacity-50">{String.fromCharCode(65 + index)}.</span>
+                        <span className="flex-1 pr-4">{option}</span>
+                        {gameState.showFeedback && isCorrect && <span className="ml-auto text-white">✓</span>}
+                        {gameState.showFeedback && isSelected && !isCorrect && <span className="ml-auto text-white">✗</span>}
+                      </Button>
+                    );
+                  })}
+                </div>
 
-              {/* Submit/Next Button */}
-              <div className="flex-shrink-0 pt-4">
-                {!gameState.showFeedback ? (
-                  <Button
-                    onClick={submitAnswer}
-                    disabled={gameState.selectedAnswer === null}
-                    className="w-full bg-red-600 hover:bg-red-700 disabled:bg-neutral-700 disabled:text-neutral-500"
-                  >
-                    {t("Submit Answer", "Enviar Respuesta")}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={nextQuestion}
-                    className="w-full bg-red-600 hover:bg-red-700"
-                  >
-                    {gameState.currentQuestionIndex < gameState.questions.length - 1
-                      ? t("Next Question", "Siguiente Pregunta")
-                      : t("See Results", "Ver Resultados")}
-                  </Button>
-                )}
+                {/* Action Button */}
+                <div className="flex-shrink-0 pt-2 border-t border-neutral-800/50">
+                  {!gameState.showFeedback ? (
+                    <Button
+                      onClick={submitAnswer}
+                      disabled={gameState.selectedAnswer === null}
+                      className="w-full bg-red-600 hover:bg-red-700 h-10 md:h-12 font-bold disabled:opacity-50"
+                    >
+                      {t("Submit Answer", "Enviar Respuesta")}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={nextQuestion}
+                      className="w-full bg-red-600 hover:bg-red-700 h-10 md:h-12 font-bold"
+                    >
+                      {gameState.currentQuestionIndex < gameState.questions.length - 1
+                        ? t("Next Question", "Siguiente Pregunta")
+                        : t("See Results", "Ver Resultados")}
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }

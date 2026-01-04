@@ -328,50 +328,42 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
   // ensuring continuous lines and perfect alignment.
 
   return (
-    <div className="container mx-auto space-y-4 px-3 py-4 max-w-4xl">
-      <div className="flex items-center justify-between gap-2">
+    <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      {/* Header - Condensed */}
+      <div className="flex-shrink-0 px-3 pt-2 flex items-center justify-between gap-2">
         <Button
           onClick={resetPuzzleState}
           variant="outline"
-          className="border-neutral-700 hover:bg-neutral-800 text-white"
+          className="border-neutral-700 hover:bg-neutral-800 text-white h-8 text-xs"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="h-3 w-3 mr-1" />
           {t("Levels", "Niveles")}
         </Button>
-        <div className="flex items-center gap-2 text-xs text-neutral-400">
-          <Sparkles className="h-4 w-4 text-red-400" />
+        <div className="flex items-center gap-2 text-[10px] text-neutral-400 uppercase tracking-wider">
+          <Sparkles className="h-3 w-3 text-red-400" />
           <span>
-            {foundWords.size}/{puzzle.words.length} {t("words found", "palabras encontradas")}
+            {foundWords.size}/{puzzle.words.length} {t("found", "encontradas")}
           </span>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Grid3X3 className="h-6 w-6 text-red-400" />
+      <div className="flex-shrink-0 px-3 py-1">
+        <h1 className="text-lg font-bold text-white flex items-center gap-2 truncate">
+          <Grid3X3 className="h-4 w-4 text-red-400" />
           {puzzle.level.name}
         </h1>
-        {puzzle.level.description && (
-          <p className="text-sm text-neutral-400 max-w-2xl">
-            {puzzle.level.description}
-          </p>
-        )}
         {allFound && (
-          <p className="text-sm text-green-400">
+          <p className="text-xs text-green-400 font-bold animate-pulse">
             {language === "es" ? "¡Completado!" : "Completed!"}
           </p>
         )}
-        <p className="text-[0.7rem] text-neutral-500">
-          {language === "es"
-            ? "Toca la primera y la última letra de la palabra en línea recta para marcarla."
-            : "Tap the first and last letter of the word in a straight line to mark it."}
-        </p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-        <div className="flex-1">
-          <div className="relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md">
-            <div className="relative aspect-square">
+      <div className="flex-1 flex flex-col md:flex-row gap-2 px-3 pb-3 min-h-0 overflow-hidden">
+        {/* Grid Area */}
+        <div className="flex-1 flex items-center justify-center min-h-0 relative">
+          <div className="relative w-full h-full max-w-[min(100%,100vh-250px)] aspect-square mx-auto">
+            <div className="absolute inset-0 aspect-square">
               {/* SVG Overlay for Found Words */}
               <svg
                 className="absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900 p-1"
@@ -417,12 +409,12 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                         key={key}
                         type="button"
                         onClick={() => toggleCellSelection(r, c)}
-                        className={`relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${
+                        className={`relative flex w-full h-full items-center justify-center text-[min(3vw,14px)] font-bold transition-colors ${
                           isFound
                             ? "text-white"
                             : isSelectedStart
-                            ? "border border-green-400 rounded-sm text-white"
-                            : "text-neutral-100"
+                            ? "border border-green-400 rounded-sm text-white bg-green-400/20"
+                            : "text-neutral-300 hover:text-white"
                         }`}
                       >
                         <span className="relative z-10">{ch}</span>
@@ -435,29 +427,30 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
           </div>
         </div>
 
-        <div className="w-full md:w-64 space-y-2">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-red-400" />
-            {t("Words to Find", "Palabras a Encontrar")}
+        {/* Word List Area */}
+        <div className="flex-shrink-0 md:w-48 flex flex-col min-h-0 max-h-[30%] md:max-h-full">
+          <h2 className="text-[10px] font-semibold text-neutral-500 flex items-center gap-2 mb-1 uppercase tracking-widest">
+            <Sparkles className="h-3 w-3" />
+            {t("Words", "Palabras")}
           </h2>
-          <div className="rounded-lg border border-neutral-800 bg-neutral-900/70 p-3 max-h-64 overflow-y-auto">
-            <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="flex-1 rounded-lg border border-neutral-800 bg-neutral-900/50 p-2 overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-3 md:grid-cols-1 gap-1 text-[10px]">
               {puzzle.words.map((w) => {
                 const upper = w.toUpperCase();
                 const isFound = foundWords.has(upper);
                 return (
                   <div
                     key={upper}
-                    className={`flex items-center gap-1 ${
-                      isFound ? "text-green-400" : "text-neutral-200"
+                    className={`flex items-center gap-1.5 p-1 rounded transition-colors ${
+                      isFound ? "bg-green-500/10 text-green-400" : "text-neutral-400"
                     }`}
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        isFound ? "bg-green-400" : "bg-neutral-500"
+                    <div
+                      className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${
+                        isFound ? "bg-green-400" : "bg-neutral-700"
                       }`}
                     />
-                    <span className="truncate tracking-wide">{upper}</span>
+                    <span className={`truncate tracking-tight ${isFound ? "line-through opacity-50" : ""}`}>{upper}</span>
                   </div>
                 );
               })}
