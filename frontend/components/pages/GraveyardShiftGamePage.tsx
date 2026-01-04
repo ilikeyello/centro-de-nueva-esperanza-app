@@ -8,6 +8,11 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
+    // Scroll to top immediately when page loads
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    
     // PWA and mobile fullscreen fixes
     const handleTouchStart = () => {
       if (iframeRef.current) {
@@ -48,8 +53,8 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
 
   return (
     <div className="h-screen w-full flex flex-col bg-neutral-950 overflow-hidden">
-      {/* Back Button */}
-      <div className="flex-shrink-0 p-4">
+      {/* Back Button - Minimal spacing */}
+      <div className="flex-shrink-0 px-4 pt-2 pb-1">
         <Button
           variant="ghost"
           onClick={() => onNavigate?.("games")}
@@ -60,8 +65,8 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
         </Button>
       </div>
 
-      {/* Game Container - Takes remaining space */}
-      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+      {/* Game Container - Takes remaining space with minimal padding */}
+      <div className="flex-1 flex items-center justify-center px-4 pb-2 overflow-hidden">
         <iframe
           ref={iframeRef}
           frameBorder="0"

@@ -31092,6 +31092,9 @@ function GraveyardShiftGamePage({ onNavigate }) {
   const { language, t } = useLanguage();
   const iframeRef = reactExports.useRef(null);
   reactExports.useEffect(() => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
     const handleTouchStart = () => {
       if (iframeRef.current) {
         iframeRef.current.style.pointerEvents = "auto";
@@ -31124,7 +31127,7 @@ function GraveyardShiftGamePage({ onNavigate }) {
     };
   }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-screen w-full flex flex-col bg-neutral-950 overflow-hidden", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 p-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 px-4 pt-2 pb-1", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Button,
       {
         variant: "ghost",
@@ -31136,7 +31139,7 @@ function GraveyardShiftGamePage({ onNavigate }) {
         ]
       }
     ) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center p-4 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center px-4 pb-2 overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
       "iframe",
       {
         ref: iframeRef,
