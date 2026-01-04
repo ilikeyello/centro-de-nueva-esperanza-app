@@ -30257,66 +30257,58 @@ function Media({ onStartMusic }) {
 }
 function Games({ onNavigate }) {
   const { language, t } = useLanguage();
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-10 px-4 py-8", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-red-400", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-5 w-5" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "flex-shrink-0 px-4 pt-4 pb-2 text-center md:text-left", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-center md:justify-start gap-2 text-red-400 mb-1", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs font-semibold uppercase tracking-[0.2em]", children: t("Faith-filled Fun", "Diversión con Fe") })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-4xl font-bold text-white", children: language === "es" ? "Juegos" : "Games" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 max-w-2xl", children: language === "es" ? "Juegos interactivos y actividades divertidas para toda la familia. Prueba tu conocimiento y disfruta de entretenimiento inspirado." : "Interactive games and fun activities for the whole family. Test your knowledge and enjoy uplifting entertainment." })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-2xl font-bold text-white mb-1", children: language === "es" ? "Juegos" : "Games" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-sm max-w-2xl mx-auto md:mx-0", children: language === "es" ? "Actividades divertidas para toda la familia." : "Fun activities for the whole family." })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "space-y-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-8 w-8 text-red-400" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas y educativas para todas las edades." : "Test your Bible knowledge with fun and educational questions for all ages." }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-4 text-sm text-neutral-500", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
-              t("Timed Questions", "Preguntas Cronometradas")
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "flex-1 flex flex-col gap-3 px-4 pb-4 overflow-hidden", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0",
+          onClick: () => onNavigate == null ? void 0 : onNavigate("triviaGame"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-3 h-full flex flex-col justify-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-6 w-6 text-red-400" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-bold text-white", children: language === "es" ? "Trivia Bíblica" : "Bible Trivia" })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Target, { className: "h-4 w-4" }),
-              t("Multiple Levels", "Múltiples Niveles")
-            ] })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-xs line-clamp-2", children: language === "es" ? "Pon a prueba tu conocimiento de la Biblia con preguntas divertidas." : "Test your Bible knowledge with fun questions." })
           ] })
-        ] }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => onNavigate == null ? void 0 : onNavigate("triviaGame"),
-            className: "mt-4 w-full bg-red-600 hover:bg-red-700",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-              t("Play Now", "Jugar Ahora")
-            ]
-          }
-        )
-      ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-between", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-8 w-8 text-red-400" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-2xl font-bold text-white", children: language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 mb-4", children: language === "es" ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Ideal para todas las edades." : "Find hidden Bible words in the grid. Great for all ages." })
-        ] }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            onClick: () => onNavigate == null ? void 0 : onNavigate("wordSearchGame"),
-            className: "mt-4 w-full bg-red-600 hover:bg-red-700",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Play, { className: "h-4 w-4 mr-2" }),
-              t("Play Word Search", "Jugar Sopa de Letras")
-            ]
-          }
-        )
-      ] }) })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0",
+          onClick: () => onNavigate == null ? void 0 : onNavigate("wordSearchGame"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-3 h-full flex flex-col justify-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-6 w-6 text-red-400" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-bold text-white", children: language === "es" ? "Sopa de Letras" : "Word Search" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-xs line-clamp-2", children: language === "es" ? "Encuentra palabras bíblicas escondidas en la cuadrícula." : "Find hidden Bible words in the grid." })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        Card,
+        {
+          className: "bg-neutral-900 border-neutral-800 hover:border-red-600 transition-all cursor-pointer flex-1 min-h-0",
+          onClick: () => onNavigate == null ? void 0 : onNavigate("graveyardShiftGame"),
+          children: /* @__PURE__ */ jsxRuntimeExports.jsxs(CardContent, { className: "p-3 h-full flex flex-col justify-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Gamepad2, { className: "h-6 w-6 text-red-400" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg font-bold text-white", children: "Graveyard Shift" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400 text-xs line-clamp-2", children: language === "es" ? "Un juego de aventuras y misterio emocionante." : "An exciting adventure and mystery game." })
+          ] })
+        }
+      )
     ] })
   ] });
 }
@@ -30604,83 +30596,89 @@ function TriviaGamePage({ onNavigate } = {}) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
     const question = language === "es" ? currentQuestion.question_es : currentQuestion.question_en;
     const options = language === "es" ? typeof currentQuestion.options_es === "string" ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es : typeof currentQuestion.options_en === "string" ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-4 px-3 py-4 max-w-3xl h-screen md:h-auto flex flex-col md:block overflow-hidden", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        Button,
-        {
-          onClick: resetGame,
-          variant: "outline",
-          className: "border-neutral-700 hover:bg-neutral-800 text-white flex-shrink-0 mb-2",
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
-            t("Levels", "Niveles")
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between flex-shrink-0", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-neutral-400 text-sm", children: [
-          t("Question", "Pregunta"),
-          " ",
-          gameState.currentQuestionIndex + 1,
-          " / ",
-          gameState.questions.length
-        ] }),
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            onClick: resetGame,
+            variant: "outline",
+            className: "border-neutral-700 hover:bg-neutral-800 text-white h-8 text-xs",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-3 w-3 mr-1" }),
+              t("Levels", "Niveles")
+            ]
+          }
+        ),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `flex items-center gap-2 ${gameState.timeRemaining <= 5 ? "text-red-500" : "text-neutral-300"}`, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "h-4 w-4" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono text-lg", children: gameState.isTimerActive ? `${gameState.timeRemaining}s` : "∞" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono text-base", children: gameState.isTimerActive ? `${gameState.timeRemaining}s` : "∞" })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full bg-neutral-800 rounded-full h-1.5 flex-shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "div",
-        {
-          className: "bg-red-500 h-1.5 rounded-full transition-all duration-300",
-          style: { width: `${(gameState.currentQuestionIndex + 1) / gameState.questions.length * 100}%` }
-        }
-      ) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 flex-1 overflow-hidden md:overflow-visible", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-4 md:p-8 h-full flex flex-col", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4 flex-1 flex flex-col", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-lg md:text-2xl font-semibold text-white flex-shrink-0", children: question }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-2 md:gap-3 flex-1", children: options.map((option, index2) => {
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-3 pt-2 flex-shrink-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex justify-between text-[10px] text-neutral-500 mb-1 uppercase tracking-wider", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            t("Question", "Pregunta"),
+            " ",
+            gameState.currentQuestionIndex + 1,
+            " / ",
+            gameState.questions.length
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            Math.round((gameState.currentQuestionIndex + 1) / gameState.questions.length * 100),
+            "%"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full bg-neutral-800 rounded-full h-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: "bg-red-500 h-1 rounded-full transition-all duration-300",
+            style: { width: `${(gameState.currentQuestionIndex + 1) / gameState.questions.length * 100}%` }
+          }
+        ) })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 p-3 overflow-hidden flex flex-col min-h-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Card, { className: "bg-neutral-900 border-neutral-800 flex flex-col h-full min-h-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CardContent, { className: "p-3 md:p-6 flex flex-col h-full min-h-0", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col justify-between gap-2 min-h-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-base md:text-xl font-semibold text-white leading-tight flex-shrink-0", children: question }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid gap-1.5 md:gap-2 flex-1 overflow-y-auto pr-1 custom-scrollbar", children: options.map((option, index2) => {
           const isSelected = gameState.selectedAnswer === index2;
           const isCorrect = index2 === currentQuestion.correct_answer;
-          const showCorrect = gameState.showFeedback && isCorrect;
-          const showWrong = gameState.showFeedback && isSelected && !isCorrect;
           return /* @__PURE__ */ jsxRuntimeExports.jsxs(
             Button,
             {
               onClick: () => selectAnswer(index2),
               variant: "outline",
               disabled: gameState.showFeedback,
-              className: `justify-start h-auto p-3 md:p-4 text-left transition-all text-sm md:text-base relative ${gameState.showFeedback ? isCorrect ? "bg-green-600 border-green-400 text-white ring-2 ring-green-400/50" : isSelected ? "bg-red-600 border-red-400 text-white ring-2 ring-red-400/50" : "bg-neutral-800 border-neutral-600 text-neutral-400" : isSelected ? "bg-red-600 border-red-400 text-white ring-2 ring-red-400/50" : "bg-neutral-800 border-neutral-600 hover:bg-red-600 hover:border-red-400 hover:text-white"}`,
+              className: `justify-start h-auto p-2.5 md:p-4 text-left transition-all text-xs md:text-base relative min-h-[44px] ${gameState.showFeedback ? isCorrect ? "bg-green-600 border-green-400 text-white opacity-100" : isSelected ? "bg-red-600 border-red-400 text-white opacity-100" : "bg-neutral-800 border-neutral-700 text-neutral-500 opacity-50" : isSelected ? "bg-red-600 border-red-400 text-white ring-2 ring-red-400/50" : "bg-neutral-800 border-neutral-700 hover:bg-neutral-800 hover:border-red-600 text-neutral-200"}`,
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-medium mr-3", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-bold mr-2 opacity-50", children: [
                   String.fromCharCode(65 + index2),
                   "."
                 ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: option }),
-                showCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-green-300", children: "✓" }),
-                showWrong && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-red-300", children: "✗" })
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "flex-1 pr-4", children: option }),
+                gameState.showFeedback && isCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-white", children: "✓" }),
+                gameState.showFeedback && isSelected && !isCorrect && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-auto text-white", children: "✗" })
               ]
             },
             index2
           );
         }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 pt-4", children: !gameState.showFeedback ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 pt-2 border-t border-neutral-800/50", children: !gameState.showFeedback ? /* @__PURE__ */ jsxRuntimeExports.jsx(
           Button,
           {
             onClick: submitAnswer,
             disabled: gameState.selectedAnswer === null,
-            className: "w-full bg-red-600 hover:bg-red-700 disabled:bg-neutral-700 disabled:text-neutral-500",
+            className: "w-full bg-red-600 hover:bg-red-700 h-10 md:h-12 font-bold disabled:opacity-50",
             children: t("Submit Answer", "Enviar Respuesta")
           }
         ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
           Button,
           {
             onClick: nextQuestion,
-            className: "w-full bg-red-600 hover:bg-red-700",
+            className: "w-full bg-red-600 hover:bg-red-700 h-10 md:h-12 font-bold",
             children: gameState.currentQuestionIndex < gameState.questions.length - 1 ? t("Next Question", "Siguiente Pregunta") : t("See Results", "Ver Resultados")
           }
         ) })
-      ] }) }) })
+      ] }) }) }) })
     ] });
   }
   if (gameState.status === "results") {
@@ -30940,42 +30938,40 @@ function WordSearchGamePage({ onNavigate }) {
     return renderLevelList();
   }
   const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto space-y-4 px-3 py-4 max-w-4xl", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
         {
           onClick: resetPuzzleState,
           variant: "outline",
-          className: "border-neutral-700 hover:bg-neutral-800 text-white",
+          className: "border-neutral-700 hover:bg-neutral-800 text-white h-8 text-xs",
           children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-3 w-3 mr-1" }),
             t("Levels", "Niveles")
           ]
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-xs text-neutral-400", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-[10px] text-neutral-400 uppercase tracking-wider", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-3 w-3 text-red-400" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           foundWords.size,
           "/",
           puzzle.words.length,
           " ",
-          t("words found", "palabras encontradas")
+          t("found", "encontradas")
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { className: "text-2xl font-bold text-white flex items-center gap-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-6 w-6 text-red-400" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 py-1", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { className: "text-lg font-bold text-white flex items-center gap-2 truncate", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Grid3x3, { className: "h-4 w-4 text-red-400" }),
         puzzle.level.name
       ] }),
-      puzzle.level.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-neutral-400 max-w-2xl", children: puzzle.level.description }),
-      allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-green-400", children: language === "es" ? "¡Completado!" : "Completed!" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-neutral-500", children: language === "es" ? "Toca la primera y la última letra de la palabra en línea recta para marcarla." : "Tap the first and last letter of the word in a straight line to mark it." })
+      allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-green-400 font-bold animate-pulse", children: language === "es" ? "¡Completado!" : "Completed!" })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col md:flex-row gap-4 md:gap-6", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative mx-auto w-full max-w-xs sm:max-w-sm md:max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative aspect-square", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col md:flex-row gap-0 px-3 pb-3 min-h-0 overflow-hidden", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 flex items-center justify-center min-h-0 relative", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative w-full aspect-square mx-auto max-w-[min(100%,100vh-250px)]", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 aspect-square", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "svg",
           {
@@ -31019,7 +31015,7 @@ function WordSearchGamePage({ onNavigate }) {
                   {
                     type: "button",
                     onClick: () => toggleCellSelection(r2, c),
-                    className: `relative flex w-full h-full items-center justify-center text-[0.55rem] md:text-xs font-semibold ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white" : "text-neutral-100"}`,
+                    className: `relative flex w-full h-full items-center justify-center text-[min(3vw,14px)] font-bold transition-colors ${isFound ? "text-white" : isSelectedStart ? "border border-green-400 rounded-sm text-white bg-green-400/20" : "text-neutral-300 hover:text-white"}`,
                     children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "relative z-10", children: ch })
                   },
                   key
@@ -31029,26 +31025,26 @@ function WordSearchGamePage({ onNavigate }) {
           }
         )
       ] }) }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full md:w-64 space-y-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-sm font-semibold text-white flex items-center gap-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-4 w-4 text-red-400" }),
-          t("Words to Find", "Palabras a Encontrar")
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 md:w-48 flex flex-col min-h-0 mt-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-[10px] font-semibold text-neutral-500 flex items-center gap-2 mb-0.5 uppercase tracking-widest flex-shrink-0", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "h-3 w-3" }),
+          t("Words", "Palabras")
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-neutral-800 bg-neutral-900/70 p-3 max-h-64 overflow-y-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 gap-2 text-xs", children: puzzle.words.map((w) => {
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 rounded-lg border border-neutral-800 bg-neutral-900/50 p-2 overflow-y-auto custom-scrollbar", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-3 md:grid-cols-1 gap-1 text-[10px]", children: puzzle.words.map((w) => {
           const upper = w.toUpperCase();
           const isFound = foundWords.has(upper);
           return /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "div",
             {
-              className: `flex items-center gap-1 ${isFound ? "text-green-400" : "text-neutral-200"}`,
+              className: `flex items-center gap-1.5 p-1 rounded transition-colors ${isFound ? "bg-green-500/10 text-green-400" : "text-neutral-400"}`,
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  "span",
+                  "div",
                   {
-                    className: `h-1.5 w-1.5 rounded-full ${isFound ? "bg-green-400" : "bg-neutral-500"}`
+                    className: `h-1.5 w-1.5 rounded-full flex-shrink-0 ${isFound ? "bg-green-400" : "bg-neutral-700"}`
                   }
                 ),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "truncate tracking-wide", children: upper })
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `truncate tracking-tight ${isFound ? "line-through opacity-50" : ""}`, children: upper })
               ]
             },
             upper
@@ -31056,6 +31052,89 @@ function WordSearchGamePage({ onNavigate }) {
         }) }) })
       ] })
     ] })
+  ] });
+}
+function GraveyardShiftGamePage({ onNavigate }) {
+  const { language, t } = useLanguage();
+  const iframeRef = reactExports.useRef(null);
+  reactExports.useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      const mainElement = document.querySelector("main");
+      if (mainElement) mainElement.scrollTop = 0;
+    };
+    scrollToTop();
+    const timeoutId = setTimeout(scrollToTop, 100);
+    const isPWA = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    const handleTouchStart = () => {
+      if (iframeRef.current) {
+        iframeRef.current.style.pointerEvents = "auto";
+      }
+    };
+    const handleUserInteraction = () => {
+      if (iframeRef.current) {
+        iframeRef.current.allowFullscreen = true;
+      }
+    };
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener("touchstart", handleTouchStart, { passive: true });
+      iframe.addEventListener("click", handleUserInteraction, { passive: true });
+      if (isPWA) {
+        iframe.style.width = "100%";
+        iframe.style.maxWidth = "350px";
+        iframe.style.margin = "0 auto";
+        iframe.style.display = "block";
+      }
+    }
+    return () => {
+      clearTimeout(timeoutId);
+      if (iframe) {
+        iframe.removeEventListener("touchstart", handleTouchStart);
+        iframe.removeEventListener("click", handleUserInteraction);
+      }
+    };
+  }, []);
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-screen w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 px-4 pt-0 pb-0 mt-[-4px]", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      Button,
+      {
+        variant: "ghost",
+        onClick: () => onNavigate == null ? void 0 : onNavigate("games"),
+        className: "text-neutral-400 hover:text-white h-8",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4 mr-2" }),
+          t("Back to Games", "Volver a Juegos")
+        ]
+      }
+    ) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-start justify-center px-4 pb-2 overflow-hidden pt-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "iframe",
+      {
+        ref: iframeRef,
+        frameBorder: "0",
+        src: "https://itch.io/embed-upload/15184635?color=010028",
+        allowFullScreen: true,
+        width: "350",
+        height: "640",
+        className: "border border-neutral-700 rounded-lg max-w-full max-h-[calc(100vh-60px)]",
+        style: {
+          width: "100%",
+          maxWidth: "350px",
+          height: "100%",
+          maxHeight: "640px",
+          aspectRatio: "350/640",
+          pointerEvents: "auto",
+          WebkitUserSelect: "none",
+          WebkitTouchCallout: "none"
+        },
+        sandbox: "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-fullscreen allow-presentation",
+        allow: "autoplay *; fullscreen *; gamepad *; gyroscope *; magnetometer *; accelerometer *; clipboard-read *; clipboard-write *; camera *; microphone *; display-capture *",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://yellogames.itch.io/graveyard-shift", children: "Play Graveyard Shift on itch.io" })
+      }
+    ) })
   ] });
 }
 function Contact({ onNavigate }) {
@@ -33490,12 +33569,82 @@ function AdminUpload() {
 }
 const API_BASE = "https://prod-cne-sh82.encr.app";
 const BIBLE_STORAGE_KEY = "cne:bible:selection";
-const BIBLE_VERSIONS = [
+const FALLBACK_BIBLE_VERSIONS = [
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
   { id: "rv1909", name: "Reina-Valera 1909", abbreviation: "RV1909" },
   { id: "spnbes", name: "La Biblia en Español Sencillo", abbreviation: "SPNBES" }
 ];
-const BIBLE_BOOKS = [
+const SPANISH_BOOK_NAMES = {
+  // Old Testament
+  genesis: "Génesis",
+  exodus: "Éxodo",
+  leviticus: "Levítico",
+  numbers: "Números",
+  deuteronomy: "Deuteronomio",
+  joshua: "Josué",
+  judges: "Jueces",
+  ruth: "Rut",
+  "1-samuel": "1 Samuel",
+  "2-samuel": "2 Samuel",
+  "1-kings": "1 Reyes",
+  "2-kings": "2 Reyes",
+  "1-chronicles": "1 Crónicas",
+  "2-chronicles": "2 Crónicas",
+  ezra: "Esdras",
+  nehemiah: "Nehemías",
+  esther: "Ester",
+  job: "Job",
+  psalms: "Salmos",
+  proverbs: "Proverbios",
+  ecclesiastes: "Eclesiastés",
+  "song-of-solomon": "Cantares",
+  isaiah: "Isaías",
+  jeremiah: "Jeremías",
+  lamentations: "Lamentaciones",
+  ezekiel: "Ezequiel",
+  daniel: "Daniel",
+  hosea: "Oseas",
+  joel: "Joel",
+  amos: "Amós",
+  obadiah: "Abdías",
+  jonah: "Jonás",
+  micah: "Miqueas",
+  nahum: "Nahúm",
+  habakkuk: "Habacuc",
+  zephaniah: "Sofonías",
+  haggai: "Hageo",
+  zechariah: "Zacarías",
+  malachi: "Malaquías",
+  // New Testament
+  matthew: "Mateo",
+  mark: "Marcos",
+  luke: "Lucas",
+  john: "Juan",
+  acts: "Hechos",
+  romans: "Romanos",
+  "1-corinthians": "1 Corintios",
+  "2-corinthians": "2 Corintios",
+  galatians: "Gálatas",
+  ephesians: "Efesios",
+  philippians: "Filipenses",
+  colossians: "Colosenses",
+  "1-thessalonians": "1 Tesalonicenses",
+  "2-thessalonians": "2 Tesalonicenses",
+  "1-timothy": "1 Timoteo",
+  "2-timothy": "2 Timoteo",
+  titus: "Tito",
+  philemon: "Filemón",
+  hebrews: "Hebreos",
+  james: "Santiago",
+  "1-peter": "1 Pedro",
+  "2-peter": "2 Pedro",
+  "1-john": "1 Juan",
+  "2-john": "2 Juan",
+  "3-john": "3 Juan",
+  jude: "Judas",
+  revelation: "Apocalipsis"
+};
+const FALLBACK_BIBLE_BOOKS = [
   // Old Testament
   { id: "genesis", name: "Genesis", testament: "OT", chapters: 50 },
   { id: "exodus", name: "Exodus", testament: "OT", chapters: 40 },
@@ -33566,8 +33715,8 @@ const BIBLE_BOOKS = [
   { id: "revelation", name: "Revelation", testament: "NT", chapters: 22 }
 ];
 function Bible({ onNavigate }) {
-  var _a2, _b2;
-  const { t } = useLanguage();
+  var _a2;
+  const { t, language } = useLanguage();
   const { toast: toast2 } = useToast();
   const [selectedVersion, setSelectedVersion] = reactExports.useState(() => {
     try {
@@ -33576,7 +33725,7 @@ function Bible({ onNavigate }) {
       if (!raw) return "kjv";
       const parsed = JSON.parse(raw);
       const version = typeof (parsed == null ? void 0 : parsed.version) === "string" ? parsed.version : "kjv";
-      return BIBLE_VERSIONS.some((v) => v.id === version) ? version : "kjv";
+      return version || "kjv";
     } catch {
       return "kjv";
     }
@@ -33588,7 +33737,7 @@ function Bible({ onNavigate }) {
       if (!raw) return "john";
       const parsed = JSON.parse(raw);
       const book = typeof (parsed == null ? void 0 : parsed.book) === "string" ? parsed.book : "john";
-      return BIBLE_BOOKS.some((b) => b.id === book) ? book : "john";
+      return book;
     } catch {
       return "john";
     }
@@ -33600,7 +33749,7 @@ function Bible({ onNavigate }) {
       if (!raw) return 3;
       const parsed = JSON.parse(raw);
       const book = typeof (parsed == null ? void 0 : parsed.book) === "string" ? parsed.book : "john";
-      const currentBook2 = BIBLE_BOOKS.find((b) => b.id === book) ?? BIBLE_BOOKS.find((b) => b.id === "john");
+      const currentBook2 = FALLBACK_BIBLE_BOOKS.find((b) => b.id === book) ?? FALLBACK_BIBLE_BOOKS.find((b) => b.id === "john");
       const maxChapters = (currentBook2 == null ? void 0 : currentBook2.chapters) ?? 21;
       const chapter2 = typeof (parsed == null ? void 0 : parsed.chapter) === "number" ? parsed.chapter : parseInt(String(parsed == null ? void 0 : parsed.chapter));
       if (!Number.isFinite(chapter2)) return 3;
@@ -33611,11 +33760,73 @@ function Bible({ onNavigate }) {
   });
   const [chapter, setChapter] = reactExports.useState(null);
   const [loading, setLoading] = reactExports.useState(false);
+  const [booksLoading, setBooksLoading] = reactExports.useState(true);
+  const [bibleBooks, setBibleBooks] = reactExports.useState([]);
+  const [versionsLoading, setVersionsLoading] = reactExports.useState(true);
+  const [bibleVersions, setBibleVersions] = reactExports.useState([]);
   const [searchQuery, setSearchQuery] = reactExports.useState("");
   const [selectorsOpen, setSelectorsOpen] = reactExports.useState(false);
   const [highlightedVerse, setHighlightedVerse] = reactExports.useState(null);
-  const currentBook = BIBLE_BOOKS.find((book) => book.id === selectedBook);
+  const [pendingVersion, setPendingVersion] = reactExports.useState(selectedVersion);
+  const [pendingBook, setPendingBook] = reactExports.useState(selectedBook);
+  const [pendingChapter, setPendingChapter] = reactExports.useState(selectedChapter);
+  const currentBook = bibleBooks.find((book) => book.id === selectedBook) || FALLBACK_BIBLE_BOOKS.find((book) => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
+  const displayBooks = bibleBooks.length > 0 ? bibleBooks : FALLBACK_BIBLE_BOOKS;
+  const displayVersions = bibleVersions.length > 0 ? bibleVersions : FALLBACK_BIBLE_VERSIONS;
+  const getLocalizedName = (book) => {
+    if ((selectedVersion === "rv1909" || selectedVersion === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
+    return book.name;
+  };
+  const getLocalizedNameForVersion = (book, version) => {
+    if ((version === "rv1909" || version === "spnbes") && SPANISH_BOOK_NAMES[book.id]) {
+      return SPANISH_BOOK_NAMES[book.id];
+    }
+    return book.name;
+  };
+  const fetchTranslations = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/bible/translations`);
+      if (response.ok) {
+        const data = await response.json();
+        const apiVersions = Array.isArray(data == null ? void 0 : data.translations) ? data.translations.map((v) => ({
+          id: String(v.id),
+          name: String(v.name ?? v.id),
+          abbreviation: String(v.id ?? "").toUpperCase(),
+          attribution: typeof v.attribution === "string" ? v.attribution : void 0
+        })) : [];
+        setBibleVersions(apiVersions);
+        const valid = apiVersions.some((v) => v.id === selectedVersion);
+        if (!valid && apiVersions.length > 0) {
+          setSelectedVersion(apiVersions[0].id);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch translations:", error);
+    } finally {
+      setVersionsLoading(false);
+    }
+  };
+  const fetchBooks = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/bible/books`);
+      if (response.ok) {
+        const data = await response.json();
+        setBibleBooks(data.books);
+        const bookExists = data.books.some((b) => b.id === selectedBook);
+        if (!bookExists && data.books.length > 0) {
+          setSelectedBook(data.books[0].id);
+          setSelectedChapter(1);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch books:", error);
+    } finally {
+      setBooksLoading(false);
+    }
+  };
   const fetchChapter = async (bookId, chapterNum, version) => {
     setLoading(true);
     try {
@@ -33648,6 +33859,15 @@ function Bible({ onNavigate }) {
       setLoading(false);
     }
   };
+  reactExports.useEffect(() => {
+    fetchBooks();
+    fetchTranslations();
+  }, []);
+  reactExports.useEffect(() => {
+    setPendingVersion(selectedVersion);
+    setPendingBook(selectedBook);
+    setPendingChapter(selectedChapter);
+  }, [selectedVersion, selectedBook, selectedChapter]);
   reactExports.useEffect(() => {
     if (selectedBook && selectedChapter) {
       fetchChapter(selectedBook, selectedChapter, selectedVersion);
@@ -33695,15 +33915,196 @@ function Bible({ onNavigate }) {
     const verseNum = match[3] ? parseInt(match[3], 10) : void 0;
     if (!Number.isFinite(chapterNum) || chapterNum < 1) return null;
     if (verseNum != null && (!Number.isFinite(verseNum) || verseNum < 1)) return null;
-    const normalizedBook = bookPart.toLowerCase().replace(/\./g, "").replace(/\s+/g, " ").trim();
-    const found = BIBLE_BOOKS.find((b) => b.name.toLowerCase() === normalizedBook) ?? BIBLE_BOOKS.find((b) => b.id.toLowerCase() === normalizedBook) ?? BIBLE_BOOKS.find((b) => b.name.toLowerCase().replace(/\s+/g, " ").trim() === normalizedBook);
-    if (!found) return null;
-    const boundedChapter = Math.min(Math.max(chapterNum, 1), found.chapters);
-    return {
-      bookId: found.id,
-      chapter: boundedChapter,
-      verse: verseNum
+    const normalizeBookName = (name) => {
+      return name.toLowerCase().replace(/[áÁ]/g, "a").replace(/[éÉ]/g, "e").replace(/[íÍ]/g, "i").replace(/[óÓ]/g, "o").replace(/[úÚüÜ]/g, "u").replace(/[ñÑ]/g, "n").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
     };
+    const normalizedSearch = normalizeBookName(bookPart);
+    const searchMap = /* @__PURE__ */ new Map();
+    displayBooks.forEach((book) => {
+      searchMap.set(normalizeBookName(book.name), book.id);
+      const spanishName = SPANISH_BOOK_NAMES[book.id];
+      if (spanishName) {
+        searchMap.set(normalizeBookName(spanishName), book.id);
+      }
+      const variations = getBookNameVariations(book.name, spanishName);
+      variations.forEach((variation) => {
+        searchMap.set(normalizeBookName(variation), book.id);
+      });
+    });
+    if (searchMap.has(normalizedSearch)) {
+      const bookId = searchMap.get(normalizedSearch);
+      const found = displayBooks.find((b) => b.id === bookId);
+      if (found) {
+        const boundedChapter = Math.min(Math.max(chapterNum, 1), found.chapters);
+        return {
+          bookId: found.id,
+          chapter: boundedChapter,
+          verse: verseNum
+        };
+      }
+    }
+    for (const [key, bookId] of searchMap.entries()) {
+      if (key.includes(normalizedSearch) || normalizedSearch.includes(key)) {
+        const found = displayBooks.find((b) => b.id === bookId);
+        if (found) {
+          const boundedChapter = Math.min(Math.max(chapterNum, 1), found.chapters);
+          return {
+            bookId: found.id,
+            chapter: boundedChapter,
+            verse: verseNum
+          };
+        }
+      }
+    }
+    return null;
+  };
+  const getBookNameVariations = (englishName, spanishName) => {
+    const variations = [];
+    const abbreviations = {
+      "Genesis": ["gen", "gn"],
+      "Exodus": ["exo", "ex"],
+      "Leviticus": ["lev", "lv"],
+      "Numbers": ["num", "nm"],
+      "Deuteronomy": ["deut", "dt"],
+      "Joshua": ["josh", "jos"],
+      "Judges": ["judg", "jdg"],
+      "Ruth": ["rut"],
+      "1 Samuel": ["1 sam", "1sa", "i samuel"],
+      "2 Samuel": ["2 sam", "2sa", "ii samuel"],
+      "1 Kings": ["1 king", "1ki", "i kings"],
+      "2 Kings": ["2 king", "2ki", "ii kings"],
+      "1 Chronicles": ["1 chr", "1ch", "i chronicles"],
+      "2 Chronicles": ["2 chr", "2ch", "ii chronicles"],
+      "Ezra": ["ezr"],
+      "Nehemiah": ["neh", "nh"],
+      "Esther": ["est", "esth"],
+      "Job": ["job"],
+      "Psalms": ["psalm", "ps", "psal"],
+      "Proverbs": ["prov", "prv"],
+      "Ecclesiastes": ["eccl", "ecc"],
+      "Song of Solomon": ["song", "songs", "cant"],
+      "Isaiah": ["isa", "is"],
+      "Jeremiah": ["jer", "jr"],
+      "Lamentations": ["lam", "lm"],
+      "Ezekiel": ["eze", "ez"],
+      "Daniel": ["dan", "dn"],
+      "Hosea": ["hos", "ho"],
+      "Joel": ["joel", "jl"],
+      "Amos": ["amos", "am"],
+      "Obadiah": ["oba", "ob"],
+      "Jonah": ["jon", "jn"],
+      "Micah": ["mic", "mi"],
+      "Nahum": ["nah", "na"],
+      "Habakkuk": ["hab", "hb"],
+      "Zephaniah": ["zep", "zp"],
+      "Haggai": ["hag", "hg"],
+      "Zechariah": ["zech", "zc"],
+      "Malachi": ["mal", "ml"],
+      "Matthew": ["matt", "mt"],
+      "Mark": ["mark", "mk", "mr"],
+      "Luke": ["luke", "lk"],
+      "John": ["john", "jn", "jhn"],
+      "Acts": ["acts", "act"],
+      "Romans": ["rom", "rm", "ro"],
+      "1 Corinthians": ["1 cor", "1co", "i corinthians"],
+      "2 Corinthians": ["2 cor", "2co", "ii corinthians"],
+      "Galatians": ["gal", "ga"],
+      "Ephesians": ["eph", "ep"],
+      "Philippians": ["phil", "php", "pp"],
+      "Colossians": ["col", "cl"],
+      "1 Thessalonians": ["1 thess", "1th", "i thessalonians"],
+      "2 Thessalonians": ["2 thess", "2th", "ii thessalonians"],
+      "1 Timothy": ["1 tim", "1ti", "i timothy"],
+      "2 Timothy": ["2 tim", "2ti", "ii timothy"],
+      "Titus": ["tit", "tt"],
+      "Philemon": ["philem", "phm", "pm"],
+      "Hebrews": ["heb", "he"],
+      "James": ["jam", "ja", "jm"],
+      "1 Peter": ["1 pet", "1pe", "i peter"],
+      "2 Peter": ["2 pet", "2pe", "ii peter"],
+      "1 John": ["1 john", "1jn", "i john"],
+      "2 John": ["2 john", "2jn", "ii john"],
+      "3 John": ["3 john", "3jn", "iii john"],
+      "Jude": ["jude", "jd"],
+      "Revelation": ["rev", "rv", "revelations"]
+    };
+    if (abbreviations[englishName]) {
+      variations.push(...abbreviations[englishName]);
+    }
+    if (spanishName) {
+      const spanishAbbreviations = {
+        "Génesis": ["gen", "gn"],
+        "Éxodo": ["exo", "ex"],
+        "Levítico": ["lev", "lv"],
+        "Números": ["num", "nm"],
+        "Deuteronomio": ["deut", "dt"],
+        "Josué": ["josh", "jos"],
+        "Jueces": ["juez", "jdg"],
+        "Rut": ["rut"],
+        "1 Samuel": ["1 sam", "1sa"],
+        "2 Samuel": ["2 sam", "2sa"],
+        "1 Reyes": ["1 rey", "1rey", "1 reyes"],
+        "2 Reyes": ["2 rey", "2rey", "2 reyes"],
+        "1 Crónicas": ["1 cron", "1cr", "1 cronicas"],
+        "2 Crónicas": ["2 cron", "2cr", "2 cronicas"],
+        "Esdras": ["ezr"],
+        "Nehemías": ["neh", "nh"],
+        "Ester": ["est", "esth"],
+        "Job": ["job"],
+        "Salmos": ["sal", "salmo", "sal"],
+        "Proverbios": ["prov", "prv"],
+        "Eclesiastés": ["ecl", "ecc"],
+        "Cantares": ["cant", "cantar"],
+        "Isaías": ["isa", "is"],
+        "Jeremías": ["jer", "jr"],
+        "Lamentaciones": ["lam", "lm"],
+        "Ezequiel": ["eze", "ez"],
+        "Daniel": ["dan", "dn"],
+        "Oseas": ["ose", "hos"],
+        "Joel": ["joel", "jl"],
+        "Amós": ["amos", "am"],
+        "Abdías": ["abd", "ob"],
+        "Jonás": ["jon", "jn"],
+        "Miqueas": ["mic", "mi"],
+        "Nahúm": ["nah", "na"],
+        "Habacuc": ["hab", "hb"],
+        "Sofonías": ["sof", "zp"],
+        "Hageo": ["hag", "hg"],
+        "Zacarías": ["zac", "zc"],
+        "Malaquías": ["mal", "ml"],
+        "Mateo": ["mat", "mt"],
+        "Marcos": ["mar", "mr", "mc"],
+        "Lucas": ["luc", "lk"],
+        "Juan": ["juan", "jn", "jhn"],
+        "Hechos": ["hech", "act"],
+        "Romanos": ["rom", "rm", "ro"],
+        "1 Corintios": ["1 cor", "1co"],
+        "2 Corintios": ["2 cor", "2co"],
+        "Gálatas": ["gal", "ga"],
+        "Efesios": ["efe", "ef"],
+        "Filipenses": ["fil", "php", "pp"],
+        "Colosenses": ["col", "cl"],
+        "1 Tesalonicenses": ["1 tes", "1th"],
+        "2 Tesalonicenses": ["2 tes", "2th"],
+        "1 Timoteo": ["1 tim", "1ti"],
+        "2 Timoteo": ["2 tim", "2ti"],
+        "Tito": ["tit", "tt"],
+        "Filemón": ["file", "phm"],
+        "Hebreos": ["heb", "he"],
+        "Santiago": ["sant", "ja", "sdg"],
+        "1 Pedro": ["1 ped", "1pe"],
+        "2 Pedro": ["2 ped", "2pe"],
+        "1 Juan": ["1 juan", "1jn"],
+        "2 Juan": ["2 juan", "2jn"],
+        "3 Juan": ["3 juan", "3jn"],
+        "Judas": ["jud", "jd"],
+        "Apocalipsis": ["apo", "apoc", "rev", "rv"]
+      };
+      if (spanishAbbreviations[spanishName]) {
+        variations.push(...spanishAbbreviations[spanishName]);
+      }
+    }
+    return variations;
   };
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -33764,7 +34165,7 @@ function Bible({ onNavigate }) {
             className: "text-center px-3 py-2 rounded-md hover:bg-neutral-800/60 transition-colors disabled:opacity-50",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { className: "text-xl font-semibold text-white", children: [
-                currentBook == null ? void 0 : currentBook.name,
+                getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0]),
                 " ",
                 selectedChapter
               ] }),
@@ -33780,63 +34181,76 @@ function Bible({ onNavigate }) {
         /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "border-neutral-700 bg-neutral-900 text-white", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { className: "text-white", children: t("Select passage", "Seleccionar pasaje") }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-1 gap-4", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              Select,
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: pendingVersion,
+                  onValueChange: setPendingVersion,
+                  disabled: versionsLoading,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-full border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Version", "Versión") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: displayVersions.map((version) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: version.id, className: "text-white", children: [
+                      version.name,
+                      " (",
+                      version.abbreviation,
+                      ")"
+                    ] }, version.id)) })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: pendingBook,
+                  onValueChange: (value) => {
+                    setPendingBook(value);
+                    setPendingChapter(1);
+                  },
+                  disabled: booksLoading,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-full border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Book", "Libro") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-2", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2", children: t("Old Testament", "Antiguo Testamento") }),
+                      displayBooks.filter((book) => book.testament === "OT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: getLocalizedNameForVersion(book, pendingVersion) }, book.id)),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2 mt-4", children: t("New Testament", "Nuevo Testamento") }),
+                      displayBooks.filter((book) => book.testament === "NT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: getLocalizedNameForVersion(book, pendingVersion) }, book.id))
+                    ] }) })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                Select,
+                {
+                  value: pendingChapter.toString(),
+                  onValueChange: (value) => {
+                    setPendingChapter(parseInt(value));
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "w-full border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Chapter", "Capítulo") }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: chapters.map((chapter2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: chapter2.toString(), className: "text-white", children: [
+                      t("Chapter", "Capítulo"),
+                      " ",
+                      chapter2
+                    ] }, chapter2)) })
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-end pt-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
               {
-                value: selectedVersion,
-                onValueChange: (value) => {
-                  setSelectedVersion(value);
-                },
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Version", "Versión") }) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800", children: BIBLE_VERSIONS.map((version) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: version.id, className: "text-white", children: [
-                    version.name,
-                    " (",
-                    version.abbreviation,
-                    ")"
-                  ] }, version.id)) })
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              Select,
-              {
-                value: selectedBook,
-                onValueChange: (value) => {
+                onClick: () => {
                   setHighlightedVerse(null);
-                  setSelectedBook(value);
-                  setSelectedChapter(1);
-                },
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Book", "Libro") }) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-2", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2", children: t("Old Testament", "Antiguo Testamento") }),
-                    BIBLE_BOOKS.filter((book) => book.testament === "OT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: book.name }, book.id)),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs font-semibold text-neutral-400 mb-2 mt-4", children: t("New Testament", "Nuevo Testamento") }),
-                    BIBLE_BOOKS.filter((book) => book.testament === "NT").map((book) => /* @__PURE__ */ jsxRuntimeExports.jsx(SelectItem, { value: book.id, className: "text-white", children: book.name }, book.id))
-                  ] }) })
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              Select,
-              {
-                value: selectedChapter.toString(),
-                onValueChange: (value) => {
-                  setHighlightedVerse(null);
-                  setSelectedChapter(parseInt(value));
+                  setSelectedVersion(pendingVersion);
+                  setSelectedBook(pendingBook);
+                  setSelectedChapter(pendingChapter);
                   setSelectorsOpen(false);
                 },
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectTrigger, { className: "border-neutral-700 bg-neutral-800 text-white", children: /* @__PURE__ */ jsxRuntimeExports.jsx(SelectValue, { placeholder: t("Chapter", "Capítulo") }) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(SelectContent, { className: "border-neutral-700 bg-neutral-800 max-h-60", children: chapters.map((chapter2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(SelectItem, { value: chapter2.toString(), className: "text-white", children: [
-                    t("Chapter", "Capítulo"),
-                    " ",
-                    chapter2
-                  ] }, chapter2)) })
-                ]
+                className: "bg-red-600 hover:bg-red-700",
+                children: t("Apply", "Aplicar")
               }
-            )
+            ) })
           ] })
         ] })
       ] }),
@@ -33869,7 +34283,7 @@ function Bible({ onNavigate }) {
         },
         verse.number
       )) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-6 pt-4 border-t border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500 leading-relaxed", children: ((_a2 = BIBLE_VERSIONS.find((v) => v.id === selectedVersion)) == null ? void 0 : _a2.id) === "spnbes" ? "La Biblia en Español Sencillo. © 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)." : ((_b2 = BIBLE_VERSIONS.find((v) => v.id === selectedVersion)) == null ? void 0 : _b2.id) === "rv1909" ? "Reina-Valera 1909 (RV1909), Public Domain in the United States." : "King James Version (KJV), Public Domain." }) })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-6 pt-4 border-t border-neutral-800", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-neutral-500 leading-relaxed", children: ((_a2 = displayVersions.find((v) => v.id === selectedVersion)) == null ? void 0 : _a2.attribution) ?? (selectedVersion === "spnbes" ? "La Biblia en Español Sencillo. © 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)." : selectedVersion === "rv1909" ? "Reina-Valera 1909 (RV1909), Public Domain in the United States." : "King James Version (KJV), Public Domain.") }) })
     ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-12", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(BookOpen, { className: "h-16 w-16 text-neutral-600 mx-auto mb-4" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-neutral-400", children: t("Select a book and chapter to begin reading", "Selecciona un libro y capítulo para comenzar a leer") })
@@ -35048,8 +35462,15 @@ function AppInner() {
   const [currentPage, setCurrentPage] = reactExports.useState("home");
   const handleNavigate = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
   };
+  reactExports.useEffect(() => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [currentPage]);
   reactExports.useEffect(() => {
     const hash = window.location.hash;
     const path = window.location.pathname;
@@ -35077,6 +35498,7 @@ function AppInner() {
       currentPage === "games" && /* @__PURE__ */ jsxRuntimeExports.jsx(Games, { onNavigate: handleNavigate }),
       currentPage === "triviaGame" && /* @__PURE__ */ jsxRuntimeExports.jsx(TriviaGamePage, { onNavigate: handleNavigate }),
       currentPage === "wordSearchGame" && /* @__PURE__ */ jsxRuntimeExports.jsx(WordSearchGamePage, { onNavigate: handleNavigate }),
+      currentPage === "graveyardShiftGame" && /* @__PURE__ */ jsxRuntimeExports.jsx(GraveyardShiftGamePage, { onNavigate: handleNavigate }),
       currentPage === "newHere" && /* @__PURE__ */ jsxRuntimeExports.jsx(NewHere, { onNavigate: handleNavigate }),
       currentPage === "notifications" && /* @__PURE__ */ jsxRuntimeExports.jsx(NotificationSettings, {})
     ] }),
