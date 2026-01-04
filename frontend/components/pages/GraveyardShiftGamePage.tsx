@@ -61,8 +61,8 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
 
   return (
     <div className="h-screen w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      {/* Back Button - Minimal spacing */}
-      <div className="flex-shrink-0 px-4 pt-1 pb-0">
+      {/* Back Button - Minimal spacing - Moved higher */}
+      <div className="flex-shrink-0 px-4 pt-0 pb-0 mt-[-4px]">
         <Button
           variant="ghost"
           onClick={() => onNavigate?.("games")}

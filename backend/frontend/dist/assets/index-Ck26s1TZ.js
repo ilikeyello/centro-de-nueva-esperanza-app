@@ -30597,7 +30597,7 @@ function TriviaGamePage({ onNavigate } = {}) {
     const question = language === "es" ? currentQuestion.question_es : currentQuestion.question_en;
     const options = language === "es" ? typeof currentQuestion.options_es === "string" ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es : typeof currentQuestion.options_en === "string" ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 pt-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           Button,
           {
@@ -30939,7 +30939,7 @@ function WordSearchGamePage({ onNavigate }) {
   }
   const allFound = puzzle.words.length > 0 && foundWords.size >= puzzle.words.length;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 pt-2 flex items-center justify-between gap-2", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between gap-2", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
         Button,
         {
@@ -30970,8 +30970,8 @@ function WordSearchGamePage({ onNavigate }) {
       ] }),
       allFound && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-green-400 font-bold animate-pulse", children: language === "es" ? "¡Completado!" : "Completed!" })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col md:flex-row gap-2 px-3 pb-3 min-h-0 overflow-hidden", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center min-h-0 relative", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative w-full h-full max-w-[min(100%,100vh-250px)] aspect-square mx-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 aspect-square", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col md:flex-row gap-0.5 px-3 pb-3 min-h-0 overflow-hidden", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 flex items-center justify-center min-h-0 relative", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative w-full h-full max-w-[min(100%,100vh-220px)] aspect-square mx-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 aspect-square", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "svg",
           {
@@ -31098,7 +31098,7 @@ function GraveyardShiftGamePage({ onNavigate }) {
     };
   }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "h-screen w-full flex flex-col bg-neutral-950 overflow-hidden", style: { paddingTop: "env(safe-area-inset-top)" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 px-4 pt-1 pb-0", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 px-4 pt-0 pb-0 mt-[-4px]", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Button,
       {
         variant: "ghost",

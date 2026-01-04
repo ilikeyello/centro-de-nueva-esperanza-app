@@ -411,8 +411,8 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
 
     return (
       <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        {/* Header/Back Button */}
-        <div className="flex-shrink-0 px-3 pt-2 flex items-center justify-between">
+        {/* Header/Back Button - Moved higher */}
+        <div className="flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between">
           <Button 
             onClick={resetGame}
             variant="outline" 

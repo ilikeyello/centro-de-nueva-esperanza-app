@@ -329,8 +329,8 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
   return (
     <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      {/* Header - Condensed */}
-      <div className="flex-shrink-0 px-3 pt-2 flex items-center justify-between gap-2">
+      {/* Header - Condensed - Moved higher */}
+      <div className="flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between gap-2">
         <Button
           onClick={resetPuzzleState}
           variant="outline"
@@ -359,10 +359,10 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row gap-2 px-3 pb-3 min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row gap-0.5 px-3 pb-3 min-h-0 overflow-hidden">
         {/* Grid Area */}
         <div className="flex-1 flex items-center justify-center min-h-0 relative">
-          <div className="relative w-full h-full max-w-[min(100%,100vh-250px)] aspect-square mx-auto">
+          <div className="relative w-full h-full max-w-[min(100%,100vh-220px)] aspect-square mx-auto">
             <div className="absolute inset-0 aspect-square">
               {/* SVG Overlay for Found Words */}
               <svg
