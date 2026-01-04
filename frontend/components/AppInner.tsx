@@ -38,9 +38,18 @@ export function AppInner() {
 
   const handleNavigate = (page: string) => {
     setCurrentPage(page as Page);
-    // Scroll to top when navigating to a new page
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    // Instant scroll to top (no animation)
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
   };
+
+  // Ensure scroll to top whenever currentPage changes (catches all entry points)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [currentPage]);
 
   // Allow direct navigation to the hidden admin upload page via URL hash.
   useEffect(() => {

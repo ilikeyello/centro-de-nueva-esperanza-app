@@ -35462,8 +35462,15 @@ function AppInner() {
   const [currentPage, setCurrentPage] = reactExports.useState("home");
   const handleNavigate = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
   };
+  reactExports.useEffect(() => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [currentPage]);
   reactExports.useEffect(() => {
     const hash = window.location.hash;
     const path = window.location.pathname;
