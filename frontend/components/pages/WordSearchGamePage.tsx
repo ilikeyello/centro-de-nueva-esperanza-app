@@ -69,30 +69,43 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
   const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
 
-  useEffect(() => {
-    const loadLevels = async () => {
-      try {
-        setLoadingLevels(true);
-        setError(null);
-        const res = await fetch(`${base}/games/wordsearch/levels`);
-        if (!res.ok) throw new Error("Failed to load levels");
-        const data = await res.json();
-        setLevels(data.levels || []);
-      } catch (err) {
-        console.error(err);
-        setError(
-          t(
-            "Failed to load word search levels.",
-            "Error al cargar niveles de sopa de letras."
-          )
-        );
-      } finally {
-        setLoadingLevels(false);
-      }
-    };
+  const snapToTop = () => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    const main = document.querySelector("main");
+    if (main) (main as HTMLElement).scrollTop = 0;
+  };
 
+  const loadLevels = async () => {
+    try {
+      setLoadingLevels(true);
+      setError(null);
+      const res = await fetch(`${base}/games/wordsearch/levels`);
+      if (!res.ok) throw new Error("Failed to load levels");
+      const data = await res.json();
+      setLevels(data.levels || []);
+    } catch (err) {
+      console.error(err);
+      setError(
+        t(
+          "Failed to load word search levels.",
+          "Error al cargar niveles de sopa de letras."
+        )
+      );
+    } finally {
+      setLoadingLevels(false);
+    }
+  };
+
+  useEffect(() => {
     loadLevels();
   }, [base, t]);
+
+  useEffect(() => {
+    // When entering puzzle view or returning to list, keep view at top
+    snapToTop();
+  }, [puzzle]);
 
   const resetPuzzleState = () => {
     setPuzzle(null);
@@ -101,6 +114,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
     setSelectedStart(null);
     setFoundSegments([]);
     setError(null);
+    snapToTop();
   };
 
   const handleBackToGames = () => {
@@ -129,6 +143,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       }
 
       setPuzzle(data);
+      snapToTop();
     } catch (err) {
       console.error(err);
       setError(

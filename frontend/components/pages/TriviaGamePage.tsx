@@ -60,6 +60,14 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
     showFeedback: false,
   });
 
+  const snapToTop = () => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    const main = document.querySelector("main");
+    if (main) (main as HTMLElement).scrollTop = 0;
+  };
+
   const loadLevels = async () => {
     try {
       const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
@@ -142,6 +150,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       selectedAnswer: null,
       showFeedback: false,
     });
+    snapToTop();
   };
 
   const selectAnswer = (answerIndex: number) => {
@@ -277,6 +286,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       selectedAnswer: null,
       showFeedback: false,
     }));
+    snapToTop();
   };
 
   useEffect(() => {
@@ -296,6 +306,11 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
     }, 1000);
     return () => clearInterval(interval);
   }, [gameState.isTimerActive, gameState.timeRemaining]);
+
+  useEffect(() => {
+    // Ensure any transition between menu/playing/results is pinned to top
+    snapToTop();
+  }, [gameState.status]);
 
   if (loading) {
     return (

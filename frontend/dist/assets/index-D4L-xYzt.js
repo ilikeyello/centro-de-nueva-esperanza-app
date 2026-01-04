@@ -30330,6 +30330,13 @@ function TriviaGamePage({ onNavigate } = {}) {
     selectedAnswer: null,
     showFeedback: false
   });
+  const snapToTop = () => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    const main = document.querySelector("main");
+    if (main) main.scrollTop = 0;
+  };
   const loadLevels = async () => {
     try {
       const base = false ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
@@ -30390,6 +30397,7 @@ function TriviaGamePage({ onNavigate } = {}) {
       selectedAnswer: null,
       showFeedback: false
     });
+    snapToTop();
   };
   const selectAnswer = (answerIndex) => {
     if (gameState.status !== "playing" || gameState.showFeedback) return;
@@ -30500,6 +30508,7 @@ function TriviaGamePage({ onNavigate } = {}) {
         showFeedback: false
       };
     });
+    snapToTop();
   };
   reactExports.useEffect(() => {
     loadLevels();
@@ -30517,6 +30526,9 @@ function TriviaGamePage({ onNavigate } = {}) {
     }, 1e3);
     return () => clearInterval(interval);
   }, [gameState.isTimerActive, gameState.timeRemaining]);
+  reactExports.useEffect(() => {
+    snapToTop();
+  }, [gameState.status]);
   if (loading) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto px-4 py-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center text-white", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { className: "h-12 w-12 mx-auto mb-4 animate-pulse" }),
@@ -30742,29 +30754,39 @@ function WordSearchGamePage({ onNavigate }) {
     // purple-500
   ];
   const base = "https://prod-cne-sh82.encr.app";
+  const snapToTop = () => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    const main = document.querySelector("main");
+    if (main) main.scrollTop = 0;
+  };
+  const loadLevels = async () => {
+    try {
+      setLoadingLevels(true);
+      setError(null);
+      const res = await fetch(`${base}/games/wordsearch/levels`);
+      if (!res.ok) throw new Error("Failed to load levels");
+      const data = await res.json();
+      setLevels(data.levels || []);
+    } catch (err) {
+      console.error(err);
+      setError(
+        t(
+          "Failed to load word search levels.",
+          "Error al cargar niveles de sopa de letras."
+        )
+      );
+    } finally {
+      setLoadingLevels(false);
+    }
+  };
   reactExports.useEffect(() => {
-    const loadLevels = async () => {
-      try {
-        setLoadingLevels(true);
-        setError(null);
-        const res = await fetch(`${base}/games/wordsearch/levels`);
-        if (!res.ok) throw new Error("Failed to load levels");
-        const data = await res.json();
-        setLevels(data.levels || []);
-      } catch (err) {
-        console.error(err);
-        setError(
-          t(
-            "Failed to load word search levels.",
-            "Error al cargar niveles de sopa de letras."
-          )
-        );
-      } finally {
-        setLoadingLevels(false);
-      }
-    };
     loadLevels();
   }, [base, t]);
+  reactExports.useEffect(() => {
+    snapToTop();
+  }, [puzzle]);
   const resetPuzzleState = () => {
     setPuzzle(null);
     setFoundWords(/* @__PURE__ */ new Set());
@@ -30772,6 +30794,7 @@ function WordSearchGamePage({ onNavigate }) {
     setSelectedStart(null);
     setFoundSegments([]);
     setError(null);
+    snapToTop();
   };
   const handleSelectLevel = async (levelId) => {
     try {
@@ -30790,6 +30813,7 @@ function WordSearchGamePage({ onNavigate }) {
         throw new Error(data.error || "Failed to load puzzle");
       }
       setPuzzle(data);
+      snapToTop();
     } catch (err) {
       console.error(err);
       setError(
