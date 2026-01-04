@@ -2353,10 +2353,6 @@
     padding-top: calc(var(--spacing) * 4);
   }
 
-  .pt-6 {
-    padding-top: calc(var(--spacing) * 6);
-  }
-
   .pr-2 {
     padding-right: calc(var(--spacing) * 2);
   }
@@ -3387,10 +3383,6 @@
 
     .hover\:text-neutral-200:hover {
       color: var(--color-neutral-200);
-    }
-
-    .hover\:text-red-300:hover {
-      color: var(--color-red-300);
     }
 
     .hover\:text-red-400:hover {
