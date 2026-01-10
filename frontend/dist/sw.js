@@ -1,8 +1,8 @@
-const CACHE_NAME = 'cne-app-v2';
+const CACHE_NAME = 'cne-app-v3';
 const urlsToCache = [
-  '/cne-app/',
-  '/cne-app/icon-192x192.png',
-  '/cne-app/icon-512x512.png'
+  '/',
+  '/icon-192x192.png',
+  '/icon-512x512.png'
 ];
 
 // Install event
@@ -61,8 +61,8 @@ self.addEventListener('push', event => {
   let notificationData = {
     title: 'CNE - Centro de Nueva Esperanza',
     body: 'New notification from CNE',
-    icon: '/cne-app/icon-192x192.png',
-    badge: '/cne-app/icon-192x192.png',
+    icon: '/icon-192x192.png',
+    badge: '/icon-192x192.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -72,12 +72,12 @@ self.addEventListener('push', event => {
       {
         action: 'explore',
         title: 'Open App',
-        icon: '/cne-app/icon-192x192.png'
+        icon: '/icon-192x192.png'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/cne-app/icon-192x192.png'
+        icon: '/icon-192x192.png'
       }
     ]
   };
@@ -116,7 +116,7 @@ self.addEventListener('notificationclick', event => {
   
   event.notification.close();
 
-  const baseUrl = 'https://emanuelavina.com/cne-app/';
+  const baseUrl = self.location.origin + '/';
   const data = (event.notification && event.notification.data) || {};
 
   let targetUrl = baseUrl;
