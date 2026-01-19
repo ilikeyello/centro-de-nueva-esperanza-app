@@ -42,9 +42,9 @@ export function Events() {
         titleEs: data.titleEs,
         descriptionEn: data.descriptionEn,
         descriptionEs: data.descriptionEs,
-        eventDate: new Date(data.eventDate),
+        eventDate: data.eventDate,
         location: data.location,
-        maxAttendees: data.maxAttendees ? parseInt(data.maxAttendees) : null,
+        maxAttendees: data.maxAttendees,
       });
     },
     onSuccess: () => {

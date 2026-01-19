@@ -7,6 +7,7 @@ interface MediaItem {
   id: string;
   url: string;
   title?: string;
+  name?: string; // Added for compatibility
 }
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -137,9 +138,9 @@ export function Gallery() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {mediaData?.items.map((item) => (
+        {mediaData?.media?.map((item: MediaItem) => (
           <button
-            key={item.etag}
+            key={item.id}
             onClick={() => setSelectedImage(item)}
             className="group relative aspect-square overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900 transition-transform hover:scale-105"
           >

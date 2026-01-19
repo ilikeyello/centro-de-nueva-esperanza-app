@@ -32016,9 +32016,8 @@ function shouldShowDeprecationWarning() {
   return parseInt(versionMatch[1], 10) <= 18;
 }
 if (shouldShowDeprecationWarning()) console.warn("⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217");
-var define_process_env_default = {};
-const supabaseUrl = define_process_env_default.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = define_process_env_default.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = "https://weicxqhipwfboaxmlzei.supabase.co";
+const supabaseAnonKey = "sb_publishable_niPukh2jS_TCHMCBYzHZBg_XU5Viw2i";
 function createClerkSupabaseClient() {
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
@@ -38533,7 +38532,10 @@ function News() {
     return storedId;
   };
   const deleteEvent = useMutation({
-    mutationFn: async (data) => backend.events.remove(data.id, { passcode: data.passcode }),
+    mutationFn: async (data) => (
+      // Event deletion not yet implemented in Supabase
+      Promise.reject(new Error("Event deletion not yet implemented"))
+    ),
     onSuccess: (data, variables) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         if (!oldData) return oldData;
@@ -38613,9 +38615,9 @@ function News() {
       titleEs: data.titleEs,
       descriptionEn: data.descriptionEn,
       descriptionEs: data.descriptionEs,
-      eventDate: new Date(data.eventDate),
+      eventDate: data.eventDate,
       location: data.location,
-      maxAttendees: data.maxAttendees ? parseInt(data.maxAttendees) : null
+      maxAttendees: data.maxAttendees
     }),
     onSuccess: (newEvent) => {
       queryClient2.setQueryData(["events"], (oldData) => {
@@ -38677,7 +38679,7 @@ function News() {
     }
   });
   const deleteAnnouncement = useMutation({
-    mutationFn: async (data) => backend.announcements.remove(data.id, { passcode: data.passcode }),
+    mutationFn: async (data) => Promise.reject(new Error("Delete not yet implemented")),
     onSuccess: (data, variables) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) return oldData;
@@ -38725,7 +38727,7 @@ function News() {
       titleEs: formData.get("titleEs"),
       descriptionEn: formData.get("descriptionEn"),
       descriptionEs: formData.get("descriptionEs"),
-      eventDate: new Date(formData.get("eventDate")),
+      eventDate: formData.get("eventDate"),
       location: formData.get("location"),
       maxAttendees: parseInt(formData.get("maxAttendees")) || 0,
       passcode: eventPasscode

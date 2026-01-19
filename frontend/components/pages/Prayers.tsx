@@ -30,19 +30,14 @@ export function Prayers({ onNavigate }: PrayersProps) {
     queryFn: () => backend.listPrayerRequests(),
   });
 
+  // Prayer creation not yet implemented in Supabase
   const createMutation = useMutation({
     mutationFn: async (data: {
       title: string;
       description: string;
       isAnonymous: boolean;
     }) => {
-      return backend.createPrayerRequest({
-        title: data.title,
-        description: data.description,
-        isAnonymous: data.isAnonymous,
-        userId: 'user-id', // TODO: Get actual user ID
-        userName: data.isAnonymous ? null : data.userName,
-      });
+      throw new Error("Prayer creation not yet implemented");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prayers"] });
@@ -63,8 +58,9 @@ export function Prayers({ onNavigate }: PrayersProps) {
     },
   });
 
+  // Prayer functionality not fully implemented in Supabase
   const prayMutation = useMutation({
-    mutationFn: (prayerId: number) => backend.prayForRequest(prayerId),
+    mutationFn: (prayerId: number) => Promise.resolve(),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["prayers"] });
       toast({

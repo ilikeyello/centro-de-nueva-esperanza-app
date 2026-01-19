@@ -145,7 +145,8 @@ export function News() {
 
   const deleteEvent = useMutation({
     mutationFn: async (data: { id: number; passcode: string }) =>
-      backend.events.remove(data.id, { passcode: data.passcode } as any),
+      // Event deletion not yet implemented in Supabase
+      Promise.reject(new Error("Event deletion not yet implemented")),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["events"], (oldData?: { events: Event[] }) => {
         if (!oldData) return oldData;
@@ -250,9 +251,9 @@ export function News() {
       titleEs: data.titleEs,
       descriptionEn: data.descriptionEn,
       descriptionEs: data.descriptionEs,
-      eventDate: new Date(data.eventDate),
+      eventDate: data.eventDate,
       location: data.location,
-      maxAttendees: data.maxAttendees ? parseInt(data.maxAttendees) : null,
+      maxAttendees: data.maxAttendees,
     }) as any,
     onSuccess: (newEvent) => {
       queryClient.setQueryData(["events"], (oldData?: { events: Event[] }) => {
@@ -317,9 +318,10 @@ export function News() {
     },
   });
 
+  // Delete functionality not yet implemented in Supabase
   const deleteAnnouncement = useMutation({
     mutationFn: async (data: { id: number; passcode: string }) =>
-      backend.announcements.remove(data.id, { passcode: data.passcode } as any),
+      Promise.reject(new Error("Delete not yet implemented")),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["announcements"], (oldData?: { announcements: Announcement[] }) => {
         if (!oldData) return oldData;
@@ -370,7 +372,7 @@ export function News() {
       titleEs: formData.get("titleEs") as string,
       descriptionEn: formData.get("descriptionEn") as string,
       descriptionEs: formData.get("descriptionEs") as string,
-      eventDate: new Date(formData.get("eventDate") as string),
+      eventDate: formData.get("eventDate") as string,
       location: formData.get("location") as string,
       maxAttendees: parseInt(formData.get("maxAttendees") as string) || 0,
       passcode: eventPasscode,
