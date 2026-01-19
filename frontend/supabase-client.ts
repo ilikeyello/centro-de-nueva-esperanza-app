@@ -10,9 +10,14 @@ import { Clerk } from '@clerk/clerk-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// Validate environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+}
+
 // Create Supabase client with Clerk auth
 export function createClerkSupabaseClient() {
-  return createClient(supabaseUrl!, supabaseAnonKey!, {
+  return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
       // Get the session token from Clerk
       fetch: async (url, options = {}) => {
@@ -33,7 +38,7 @@ export function createClerkSupabaseClient() {
 }
 
 // Default client (for unauthenticated requests)
-export const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Helper to get current organization ID from Clerk
 export async function getCurrentOrganizationId(): Promise<string | null> {
