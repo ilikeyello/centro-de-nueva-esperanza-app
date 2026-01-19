@@ -1,4 +1,0 @@
-CREATE TABLE IF NOT EXISTS media_playlist (
-  id INTEGER PRIMARY KEY,
-  url TEXT NOT NULL
-);

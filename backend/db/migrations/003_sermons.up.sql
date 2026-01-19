@@ -1,6 +1,0 @@
-CREATE TABLE IF NOT EXISTS sermons (
-  id SERIAL PRIMARY KEY,
-  title TEXT NOT NULL,
-  youtube_url TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);

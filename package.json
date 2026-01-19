@@ -8,6 +8,10 @@
     "frontend"
   ],
   "dependencies": {
+    "@clerk/clerk-js": "^5.120.0",
+    "@clerk/nextjs": "^6.36.8",
+    "@supabase/supabase-js": "^2.90.1",
+    "pg": "^8.17.1",
     "sharp": "^0.34.5"
   }
 }

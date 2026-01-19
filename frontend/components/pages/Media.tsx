@@ -4,6 +4,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { Calendar, Music, Play } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "../../contexts/PlayerContext";
+import { useBackend } from "../../hooks/useBackend";
 
 const LIVESTREAM_DAY = 0; // Sunday
 const LIVESTREAM_HOUR = 15;
@@ -67,6 +68,7 @@ interface MediaProps {
 
 export function Media({ onStartMusic }: MediaProps) {
   const { language, t } = useLanguage();
+  const backend = useBackend();
   const [now, setNow] = useState(() => new Date());
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
@@ -147,23 +149,17 @@ export function Media({ onStartMusic }: MediaProps) {
     const loadSermons = async () => {
       try {
         setLoadingSermons(true);
-        const base = import.meta.env.DEV
-          ? "http://127.0.0.1:4000"
-          : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/sermons/recent`);
-        if (!res.ok) return;
-
-        const raw = (await res.json()) as any;
-        const rawSermons = raw?.sermons;
-        const list: SermonItem[] = Array.isArray(rawSermons)
-          ? rawSermons
-          : rawSermons && typeof rawSermons === "object"
-          ? Object.values(rawSermons)
-          : [];
-
-        setSermons(list);
-        if (list.length > 0) {
-          setSelectedSermonId(list[0].id);
+        const { sermons } = await backend.listSermons();
+        // Transform Supabase sermons to SermonItem format
+        const transformedSermons: SermonItem[] = sermons.map(sermon => ({
+          id: sermon.id,
+          title: sermon.title,
+          youtubeUrl: sermon.youtube_url,
+          createdAt: sermon.created_at
+        }));
+        setSermons(transformedSermons);
+        if (transformedSermons.length > 0) {
+          setSelectedSermonId(transformedSermons[0].id);
         }
       } catch {
         // ignore, show empty state
@@ -173,7 +169,7 @@ export function Media({ onStartMusic }: MediaProps) {
     };
 
     loadSermons();
-  }, []);
+  }, [backend]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

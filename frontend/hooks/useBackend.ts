@@ -1,12 +1,22 @@
-import Client from "~backend/client";
+/**
+ * Backend Hook - Supabase Version
+ * Replaces the Encore backend client with Supabase
+ */
 
-const API_BASE =
-  import.meta.env.VITE_CLIENT_TARGET ??
-  (import.meta.env.DEV ? "http://localhost:4000" : "https://prod-cne-sh82.encr.app");
+import { churchApi } from '../../supabase-client';
 
-// Create a proper backend client instance
-const backend = new Client(API_BASE);
-
+// Export the same interface as the original useBackend hook
+// but using Supabase instead of Encore
 export function useBackend() {
-  return backend;
+  return churchApi;
 }
+
+// Export types for compatibility
+export type {
+  Sermon,
+  Event,
+  Announcement,
+  PrayerRequest,
+  BulletinPost,
+  ChurchInfo
+} from '../../supabase-client';
