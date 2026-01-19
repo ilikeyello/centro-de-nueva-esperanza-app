@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calendar, MapPin, Users, Plus, AlertCircle, Info, AlertTriangle, Bell, Trash2 } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
-import type { Announcement, Event } from "../hooks/useBackend";
+import type { Announcement, Event } from "../../hooks/useBackend";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -99,7 +99,7 @@ export function News() {
 
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => backend.announcements.list({ limit: 50 }),
+    queryFn: () => backend.listAnnouncements({ limit: 50 }),
   });
 
   useEffect(() => {
@@ -176,7 +176,7 @@ export function News() {
 
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend.events.list({ upcoming: false }),
+    queryFn: () => backend.listEvents({ upcoming: false }),
   });
 
   const upcomingEvents = useMemo(() => {
@@ -196,7 +196,13 @@ export function News() {
       priority: Priority;
       passcode: string;
       imageUrl?: string | null;
-    }) => backend.announcements.create(data as any),
+    }) => backend.createAnnouncement({
+      titleEn: data.titleEn,
+      titleEs: data.titleEs,
+      contentEn: data.contentEn,
+      contentEs: data.contentEs,
+      priority: data.priority,
+    }) as any,
     onSuccess: (newAnnouncement) => {
       queryClient.setQueryData(["announcements"], (oldData?: { announcements: Announcement[] }) => {
         if (!oldData) {
@@ -235,11 +241,19 @@ export function News() {
       titleEs: string;
       descriptionEn: string;
       descriptionEs: string;
-      eventDate: Date;
+      eventDate: string;
       location: string;
       maxAttendees: number;
       passcode: string;
-    }) => backend.events.create(data as any),
+    }) => backend.createEvent({
+      titleEn: data.titleEn,
+      titleEs: data.titleEs,
+      descriptionEn: data.descriptionEn,
+      descriptionEs: data.descriptionEs,
+      eventDate: new Date(data.eventDate),
+      location: data.location,
+      maxAttendees: data.maxAttendees ? parseInt(data.maxAttendees) : null,
+    }) as any,
     onSuccess: (newEvent) => {
       queryClient.setQueryData(["events"], (oldData?: { events: Event[] }) => {
         const existing = oldData?.events ?? [];
@@ -682,7 +696,7 @@ export function News() {
         {activeTab === "announcements" ? (
           <>
             <div className="space-y-4">
-              {announcementsData?.announcements.map((announcement) => (
+              {announcementsData?.announcements.map((announcement: Announcement) => (
                 <Card
                   key={announcement.id}
                   className={cn("border-2", getPriorityColor(normalizePriority(announcement.priority)))}

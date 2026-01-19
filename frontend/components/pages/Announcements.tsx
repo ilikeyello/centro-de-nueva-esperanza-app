@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Megaphone, Plus, AlertCircle, Info, AlertTriangle, Bell } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
-import type { Announcement } from "../hooks/useBackend";
+import type { Announcement } from "../../hooks/useBackend";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -24,7 +24,7 @@ export function Announcements() {
 
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => backend.announcements.list({ limit: 50 }),
+    queryFn: () => backend.listAnnouncements({ limit: 50 }),
   });
 
   const createMutation = useMutation({
@@ -36,7 +36,13 @@ export function Announcements() {
       priority: "normal" | "urgent";
       passcode: string;
     }) => {
-      return backend.announcements.create(data);
+      return backend.createAnnouncement({
+        titleEn: data.titleEn,
+        titleEs: data.titleEs,
+        contentEn: data.contentEn,
+        contentEs: data.contentEs,
+        priority: data.priority,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["announcements"] });
@@ -67,7 +73,6 @@ export function Announcements() {
       contentEs: formData.get("contentEs") as string,
       priority,
       passcode: formData.get("passcode") as string,
-      imageUrl: (formData.get("imageUrl") as string) || "",
     });
   };
 
@@ -203,7 +208,7 @@ export function Announcements() {
       </div>
 
       <div className="space-y-4">
-        {announcementsData?.announcements.map((announcement) => (
+        {announcementsData?.announcements.map((announcement: Announcement) => (
           <Card
             key={announcement.id}
             className={cn("border-2", getPriorityColor(announcement.priority))}

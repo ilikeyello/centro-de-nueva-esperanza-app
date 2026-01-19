@@ -38496,7 +38496,7 @@ function News() {
   });
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
-    queryFn: () => backend.announcements.list({ limit: 50 })
+    queryFn: () => backend.listAnnouncements({ limit: 50 })
   });
   reactExports.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -38562,7 +38562,7 @@ function News() {
   });
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend.events.list({ upcoming: false })
+    queryFn: () => backend.listEvents({ upcoming: false })
   });
   const upcomingEvents = reactExports.useMemo(() => {
     if (!(eventsData == null ? void 0 : eventsData.events)) return [];
@@ -38570,7 +38570,13 @@ function News() {
     return [...eventsData.events].filter((eventItem) => new Date(eventItem.eventDate).getTime() >= now).sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
   }, [eventsData]);
   const createAnnouncement = useMutation({
-    mutationFn: async (data) => backend.announcements.create(data),
+    mutationFn: async (data) => backend.createAnnouncement({
+      titleEn: data.titleEn,
+      titleEs: data.titleEs,
+      contentEn: data.contentEn,
+      contentEs: data.contentEs,
+      priority: data.priority
+    }),
     onSuccess: (newAnnouncement) => {
       queryClient2.setQueryData(["announcements"], (oldData) => {
         if (!oldData) {
@@ -38602,7 +38608,15 @@ function News() {
     }
   });
   const createEvent = useMutation({
-    mutationFn: async (data) => backend.events.create(data),
+    mutationFn: async (data) => backend.createEvent({
+      titleEn: data.titleEn,
+      titleEs: data.titleEs,
+      descriptionEn: data.descriptionEn,
+      descriptionEs: data.descriptionEs,
+      eventDate: new Date(data.eventDate),
+      location: data.location,
+      maxAttendees: data.maxAttendees ? parseInt(data.maxAttendees) : null
+    }),
     onSuccess: (newEvent) => {
       queryClient2.setQueryData(["events"], (oldData) => {
         const existing = (oldData == null ? void 0 : oldData.events) ?? [];

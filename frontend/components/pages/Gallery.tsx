@@ -2,7 +2,12 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Upload, X } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
-// MediaItem interface defined locally
+// MediaItem interface - placeholder for future implementation
+interface MediaItem {
+  id: string;
+  url: string;
+  title?: string;
+}
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -20,28 +25,17 @@ export function Gallery() {
   const [uploadPasscode, setUploadPasscode] = useState("");
   const [selectedImage, setSelectedImage] = useState<MediaItem | null>(null);
 
+  // Media functionality not yet implemented in Supabase
   const { data: mediaData } = useQuery({
     queryKey: ["media"],
-    queryFn: () => backend.media.list(),
+    queryFn: () => Promise.resolve({ media: [] }),
+    enabled: false,
   });
 
+  // Upload functionality not yet implemented in Supabase
   const uploadMutation = useMutation({
     mutationFn: async (data: { file: File; passcode: string }) => {
-      const urlData = await backend.media.uploadUrl({
-        fileName: data.file.name,
-        contentType: data.file.type,
-        passcode: data.passcode,
-      });
-
-      await fetch(urlData.uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": data.file.type,
-        },
-        body: data.file,
-      });
-
-      return urlData.publicUrl;
+      throw new Error("Media upload not yet implemented");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
@@ -57,9 +51,7 @@ export function Gallery() {
       console.error(error);
       toast({
         title: t("Error", "Error"),
-        description: (error as Error)?.message?.includes("permission")
-          ? t("Incorrect passcode. Please try again.", "Código incorrecto. Inténtalo de nuevo.")
-          : t("Failed to upload media", "Error al subir medio"),
+        description: t("Media upload not yet implemented", "Subida de medios no implementada"),
         variant: "destructive",
       });
     },

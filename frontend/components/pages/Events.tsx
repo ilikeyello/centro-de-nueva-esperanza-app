@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calendar, MapPin, Users, Plus, X } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
-import type { Event } from "../hooks/useBackend";
+import type { Event } from "../../hooks/useBackend";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -23,7 +23,7 @@ export function Events() {
 
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
-    queryFn: () => backend.events.list({ upcoming: true }),
+    queryFn: () => backend.listEvents({ upcoming: true }),
   });
 
   const createMutation = useMutation({
@@ -32,12 +32,20 @@ export function Events() {
       titleEs: string;
       descriptionEn: string;
       descriptionEs: string;
-      eventDate: Date;
+      eventDate: string;
       location: string;
       maxAttendees: number;
       passcode: string;
     }) => {
-      return backend.events.create(data);
+      return backend.createEvent({
+        titleEn: data.titleEn,
+        titleEs: data.titleEs,
+        descriptionEn: data.descriptionEn,
+        descriptionEs: data.descriptionEs,
+        eventDate: new Date(data.eventDate),
+        location: data.location,
+        maxAttendees: data.maxAttendees ? parseInt(data.maxAttendees) : null,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
@@ -57,9 +65,10 @@ export function Events() {
     },
   });
 
+  // RSVP functionality not yet implemented in Supabase
   const rsvpMutation = useMutation({
     mutationFn: async (data: { eventId: number; attendees: number }) => {
-      return backend.events.rsvp(data);
+      throw new Error("RSVP not yet implemented");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
@@ -223,7 +232,7 @@ export function Events() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {eventsData?.events.map((event) => (
+        {eventsData?.events.map((event: Event) => (
           <Card key={event.id} className="border-neutral-800 bg-neutral-900/50">
             <CardHeader>
               <CardTitle className="text-white">

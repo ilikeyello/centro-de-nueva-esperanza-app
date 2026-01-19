@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Heart, Plus, User } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
-import type { PrayerRequest } from "../hooks/useBackend";
+import type { PrayerRequest } from "../../hooks/useBackend";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -27,7 +27,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
 
   const { data: prayersData } = useQuery({
     queryKey: ["prayers"],
-    queryFn: () => backend.prayers.list({ limit: 50 }),
+    queryFn: () => backend.listPrayerRequests(),
   });
 
   const createMutation = useMutation({
@@ -36,7 +36,13 @@ export function Prayers({ onNavigate }: PrayersProps) {
       description: string;
       isAnonymous: boolean;
     }) => {
-      return backend.prayers.create(data);
+      return backend.createPrayerRequest({
+        title: data.title,
+        description: data.description,
+        isAnonymous: data.isAnonymous,
+        userId: 'user-id', // TODO: Get actual user ID
+        userName: data.isAnonymous ? null : data.userName,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prayers"] });
@@ -58,9 +64,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
   });
 
   const prayMutation = useMutation({
-    mutationFn: (prayerId: number) => {
-      return backend.prayers.pray({ prayerId, participantId: null });
-    },
+    mutationFn: (prayerId: number) => backend.prayForRequest(prayerId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["prayers"] });
       toast({
@@ -161,7 +165,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {prayersData?.prayers.map((prayer) => (
+        {prayersData?.prayers.map((prayer: PrayerRequest) => (
           <Card key={prayer.id} className="border-neutral-800 bg-neutral-900/50">
             <CardHeader>
               <div className="flex items-start justify-between">
