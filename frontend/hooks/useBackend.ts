@@ -3,7 +3,7 @@
  * Replaces the Encore backend client with Supabase
  */
 
-import { churchApi } from '../../supabase-client';
+import { churchApi } from '../supabase-client';
 
 // Export the same interface as the original useBackend hook
 // but using Supabase instead of Encore
@@ -19,4 +19,4 @@ export type {
   PrayerRequest,
   BulletinPost,
   ChurchInfo
-} from '../../supabase-client';
+} from '../supabase-client';
