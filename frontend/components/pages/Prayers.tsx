@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Heart, Plus, User } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
-import type { Prayer } from "~backend/prayers/list";
+import type { PrayerRequest } from "../hooks/useBackend";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";

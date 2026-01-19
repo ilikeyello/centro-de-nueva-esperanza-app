@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Upload, X } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
-import type { MediaItem } from "~backend/media/list";
+// MediaItem interface defined locally
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

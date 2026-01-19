@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import backend from '~backend/client';
+// Push notifications disabled - no backend
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface PushSubscription {

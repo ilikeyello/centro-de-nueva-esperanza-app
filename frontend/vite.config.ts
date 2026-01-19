@@ -12,8 +12,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname),
-      '~backend/client': path.resolve(__dirname, './client/index'),
-      '~backend': path.resolve(__dirname, '../backend'),
     },
   },
   plugins: [tailwindcss(), react()],
