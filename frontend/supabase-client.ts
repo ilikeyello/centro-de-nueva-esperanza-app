@@ -5,6 +5,14 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Clerk } from '@clerk/clerk-js';
+import { 
+  getSermonsFromMainSite, 
+  getLivestreamFromMainSite, 
+  getMusicPlaylistFromMainSite,
+  getEventsFromMainSite,
+  getAnnouncementsFromMainSite,
+  type SermonFromMainSite 
+} from './lib/mainSiteData';
 
 // Environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -183,26 +191,56 @@ export class ChurchApiService {
     return this.client!;
   }
   
-  // Sermons
+  // Sermons - fetches from BOTH local sermons table AND main site's church_content
   async listSermons(): Promise<{ sermons: SermonItem[] }> {
-    const client = await this.getClient();
-    const { data, error } = await client
-      .from('sermons')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(10);
+    // Fetch from main site (church_content table) - no auth needed
+    const mainSiteSermons = await getSermonsFromMainSite();
     
-    if (error) throw error;
-    
-    // Transform to match expected format (SermonItem format)
-    const sermons: SermonItem[] = data.map((s: any) => ({
-      id: s.id,
+    // Transform main site sermons to match expected format
+    const sermonsFromMainSite: SermonItem[] = mainSiteSermons.map((s) => ({
+      id: parseInt(s.id) || 0,
       title: s.title,
-      youtubeUrl: s.youtube_url,
-      createdAt: s.created_at
+      youtubeUrl: s.youtubeUrl,
+      createdAt: s.createdAt
     }));
+
+    // Also try to fetch from local sermons table (if it exists)
+    let localSermons: SermonItem[] = [];
+    try {
+      const client = await this.getClient();
+      const { data, error } = await client
+        .from('sermons')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (!error && data) {
+        localSermons = data.map((s: any) => ({
+          id: s.id,
+          title: s.title,
+          youtubeUrl: s.youtube_url,
+          createdAt: s.created_at
+        }));
+      }
+    } catch (e) {
+      // Local sermons table might not exist, that's okay
+      console.log('Local sermons table not available, using main site data only');
+    }
     
-    return { sermons };
+    // Combine both sources, main site first (most recent uploads)
+    const allSermons = [...sermonsFromMainSite, ...localSermons];
+    
+    // Sort by date and deduplicate by title
+    const seen = new Set<string>();
+    const uniqueSermons = allSermons
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .filter(s => {
+        if (seen.has(s.title)) return false;
+        seen.add(s.title);
+        return true;
+      });
+    
+    return { sermons: uniqueSermons };
   }
   
   async createSermon(data: { title: string; youtubeUrl: string }): Promise<Sermon> {
@@ -421,7 +459,26 @@ export class ChurchApiService {
     
     return { posts };
   }
+  
+  // Livestream - fetches from main site's church_content
+  async getLivestream(): Promise<string | null> {
+    return getLivestreamFromMainSite();
+  }
+  
+  // Music Playlist - fetches from main site's church_content
+  async getMusicPlaylist(): Promise<string | null> {
+    return getMusicPlaylistFromMainSite();
+  }
 }
 
 // Create singleton instance
 export const churchApi = new ChurchApiService();
+
+// Re-export main site data functions for direct use
+export { 
+  getSermonsFromMainSite, 
+  getLivestreamFromMainSite, 
+  getMusicPlaylistFromMainSite,
+  getEventsFromMainSite,
+  getAnnouncementsFromMainSite 
+} from './lib/mainSiteData';

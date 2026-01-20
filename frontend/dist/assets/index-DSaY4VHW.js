@@ -12748,10 +12748,11 @@ function partialMatchKey(a, b) {
   return false;
 }
 var hasOwn = Object.prototype.hasOwnProperty;
-function replaceEqualDeep(a, b) {
+function replaceEqualDeep(a, b, depth = 0) {
   if (a === b) {
     return a;
   }
+  if (depth > 500) return b;
   const array = isPlainArray(a) && isPlainArray(b);
   if (!array && !(isPlainObject$2(a) && isPlainObject$2(b))) return b;
   const aItems = array ? a : Object.keys(a);
@@ -12773,7 +12774,7 @@ function replaceEqualDeep(a, b) {
       copy[key] = bItem;
       continue;
     }
-    const v = replaceEqualDeep(aItem, bItem);
+    const v = replaceEqualDeep(aItem, bItem, depth + 1);
     copy[key] = v;
     if (v === aItem) equalItems++;
   }
@@ -13407,7 +13408,7 @@ var Query = (_e = class extends Removable {
   }
   async fetch(options, fetchOptions) {
     var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2, _l;
-    if (this.state.fetchStatus !== "idle" && // If the promise in the retyer is already rejected, we have to definitely
+    if (this.state.fetchStatus !== "idle" && // If the promise in the retryer is already rejected, we have to definitely
     // re-start the fetch; there is a chance that the query is still in a
     // pending state when that happens
     ((_a2 = __privateGet(this, _retryer)) == null ? void 0 : _a2.status()) !== "rejected") {
@@ -13928,10 +13929,12 @@ var QueryObserver = (_f = class extends Subscribable {
     };
     const nextResult = result;
     if (this.options.experimental_prefetchInRender) {
+      const hasResultData = nextResult.data !== void 0;
+      const isErrorWithoutData = nextResult.status === "error" && !hasResultData;
       const finalizeThenableIfPossible = (thenable) => {
-        if (nextResult.status === "error") {
+        if (isErrorWithoutData) {
           thenable.reject(nextResult.error);
-        } else if (nextResult.data !== void 0) {
+        } else if (hasResultData) {
           thenable.resolve(nextResult.data);
         }
       };
@@ -13947,12 +13950,12 @@ var QueryObserver = (_f = class extends Subscribable {
           }
           break;
         case "fulfilled":
-          if (nextResult.status === "error" || nextResult.data !== prevThenable.value) {
+          if (isErrorWithoutData || nextResult.data !== prevThenable.value) {
             recreateThenable();
           }
           break;
         case "rejected":
-          if (nextResult.status !== "error" || nextResult.error !== prevThenable.reason) {
+          if (!isErrorWithoutData || nextResult.error !== prevThenable.reason) {
             recreateThenable();
           }
           break;
@@ -32016,8 +32019,53 @@ function shouldShowDeprecationWarning() {
   return parseInt(versionMatch[1], 10) <= 18;
 }
 if (shouldShowDeprecationWarning()) console.warn("⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217");
+const supabaseUrl$1 = "https://weicxqhipwfboaxmlzei.supabase.co";
+const supabaseAnonKey$1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlaWN4cWhpcHdmYm9heG1semVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMTIzMjEsImV4cCI6MjA4MzU4ODMyMX0.cUshfjZpizzj7uWSmAkmEyEBbLg4blhPYvqhc9L6M0I";
+const clerkOrgId = "org_38T2bAD8xuPkoLc2dLqlGswoAqQ";
+const supabase$1 = createClient(supabaseUrl$1, supabaseAnonKey$1);
+let cachedChurchId = null;
+async function getChurchId() {
+  if (cachedChurchId) return cachedChurchId;
+  const { data, error } = await supabase$1.from("churches").select("id").eq("clerk_org_id", clerkOrgId).single();
+  if (error) {
+    console.error("Error fetching church:", error);
+    return null;
+  }
+  cachedChurchId = (data == null ? void 0 : data.id) || null;
+  return cachedChurchId;
+}
+async function fetchContentByType(type) {
+  const churchId = await getChurchId();
+  if (!churchId) return [];
+  const { data, error } = await supabase$1.from("church_content").select("*").eq("church_id", churchId).eq("type", type).order("created_at", { ascending: false });
+  if (error) {
+    console.error(`Error fetching ${type}:`, error);
+    return [];
+  }
+  return data || [];
+}
+async function getSermonsFromMainSite() {
+  const content = await fetchContentByType("sermon");
+  return content.map((item) => ({
+    id: item.id,
+    title: item.title,
+    youtubeUrl: item.youtube_url || "",
+    description: item.description,
+    createdAt: item.created_at
+  }));
+}
+async function getLivestreamFromMainSite() {
+  var _a2;
+  const content = await fetchContentByType("livestream");
+  return ((_a2 = content[0]) == null ? void 0 : _a2.youtube_url) || null;
+}
+async function getMusicPlaylistFromMainSite() {
+  var _a2;
+  const content = await fetchContentByType("music");
+  return ((_a2 = content[0]) == null ? void 0 : _a2.youtube_playlist_url) || null;
+}
 const supabaseUrl = "https://weicxqhipwfboaxmlzei.supabase.co";
-const supabaseAnonKey = "sb_publishable_niPukh2jS_TCHMCBYzHZBg_XU5Viw2i";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlaWN4cWhpcHdmYm9heG1semVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMTIzMjEsImV4cCI6MjA4MzU4ODMyMX0.cUshfjZpizzj7uWSmAkmEyEBbLg4blhPYvqhc9L6M0I";
 function createClerkSupabaseClient() {
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
@@ -32083,18 +32131,38 @@ class ChurchApiService {
     }
     return this.client;
   }
-  // Sermons
+  // Sermons - fetches from BOTH local sermons table AND main site's church_content
   async listSermons() {
-    const client2 = await this.getClient();
-    const { data, error } = await client2.from("sermons").select("*").order("created_at", { ascending: false }).limit(10);
-    if (error) throw error;
-    const sermons = data.map((s) => ({
-      id: s.id,
+    const mainSiteSermons = await getSermonsFromMainSite();
+    const sermonsFromMainSite = mainSiteSermons.map((s) => ({
+      id: parseInt(s.id) || 0,
       title: s.title,
-      youtubeUrl: s.youtube_url,
-      createdAt: s.created_at
+      youtubeUrl: s.youtubeUrl,
+      createdAt: s.createdAt
     }));
-    return { sermons };
+    let localSermons = [];
+    try {
+      const client2 = await this.getClient();
+      const { data, error } = await client2.from("sermons").select("*").order("created_at", { ascending: false }).limit(10);
+      if (!error && data) {
+        localSermons = data.map((s) => ({
+          id: s.id,
+          title: s.title,
+          youtubeUrl: s.youtube_url,
+          createdAt: s.created_at
+        }));
+      }
+    } catch (e) {
+      console.log("Local sermons table not available, using main site data only");
+    }
+    const allSermons = [...sermonsFromMainSite, ...localSermons];
+    const seen = /* @__PURE__ */ new Set();
+    const uniqueSermons = allSermons.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).filter((s) => {
+      if (seen.has(s.title)) return false;
+      seen.add(s.title);
+      return true;
+    });
+    return { sermons: uniqueSermons };
   }
   async createSermon(data) {
     const client2 = await this.getClient();
@@ -32241,6 +32309,14 @@ class ChurchApiService {
       createdAt: p.created_at
     }));
     return { posts };
+  }
+  // Livestream - fetches from main site's church_content
+  async getLivestream() {
+    return getLivestreamFromMainSite();
+  }
+  // Music Playlist - fetches from main site's church_content
+  async getMusicPlaylist() {
+    return getMusicPlaylistFromMainSite();
   }
 }
 const churchApi = new ChurchApiService();
