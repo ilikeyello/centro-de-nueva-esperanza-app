@@ -12748,11 +12748,10 @@ function partialMatchKey(a, b) {
   return false;
 }
 var hasOwn = Object.prototype.hasOwnProperty;
-function replaceEqualDeep(a, b, depth = 0) {
+function replaceEqualDeep(a, b) {
   if (a === b) {
     return a;
   }
-  if (depth > 500) return b;
   const array = isPlainArray(a) && isPlainArray(b);
   if (!array && !(isPlainObject$2(a) && isPlainObject$2(b))) return b;
   const aItems = array ? a : Object.keys(a);
@@ -12774,7 +12773,7 @@ function replaceEqualDeep(a, b, depth = 0) {
       copy[key] = bItem;
       continue;
     }
-    const v = replaceEqualDeep(aItem, bItem, depth + 1);
+    const v = replaceEqualDeep(aItem, bItem);
     copy[key] = v;
     if (v === aItem) equalItems++;
   }
@@ -13408,7 +13407,7 @@ var Query = (_e = class extends Removable {
   }
   async fetch(options, fetchOptions) {
     var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2, _l;
-    if (this.state.fetchStatus !== "idle" && // If the promise in the retryer is already rejected, we have to definitely
+    if (this.state.fetchStatus !== "idle" && // If the promise in the retyer is already rejected, we have to definitely
     // re-start the fetch; there is a chance that the query is still in a
     // pending state when that happens
     ((_a2 = __privateGet(this, _retryer)) == null ? void 0 : _a2.status()) !== "rejected") {
@@ -13929,12 +13928,10 @@ var QueryObserver = (_f = class extends Subscribable {
     };
     const nextResult = result;
     if (this.options.experimental_prefetchInRender) {
-      const hasResultData = nextResult.data !== void 0;
-      const isErrorWithoutData = nextResult.status === "error" && !hasResultData;
       const finalizeThenableIfPossible = (thenable) => {
-        if (isErrorWithoutData) {
+        if (nextResult.status === "error") {
           thenable.reject(nextResult.error);
-        } else if (hasResultData) {
+        } else if (nextResult.data !== void 0) {
           thenable.resolve(nextResult.data);
         }
       };
@@ -13950,12 +13947,12 @@ var QueryObserver = (_f = class extends Subscribable {
           }
           break;
         case "fulfilled":
-          if (isErrorWithoutData || nextResult.data !== prevThenable.value) {
+          if (nextResult.status === "error" || nextResult.data !== prevThenable.value) {
             recreateThenable();
           }
           break;
         case "rejected":
-          if (!isErrorWithoutData || nextResult.error !== prevThenable.reason) {
+          if (nextResult.status !== "error" || nextResult.error !== prevThenable.reason) {
             recreateThenable();
           }
           break;
@@ -32019,20 +32016,14 @@ function shouldShowDeprecationWarning() {
   return parseInt(versionMatch[1], 10) <= 18;
 }
 if (shouldShowDeprecationWarning()) console.warn("⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217");
-const supabaseUrl$1 = "https://weicxqhipwfboaxmlzei.supabase.co";
-const supabaseAnonKey$1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlaWN4cWhpcHdmYm9heG1semVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMTIzMjEsImV4cCI6MjA4MzU4ODMyMX0.cUshfjZpizzj7uWSmAkmEyEBbLg4blhPYvqhc9L6M0I";
-const clerkOrgId = "org_38T2bAD8xuPkoLc2dLqlGswoAqQ";
+const supabaseUrl$1 = "https://wreovuejotnudkpaaffz.supabase.co";
+const supabaseAnonKey$1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyZW92dWVqb3RudWRrcGFhZmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4ODcwMzMsImV4cCI6MjA4NDQ2MzAzM30.tQRk6TrUpPFTlWTDq5q_7PVkDlSWvu7mAG3rk5fRHhQ";
 const supabase$1 = createClient(supabaseUrl$1, supabaseAnonKey$1);
-let cachedChurchId = null;
 async function getChurchId() {
-  if (cachedChurchId) return cachedChurchId;
-  const { data, error } = await supabase$1.from("churches").select("id").eq("clerk_org_id", clerkOrgId).single();
-  if (error) {
-    console.error("Error fetching church:", error);
+  {
+    console.warn("VITE_CLERK_ORG_ID not set - cannot fetch church data");
     return null;
   }
-  cachedChurchId = (data == null ? void 0 : data.id) || null;
-  return cachedChurchId;
 }
 async function fetchContentByType(type) {
   const churchId = await getChurchId();
@@ -32064,72 +32055,14 @@ async function getMusicPlaylistFromMainSite() {
   const content = await fetchContentByType("music");
   return ((_a2 = content[0]) == null ? void 0 : _a2.youtube_playlist_url) || null;
 }
-const supabaseUrl = "https://weicxqhipwfboaxmlzei.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlaWN4cWhpcHdmYm9heG1semVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMTIzMjEsImV4cCI6MjA4MzU4ODMyMX0.cUshfjZpizzj7uWSmAkmEyEBbLg4blhPYvqhc9L6M0I";
-function createClerkSupabaseClient() {
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    global: {
-      // Get the session token from Clerk
-      fetch: async (url, options = {}) => {
-        var _a2;
-        const clerk = window.Clerk || window.clerk;
-        const token = await ((_a2 = clerk == null ? void 0 : clerk.session) == null ? void 0 : _a2.getToken());
-        return fetch(url, {
-          ...options,
-          headers: {
-            ...options.headers,
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        });
-      }
-    }
-  });
-}
+const supabaseUrl = "https://wreovuejotnudkpaaffz.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyZW92dWVqb3RudWRrcGFhZmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4ODcwMzMsImV4cCI6MjA4NDQ2MzAzM30.tQRk6TrUpPFTlWTDq5q_7PVkDlSWvu7mAG3rk5fRHhQ";
+const churchOrgId = "your_church_org_id_here";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-async function getCurrentOrganizationId() {
-  var _a2, _b2, _c2;
-  if (typeof window === "undefined") return null;
-  try {
-    const clerk = window.Clerk || window.clerk;
-    if (!(clerk == null ? void 0 : clerk.loaded)) return null;
-    const user = clerk.user;
-    const orgId = (_c2 = (_b2 = (_a2 = user == null ? void 0 : user.organizationMemberships) == null ? void 0 : _a2[0]) == null ? void 0 : _b2.organization) == null ? void 0 : _c2.id;
-    return orgId || null;
-  } catch (error) {
-    console.error("Error getting organization ID:", error);
-    return null;
-  }
-}
-async function setOrganizationContext(orgId) {
-  await supabase.rpc("set_organization_id", { p_org_id: orgId });
-}
 class ChurchApiService {
   constructor() {
-    this.orgId = null;
-    this.client = null;
-    this.initializeOrgId();
-  }
-  async initializeOrgId() {
-    this.client = createClerkSupabaseClient();
-    this.orgId = await getCurrentOrganizationId();
-    if (this.orgId) {
-      await setOrganizationContext(this.orgId);
-    }
-  }
-  async ensureOrgContext() {
-    if (!this.client) {
-      await this.initializeOrgId();
-    }
-    if (!this.orgId) {
-      throw new Error("No organization ID found - user may not be in an organization");
-    }
-  }
-  async getClient() {
-    if (!this.client) {
-      await this.initializeOrgId();
-    }
-    return this.client;
+    this.client = supabase;
+    this.orgId = churchOrgId;
   }
   // Sermons - fetches from BOTH local sermons table AND main site's church_content
   async listSermons() {
@@ -32142,9 +32075,9 @@ class ChurchApiService {
     }));
     let localSermons = [];
     try {
-      const client2 = await this.getClient();
-      const { data, error } = await client2.from("sermons").select("*").order("created_at", { ascending: false }).limit(10);
-      if (!error && data) {
+      const { data, error } = await this.client.from("sermons").select("*").eq("organization_id", this.orgId).order("created_at", { ascending: false }).limit(10);
+      if (error) throw error;
+      if (data) {
         localSermons = data.map((s) => ({
           id: s.id,
           title: s.title,
@@ -32164,22 +32097,9 @@ class ChurchApiService {
     });
     return { sermons: uniqueSermons };
   }
-  async createSermon(data) {
-    const client2 = await this.getClient();
-    const { data: sermon, error } = await client2.from("sermons").insert({
-      title: data.title,
-      youtube_url: data.youtubeUrl
-    }).select().single();
-    if (error) throw error;
-    return sermon;
-  }
   // Events
   async listEvents(params) {
-    const client2 = await this.getClient();
-    let query = client2.from("events").select(`
-        *,
-        event_rsvps(count)
-      `);
+    let query = this.client.from("events").select("*, event_rsvps(count)").eq("organization_id", this.orgId);
     if (params.upcoming) {
       query = query.gte("event_date", (/* @__PURE__ */ new Date()).toISOString());
     }
@@ -32204,26 +32124,9 @@ class ChurchApiService {
     });
     return { events };
   }
-  async createEvent(data) {
-    const client2 = await this.getClient();
-    const { data: event, error } = await client2.from("events").insert({
-      title_en: data.titleEn,
-      title_es: data.titleEs,
-      description_en: data.descriptionEn,
-      description_es: data.descriptionEs,
-      event_date: data.eventDate,
-      location: data.location,
-      max_attendees: data.maxAttendees,
-      created_by: "user"
-      // You might want to get this from Clerk
-    }).select().single();
-    if (error) throw error;
-    return event;
-  }
   // Announcements
   async listAnnouncements(params) {
-    const client2 = await this.getClient();
-    const { data, error } = await client2.from("announcements").select("*").order("priority", { ascending: true }).order("created_at", { ascending: false }).limit(params.limit || 50);
+    const { data, error } = await this.client.from("announcements").select("*").eq("organization_id", this.orgId).order("priority", { ascending: true }).order("created_at", { ascending: false }).limit(params.limit || 50);
     if (error) throw error;
     const announcements = data.map((a) => ({
       id: a.id,
@@ -32239,25 +32142,9 @@ class ChurchApiService {
     }));
     return { announcements };
   }
-  async createAnnouncement(data) {
-    const client2 = await this.getClient();
-    const { data: announcement, error } = await client2.from("announcements").insert({
-      title_en: data.titleEn,
-      title_es: data.titleEs,
-      content_en: data.contentEn,
-      content_es: data.contentEs,
-      priority: data.priority,
-      image_url: data.imageUrl || null,
-      created_by: "user"
-      // You might want to get this from Clerk
-    }).select().single();
-    if (error) throw error;
-    return announcement;
-  }
   // Prayer Requests
   async listPrayerRequests() {
-    const client2 = await this.getClient();
-    const { data, error } = await client2.from("prayer_requests").select("*").order("created_at", { ascending: false });
+    const { data, error } = await this.client.from("prayer_requests").select("*").eq("organization_id", this.orgId).order("created_at", { ascending: false });
     if (error) throw error;
     const prayers = data.map((p) => ({
       id: p.id,
@@ -32274,8 +32161,7 @@ class ChurchApiService {
   }
   // Church Info
   async getChurchInfo() {
-    const client2 = await this.getClient();
-    const { data, error } = await client2.from("church_info").select("*").single();
+    const { data, error } = await this.client.from("church_info").select("*").eq("organization_id", this.orgId).single();
     if (error && error.code !== "PGRST116") throw error;
     if (!data) return null;
     return {
@@ -32297,8 +32183,7 @@ class ChurchApiService {
   }
   // Bulletin Posts
   async listBulletinPosts() {
-    const client2 = await this.getClient();
-    const { data, error } = await client2.from("bulletin_posts").select("*").order("created_at", { ascending: false });
+    const { data, error } = await this.client.from("bulletin_posts").select("*").eq("organization_id", this.orgId).order("created_at", { ascending: false });
     if (error) throw error;
     const posts = data.map((p) => ({
       id: p.id,
@@ -32310,11 +32195,10 @@ class ChurchApiService {
     }));
     return { posts };
   }
-  // Livestream - fetches from main site's church_content
+  // --- External Data (from main site) ---
   async getLivestream() {
     return getLivestreamFromMainSite();
   }
-  // Music Playlist - fetches from main site's church_content
   async getMusicPlaylist() {
     return getMusicPlaylistFromMainSite();
   }

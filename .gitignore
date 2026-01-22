@@ -4,3 +4,9 @@ encore.gen.cue
 /.encore
 node_modules
 /encore.gen
+
+# macOS
+.DS_Store
+
+# Local Env Files
+.env.local

@@ -1,87 +1,35 @@
 /**
- * Supabase Client Service
- * Replaces the Encore client for the church website migration
+ * Supabase Client Service (Read-Only)
+ * This client is for public-facing church sites and only performs read operations.
+ * It uses a public organization ID from environment variables to fetch the correct data.
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Clerk } from '@clerk/clerk-js';
 import { 
   getSermonsFromMainSite, 
   getLivestreamFromMainSite, 
   getMusicPlaylistFromMainSite,
   getEventsFromMainSite,
   getAnnouncementsFromMainSite,
-  type SermonFromMainSite 
 } from './lib/mainSiteData';
 
-// Environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// --- Environment Variables ---
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const churchOrgId = import.meta.env.VITE_CHURCH_ORG_ID;
 
-// Validate environment variables
+// --- Validate Environment Variables ---
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
 }
-
-// Create Supabase client with Clerk auth
-export function createClerkSupabaseClient() {
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    global: {
-      // Get the session token from Clerk
-      fetch: async (url, options = {}) => {
-        const clerk = (window as any).Clerk || (window as any).clerk;
-        const token = await clerk?.session?.getToken();
-        
-        return fetch(url, {
-          ...options,
-          headers: {
-            ...options.headers,
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-      }
-    }
-  });
+if (!churchOrgId) {
+  throw new Error('Missing church organization ID. Please set VITE_CHURCH_ORG_ID.');
 }
 
-// Default client (for unauthenticated requests)
+// --- Create a single, public Supabase client ---
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Helper to get current organization ID from Clerk
-export async function getCurrentOrganizationId(): Promise<string | null> {
-  if (typeof window === 'undefined') return null;
-  
-  try {
-    const clerk = (window as any).Clerk || (window as any).clerk;
-    if (!clerk?.loaded) return null;
-    
-    const user = clerk.user;
-    const orgId = user?.organizationMemberships?.[0]?.organization?.id;
-    
-    return orgId || null;
-  } catch (error) {
-    console.error('Error getting organization ID:', error);
-    return null;
-  }
-}
-
-// Helper to set organization context for RLS
-export async function setOrganizationContext(orgId: string) {
-  // This sets a session variable that RLS policies can use
-  await supabase.rpc('set_organization_id', { p_org_id: orgId });
-}
-
-// Types matching the database schema
-export interface Sermon {
-  id: number;
-  organization_id: string;
-  title: string;
-  youtube_url: string;
-  created_at: string;
-}
-
-// Frontend sermon item format (without organization_id)
+// --- Types matching the database schema ---
 export interface SermonItem {
   id: number;
   title: string;
@@ -155,48 +103,15 @@ export interface ChurchInfo {
   longitude: number | null;
 }
 
-// API Service functions
+// --- API Service (Read-Only) ---
 export class ChurchApiService {
-  private orgId: string | null = null;
-  private client: SupabaseClient | null = null;
-  
-  constructor() {
-    this.initializeOrgId();
-  }
-  
-  private async initializeOrgId() {
-    // Create authenticated client
-    this.client = createClerkSupabaseClient();
-    
-    // Get organization ID
-    this.orgId = await getCurrentOrganizationId();
-    if (this.orgId) {
-      await setOrganizationContext(this.orgId);
-    }
-  }
-  
-  private async ensureOrgContext() {
-    if (!this.client) {
-      await this.initializeOrgId();
-    }
-    if (!this.orgId) {
-      throw new Error('No organization ID found - user may not be in an organization');
-    }
-  }
-  
-  private async getClient(): Promise<SupabaseClient> {
-    if (!this.client) {
-      await this.initializeOrgId();
-    }
-    return this.client!;
-  }
-  
+  private client: SupabaseClient = supabase;
+  private orgId: string = churchOrgId;
+
   // Sermons - fetches from BOTH local sermons table AND main site's church_content
   async listSermons(): Promise<{ sermons: SermonItem[] }> {
-    // Fetch from main site (church_content table) - no auth needed
     const mainSiteSermons = await getSermonsFromMainSite();
     
-    // Transform main site sermons to match expected format
     const sermonsFromMainSite: SermonItem[] = mainSiteSermons.map((s) => ({
       id: parseInt(s.id) || 0,
       title: s.title,
@@ -204,17 +119,18 @@ export class ChurchApiService {
       createdAt: s.createdAt
     }));
 
-    // Also try to fetch from local sermons table (if it exists)
     let localSermons: SermonItem[] = [];
     try {
-      const client = await this.getClient();
-      const { data, error } = await client
+      const { data, error } = await this.client
         .from('sermons')
         .select('*')
+        .eq('organization_id', this.orgId)
         .order('created_at', { ascending: false })
         .limit(10);
       
-      if (!error && data) {
+      if (error) throw error;
+
+      if (data) {
         localSermons = data.map((s: any) => ({
           id: s.id,
           title: s.title,
@@ -223,14 +139,11 @@ export class ChurchApiService {
         }));
       }
     } catch (e) {
-      // Local sermons table might not exist, that's okay
       console.log('Local sermons table not available, using main site data only');
     }
     
-    // Combine both sources, main site first (most recent uploads)
     const allSermons = [...sermonsFromMainSite, ...localSermons];
     
-    // Sort by date and deduplicate by title
     const seen = new Set<string>();
     const uniqueSermons = allSermons
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -243,30 +156,12 @@ export class ChurchApiService {
     return { sermons: uniqueSermons };
   }
   
-  async createSermon(data: { title: string; youtubeUrl: string }): Promise<Sermon> {
-    const client = await this.getClient();
-    const { data: sermon, error } = await client
-      .from('sermons')
-      .insert({
-        title: data.title,
-        youtube_url: data.youtubeUrl
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return sermon;
-  }
-  
   // Events
   async listEvents(params: { upcoming?: boolean }): Promise<{ events: Event[] }> {
-    const client = await this.getClient();
-    let query = client
+    let query = this.client
       .from('events')
-      .select(`
-        *,
-        event_rsvps(count)
-      `);
+      .select('*, event_rsvps(count)')
+      .eq('organization_id', this.orgId);
     
     if (params.upcoming) {
       query = query.gte('event_date', new Date().toISOString());
@@ -276,7 +171,6 @@ export class ChurchApiService {
     
     if (error) throw error;
     
-    // Transform to match expected format (Event interface)
     const events = data.map((e: any) => ({
       id: e.id,
       organization_id: e.organization_id,
@@ -295,48 +189,18 @@ export class ChurchApiService {
     return { events };
   }
   
-  async createEvent(data: {
-    titleEn: string;
-    titleEs: string;
-    descriptionEn: string;
-    descriptionEs: string;
-    eventDate: string;
-    location: string;
-    maxAttendees: number;
-  }): Promise<Event> {
-    const client = await this.getClient();
-    const { data: event, error } = await client
-      .from('events')
-      .insert({
-        title_en: data.titleEn,
-        title_es: data.titleEs,
-        description_en: data.descriptionEn,
-        description_es: data.descriptionEs,
-        event_date: data.eventDate,
-        location: data.location,
-        max_attendees: data.maxAttendees,
-        created_by: 'user' // You might want to get this from Clerk
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return event;
-  }
-  
   // Announcements
   async listAnnouncements(params: { limit?: number }): Promise<{ announcements: Announcement[] }> {
-    const client = await this.getClient();
-    const { data, error } = await client
+    const { data, error } = await this.client
       .from('announcements')
       .select('*')
+      .eq('organization_id', this.orgId)
       .order('priority', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(params.limit || 50);
     
     if (error) throw error;
     
-    // Transform to match expected format (Announcement interface)
     const announcements = data.map((a: any) => ({
       id: a.id,
       organization_id: a.organization_id,
@@ -353,44 +217,16 @@ export class ChurchApiService {
     return { announcements };
   }
   
-  async createAnnouncement(data: {
-    titleEn: string;
-    titleEs: string;
-    contentEn: string;
-    contentEs: string;
-    priority: string;
-    imageUrl?: string;
-  }): Promise<Announcement> {
-    const client = await this.getClient();
-    const { data: announcement, error } = await client
-      .from('announcements')
-      .insert({
-        title_en: data.titleEn,
-        title_es: data.titleEs,
-        content_en: data.contentEn,
-        content_es: data.contentEs,
-        priority: data.priority,
-        image_url: data.imageUrl || null,
-        created_by: 'user' // You might want to get this from Clerk
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return announcement;
-  }
-  
   // Prayer Requests
   async listPrayerRequests(): Promise<{ prayers: PrayerRequest[] }> {
-    const client = await this.getClient();
-    const { data, error } = await client
+    const { data, error } = await this.client
       .from('prayer_requests')
       .select('*')
+      .eq('organization_id', this.orgId)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
     
-    // Transform to match expected format (PrayerRequest interface)
     const prayers = data.map((p: any) => ({
       id: p.id,
       organization_id: p.organization_id,
@@ -408,17 +244,16 @@ export class ChurchApiService {
   
   // Church Info
   async getChurchInfo(): Promise<ChurchInfo | null> {
-    const client = await this.getClient();
-    const { data, error } = await client
+    const { data, error } = await this.client
       .from('church_info')
       .select('*')
+      .eq('organization_id', this.orgId)
       .single();
     
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
     
     if (!data) return null;
     
-    // Transform to match expected format
     return {
       id: data.id,
       organization_id: data.organization_id,
@@ -439,15 +274,14 @@ export class ChurchApiService {
   
   // Bulletin Posts
   async listBulletinPosts(): Promise<{ posts: BulletinPost[] }> {
-    const client = await this.getClient();
-    const { data, error } = await client
+    const { data, error } = await this.client
       .from('bulletin_posts')
       .select('*')
+      .eq('organization_id', this.orgId)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
     
-    // Transform to match expected format (BulletinPost interface)
     const posts = data.map((p: any) => ({
       id: p.id,
       organization_id: p.organization_id,
@@ -460,21 +294,20 @@ export class ChurchApiService {
     return { posts };
   }
   
-  // Livestream - fetches from main site's church_content
+  // --- External Data (from main site) ---
   async getLivestream(): Promise<string | null> {
     return getLivestreamFromMainSite();
   }
   
-  // Music Playlist - fetches from main site's church_content
   async getMusicPlaylist(): Promise<string | null> {
     return getMusicPlaylistFromMainSite();
   }
 }
 
-// Create singleton instance
+// --- Create and export a singleton instance ---
 export const churchApi = new ChurchApiService();
 
-// Re-export main site data functions for direct use
+// --- Re-export main site data functions for direct use ---
 export { 
   getSermonsFromMainSite, 
   getLivestreamFromMainSite, 
