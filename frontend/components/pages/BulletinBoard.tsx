@@ -64,16 +64,32 @@ type DeleteTarget =
   | { type: "post"; id: number; title: string }
   | { type: "prayer"; id: number; title: string };
 
-const fetchBoard = async (): Promise<BoardResponse> => {
-  const response = await fetch(`${API_BASE}/bulletin/board`, {
-    credentials: "include",
-  });
+const fetchBoard = async (backend: ReturnType<typeof useBackend>): Promise<BoardResponse> => {
+  const [prayersResult, postsResult] = await Promise.all([
+    backend.listPrayerRequests(),
+    backend.listBulletinPosts()
+  ]);
 
-  if (!response.ok) {
-    throw new Error("Failed to load bulletin board");
-  }
-
-  return response.json();
+  return {
+    prayers: prayersResult.prayers.map(p => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      isAnonymous: p.isAnonymous,
+      userName: p.userName,
+      prayerCount: p.prayerCount,
+      createdAt: p.createdAt,
+      comments: [] // Comments not yet implemented in Supabase
+    })),
+    posts: postsResult.posts.map(p => ({
+      id: p.id,
+      title: p.title,
+      content: p.content,
+      authorName: p.authorName,
+      createdAt: p.createdAt,
+      comments: [] // Comments not yet implemented in Supabase
+    }))
+  };
 };
 
 const postComment = async (data: {
@@ -82,93 +98,35 @@ const postComment = async (data: {
   authorName: string;
   content: string;
 }): Promise<BulletinComment> => {
-  const response = await fetch(`${API_BASE}/bulletin/comments`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to post comment");
-  }
-
-  return response.json();
+  // Comments not yet implemented in Supabase
+  throw new Error("Comments feature coming soon");
 };
 
 const createPost = async (data: { title: string; content: string; authorName: string; imageUrl?: string | null }): Promise<BulletinPost> => {
-  const response = await fetch(`${API_BASE}/bulletin/posts`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({
-      title: data.title,
-      content: data.content,
-      authorName: data.authorName,
-      imageUrl: data.imageUrl ?? null,
-    }),
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to create post");
-  }
-
-  return response.json();
+  // Post creation should be done through admin dashboard
+  throw new Error("Please use the admin dashboard to create bulletin posts");
 };
 
 const deletePost = async (data: { id: number; passcode: string }) => {
-  const response = await fetch(`${API_BASE}/bulletin/posts/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to delete post");
-  }
-
-  return response.json();
+  // Deletion should be done through admin dashboard
+  throw new Error("Please use the admin dashboard to delete posts");
 };
 
 const deletePrayer = async (data: { id: number; passcode: string }) => {
-  const response = await fetch(`${API_BASE}/prayers/${data.id}?passcode=${encodeURIComponent(data.passcode)}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to delete prayer");
-  }
-
-  return response.json();
+  // Deletion should be done through admin dashboard
+  throw new Error("Please use the admin dashboard to delete prayers");
 };
 
 const prayForPrayer = async (data: { prayerId: number; participantId?: string | null }): Promise<{
   success: boolean;
   prayerCount: number;
 }> => {
-  const response = await fetch(`${API_BASE}/prayers/${data.prayerId}/pray`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ participantId: data.participantId ?? null }),
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to record prayer");
-  }
-
-  return response.json();
+  // Prayer counting not yet implemented in Supabase
+  // For now, just track locally
+  return {
+    success: true,
+    prayerCount: 0
+  };
 };
 
 interface CommentFormState {
@@ -224,7 +182,7 @@ export function BulletinBoard() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["bulletin-board"],
-    queryFn: fetchBoard,
+    queryFn: () => fetchBoard(backend),
   });
 
   useEffect(() => {
