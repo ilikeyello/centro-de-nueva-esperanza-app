@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, User } from "lucide-react";
+import { Plus, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +21,11 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 
-const API_BASE =
-  import.meta.env.VITE_CLIENT_TARGET ??
-  (import.meta.env.DEV ? "http://localhost:4000" : "https://prod-cne-sh82.encr.app");
-
+const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_DASHBOARD_URL || "https://emanuelavina.com";
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
+const USER_NAME_KEY = "cne-user-name";
+const USER_ID_KEY = "cne-user-id";
 
 interface BulletinComment {
   id: number;
@@ -60,9 +59,6 @@ interface BoardResponse {
   posts: BulletinPost[];
 }
 
-type DeleteTarget =
-  | { type: "post"; id: number; title: string }
-  | { type: "prayer"; id: number; title: string };
 
 const fetchBoard = async (backend: ReturnType<typeof useBackend>): Promise<BoardResponse> => {
   const [prayersResult, postsResult] = await Promise.all([
@@ -96,26 +92,58 @@ const postComment = async (data: {
   targetType: "post" | "prayer";
   targetId: number;
   authorName: string;
+  authorId: string | null;
   content: string;
+  organizationId: string;
 }): Promise<BulletinComment> => {
-  // Comments not yet implemented in Supabase
-  throw new Error("Comments feature coming soon");
+  const response = await fetch(`${ADMIN_API_BASE}/api/public/bulletin-comments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      bulletin_post_id: data.targetId,
+      author_name: data.authorName,
+      author_id: data.authorId,
+      content: data.content,
+      organization_id: data.organizationId,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(errorData.error || "Failed to post comment");
+  }
+
+  return response.json();
 };
 
-const createPost = async (data: { title: string; content: string; authorName: string; imageUrl?: string | null }): Promise<BulletinPost> => {
-  // Post creation should be done through admin dashboard
-  throw new Error("Please use the admin dashboard to create bulletin posts");
+const createPost = async (data: { 
+  title: string; 
+  content: string; 
+  authorName: string; 
+  authorId: string | null;
+  organizationId: string;
+}): Promise<BulletinPost> => {
+  const response = await fetch(`${ADMIN_API_BASE}/api/public/bulletin-posts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: data.title,
+      content: data.content,
+      author_name: data.authorName,
+      author_id: data.authorId,
+      organization_id: data.organizationId,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(errorData.error || "Failed to create post");
+  }
+
+  return response.json();
 };
 
-const deletePost = async (data: { id: number; passcode: string }) => {
-  // Deletion should be done through admin dashboard
-  throw new Error("Please use the admin dashboard to delete posts");
-};
-
-const deletePrayer = async (data: { id: number; passcode: string }) => {
-  // Deletion should be done through admin dashboard
-  throw new Error("Please use the admin dashboard to delete prayers");
-};
+// Deletion is handled by admins through the admin dashboard
 
 const prayForPrayer = async (data: { prayerId: number; participantId?: string | null }): Promise<{
   success: boolean;
@@ -167,8 +195,8 @@ export function BulletinBoard() {
     title: "",
     content: "",
     authorName: "",
-    imageUrl: "",
   });
+  const [userId, setUserId] = useState<string | null>(null);
   const [newPrayer, setNewPrayer] = useState({
     title: "",
     description: "",
@@ -188,6 +216,22 @@ export function BulletinBoard() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Load or create user ID
+    let storedUserId = window.localStorage.getItem(USER_ID_KEY);
+    if (!storedUserId) {
+      storedUserId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+      window.localStorage.setItem(USER_ID_KEY, storedUserId);
+    }
+    setUserId(storedUserId);
+
+    // Load saved user name
+    const storedName = window.localStorage.getItem(USER_NAME_KEY);
+    if (storedName) {
+      setNewPost(prev => ({ ...prev, authorName: storedName }));
+      setNewPrayer(prev => ({ ...prev, authorName: storedName }));
+    }
+
+    // Load participant ID for prayers
     let storedId = window.localStorage.getItem(PRAYER_PARTICIPANT_ID_KEY);
     if (!storedId) {
       storedId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
@@ -272,20 +316,16 @@ export function BulletinBoard() {
     prayMutation.mutate({ prayerId, participantId: id });
   };
 
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletePasscode, setDeletePasscode] = useState(""
-  );
-  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
-  const openDeleteDialog = (target: DeleteTarget) => {
-    setDeleteTarget(target);
-    setDeletePasscode("");
-    setDeleteDialogOpen(true);
-  };
+  // Delete functionality removed - only admins can delete through dashboard
 
   const createPostMutation = useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      setNewPost({ title: "", content: "", authorName: "", imageUrl: "" });
+      const savedName = newPost.authorName.trim();
+      if (savedName && typeof window !== "undefined") {
+        window.localStorage.setItem(USER_NAME_KEY, savedName);
+      }
+      setNewPost({ title: "", content: "", authorName: savedName });
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
       setPostDialogOpen(false);
       toast({
@@ -302,71 +342,34 @@ export function BulletinBoard() {
     },
   });
 
-  const deletePostMutation = useMutation({
-    mutationFn: deletePost,
-    onSuccess: (_, variables) => {
-      queryClient.setQueryData<BoardResponse | undefined>(["bulletin-board"], (previous) => {
-        if (!previous) return previous;
-        return {
-          prayers: previous.prayers,
-          posts: previous.posts.filter((post) => post.id !== variables.id),
-        };
-      });
-      toast({
-        title: t("Post removed", "Publicación eliminada"),
-        description: t("The community post has been deleted.", "La publicación de la comunidad ha sido eliminada."),
-      });
-      setDeleteDialogOpen(false);
-      setDeleteTarget(null);
-      setDeletePasscode("");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: t("Error", "Error"),
-        description:
-          error.message.includes("permission")
-            ? t("Incorrect code. Please try again.", "Código incorrecto. Inténtalo de nuevo.")
-            : error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deletePrayerMutation = useMutation({
-    mutationFn: deletePrayer,
-    onSuccess: (_, variables) => {
-      queryClient.setQueryData<BoardResponse | undefined>(["bulletin-board"], (previous) => {
-        if (!previous) return previous;
-        return {
-          posts: previous.posts,
-          prayers: previous.prayers.filter((prayer) => prayer.id !== variables.id),
-        };
-      });
-      toast({
-        title: t("Prayer removed", "Petición eliminada"),
-        description: t("The prayer request has been deleted.", "La petición de oración ha sido eliminada."),
-      });
-      setDeleteDialogOpen(false);
-      setDeleteTarget(null);
-      setDeletePasscode("");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: t("Error", "Error"),
-        description:
-          error.message.includes("permission")
-            ? t("Incorrect code. Please try again.", "Código incorrecto. Inténtalo de nuevo.")
-            : error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  // Delete functionality removed - admins handle deletion through dashboard
 
   const createPrayerMutation = useMutation({
-    mutationFn: (data: { title: string; description: string; isAnonymous: boolean; authorName?: string | null }) =>
-      backend.prayers.create(data),
+    mutationFn: async (data: { title: string; description: string; isAnonymous: boolean; authorName?: string | null; userId: string | null; organizationId: string }) => {
+      const response = await fetch(`${ADMIN_API_BASE}/api/public/prayer-requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organization_id: data.organizationId,
+          title: data.title,
+          description: data.description,
+          is_anonymous: data.isAnonymous,
+          user_name: data.authorName,
+          user_id: data.userId,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || "Failed to create prayer request");
+      }
+      return response.json();
+    },
     onSuccess: () => {
-      setNewPrayer({ title: "", description: "", authorName: "" });
+      const savedName = newPrayer.authorName.trim();
+      if (savedName && typeof window !== "undefined") {
+        window.localStorage.setItem(USER_NAME_KEY, savedName);
+      }
+      setNewPrayer({ title: "", description: "", authorName: savedName });
       setPrayerDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
       toast({
@@ -406,22 +409,43 @@ export function BulletinBoard() {
 
   const handleSubmitPost = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const orgId = import.meta.env.VITE_CHURCH_ORG_ID;
+    if (!orgId) {
+      toast({
+        title: t("Error", "Error"),
+        description: "Organization ID not configured",
+        variant: "destructive",
+      });
+      return;
+    }
     createPostMutation.mutate({
       title: newPost.title.trim(),
       content: newPost.content.trim(),
       authorName: newPost.authorName.trim() || t("Anonymous", "Anónimo"),
-      imageUrl: newPost.imageUrl.trim() || null,
+      authorId: userId,
+      organizationId: orgId,
     });
   };
 
   const handleSubmitPrayer = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const orgId = import.meta.env.VITE_CHURCH_ORG_ID;
+    if (!orgId) {
+      toast({
+        title: t("Error", "Error"),
+        description: "Organization ID not configured",
+        variant: "destructive",
+      });
+      return;
+    }
     const trimmedName = newPrayer.authorName.trim();
     createPrayerMutation.mutate({
       title: newPrayer.title.trim(),
       description: newPrayer.description.trim(),
       isAnonymous: trimmedName.length === 0,
       authorName: trimmedName.length > 0 ? trimmedName : null,
+      userId: userId,
+      organizationId: orgId,
     });
   };
 
@@ -440,12 +464,23 @@ export function BulletinBoard() {
     const key: CommentKey = `post-${postId}`;
     const form = commentForms[key] ?? emptyComment;
 
+    const orgId = import.meta.env.VITE_CHURCH_ORG_ID;
+    if (!orgId) {
+      toast({
+        title: t("Error", "Error"),
+        description: "Organization ID not configured",
+        variant: "destructive",
+      });
+      return;
+    }
     commentMutation.mutate(
       {
         targetType: "post",
         targetId: postId,
         authorName: form.authorName.trim() || t("Anonymous", "Anónimo"),
+        authorId: userId,
         content: form.content.trim(),
+        organizationId: orgId,
       },
       {
         onSuccess: () => {
@@ -533,28 +568,9 @@ export function BulletinBoard() {
                               <span>{formatDate(post.createdAt)}</span>
                             </div>
                           </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
-                            aria-label={t("Delete post", "Eliminar publicación")}
-                            onClick={() => openDeleteDialog({ type: "post", id: post.id, title: post.title })}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {post.imageUrl && (
-                          <div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
-                            <img
-                              src={post.imageUrl}
-                              alt={post.title}
-                              className="max-h-64 w-full object-cover"
-                            />
-                          </div>
-                        )}
                         <p className="whitespace-pre-wrap text-sm text-neutral-300">{post.content}</p>
 
                         <div className="space-y-3">
@@ -681,18 +697,6 @@ export function BulletinBoard() {
                       className="border-neutral-700 bg-neutral-800 text-white"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="bulletin-image" className="text-neutral-200">
-                      {t("Image URL (optional)", "URL de imagen (opcional)")}
-                    </Label>
-                    <Input
-                      id="bulletin-image"
-                      value={newPost.imageUrl}
-                      onChange={(event) => setNewPost((prev) => ({ ...prev, imageUrl: event.target.value }))}
-                      placeholder={t("https://example.com/image.jpg", "https://ejemplo.com/imagen.jpg")}
-                      className="border-neutral-700 bg-neutral-800 text-white"
-                    />
-                  </div>
                   <Button
                     type="submit"
                     disabled={
@@ -747,21 +751,9 @@ export function BulletinBoard() {
                             <span>{formatDate(prayer.createdAt)}</span>
                           </div>
                         </div>
-                        <div className="flex items-start gap-2">
-                          <span className="rounded-full bg-red-600/20 px-3 py-1 text-xs font-medium text-red-400">
-                            {t("Prayers", "Oraciones")}: {prayer.prayerCount}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
-                            aria-label={t("Delete prayer", "Eliminar petición")}
-                            onClick={() => openDeleteDialog({ type: "prayer", id: prayer.id, title: prayer.title })}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <span className="rounded-full bg-red-600/20 px-3 py-1 text-xs font-medium text-red-400">
+                          {t("Prayers", "Oraciones")}: {prayer.prayerCount}
+                        </span>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -865,83 +857,6 @@ export function BulletinBoard() {
           </>
         )}
       </div>
-      <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
-        setDeleteDialogOpen(open);
-        if (!open) {
-          setDeletePasscode("");
-          setDeleteTarget(null);
-        }
-      }}>
-        <DialogContent className="border-neutral-800 bg-neutral-900">
-          <DialogHeader>
-            <DialogTitle className="text-white">
-              {t("Confirm deletion", "Confirmar eliminación")}
-            </DialogTitle>
-            <DialogDescription className="text-neutral-400">
-              {deleteTarget?.type === "post"
-                ? t(
-                    "Enter the admin code to delete this community post.",
-                    "Ingresa el código de administrador para eliminar esta publicación"
-                  )
-                : t(
-                    "Enter the admin code to delete this prayer request.",
-                    "Ingresa el código de administrador para eliminar esta petición"
-                  )}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="delete-target" className="text-neutral-300">
-                {t("Item", "Elemento")}
-              </Label>
-              <Input
-                id="delete-target"
-                value={deleteTarget?.title ?? ""}
-                readOnly
-                className="border-neutral-700 bg-neutral-800 text-white"
-              />
-            </div>
-            <div>
-              <Label htmlFor="delete-passcode" className="text-neutral-300">
-                {t("Admin code", "Código de administrador")}
-              </Label>
-              <Input
-                id="delete-passcode"
-                value={deletePasscode}
-                onChange={(event) => setDeletePasscode(event.target.value)}
-                placeholder={t("Enter code", "Ingresa el código")}
-                autoFocus
-                className="border-neutral-700 bg-neutral-800 text-white"
-              />
-            </div>
-          </div>
-          <DialogFooter className="flex gap-2">
-            <DialogClose asChild>
-              <Button type="button" variant="outline" className="border-neutral-700 text-neutral-200">
-                {t("Cancel", "Cancelar")}
-              </Button>
-            </DialogClose>
-            <Button
-              type="button"
-              className="bg-red-600 hover:bg-red-700"
-              disabled={deletePasscode.trim().length === 0 || deletePostMutation.isPending || deletePrayerMutation.isPending}
-              onClick={() => {
-                if (!deleteTarget) return;
-                const payload = { id: deleteTarget.id, passcode: deletePasscode.trim() };
-                if (deleteTarget.type === "post") {
-                  deletePostMutation.mutate(payload);
-                } else {
-                  deletePrayerMutation.mutate(payload);
-                }
-              }}
-            >
-              {deletePostMutation.isPending || deletePrayerMutation.isPending
-                ? t("Deleting...", "Eliminando...")
-                : t("Delete", "Eliminar")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
