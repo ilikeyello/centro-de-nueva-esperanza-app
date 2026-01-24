@@ -4,7 +4,7 @@
  * This module fetches data from the main site's database tables (church_content)
  * and transforms it to match this church site's expected format.
  * 
- * Data Flow:
+ * Data Flow: (cache-bust v2)
  * Main Site (emanuelavina.com) → uploads to church_content table
  * This Church Site → reads from church_content table via this bridge
  */
@@ -70,9 +70,9 @@ async function getChurchId(): Promise<string | null> {
   }
 
   const { data, error } = await supabase
-    .from('churches')
+    .from('church_info')
     .select('id')
-    .eq('clerk_org_id', churchOrgId)
+    .eq('organization_id', churchOrgId)
     .single();
 
   if (error) {
