@@ -101,15 +101,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const [livestreamUrl, setLivestreamUrlState] = useState<string>(() => {
-    if (typeof window === "undefined") return "";
-    try {
-      const stored = window.localStorage.getItem("cne_livestream_url");
-      return stored || "";
-    } catch {
-      return "";
-    }
-  });
+  const [livestreamUrl, setLivestreamUrlState] = useState<string>("");
 
   // Load livestream URL from main site Supabase on mount (only once)
   useEffect(() => {
@@ -119,13 +111,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         if (liveUrl) {
           const normalized = normalizeLivestreamUrl(liveUrl, defaultLivestreamUrl);
           setLivestreamUrlState(normalized);
-          try {
-            if (typeof window !== "undefined") {
-              window.localStorage.setItem("cne_livestream_url", normalized);
-            }
-          } catch {
-            // ignore storage errors
-          }
         } else {
           console.warn("No livestream URL found for org; falling back to default");
           setLivestreamUrlState(defaultLivestreamUrl);
