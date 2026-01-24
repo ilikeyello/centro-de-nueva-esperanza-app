@@ -19,6 +19,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+if (!clerkOrgId) {
+  console.warn('VITE_CLERK_ORG_ID is not set; main-site scoped content will not load.');
+}
+
 // Public client (no auth needed - RLS allows public reads)
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -74,6 +78,7 @@ async function getChurchId(): Promise<string | null> {
   }
 
   cachedChurchId = data?.id || null;
+  console.log('Resolved church id for org', clerkOrgId, '=>', cachedChurchId);
   return cachedChurchId;
 }
 
@@ -96,6 +101,7 @@ async function fetchContentByType(type: ChurchContentRow['type']): Promise<Churc
     return [];
   }
 
+  console.log(`Fetched ${type} content count:`, (data || []).length);
   return data || [];
 }
 
@@ -130,7 +136,37 @@ export async function getSermonsFromMainSite(): Promise<SermonFromMainSite[]> {
  * Fetch the livestream URL uploaded via the main site admin
  */
 export async function getLivestreamFromMainSite(): Promise<string | null> {
+  const churchId = await getChurchId();
+  if (!churchId) {
+    console.warn('No church id resolved; cannot fetch livestream');
+    return null;
+  }
+
+  // Prefer the livestreams table (org-scoped)
+  try {
+    const { data, error } = await supabase
+      .from('livestreams')
+      .select('stream_url, is_live, organization_id, updated_at')
+      .eq('organization_id', clerkOrgId)
+      .order('updated_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Error fetching livestreams table:', error);
+    } else {
+      console.log('Livestreams table rows:', data);
+      const row = data && data[0];
+      if (row && row.stream_url) {
+        return row.stream_url as string;
+      }
+    }
+  } catch (err) {
+    console.error('Unhandled error fetching livestreams table:', err);
+  }
+
+  // Fallback to legacy church_content type if present
   const content = await fetchContentByType('livestream');
+  console.log('Livestream rows (church_content fallback):', content);
   return content[0]?.youtube_url || null;
 }
 
