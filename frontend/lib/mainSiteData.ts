@@ -13,14 +13,17 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const clerkOrgId = import.meta.env.VITE_CLERK_ORG_ID;
+// Support both names; prefer VITE_CHURCH_ORG_ID
+const churchOrgId = import.meta.env.VITE_CHURCH_ORG_ID || import.meta.env.VITE_CLERK_ORG_ID;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-if (!clerkOrgId) {
-  console.warn('VITE_CLERK_ORG_ID is not set; main-site scoped content will not load.');
+if (!churchOrgId) {
+  console.warn('VITE_CHURCH_ORG_ID (or VITE_CLERK_ORG_ID) is not set; main-site scoped content will not load.');
+} else {
+  console.log('Using organization id for content fetch:', churchOrgId);
 }
 
 // Public client (no auth needed - RLS allows public reads)
@@ -61,15 +64,15 @@ let cachedChurchId: string | null = null;
 async function getChurchId(): Promise<string | null> {
   if (cachedChurchId) return cachedChurchId;
   
-  if (!clerkOrgId) {
-    console.warn('VITE_CLERK_ORG_ID not set - cannot fetch church data');
+  if (!churchOrgId) {
+    console.warn('VITE_CHURCH_ORG_ID not set - cannot fetch church data');
     return null;
   }
 
   const { data, error } = await supabase
     .from('churches')
     .select('id')
-    .eq('clerk_org_id', clerkOrgId)
+    .eq('clerk_org_id', churchOrgId)
     .single();
 
   if (error) {
@@ -78,7 +81,7 @@ async function getChurchId(): Promise<string | null> {
   }
 
   cachedChurchId = data?.id || null;
-  console.log('Resolved church id for org', clerkOrgId, '=>', cachedChurchId);
+  console.log('Resolved church id for org', churchOrgId, '=>', cachedChurchId);
   return cachedChurchId;
 }
 
@@ -147,7 +150,7 @@ export async function getLivestreamFromMainSite(): Promise<string | null> {
     const { data, error } = await supabase
       .from('livestreams')
       .select('stream_url, is_live, organization_id, updated_at')
-      .eq('organization_id', clerkOrgId)
+      .eq('organization_id', churchOrgId)
       .order('updated_at', { ascending: false })
       .limit(1);
 
@@ -249,12 +252,12 @@ export async function getAllMainSiteContent() {
  * Get the church info from main site
  */
 export async function getChurchInfoFromMainSite(): Promise<ChurchRow | null> {
-  if (!clerkOrgId) return null;
+  if (!churchOrgId) return null;
 
   const { data, error } = await supabase
     .from('churches')
     .select('*')
-    .eq('clerk_org_id', clerkOrgId)
+    .eq('clerk_org_id', churchOrgId)
     .single();
 
   if (error) {
