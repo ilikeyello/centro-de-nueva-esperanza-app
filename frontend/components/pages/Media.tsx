@@ -151,11 +151,11 @@ export function Media({ onStartMusic }: MediaProps) {
         setLoadingSermons(true);
         const { sermons } = await backend.listSermons();
         // Transform Supabase sermons to SermonItem format
-        const transformedSermons: SermonItem[] = sermons.map(sermon => ({
+        const transformedSermons: SermonItem[] = sermons.map((sermon: any) => ({
           id: sermon.id,
           title: sermon.title,
-          youtubeUrl: sermon.youtube_url,
-          createdAt: sermon.created_at
+          youtubeUrl: sermon.youtube_url || sermon.youtubeUrl,
+          createdAt: sermon.created_at || sermon.createdAt
         }));
         setSermons(transformedSermons);
         if (transformedSermons.length > 0) {
@@ -307,6 +307,12 @@ export function Media({ onStartMusic }: MediaProps) {
 
   const getEmbedUrl = (url: string) => {
     console.log('getEmbedUrl input:', url);
+    
+    // Return empty string if no URL provided
+    if (!url || url.trim() === '') {
+      console.log('getEmbedUrl: empty URL, returning empty string');
+      return '';
+    }
     
     try {
       const u = new URL(url);
