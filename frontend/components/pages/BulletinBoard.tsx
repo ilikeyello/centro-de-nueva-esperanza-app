@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 
-const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_DASHBOARD_URL || "https://emanuelavina.com";
+const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_DASHBOARD_URL || "https://www.emanuelavina.com";
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
 const USER_NAME_KEY = "cne-user-name";
