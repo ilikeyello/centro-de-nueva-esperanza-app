@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 
+// API base URL - using www subdomain to avoid CORS redirect issues
 const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_DASHBOARD_URL || "https://www.emanuelavina.com";
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
