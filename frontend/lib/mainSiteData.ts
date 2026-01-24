@@ -71,7 +71,7 @@ async function getChurchId(): Promise<string | null> {
 
   const { data, error } = await supabase
     .from('church_info')
-    .select('id')
+    .select('organization_id')
     .eq('organization_id', churchOrgId)
     .single();
 
@@ -80,7 +80,7 @@ async function getChurchId(): Promise<string | null> {
     return null;
   }
 
-  cachedChurchId = data?.id || null;
+  cachedChurchId = (data as any)?.organization_id || null;
   console.log('Resolved church id for org', churchOrgId, '=>', cachedChurchId);
   return cachedChurchId;
 }
@@ -139,9 +139,8 @@ export async function getSermonsFromMainSite(): Promise<SermonFromMainSite[]> {
  * Fetch the livestream URL uploaded via the main site admin
  */
 export async function getLivestreamFromMainSite(): Promise<string | null> {
-  const churchId = await getChurchId();
-  if (!churchId) {
-    console.warn('No church id resolved; cannot fetch livestream');
+  if (!churchOrgId) {
+    console.warn('No org id configured; cannot fetch livestream');
     return null;
   }
 
