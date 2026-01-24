@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { getLivestreamFromMainSite } from "../lib/mainSiteData";
 
 function normalizeLivestreamUrl(raw: string, fallback: string): string {
   const trimmed = raw.trim();
@@ -110,26 +111,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  // Load livestream URL from backend on mount (only once)
+  // Load livestream URL from main site Supabase on mount (only once)
   useEffect(() => {
     const loadLivestreamUrl = async () => {
       try {
-        const base = import.meta.env.DEV
-          ? "http://127.0.0.1:4000"
-          : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/livestream`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.url) {
-            setLivestreamUrlState(data.url);
-            // Also update localStorage for fallback
-            try {
-              if (typeof window !== "undefined") {
-                window.localStorage.setItem("cne_livestream_url", data.url);
-              }
-            } catch {
-              // ignore storage errors
+        const liveUrl = await getLivestreamFromMainSite();
+        if (liveUrl) {
+          setLivestreamUrlState(liveUrl);
+          try {
+            if (typeof window !== "undefined") {
+              window.localStorage.setItem("cne_livestream_url", liveUrl);
             }
+          } catch {
+            // ignore storage errors
           }
         }
       } catch {
