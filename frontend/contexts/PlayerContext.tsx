@@ -117,14 +117,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       try {
         const liveUrl = await getLivestreamFromMainSite();
         if (liveUrl) {
-          setLivestreamUrlState(liveUrl);
+          const normalized = normalizeLivestreamUrl(liveUrl, defaultLivestreamUrl);
+          setLivestreamUrlState(normalized);
           try {
             if (typeof window !== "undefined") {
-              window.localStorage.setItem("cne_livestream_url", liveUrl);
+              window.localStorage.setItem("cne_livestream_url", normalized);
             }
           } catch {
             // ignore storage errors
           }
+        } else {
+          console.warn("No livestream URL found for org; falling back to default");
+          setLivestreamUrlState(defaultLivestreamUrl);
         }
       } catch {
         // Ignore errors, fall back to localStorage/default
