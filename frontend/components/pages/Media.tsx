@@ -403,18 +403,26 @@ export function Media({ onStartMusic }: MediaProps) {
     return Number.isNaN(d.getTime()) ? null : d;
   }, [livestreamScheduledStart]);
 
-  const millisecondsUntilStream = scheduledStartDate
-    ? scheduledStartDate.getTime() - now.getTime()
+  // Use scheduled_start if present and in the future; otherwise fall back to next weekly slot
+  const targetStart = useMemo(() => {
+    if (scheduledStartDate && scheduledStartDate.getTime() > now.getTime()) {
+      return scheduledStartDate;
+    }
+    return getNextLivestream(now);
+  }, [scheduledStartDate, now]);
+
+  const millisecondsUntilStream = targetStart
+    ? targetStart.getTime() - now.getTime()
     : null;
 
   const showCountdown =
     !livestreamIsLive &&
     !manualLiveOverride &&
-    scheduledStartDate !== null &&
+    targetStart !== null &&
     millisecondsUntilStream !== null &&
     millisecondsUntilStream > 0;
 
-  const countdownLabel = scheduledStartDate
+  const countdownLabel = targetStart
     ? formatCountdown(Math.max(millisecondsUntilStream || 0, 0))
     : "";
 
