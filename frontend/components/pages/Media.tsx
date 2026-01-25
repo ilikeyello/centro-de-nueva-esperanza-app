@@ -462,7 +462,7 @@ export function Media({ onStartMusic }: MediaProps) {
         const data = await res.json();
         const latest = (data?.url || "").trim();
         if (cancelled) return;
-        if (typeof latest === "string" && latest !== (livestreamUrl || "")) {
+        if (latest && typeof latest === "string" && latest !== (livestreamUrl || "")) {
           console.log('Livestream URL changed from', livestreamUrl, 'to', latest);
           setLivestreamUrl(latest);
         }
@@ -653,7 +653,7 @@ export function Media({ onStartMusic }: MediaProps) {
                 id="cne-livestream-player"
                 src={getEmbedUrl(livestreamUrl)}
                 title={t("CNE Live Stream", "Transmisión en Vivo de CNE")}
-                className="h-full w-full"
+                className="absolute inset-0 h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 onLoad={() => {
@@ -663,6 +663,16 @@ export function Media({ onStartMusic }: MediaProps) {
                   console.error('Livestream iframe failed to load with src:', getEmbedUrl(livestreamUrl));
                 }}
               />
+              <div className="relative z-10 mt-2 text-xs text-neutral-400">
+                <a
+                  href={getEmbedUrl(livestreamUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-white"
+                >
+                  {t("Open livestream in a new tab", "Abrir transmisión en una nueva pestaña")}
+                </a>
+              </div>
             </div>
           </div>
         </div>
