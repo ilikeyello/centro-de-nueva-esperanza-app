@@ -418,14 +418,6 @@ export function Media({ onStartMusic }: MediaProps) {
     ? formatCountdown(Math.max(millisecondsUntilStream || 0, 0))
     : "";
 
-  const nextStreamMessage = scheduledStartDate
-    ? (language === "en"
-        ? `Next stream: ${scheduledStartDate.toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })}`
-        : `Próxima transmisión: ${scheduledStartDate.toLocaleString("es-MX", { weekday: "long", hour: "numeric", minute: "2-digit" })}`)
-    : language === "en"
-      ? "No upcoming stream scheduled"
-      : "No hay transmisión programada";
-
   // Removed periodic refresh to avoid overriding main-site value
 
   // (Removed autoplay attempt tied to legacy window calculation)
@@ -538,7 +530,6 @@ export function Media({ onStartMusic }: MediaProps) {
                   {showCountdown && (
                     <p className="text-3xl font-bold text-white sm:text-4xl">{countdownLabel}</p>
                   )}
-                  <p className="text-sm text-neutral-300">{nextStreamMessage}</p>
                   <p className="text-xs text-neutral-500">
                     {t(
                       "The player will appear when we go live.",
@@ -565,16 +556,6 @@ export function Media({ onStartMusic }: MediaProps) {
                   }}
                 />
               )}
-              <div className="relative z-10 mt-2 text-xs text-neutral-400">
-                <a
-                  href={getEmbedUrl(livestreamUrl)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline hover:text-white"
-                >
-                  {t("Open livestream in a new tab", "Abrir transmisión en una nueva pestaña")}
-                </a>
-              </div>
             </div>
           </div>
         </div>
