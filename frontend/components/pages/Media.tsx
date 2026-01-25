@@ -595,7 +595,8 @@ export function Media({ onStartMusic }: MediaProps) {
           </div>
           <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 shadow-xl md:col-span-2">
             <div className="relative aspect-video">
-              {showCountdown && (
+              {/* Hide countdown overlay to keep iframe visible */}
+              {false && showCountdown && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-950/90 px-6 text-center">
                   <div className="space-y-2">
                     <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400">
@@ -617,7 +618,8 @@ export function Media({ onStartMusic }: MediaProps) {
                   </div>
                 </div>
               )}
-              {showStartingSoon && (
+              {/* Hide starting soon overlay to keep iframe visible */}
+              {false && showStartingSoon && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-950/90 px-6 text-center">
                   <div className="space-y-2">
                     <div className="flex items-center justify-center gap-2">
