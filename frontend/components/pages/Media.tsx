@@ -6,12 +6,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { useBackend } from "../../hooks/useBackend";
 
-const LIVESTREAM_DAY = 0; // Sunday
-const LIVESTREAM_HOUR = 15;
-const LIVESTREAM_MINUTE = 30;
-// Approximate service length including a small grace window for late starts
-const LIVESTREAM_DURATION_MINUTES = 120;
-
 // YouTube livestream detection
 let youtubeAPIReady = false;
 let liveCheckInterval: NodeJS.Timeout | null = null;
@@ -21,38 +15,6 @@ declare global {
     onYouTubeIframeAPIReady: () => void;
     YT: any;
   }
-}
-
-function getNextLivestream(reference: Date) {
-  const next = new Date(reference);
-  next.setSeconds(0, 0);
-  next.setMinutes(LIVESTREAM_MINUTE);
-  next.setHours(LIVESTREAM_HOUR);
-
-  const daysUntilService = (LIVESTREAM_DAY - reference.getDay() + 7) % 7;
-  next.setDate(reference.getDate() + daysUntilService);
-
-  if (daysUntilService === 0 && reference.getTime() >= next.getTime()) {
-    next.setDate(next.getDate() + 7);
-  }
-
-  return next;
-}
-
-function formatCountdown(milliseconds: number) {
-  const totalSeconds = Math.floor(milliseconds / 1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  const segments = [];
-  if (days > 0) segments.push(`${days}d`);
-  segments.push(`${hours.toString().padStart(2, "0")}h`);
-  segments.push(`${minutes.toString().padStart(2, "0")}m`);
-  segments.push(`${seconds.toString().padStart(2, "0")}s`);
-
-  return segments.join(" ");
 }
 
 interface SermonItem {
@@ -69,7 +31,6 @@ interface MediaProps {
 export function Media({ onStartMusic }: MediaProps) {
   const { language, t } = useLanguage();
   const backend = useBackend();
-  const [now, setNow] = useState(() => new Date());
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
@@ -100,14 +61,6 @@ export function Media({ onStartMusic }: MediaProps) {
     position: number;
   }[]>([]);
   const [loadingPlaylistSongs, setLoadingPlaylistSongs] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const loadPlaylistSongs = async () => {
@@ -397,35 +350,6 @@ export function Media({ onStartMusic }: MediaProps) {
     }
   };
 
-  const scheduledStartDate = useMemo(() => {
-    if (!livestreamScheduledStart) return null;
-    const d = new Date(livestreamScheduledStart);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }, [livestreamScheduledStart]);
-
-  // Prefer scheduled_start when provided and in the future; otherwise fall back to next weekly slot
-  const targetStart = useMemo(() => {
-    if (scheduledStartDate && scheduledStartDate.getTime() > now.getTime()) {
-      return scheduledStartDate;
-    }
-    return getNextLivestream(now);
-  }, [scheduledStartDate, now]);
-
-  const millisecondsUntilStream = targetStart
-    ? targetStart.getTime() - now.getTime()
-    : null;
-
-  const showCountdown =
-    !livestreamIsLive &&
-    !manualLiveOverride &&
-    targetStart !== null &&
-    millisecondsUntilStream !== null &&
-    millisecondsUntilStream > 0;
-
-  const countdownLabel = targetStart
-    ? formatCountdown(Math.max(millisecondsUntilStream || 0, 0))
-    : "";
-
   // Removed periodic refresh to avoid overriding main-site value
 
   // (Removed autoplay attempt tied to legacy window calculation)
@@ -531,13 +455,8 @@ export function Media({ onStartMusic }: MediaProps) {
                     {livestreamTitle || t("Livestream", "Transmisión en vivo")}
                   </p>
                   <p className="text-xl font-semibold text-white sm:text-2xl">
-                    {showCountdown
-                      ? t("We'll go live in", "Comenzaremos en")
-                      : t("Waiting for next stream", "Esperando la próxima transmisión")}
+                    {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
                   </p>
-                  {showCountdown && (
-                    <p className="text-3xl font-bold text-white sm:text-4xl">{countdownLabel}</p>
-                  )}
                   <p className="text-xs text-neutral-500">
                     {t(
                       "The player will appear when we go live.",
