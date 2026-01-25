@@ -138,17 +138,24 @@ export async function getSermonsFromMainSite(): Promise<SermonFromMainSite[]> {
 /**
  * Fetch the livestream URL uploaded via the main site admin
  */
-export async function getLivestreamFromMainSite(): Promise<string | null> {
+export interface LivestreamInfo {
+  url: string | null;
+  isLive: boolean;
+  title?: string | null;
+  scheduledStart?: string | null;
+}
+
+export async function getLivestreamFromMainSite(): Promise<LivestreamInfo> {
   if (!churchOrgId) {
     console.warn('No org id configured; cannot fetch livestream');
-    return null;
+    return { url: null, isLive: false };
   }
 
   // Prefer the livestreams table (org-scoped)
   try {
     const { data, error } = await supabase
       .from('livestreams')
-      .select('stream_url, is_live, organization_id, updated_at')
+      .select('stream_url, is_live, organization_id, updated_at, title, scheduled_start')
       .eq('organization_id', churchOrgId)
       .order('updated_at', { ascending: false })
       .limit(1);
@@ -159,7 +166,12 @@ export async function getLivestreamFromMainSite(): Promise<string | null> {
       console.log('Livestreams table rows:', data);
       const row = data && data[0];
       if (row && row.stream_url) {
-        return row.stream_url as string;
+        return {
+          url: row.stream_url as string,
+          isLive: Boolean(row.is_live),
+          title: (row as any).title ?? null,
+          scheduledStart: (row as any).scheduled_start ?? null,
+        };
       }
     }
   } catch (err) {
@@ -169,7 +181,13 @@ export async function getLivestreamFromMainSite(): Promise<string | null> {
   // Fallback to legacy church_content type if present
   const content = await fetchContentByType('livestream');
   console.log('Livestream rows (church_content fallback):', content);
-  return content[0]?.youtube_url || null;
+  const fallbackUrl = content[0]?.youtube_url || null;
+  return {
+    url: fallbackUrl,
+    isLive: Boolean(fallbackUrl),
+    title: content[0]?.title || null,
+    scheduledStart: null,
+  };
 }
 
 /**

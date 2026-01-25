@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { getLivestreamFromMainSite } from "../lib/mainSiteData";
+import { getLivestreamFromMainSite, type LivestreamInfo } from "../lib/mainSiteData";
 
 function normalizeLivestreamUrl(raw: string, fallback: string): string {
   const trimmed = raw.trim();
@@ -49,6 +49,9 @@ interface PlayerContextType {
   isMinimized: boolean;
   playlistUrl: string;
   livestreamUrl: string;
+  livestreamTitle: string | null;
+  livestreamScheduledStart: string | null;
+  livestreamIsLive: boolean;
   playlistIndex: number | null;
   playlistShuffle: boolean;
   queue: string[];
@@ -102,18 +105,33 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   });
 
   const [livestreamUrl, setLivestreamUrlState] = useState<string>("");
+  const [livestreamTitle, setLivestreamTitle] = useState<string | null>(null);
+  const [livestreamScheduledStart, setLivestreamScheduledStart] = useState<string | null>(null);
+  const [livestreamIsLive, setLivestreamIsLive] = useState<boolean>(false);
 
   // Load livestream URL from main site Supabase on mount (only once)
   useEffect(() => {
+    let cancelled = false;
+
+    const applyInfo = (info: LivestreamInfo | null) => {
+      if (!info) return;
+      const urlVal = info.url || "";
+      const normalized = urlVal ? normalizeLivestreamUrl(urlVal, defaultLivestreamUrl) : "";
+      setLivestreamUrlState(normalized || defaultLivestreamUrl);
+      setLivestreamTitle(info.title ?? null);
+      setLivestreamScheduledStart(info.scheduledStart ?? null);
+      setLivestreamIsLive(Boolean(info.isLive));
+    };
+
     const loadLivestreamUrl = async () => {
       try {
-        const liveUrl = await getLivestreamFromMainSite();
-        if (liveUrl) {
-          const normalized = normalizeLivestreamUrl(liveUrl, defaultLivestreamUrl);
-          setLivestreamUrlState(normalized);
+        const info: LivestreamInfo = await getLivestreamFromMainSite();
+        if (cancelled) return;
+        if (info?.url) {
+          applyInfo(info);
         } else {
           console.warn("No livestream URL found for org; falling back to default");
-          setLivestreamUrlState(defaultLivestreamUrl);
+          applyInfo({ url: defaultLivestreamUrl, isLive: false });
         }
       } catch {
         // Ignore errors, fall back to localStorage/default
@@ -121,6 +139,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
 
     loadLivestreamUrl();
+
+    const intervalId = window.setInterval(loadLivestreamUrl, 30000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   // Load playlist URL from backend on mount (only once), bypassing caches
@@ -276,13 +301,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const trimmed = url.trim();
     // Allow empty URLs - don't fallback to default
     setLivestreamUrlState(trimmed);
-    try {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("cne_livestream_url", trimmed);
-      }
-    } catch {
-      // ignore storage errors
-    }
+    // Manual set does not assert live state; will be refreshed by polling
   };
 
   return (
@@ -295,6 +314,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         isMinimized,
         playlistUrl,
         livestreamUrl,
+        livestreamTitle,
+        livestreamScheduledStart,
+        livestreamIsLive,
         playlistIndex,
         playlistShuffle,
         queue,

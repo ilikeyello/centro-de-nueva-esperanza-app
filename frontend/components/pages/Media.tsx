@@ -73,7 +73,16 @@ export function Media({ onStartMusic }: MediaProps) {
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
-  const { playTrack, startQueue, playlistUrl, livestreamUrl, setLivestreamUrl } = usePlayer();
+  const {
+    playTrack,
+    startQueue,
+    playlistUrl,
+    livestreamUrl,
+    livestreamTitle,
+    livestreamScheduledStart,
+    livestreamIsLive,
+    setLivestreamUrl,
+  } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
   const [manualLiveOverride, setManualLiveOverride] = useState(false);
@@ -388,117 +397,38 @@ export function Media({ onStartMusic }: MediaProps) {
     }
   };
 
-  const nextLivestream = useMemo(() => getNextLivestream(now), [now]);
+  const scheduledStartDate = useMemo(() => {
+    if (!livestreamScheduledStart) return null;
+    const d = new Date(livestreamScheduledStart);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }, [livestreamScheduledStart]);
 
-  // Previous livestream window (last Sunday at service time, plus duration)
-  const previousLivestreamStart = useMemo(() => {
-    const prev = new Date(nextLivestream);
-    prev.setDate(prev.getDate() - 7);
-    return prev;
-  }, [nextLivestream]);
+  const millisecondsUntilStream = scheduledStartDate
+    ? scheduledStartDate.getTime() - now.getTime()
+    : null;
 
-  const previousLivestreamEnd = useMemo(() => {
-    const end = new Date(previousLivestreamStart);
-    end.setMinutes(end.getMinutes() + LIVESTREAM_DURATION_MINUTES);
-    return end;
-  }, [previousLivestreamStart]);
-
-  const millisecondsUntilStream = nextLivestream.getTime() - now.getTime();
-
-  const isInCurrentLivestreamWindow =
-    now >= previousLivestreamStart && now <= previousLivestreamEnd;
-
-  // Show countdown only when:
-  // - We're not in the current livestream window
-  // - There's time until the next stream
-  // - The stream is not playing
-  // - The stream is not actually live (even if early)
-  // - Manual override is not active
   const showCountdown =
-    !isInCurrentLivestreamWindow &&
-    millisecondsUntilStream > 0 &&
-    !isStreamPlaying &&
-    !isActuallyLive &&
-    !manualLiveOverride;
-
-  // Once we're in the current livestream window but the player isn't
-  // playing yet, show a "Starting Soon" overlay instead of a countdown.
-  // Also hide if the stream is actually live (detected by player).
-  const showStartingSoon =
-    isInCurrentLivestreamWindow &&
-    !isStreamPlaying &&
-    !isActuallyLive &&
+    !livestreamIsLive &&
     !manualLiveOverride &&
-    livestreamUrl; // Only show if there's a livestream URL
+    scheduledStartDate !== null &&
+    millisecondsUntilStream !== null &&
+    millisecondsUntilStream > 0;
 
-  const countdownLabel = formatCountdown(Math.max(millisecondsUntilStream, 0));
-  const nextServiceFormatted = useMemo(() => {
-    return nextLivestream.toLocaleString(language === "en" ? "en-US" : "es-MX", {
-      weekday: "long",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }, [language, nextLivestream]);
+  const countdownLabel = scheduledStartDate
+    ? formatCountdown(Math.max(millisecondsUntilStream || 0, 0))
+    : "";
 
-  const nextStreamMessage =
-    language === "en"
-      ? `Next stream: ${nextServiceFormatted}`
-      : `Próxima transmisión: ${nextServiceFormatted}`;
+  const nextStreamMessage = scheduledStartDate
+    ? (language === "en"
+        ? `Next stream: ${scheduledStartDate.toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })}`
+        : `Próxima transmisión: ${scheduledStartDate.toLocaleString("es-MX", { weekday: "long", hour: "numeric", minute: "2-digit" })}`)
+    : language === "en"
+      ? "No upcoming stream scheduled"
+      : "No hay transmisión programada";
 
-  // Periodically refresh the livestream URL from the backend so that
-  // changes made on the Admin page propagate without a full page reload.
-  useEffect(() => {
-    let cancelled = false;
+  // Removed periodic refresh to avoid overriding main-site value
 
-    const fetchLatestLivestream = async () => {
-      try {
-        const base = import.meta.env.DEV
-          ? "http://127.0.0.1:4000"
-          : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/livestream?ts=${Date.now()}`, {
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        const latest = (data?.url || "").trim();
-        if (cancelled) return;
-        if (latest && typeof latest === "string" && latest !== (livestreamUrl || "")) {
-          console.log('Livestream URL changed from', livestreamUrl, 'to', latest);
-          setLivestreamUrl(latest);
-        }
-      } catch (error) {
-        console.error('Error fetching livestream URL:', error);
-      }
-    };
-
-    // Fetch once on mount, then at an interval.
-    void fetchLatestLivestream();
-    const intervalId = window.setInterval(fetchLatestLivestream, 30000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-    };
-  }, [setLivestreamUrl]);
-
-  // When countdown ends and we are in the current live window, try to start playback once.
-  useEffect(() => {
-    if (!isInCurrentLivestreamWindow) return;
-    if (showCountdown) return;
-    if (isStreamPlaying) return;
-    if (!playerRef.current || typeof playerRef.current.playVideo !== "function") return;
-
-    try {
-      playerRef.current.playVideo();
-    } catch {
-      // Autoplay may be blocked by the browser; user can still start manually.
-    }
-  }, [isInCurrentLivestreamWindow, showCountdown, isStreamPlaying]);
-
-  // Simplified: just rely on the main iframe player state for showing/hiding overlays
-  // The countdown and "starting soon" overlays are controlled by isInCurrentLivestreamWindow
-  // and isStreamPlaying, which is updated by the main livestream iframe's onStateChange event.
-  // We don't need complex detection logic; just let the player state drive the UI.
+  // (Removed autoplay attempt tied to legacy window calculation)
 
   // Create hidden div for YouTube player detection
   useEffect(() => {
@@ -595,74 +525,46 @@ export function Media({ onStartMusic }: MediaProps) {
           </div>
           <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 shadow-xl md:col-span-2">
             <div className="relative aspect-video">
-              {/* Hide countdown overlay to keep iframe visible */}
-              {false && showCountdown && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-950/90 px-6 text-center">
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400">
-                      {t("Live service begins soon", "El servicio en vivo comienza pronto")}
-                    </p>
-                    <p className="text-xl font-semibold text-white sm:text-2xl">
-                      {t("We'll go live in", "Comenzaremos en")}
-                    </p>
+              {!livestreamIsLive && !manualLiveOverride && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-neutral-950/90 px-6 text-center">
+                  <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400">
+                    {livestreamTitle || t("Livestream", "Transmisión en vivo")}
+                  </p>
+                  <p className="text-xl font-semibold text-white sm:text-2xl">
+                    {showCountdown
+                      ? t("We'll go live in", "Comenzaremos en")
+                      : t("Waiting for next stream", "Esperando la próxima transmisión")}
+                  </p>
+                  {showCountdown && (
                     <p className="text-3xl font-bold text-white sm:text-4xl">{countdownLabel}</p>
-                    <p className="text-sm text-neutral-300">
-                      {nextStreamMessage}
-                    </p>
-                    <p className="text-xs text-neutral-500">
-                      {t(
-                        "Stay on this page and the stream will start automatically.",
-                        "Permanece en esta página y la transmisión comenzará automáticamente."
-                      )}
-                    </p>
-                  </div>
+                  )}
+                  <p className="text-sm text-neutral-300">{nextStreamMessage}</p>
+                  <p className="text-xs text-neutral-500">
+                    {t(
+                      "The player will appear when we go live.",
+                      "El reproductor aparecerá cuando estemos en vivo."
+                    )}
+                  </p>
                 </div>
               )}
-              {/* Hide starting soon overlay to keep iframe visible */}
-              {false && showStartingSoon && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-950/90 px-6 text-center">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="h-3 w-3 animate-pulse rounded-full bg-red-500"></div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400">
-                        {t("Starting Soon", "Comenzando Pronto")}
-                      </p>
-                      <div className="h-3 w-3 animate-pulse rounded-full bg-red-500"></div>
-                    </div>
-                    <p className="text-xl font-semibold text-white sm:text-2xl">
-                      {t("The stream will begin any moment", "La transmisión comenzará en cualquier momento")}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 animate-pulse rounded-full bg-red-400"></div>
-                      <p className="text-sm text-neutral-300">
-                        {t("Please wait while we connect", "Por favor espera mientras nos conectamos")}
-                      </p>
-                      <div className="h-2 w-2 animate-pulse rounded-full bg-red-400"></div>
-                    </div>
-                    <p className="text-xs text-neutral-500">
-                      {t(
-                        "The service is scheduled to start now. Stay on this page!",
-                        "El servicio está programado para comenzar ahora. ¡Permanece en esta página!"
-                      )}
-                    </p>
-                  </div>
-                </div>
+
+              {(livestreamIsLive || manualLiveOverride) && (
+                <iframe
+                  key={getEmbedUrl(livestreamUrl)}
+                  id="cne-livestream-player"
+                  src={getEmbedUrl(livestreamUrl)}
+                  title={livestreamTitle || t("CNE Live Stream", "Transmisión en Vivo de CNE")}
+                  className="absolute inset-0 h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  onLoad={() => {
+                    console.log('Livestream iframe loaded with src:', getEmbedUrl(livestreamUrl));
+                  }}
+                  onError={() => {
+                    console.error('Livestream iframe failed to load with src:', getEmbedUrl(livestreamUrl));
+                  }}
+                />
               )}
-              <iframe
-                key={getEmbedUrl(livestreamUrl)}
-                id="cne-livestream-player"
-                src={getEmbedUrl(livestreamUrl)}
-                title={t("CNE Live Stream", "Transmisión en Vivo de CNE")}
-                className="absolute inset-0 h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                onLoad={() => {
-                  console.log('Livestream iframe loaded with src:', getEmbedUrl(livestreamUrl));
-                }}
-                onError={() => {
-                  console.error('Livestream iframe failed to load with src:', getEmbedUrl(livestreamUrl));
-                }}
-              />
               <div className="relative z-10 mt-2 text-xs text-neutral-400">
                 <a
                   href={getEmbedUrl(livestreamUrl)}
