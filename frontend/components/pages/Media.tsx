@@ -403,9 +403,9 @@ export function Media({ onStartMusic }: MediaProps) {
     return Number.isNaN(d.getTime()) ? null : d;
   }, [livestreamScheduledStart]);
 
-  // Use scheduled_start if present and in the future; otherwise fall back to next weekly slot
+  // Prefer scheduled_start when provided; otherwise fall back to next weekly slot
   const targetStart = useMemo(() => {
-    if (scheduledStartDate && scheduledStartDate.getTime() > now.getTime()) {
+    if (scheduledStartDate) {
       return scheduledStartDate;
     }
     return getNextLivestream(now);
