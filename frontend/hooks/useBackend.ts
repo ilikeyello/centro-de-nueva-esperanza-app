@@ -17,6 +17,8 @@ export type {
   Event,
   Announcement,
   PrayerRequest,
+  PrayerComment,
   BulletinPost,
+  BulletinComment,
   ChurchInfo
 } from '../supabase-client';

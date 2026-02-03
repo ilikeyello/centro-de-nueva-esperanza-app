@@ -8,10 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -21,8 +18,6 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 
-// API base URL - using www subdomain to avoid CORS redirect issues
-const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_DASHBOARD_URL || "https://www.emanuelavina.com";
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
 const USER_NAME_KEY = "cne-user-name";
@@ -76,7 +71,7 @@ const fetchBoard = async (backend: ReturnType<typeof useBackend>): Promise<Board
       userName: p.userName,
       prayerCount: p.prayerCount,
       createdAt: p.createdAt,
-      comments: [] // Comments not yet implemented in Supabase
+      comments: p.comments || []
     })),
     posts: postsResult.posts.map(p => ({
       id: p.id,
@@ -84,77 +79,8 @@ const fetchBoard = async (backend: ReturnType<typeof useBackend>): Promise<Board
       content: p.content,
       authorName: p.authorName,
       createdAt: p.createdAt,
-      comments: [] // Comments not yet implemented in Supabase
+      comments: p.comments || []
     }))
-  };
-};
-
-const postComment = async (data: {
-  targetType: "post" | "prayer";
-  targetId: number;
-  authorName: string;
-  authorId: string | null;
-  content: string;
-  organizationId: string;
-}): Promise<BulletinComment> => {
-  const response = await fetch(`${ADMIN_API_BASE}/api/public/bulletin-comments`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      bulletin_post_id: data.targetId,
-      author_name: data.authorName,
-      author_id: data.authorId,
-      content: data.content,
-      organization_id: data.organizationId,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-    throw new Error(errorData.error || "Failed to post comment");
-  }
-
-  return response.json();
-};
-
-const createPost = async (data: { 
-  title: string; 
-  content: string; 
-  authorName: string; 
-  authorId: string | null;
-  organizationId: string;
-}): Promise<BulletinPost> => {
-  const response = await fetch(`${ADMIN_API_BASE}/api/public/bulletin-posts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      title: data.title,
-      content: data.content,
-      author_name: data.authorName,
-      author_id: data.authorId,
-      organization_id: data.organizationId,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-    throw new Error(errorData.error || "Failed to create post");
-  }
-
-  return response.json();
-};
-
-// Deletion is handled by admins through the admin dashboard
-
-const prayForPrayer = async (data: { prayerId: number; participantId?: string | null }): Promise<{
-  success: boolean;
-  prayerCount: number;
-}> => {
-  // Prayer counting not yet implemented in Supabase
-  // For now, just track locally
-  return {
-    success: true,
-    prayerCount: 0
   };
 };
 
@@ -163,7 +89,7 @@ interface CommentFormState {
   content: string;
 }
 
-type CommentKey = `post-${number}`;
+type CommentKey = `post-${number}` | `prayer-${number}`;
 
 const emptyComment: CommentFormState = {
   authorName: "",
@@ -265,12 +191,14 @@ export function BulletinBoard() {
   };
 
   const prayMutation = useMutation({
-    mutationFn: prayForPrayer,
+    mutationFn: async (variables: { prayerId: number; participantId?: string | null }) => {
+      await backend.incrementPrayerCount(variables.prayerId);
+      return { prayerCount: 0 }; // We rely on invalidation to get fresh count
+    },
     onMutate: (variables) => {
       setActivePrayerId(variables.prayerId);
     },
     onSuccess: (result, variables) => {
-      const { prayerCount } = result;
       setPrayedPrayerIds((previous) => {
         const updated = new Set(previous);
         updated.add(variables.prayerId);
@@ -278,16 +206,6 @@ export function BulletinBoard() {
           window.localStorage.setItem(PRAYED_PRAYERS_KEY, JSON.stringify(Array.from(updated)));
         }
         return updated;
-      });
-
-      queryClient.setQueryData<BoardResponse | undefined>(["bulletin-board"], (previous) => {
-        if (!previous) return previous;
-        return {
-          ...previous,
-          prayers: previous.prayers.map((prayer) =>
-            prayer.id === variables.prayerId ? { ...prayer, prayerCount } : prayer
-          ),
-        };
       });
 
       toast({
@@ -317,10 +235,14 @@ export function BulletinBoard() {
     prayMutation.mutate({ prayerId, participantId: id });
   };
 
-  // Delete functionality removed - only admins can delete through dashboard
-
   const createPostMutation = useMutation({
-    mutationFn: createPost,
+    mutationFn: (data: { title: string; content: string; authorName: string; authorId: string | null; organizationId: string }) => 
+      backend.createBulletinPost({
+        title: data.title,
+        content: data.content,
+        authorName: data.authorName,
+        authorId: data.authorId
+      }),
     onSuccess: () => {
       const savedName = newPost.authorName.trim();
       if (savedName && typeof window !== "undefined") {
@@ -343,28 +265,15 @@ export function BulletinBoard() {
     },
   });
 
-  // Delete functionality removed - admins handle deletion through dashboard
-
   const createPrayerMutation = useMutation({
-    mutationFn: async (data: { title: string; description: string; isAnonymous: boolean; authorName?: string | null; userId: string | null; organizationId: string }) => {
-      const response = await fetch(`${ADMIN_API_BASE}/api/public/prayer-requests`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          organization_id: data.organizationId,
-          title: data.title,
-          description: data.description,
-          is_anonymous: data.isAnonymous,
-          user_name: data.authorName,
-          user_id: data.userId,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(errorData.error || "Failed to create prayer request");
-      }
-      return response.json();
-    },
+    mutationFn: (data: { title: string; description: string; isAnonymous: boolean; authorName?: string | null; userId: string | null; organizationId: string }) =>
+      backend.createPrayerRequest({
+        title: data.title,
+        description: data.description,
+        isAnonymous: data.isAnonymous,
+        authorName: data.authorName,
+        userId: data.userId
+      }),
     onSuccess: () => {
       const savedName = newPrayer.authorName.trim();
       if (savedName && typeof window !== "undefined") {
@@ -388,7 +297,30 @@ export function BulletinBoard() {
   });
 
   const commentMutation = useMutation({
-    mutationFn: postComment,
+    mutationFn: async (data: {
+      targetType: "post" | "prayer";
+      targetId: number;
+      authorName: string;
+      authorId: string | null;
+      content: string;
+      organizationId: string;
+    }) => {
+      if (data.targetType === "post") {
+        return backend.createBulletinComment({
+          postId: data.targetId,
+          content: data.content,
+          authorName: data.authorName,
+          authorId: data.authorId
+        });
+      } else {
+        return backend.createPrayerComment({
+          prayerId: data.targetId,
+          content: data.content,
+          authorName: data.authorName,
+          authorId: data.authorId
+        });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
       toast({
@@ -460,9 +392,9 @@ export function BulletinBoard() {
     }));
   };
 
-  const handleSubmitComment = (event: React.FormEvent<HTMLFormElement>, postId: number) => {
+  const handleSubmitComment = (event: React.FormEvent<HTMLFormElement>, targetId: number, targetType: "post" | "prayer") => {
     event.preventDefault();
-    const key: CommentKey = `post-${postId}`;
+    const key: CommentKey = `${targetType}-${targetId}` as CommentKey;
     const form = commentForms[key] ?? emptyComment;
 
     const orgId = import.meta.env.VITE_CHURCH_ORG_ID;
@@ -476,8 +408,8 @@ export function BulletinBoard() {
     }
     commentMutation.mutate(
       {
-        targetType: "post",
-        targetId: postId,
+        targetType,
+        targetId,
         authorName: form.authorName.trim() || t("Anonymous", "Anónimo"),
         authorId: userId,
         content: form.content.trim(),
@@ -594,7 +526,7 @@ export function BulletinBoard() {
 
                         <div className="h-px bg-neutral-800" />
 
-                        <form className="space-y-3" onSubmit={(event) => handleSubmitComment(event, post.id)}>
+                        <form className="space-y-3" onSubmit={(event) => handleSubmitComment(event, post.id, "post")}>
                           <div className="grid gap-2">
                             <Label className="text-neutral-300" htmlFor={`post-comment-name-${post.id}`}>
                               {t("Name", "Nombre")}
@@ -757,14 +689,15 @@ export function BulletinBoard() {
                         </span>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
                       <p className="whitespace-pre-wrap text-sm text-neutral-300">{prayer.description}</p>
+                      
                       <Button
                         type="button"
                         onClick={() => handlePray(prayer.id)}
                         disabled={prayedPrayerIds.has(prayer.id) || activePrayerId === prayer.id}
                         className={cn(
-                          "mt-4 w-full",
+                          "w-full",
                           prayedPrayerIds.has(prayer.id)
                             ? "bg-neutral-800 text-neutral-300 hover:bg-neutral-800"
                             : "bg-red-600 hover:bg-red-700"
@@ -776,6 +709,63 @@ export function BulletinBoard() {
                           ? t("Recording...", "Registrando...")
                           : t("I prayed", "Oré")}
                       </Button>
+
+                      <div className="h-px bg-neutral-800" />
+
+                      <div className="space-y-3">
+                        {prayer.comments.length > 0 ? (
+                          prayer.comments.map((comment) => (
+                            <div key={comment.id} className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3 text-sm">
+                              <div className="mb-1 flex items-center justify-between text-xs text-neutral-400">
+                                <span>{comment.authorName}</span>
+                                <span>{formatDate(comment.createdAt)}</span>
+                              </div>
+                              <p className="text-neutral-200">{comment.content}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-neutral-500">
+                            {t("No comments yet. Share a word of encouragement.", "Sin comentarios aún. Comparte una palabra de aliento.")}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="h-px bg-neutral-800" />
+
+                      <form className="space-y-3" onSubmit={(event) => handleSubmitComment(event, prayer.id, "prayer")}>
+                        <div className="grid gap-2">
+                          <Label className="text-neutral-300" htmlFor={`prayer-comment-name-${prayer.id}`}>
+                            {t("Name", "Nombre")}
+                          </Label>
+                          <Input
+                            id={`prayer-comment-name-${prayer.id}`}
+                            value={commentForms[`prayer-${prayer.id}`]?.authorName || ""}
+                            onChange={(event) => handleCommentChange(`prayer-${prayer.id}`, "authorName", event.target.value)}
+                            placeholder={t("Optional", "Opcional")}
+                            className="border-neutral-700 bg-neutral-800 text-white"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label className="text-neutral-300" htmlFor={`prayer-comment-content-${prayer.id}`}>
+                            {t("Comment", "Comentario")}
+                          </Label>
+                          <Textarea
+                            id={`prayer-comment-content-${prayer.id}`}
+                            value={commentForms[`prayer-${prayer.id}`]?.content || ""}
+                            onChange={(event) => handleCommentChange(`prayer-${prayer.id}`, "content", event.target.value)}
+                            required
+                            className="border-neutral-700 bg-neutral-800 text-white"
+                            rows={2}
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          disabled={commentMutation.isPending || (commentForms[`prayer-${prayer.id}`]?.content || "").trim().length === 0}
+                          className="w-full bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+                        >
+                          {t("Add Comment", "Agregar Comentario")}
+                        </Button>
+                      </form>
                     </CardContent>
                   </Card>
                 ))}

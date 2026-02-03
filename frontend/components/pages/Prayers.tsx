@@ -30,14 +30,21 @@ export function Prayers({ onNavigate }: PrayersProps) {
     queryFn: () => backend.listPrayerRequests(),
   });
 
-  // Prayer creation not yet implemented in Supabase
+  // Prayer creation
   const createMutation = useMutation({
     mutationFn: async (data: {
       title: string;
       description: string;
       isAnonymous: boolean;
+      authorName: string;
     }) => {
-      throw new Error("Prayer creation not yet implemented");
+      return backend.createPrayerRequest({
+        title: data.title,
+        description: data.description,
+        isAnonymous: data.isAnonymous,
+        authorName: data.isAnonymous ? null : (data.authorName || t("Anonymous", "Anónimo")),
+        userId: null, // Could use a stored user ID if available
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prayers"] });
@@ -48,19 +55,19 @@ export function Prayers({ onNavigate }: PrayersProps) {
         description: t("Prayer request submitted", "Petición de oración enviada"),
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error(error);
       toast({
         title: t("Error", "Error"),
-        description: t("Failed to submit prayer request", "Error al enviar petición"),
+        description: error.message || t("Failed to submit prayer request", "Error al enviar petición"),
         variant: "destructive",
       });
     },
   });
 
-  // Prayer functionality not fully implemented in Supabase
+  // Prayer functionality
   const prayMutation = useMutation({
-    mutationFn: (prayerId: number) => Promise.resolve(),
+    mutationFn: (prayerId: number) => backend.incrementPrayerCount(prayerId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["prayers"] });
       toast({
@@ -68,11 +75,11 @@ export function Prayers({ onNavigate }: PrayersProps) {
         description: t("Your prayer has been recorded", "Tu oración ha sido registrada"),
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error(error);
       toast({
         title: t("Error", "Error"),
-        description: t("Failed to record prayer", "Error al registrar oración"),
+        description: error.message || t("Failed to record prayer", "Error al registrar oración"),
         variant: "destructive",
       });
     },
@@ -84,6 +91,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
     createMutation.mutate({
       title: formData.get("title") as string,
       description: formData.get("description") as string,
+      authorName: formData.get("authorName") as string,
       isAnonymous,
     });
   };
@@ -139,6 +147,17 @@ export function Prayers({ onNavigate }: PrayersProps) {
                   id="description"
                   name="description"
                   required
+                  className="border-neutral-700 bg-neutral-800 text-white"
+                />
+              </div>
+              <div>
+                <Label htmlFor="authorName" className="text-neutral-200">
+                  {t("Name", "Nombre")}
+                </Label>
+                <Input
+                  id="authorName"
+                  name="authorName"
+                  placeholder={t("Optional if anonymous", "Opcional si es anónimo")}
                   className="border-neutral-700 bg-neutral-800 text-white"
                 />
               </div>

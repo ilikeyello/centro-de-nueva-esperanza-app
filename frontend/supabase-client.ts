@@ -11,6 +11,7 @@ import {
   getMusicPlaylistFromMainSite,
   getEventsFromMainSite,
   getAnnouncementsFromMainSite,
+  type LivestreamInfo
 } from './lib/mainSiteData';
 
 // --- Environment Variables ---
@@ -30,6 +31,8 @@ if (!churchOrgId) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // --- Types matching the database schema ---
+export type Sermon = SermonItem;
+
 export interface SermonItem {
   id: number;
   title: string;
@@ -65,6 +68,16 @@ export interface Announcement {
   imageUrl: string | null;
 }
 
+export interface PrayerComment {
+  id: number;
+  prayerRequestId: number;
+  organization_id: string;
+  authorName: string;
+  authorId: string | null;
+  content: string;
+  createdAt: string;
+}
+
 export interface PrayerRequest {
   id: number;
   organization_id: string;
@@ -75,6 +88,17 @@ export interface PrayerRequest {
   userName: string | null;
   prayerCount: number;
   createdAt: string;
+  comments: PrayerComment[];
+}
+
+export interface BulletinComment {
+  id: number;
+  bulletinPostId: number;
+  organization_id: string;
+  authorName: string;
+  authorId: string | null;
+  content: string;
+  createdAt: string;
 }
 
 export interface BulletinPost {
@@ -84,6 +108,7 @@ export interface BulletinPost {
   content: string;
   authorName: string;
   createdAt: string;
+  comments: BulletinComment[];
 }
 
 export interface ChurchInfo {
@@ -221,7 +246,7 @@ export class ChurchApiService {
   async listPrayerRequests(): Promise<{ prayers: PrayerRequest[] }> {
     const { data, error } = await this.client
       .from('prayer_requests')
-      .select('*')
+      .select('*, prayer_comments(*)')
       .eq('organization_id', this.orgId)
       .order('created_at', { ascending: false });
     
@@ -236,7 +261,16 @@ export class ChurchApiService {
       userId: p.user_id,
       userName: p.user_name,
       prayerCount: p.prayer_count,
-      createdAt: p.created_at
+      createdAt: p.created_at,
+      comments: (p.prayer_comments || []).map((c: any) => ({
+        id: c.id,
+        prayerRequestId: c.prayer_request_id,
+        organization_id: c.organization_id,
+        authorName: c.author_name,
+        authorId: c.author_id,
+        content: c.content,
+        createdAt: c.created_at
+      })).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
     }));
     
     return { prayers };
@@ -276,7 +310,7 @@ export class ChurchApiService {
   async listBulletinPosts(): Promise<{ posts: BulletinPost[] }> {
     const { data, error } = await this.client
       .from('bulletin_posts')
-      .select('*')
+      .select('*, bulletin_comments(*)')
       .eq('organization_id', this.orgId)
       .order('created_at', { ascending: false });
     
@@ -288,19 +322,157 @@ export class ChurchApiService {
       title: p.title,
       content: p.content,
       authorName: p.author_name,
-      createdAt: p.created_at
+      createdAt: p.created_at,
+      comments: (p.bulletin_comments || []).map((c: any) => ({
+        id: c.id,
+        bulletinPostId: c.bulletin_post_id,
+        organization_id: c.organization_id,
+        authorName: c.author_name,
+        authorId: c.author_id,
+        content: c.content,
+        createdAt: c.created_at
+      })).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
     }));
     
     return { posts };
   }
   
   // --- External Data (from main site) ---
-  async getLivestream(): Promise<string | null> {
+  async getLivestream(): Promise<LivestreamInfo> {
     return getLivestreamFromMainSite();
   }
   
   async getMusicPlaylist(): Promise<string | null> {
     return getMusicPlaylistFromMainSite();
+  }
+
+  // --- Write Operations (User Generated Content) ---
+  
+  async createBulletinPost(post: { title: string; content: string; authorName: string; authorId?: string | null }): Promise<BulletinPost> {
+    const { data, error } = await this.client
+      .from('bulletin_posts')
+      .insert({
+        organization_id: this.orgId,
+        title: post.title,
+        content: post.content,
+        author_name: post.authorName,
+        author_id: post.authorId
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      organization_id: data.organization_id,
+      title: data.title,
+      content: data.content,
+      authorName: data.author_name,
+      createdAt: data.created_at,
+      comments: []
+    };
+  }
+
+  async createBulletinComment(comment: { postId: number; content: string; authorName: string; authorId?: string | null }): Promise<BulletinComment> {
+    const { data, error } = await this.client
+      .from('bulletin_comments')
+      .insert({
+        organization_id: this.orgId,
+        bulletin_post_id: comment.postId,
+        content: comment.content,
+        author_name: comment.authorName,
+        author_id: comment.authorId
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      bulletinPostId: data.bulletin_post_id,
+      organization_id: data.organization_id,
+      authorName: data.author_name,
+      authorId: data.author_id,
+      content: data.content,
+      createdAt: data.created_at
+    };
+  }
+
+  async createPrayerRequest(prayer: { title: string; description: string; isAnonymous: boolean; authorName?: string | null; userId?: string | null }): Promise<PrayerRequest> {
+    const { data, error } = await this.client
+      .from('prayer_requests')
+      .insert({
+        organization_id: this.orgId,
+        title: prayer.title,
+        description: prayer.description,
+        is_anonymous: prayer.isAnonymous,
+        user_name: prayer.authorName,
+        user_id: prayer.userId
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      organization_id: data.organization_id,
+      title: data.title,
+      description: data.description,
+      isAnonymous: data.is_anonymous,
+      userId: data.user_id,
+      userName: data.user_name,
+      prayerCount: data.prayer_count,
+      createdAt: data.created_at,
+      comments: []
+    };
+  }
+
+  async createPrayerComment(comment: { prayerId: number; content: string; authorName: string; authorId?: string | null }): Promise<PrayerComment> {
+    const { data, error } = await this.client
+      .from('prayer_comments')
+      .insert({
+        organization_id: this.orgId,
+        prayer_request_id: comment.prayerId,
+        content: comment.content,
+        author_name: comment.authorName,
+        author_id: comment.authorId
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      prayerRequestId: data.prayer_request_id,
+      organization_id: data.organization_id,
+      authorName: data.author_name,
+      authorId: data.author_id,
+      content: data.content,
+      createdAt: data.created_at
+    };
+  }
+
+  async incrementPrayerCount(prayerId: number): Promise<void> {
+    // First get current count
+    const { data: current, error: fetchError } = await this.client
+      .from('prayer_requests')
+      .select('prayer_count')
+      .eq('id', prayerId)
+      .single();
+      
+    if (fetchError) throw fetchError;
+    
+    // Then increment
+    const { error: updateError } = await this.client
+      .from('prayer_requests')
+      .update({ prayer_count: (current?.prayer_count || 0) + 1 })
+      .eq('id', prayerId);
+      
+    if (updateError) throw updateError;
   }
 }
 

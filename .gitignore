@@ -5,6 +5,8 @@ encore.gen.cue
 node_modules
 /encore.gen
 
+frontend/dist/
+
 # macOS
 .DS_Store
 

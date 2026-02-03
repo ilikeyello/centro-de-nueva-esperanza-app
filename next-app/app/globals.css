@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+:root {
+  --sand-50: #f9f9f7;
+  --sand-100: #f3f1ed;
+  --sand-200: #e8e4dc;
+  --sand-300: #d7d1c6;
+  --sand-500: #9c9385;
+  --ink-900: #1f2933;
+  --ink-700: #3a4a5a;
+  --accent-rose: #c97a7e;
+}
+
+* {
+  scrollbar-color: var(--sand-300) var(--sand-100);
+}
+
+body {
+  background: var(--sand-50);
+  color: var(--ink-900);
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Georgia", "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
+
+p, a, button, li, input, textarea {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+a:hover {
+  color: var(--ink-700);
+}
+
+.section-shell {
+  padding: 64px 24px;
+}
+
+@media (min-width: 768px) {
+  .section-shell {
+    padding: 88px 32px;
+  }
+}
+
+.section-inner {
+  margin: 0 auto;
+  max-width: 1080px;
+}
+
+.card {
+  background: white;
+  border: 1px solid rgba(215, 209, 198, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(31, 41, 51, 0.08);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--sand-100);
+  border: 1px solid var(--sand-200);
+  font-size: 14px;
+}
+
+.button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--ink-900);
+  color: white;
+  font-weight: 600;
+  border: 1px solid var(--ink-900);
+  transition: background 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+}
+
+.button-primary:hover {
+  background: #16202a;
+  box-shadow: 0 10px 24px rgba(31, 41, 51, 0.14);
+  transform: translateY(-1px);
+}
+
+.button-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--sand-300);
+  background: white;
+  color: var(--ink-900);
+  font-weight: 600;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+
+.button-ghost:hover {
+  border-color: var(--ink-700);
+  color: var(--ink-700);
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 768px) {
+  .grid-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.serif-title {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--ink-700);
+}

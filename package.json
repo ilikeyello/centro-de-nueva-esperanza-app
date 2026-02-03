@@ -2,10 +2,10 @@
   "name": "leap-app",
   "version": "1.0.0",
   "type": "module",
-  "packageManager": "bun",
+  "packageManager": "bun@1.1.30",
   "workspaces": [
-    "backend",
-    "frontend"
+    "frontend",
+    "next-app"
   ],
   "dependencies": {
     "@clerk/clerk-js": "^5.120.0",
