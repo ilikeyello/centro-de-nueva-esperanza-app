@@ -403,10 +403,10 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                           disabled={liked}
                           className={cn(
                             "flex items-center gap-1.5 text-sm transition-colors",
-                            liked ? "text-red-400" : "text-neutral-400 active:text-red-400"
+                            liked ? "text-red-500" : "text-red-400/60 active:text-red-500"
                           )}
                         >
-                          <Heart className={cn("h-5 w-5", liked && "fill-red-400")} />
+                          <Heart className={cn("h-5 w-5", liked && "fill-red-500")} />
                           <span>{post.likeCount || 0}</span>
                         </button>
 

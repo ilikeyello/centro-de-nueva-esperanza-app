@@ -219,14 +219,14 @@ export class ChurchApiService {
     const announcements = data.map((a: any) => ({
       id: a.id,
       organization_id: a.organization_id,
-      titleEn: a.title_en,
-      titleEs: a.title_es,
-      contentEn: a.content_en,
-      contentEs: a.content_es,
-      priority: a.priority,
+      titleEn: a.title_en ?? a.title ?? "",
+      titleEs: a.title_es ?? a.title ?? "",
+      contentEn: a.content_en ?? a.content ?? "",
+      contentEs: a.content_es ?? a.content ?? "",
+      priority: a.priority ?? "normal",
       createdAt: a.created_at,
-      createdBy: a.created_by,
-      imageUrl: a.image_url
+      createdBy: a.created_by ?? "",
+      imageUrl: a.image_url ?? null
     }));
     
     return { announcements };
@@ -475,7 +475,8 @@ export class ChurchApiService {
     contentEs: string;
     priority?: string;
   }): Promise<Announcement> {
-    const { data, error } = await this.client
+    // Try bilingual columns first; fall back to simple title/content if they don't exist
+    let result = await this.client
       .from('announcements')
       .insert({
         organization_id: this.orgId,
@@ -489,19 +490,34 @@ export class ChurchApiService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (result.error && result.error.message.includes('column')) {
+      result = await this.client
+        .from('announcements')
+        .insert({
+          organization_id: this.orgId,
+          title: announcement.titleEn,
+          content: announcement.contentEn,
+          priority: announcement.priority || 'normal',
+          created_by: 'user',
+        })
+        .select()
+        .single();
+    }
+
+    if (result.error) throw result.error;
+    const data = result.data;
 
     return {
       id: data.id,
       organization_id: data.organization_id,
-      titleEn: data.title_en,
-      titleEs: data.title_es,
-      contentEn: data.content_en,
-      contentEs: data.content_es,
+      titleEn: data.title_en ?? data.title ?? "",
+      titleEs: data.title_es ?? data.title ?? "",
+      contentEn: data.content_en ?? data.content ?? "",
+      contentEs: data.content_es ?? data.content ?? "",
       priority: data.priority,
       createdAt: data.created_at,
-      createdBy: data.created_by,
-      imageUrl: data.image_url,
+      createdBy: data.created_by ?? "",
+      imageUrl: data.image_url ?? null,
     };
   }
 
