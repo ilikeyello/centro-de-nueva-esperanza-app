@@ -76,7 +76,7 @@ export function AppInner() {
       <main className="pb-24 md:pb-20">
         {currentPage === "home" && <Home onNavigate={handleNavigate} />}
         {currentPage === "bible" && <Bible onNavigate={handleNavigate} />}
-        {currentPage === "bulletin" && <BulletinBoard />}
+        {currentPage === "bulletin" && <BulletinBoard onNavigate={handleNavigate} />}
         {currentPage === "news" && <News />}
         {currentPage === "donations" && <Donations onNavigate={handleNavigate} />}
         <div className={currentPage === "media" ? "block" : "hidden"}>

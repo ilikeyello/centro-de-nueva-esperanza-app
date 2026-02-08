@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, User, Heart, MessageCircle, Send, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +19,7 @@ import { useBackend } from "../../hooks/useBackend";
 
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
+const LIKED_POSTS_KEY = "cne-liked-post-ids";
 const USER_NAME_KEY = "cne-user-name";
 const USER_ID_KEY = "cne-user-id";
 
@@ -45,6 +45,7 @@ interface BulletinPost {
   title: string;
   content: string;
   authorName: string;
+  likeCount: number;
   createdAt: string;
   comments: BulletinComment[];
 }
@@ -53,7 +54,6 @@ interface BoardResponse {
   prayers: PrayerItem[];
   posts: BulletinPost[];
 }
-
 
 const fetchBoard = async (backend: ReturnType<typeof useBackend>): Promise<BoardResponse> => {
   const [prayersResult, postsResult] = await Promise.all([
@@ -76,6 +76,7 @@ const fetchBoard = async (backend: ReturnType<typeof useBackend>): Promise<Board
       title: p.title,
       content: p.content,
       authorName: p.authorName,
+      likeCount: p.likeCount ?? 0,
       createdAt: p.createdAt,
       comments: p.comments || []
     }))
@@ -96,49 +97,42 @@ const emptyComment: CommentFormState = {
 
 const formatDate = (date: string) => {
   try {
-    return new Date(date).toLocaleString();
-  } catch (error) {
-    console.error(error);
+    return new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  } catch {
     return date;
   }
 };
 
+const getInitials = (name: string) => {
+  const parts = name.split(" ").filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (name[0] || "?").toUpperCase();
+};
+
 type Tab = "community" | "prayers";
 
-export function BulletinBoard() {
+export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const backend = useBackend();
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<Tab>("community");
-
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [prayerDialogOpen, setPrayerDialogOpen] = useState(false);
+  const [commentDialogPostId, setCommentDialogPostId] = useState<number | null>(null);
 
-  const [newPost, setNewPost] = useState({
-    title: "",
-    content: "",
-    authorName: "",
-  });
+  const [newPost, setNewPost] = useState({ title: "", content: "", authorName: "" });
   const [userId, setUserId] = useState<string | null>(null);
-  const [newPrayer, setNewPrayer] = useState({
-    title: "",
-    description: "",
-    authorName: "",
-  });
+  const [newPrayer, setNewPrayer] = useState({ title: "", description: "", authorName: "" });
 
   const [commentForms, setCommentForms] = useState<Record<CommentKey, CommentFormState>>({});
   const [participantId, setParticipantId] = useState<string | null>(null);
   const [prayedPrayerIds, setPrayedPrayerIds] = useState<Set<number>>(() => new Set());
+  const [likedPostIds, setLikedPostIds] = useState<Set<number>>(() => new Set());
   const [activePrayerId, setActivePrayerId] = useState<number | null>(null);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["bulletin-board"],
     queryFn: () => fetchBoard(backend),
     retry: false,
@@ -147,7 +141,6 @@ export function BulletinBoard() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Load or create user ID
     let storedUserId = window.localStorage.getItem(USER_ID_KEY);
     if (!storedUserId) {
       storedUserId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
@@ -155,14 +148,12 @@ export function BulletinBoard() {
     }
     setUserId(storedUserId);
 
-    // Load saved user name
     const storedName = window.localStorage.getItem(USER_NAME_KEY);
     if (storedName) {
       setNewPost(prev => ({ ...prev, authorName: storedName }));
       setNewPrayer(prev => ({ ...prev, authorName: storedName }));
     }
 
-    // Load participant ID for prayers
     let storedId = window.localStorage.getItem(PRAYER_PARTICIPANT_ID_KEY);
     if (!storedId) {
       storedId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
@@ -172,19 +163,18 @@ export function BulletinBoard() {
 
     const storedPrayed = window.localStorage.getItem(PRAYED_PRAYERS_KEY);
     if (storedPrayed) {
-      try {
-        const parsed = JSON.parse(storedPrayed) as number[];
-        setPrayedPrayerIds(new Set(parsed));
-      } catch (error) {
-        console.error("Failed to parse prayed prayers from storage", error);
-      }
+      try { setPrayedPrayerIds(new Set(JSON.parse(storedPrayed) as number[])); } catch { /* ignore */ }
+    }
+
+    const storedLiked = window.localStorage.getItem(LIKED_POSTS_KEY);
+    if (storedLiked) {
+      try { setLikedPostIds(new Set(JSON.parse(storedLiked) as number[])); } catch { /* ignore */ }
     }
   }, []);
 
   const ensureParticipantId = () => {
     if (participantId) return participantId;
     if (typeof window === "undefined") return null;
-
     let storedId = window.localStorage.getItem(PRAYER_PARTICIPANT_ID_KEY);
     if (!storedId) {
       storedId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2);
@@ -197,227 +187,118 @@ export function BulletinBoard() {
   const prayMutation = useMutation({
     mutationFn: async (variables: { prayerId: number; participantId?: string | null }) => {
       await backend.incrementPrayerCount(variables.prayerId);
-      return { prayerCount: 0 }; // We rely on invalidation to get fresh count
     },
-    onMutate: (variables) => {
-      setActivePrayerId(variables.prayerId);
-    },
-    onSuccess: (result, variables) => {
-      setPrayedPrayerIds((previous) => {
-        const updated = new Set(previous);
+    onMutate: (variables) => { setActivePrayerId(variables.prayerId); },
+    onSuccess: (_result, variables) => {
+      setPrayedPrayerIds((prev) => {
+        const updated = new Set(prev);
         updated.add(variables.prayerId);
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem(PRAYED_PRAYERS_KEY, JSON.stringify(Array.from(updated)));
-        }
+        if (typeof window !== "undefined") window.localStorage.setItem(PRAYED_PRAYERS_KEY, JSON.stringify(Array.from(updated)));
         return updated;
       });
-
-      toast({
-        title: t("Thank you for praying", "Gracias por orar"),
-        description: t("We've recorded your prayer.", "Hemos registrado tu oración."),
-      });
-
+      toast({ title: t("Thank you for praying", "Gracias por orar"), description: t("We've recorded your prayer.", "Hemos registrado tu oración.") });
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
     },
-    onError: (error: Error) => {
-      toast({
-        title: t("Error", "Error"),
-        description: error.message,
-        variant: "destructive",
+    onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
+    onSettled: () => { setActivePrayerId(null); },
+  });
+
+  const likeMutation = useMutation({
+    mutationFn: async (postId: number) => {
+      await backend.incrementLikeCount(postId);
+    },
+    onSuccess: (_result, postId) => {
+      setLikedPostIds((prev) => {
+        const updated = new Set(prev);
+        updated.add(postId);
+        if (typeof window !== "undefined") window.localStorage.setItem(LIKED_POSTS_KEY, JSON.stringify(Array.from(updated)));
+        return updated;
       });
+      queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
     },
-    onSettled: () => {
-      setActivePrayerId(null);
-    },
+    onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
   });
 
   const handlePray = (prayerId: number) => {
-    if (prayedPrayerIds.has(prayerId)) {
-      return;
-    }
+    if (prayedPrayerIds.has(prayerId)) return;
     const id = ensureParticipantId();
     prayMutation.mutate({ prayerId, participantId: id });
   };
 
+  const handleLike = (postId: number) => {
+    if (likedPostIds.has(postId)) return;
+    likeMutation.mutate(postId);
+  };
+
   const createPostMutation = useMutation({
-    mutationFn: (data: { title: string; content: string; authorName: string; authorId: string | null; organizationId: string }) => 
-      backend.createBulletinPost({
-        title: data.title,
-        content: data.content,
-        authorName: data.authorName,
-        authorId: data.authorId
-      }),
+    mutationFn: (data: { title: string; content: string; authorName: string; authorId: string | null; organizationId: string }) =>
+      backend.createBulletinPost({ title: data.title, content: data.content, authorName: data.authorName, authorId: data.authorId }),
     onSuccess: () => {
       const savedName = newPost.authorName.trim();
-      if (savedName && typeof window !== "undefined") {
-        window.localStorage.setItem(USER_NAME_KEY, savedName);
-      }
+      if (savedName && typeof window !== "undefined") window.localStorage.setItem(USER_NAME_KEY, savedName);
       setNewPost({ title: "", content: "", authorName: savedName });
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
       setPostDialogOpen(false);
-      toast({
-        title: t("Post created", "Publicación creada"),
-        description: t("Your bulletin post is now live.", "Tu publicación ya está visible."),
-      });
+      toast({ title: t("Post created", "Publicación creada"), description: t("Your bulletin post is now live.", "Tu publicación ya está visible.") });
     },
-    onError: (error: Error) => {
-      toast({
-        title: t("Error", "Error"),
-        description: error.message,
-        variant: "destructive",
-      });
-    },
+    onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
   });
 
   const createPrayerMutation = useMutation({
     mutationFn: (data: { title: string; description: string; isAnonymous: boolean; authorName?: string | null; userId: string | null; organizationId: string }) =>
-      backend.createPrayerRequest({
-        title: data.title,
-        description: data.description,
-        isAnonymous: data.isAnonymous,
-        authorName: data.authorName,
-        userId: data.userId
-      }),
+      backend.createPrayerRequest({ title: data.title, description: data.description, isAnonymous: data.isAnonymous, authorName: data.authorName, userId: data.userId }),
     onSuccess: () => {
       const savedName = newPrayer.authorName.trim();
-      if (savedName && typeof window !== "undefined") {
-        window.localStorage.setItem(USER_NAME_KEY, savedName);
-      }
+      if (savedName && typeof window !== "undefined") window.localStorage.setItem(USER_NAME_KEY, savedName);
       setNewPrayer({ title: "", description: "", authorName: savedName });
       setPrayerDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
-      toast({
-        title: t("Prayer shared", "Petición compartida"),
-        description: t("We're praying with you.", "Estamos orando contigo."),
-      });
+      toast({ title: t("Prayer shared", "Petición compartida"), description: t("We're praying with you.", "Estamos orando contigo.") });
     },
-    onError: (error: Error) => {
-      toast({
-        title: t("Error", "Error"),
-        description: error.message,
-        variant: "destructive",
-      });
-    },
+    onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
   });
 
   const commentMutation = useMutation({
-    mutationFn: async (data: {
-      targetType: "post";
-      targetId: number;
-      authorName: string;
-      authorId: string | null;
-      content: string;
-      organizationId: string;
-    }) => {
-      return backend.createBulletinComment({
-        postId: data.targetId,
-        content: data.content,
-        authorName: data.authorName,
-        authorId: data.authorId
-      });
+    mutationFn: async (data: { targetId: number; authorName: string; authorId: string | null; content: string }) => {
+      return backend.createBulletinComment({ postId: data.targetId, content: data.content, authorName: data.authorName, authorId: data.authorId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
-      toast({
-        title: t("Comment added", "Comentario añadido"),
-        description: t("Thank you for contributing.", "Gracias por contribuir."),
-      });
+      toast({ title: t("Comment added", "Comentario añadido"), description: t("Thank you for contributing.", "Gracias por contribuir.") });
     },
-    onError: (error: Error) => {
-      toast({
-        title: t("Error", "Error"),
-        description: error.message,
-        variant: "destructive",
-      });
-    },
+    onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
   });
 
   const prayers = useMemo(() => data?.prayers ?? [], [data]);
   const posts = useMemo(() => data?.posts ?? [], [data]);
+  const commentDialogPost = useMemo(() => posts.find(p => p.id === commentDialogPostId) ?? null, [posts, commentDialogPostId]);
 
   const handleSubmitPost = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const orgId = import.meta.env.VITE_CHURCH_ORG_ID;
-    if (!orgId) {
-      toast({
-        title: t("Error", "Error"),
-        description: "Organization ID not configured",
-        variant: "destructive",
-      });
-      return;
-    }
-    createPostMutation.mutate({
-      title: newPost.title.trim(),
-      content: newPost.content.trim(),
-      authorName: newPost.authorName.trim() || t("Anonymous", "Anónimo"),
-      authorId: userId,
-      organizationId: orgId,
-    });
+    if (!orgId) { toast({ title: t("Error", "Error"), description: "Organization ID not configured", variant: "destructive" }); return; }
+    createPostMutation.mutate({ title: newPost.title.trim(), content: newPost.content.trim(), authorName: newPost.authorName.trim() || t("Anonymous", "Anónimo"), authorId: userId, organizationId: orgId });
   };
 
   const handleSubmitPrayer = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const orgId = import.meta.env.VITE_CHURCH_ORG_ID;
-    if (!orgId) {
-      toast({
-        title: t("Error", "Error"),
-        description: "Organization ID not configured",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!orgId) { toast({ title: t("Error", "Error"), description: "Organization ID not configured", variant: "destructive" }); return; }
     const trimmedName = newPrayer.authorName.trim();
-    createPrayerMutation.mutate({
-      title: newPrayer.title.trim(),
-      description: newPrayer.description.trim(),
-      isAnonymous: trimmedName.length === 0,
-      authorName: trimmedName.length > 0 ? trimmedName : null,
-      userId: userId,
-      organizationId: orgId,
-    });
+    createPrayerMutation.mutate({ title: newPrayer.title.trim(), description: newPrayer.description.trim(), isAnonymous: trimmedName.length === 0, authorName: trimmedName.length > 0 ? trimmedName : null, userId: userId, organizationId: orgId });
   };
 
   const handleCommentChange = (key: CommentKey, field: keyof CommentFormState, value: string) => {
-    setCommentForms((prev) => ({
-      ...prev,
-      [key]: {
-        ...(prev[key] ?? emptyComment),
-        [field]: value,
-      },
-    }));
+    setCommentForms((prev) => ({ ...prev, [key]: { ...(prev[key] ?? emptyComment), [field]: value } }));
   };
 
   const handleSubmitComment = (event: React.FormEvent<HTMLFormElement>, targetId: number) => {
     event.preventDefault();
     const key: CommentKey = `post-${targetId}`;
     const form = commentForms[key] ?? emptyComment;
-
-    const orgId = import.meta.env.VITE_CHURCH_ORG_ID;
-    if (!orgId) {
-      toast({
-        title: t("Error", "Error"),
-        description: "Organization ID not configured",
-        variant: "destructive",
-      });
-      return;
-    }
     commentMutation.mutate(
-      {
-        targetType: "post",
-        targetId,
-        authorName: form.authorName.trim() || t("Anonymous", "Anónimo"),
-        authorId: userId,
-        content: form.content.trim(),
-        organizationId: orgId,
-      },
-      {
-        onSuccess: () => {
-          setCommentForms((prev) => ({
-            ...prev,
-            [key]: emptyComment,
-          }));
-        },
-      }
+      { targetId, authorName: form.authorName.trim() || t("Anonymous", "Anónimo"), authorId: userId, content: form.content.trim() },
+      { onSuccess: () => { setCommentForms((prev) => ({ ...prev, [key]: emptyComment })); } }
     );
   };
 
@@ -430,10 +311,7 @@ export function BulletinBoard() {
               {t("Community Hub", "Centro Comunitario")}
             </h1>
             <p className="mt-2 text-sm text-neutral-400">
-              {t(
-                "Share updates, testimonies, and prayer needs with our bilingual church family.",
-                "Comparte actualizaciones, testimonios y peticiones de oración con nuestra familia bilingüe."
-              )}
+              {t("Share updates, testimonies, and prayer needs with our bilingual church family.", "Comparte actualizaciones, testimonios y peticiones de oración con nuestra familia bilingüe.")}
             </p>
           </div>
           <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 border-neutral-300 bg-neutral-50 p-1 md:w-auto">
@@ -464,117 +342,142 @@ export function BulletinBoard() {
 
         {activeTab === "community" ? (
           <>
-            <section className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-semibold text-white">
-                  {t("Community Posts", "Publicaciones de la Comunidad")}
-                </h2>
-                <p className="text-sm text-neutral-400">
-                  {t("Share updates, testimonies, and encouragement with everyone.", "Comparte actualizaciones, testimonios y ánimo con todos.")}
-                </p>
-              </div>
+            <section className="space-y-4">
+              {isLoading && <p className="text-sm text-neutral-400">{t("Loading posts...", "Cargando publicaciones...")}</p>}
+              {isError && <p className="text-sm text-red-400">{t("Error loading posts.", "Error al cargar publicaciones.")} {String((error as Error)?.message ?? error)}</p>}
 
-              {isLoading && (
-                <p className="text-sm text-neutral-400">
-                  {t("Loading posts...", "Cargando publicaciones...")}
-                </p>
-              )}
-
-              {isError && (
-                <p className="text-sm text-red-400">
-                  {t("Error loading posts.", "Error al cargar publicaciones.")} {String((error as Error)?.message ?? error)}
-                </p>
-              )}
-
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {posts.map((post) => {
-                  const commentKey: CommentKey = `post-${post.id}` as CommentKey;
-                  const commentForm = commentForms[commentKey] ?? emptyComment;
-
+                  const liked = likedPostIds.has(post.id);
                   return (
-                    <Card key={post.id} className="border-neutral-800 bg-neutral-900/60">
-                      <CardHeader>
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <CardTitle className="text-white">{post.title}</CardTitle>
-                            <div className="mt-2 flex items-center gap-2 text-xs text-neutral-400">
-                              <User className="h-3 w-3" />
-                              <span>{post.authorName}</span>
-                              <span>•</span>
-                              <span>{formatDate(post.createdAt)}</span>
-                            </div>
-                          </div>
+                    <article key={post.id} className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/70">
+                      <div className="flex items-center gap-3 px-5 pt-5 pb-2">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600/20 text-sm font-bold text-red-400">
+                          {getInitials(post.authorName)}
                         </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <p className="whitespace-pre-wrap text-sm text-neutral-300">{post.content}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-white">{post.authorName}</p>
+                          <p className="text-xs text-neutral-500">{formatDate(post.createdAt)}</p>
+                        </div>
+                      </div>
 
-                        <div className="space-y-3">
-                          {post.comments.length > 0 ? (
-                            post.comments.map((comment) => (
-                              <div key={comment.id} className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3 text-sm">
-                                <div className="mb-1 flex items-center justify-between text-xs text-neutral-400">
-                                  <span>{comment.authorName}</span>
-                                  <span>{formatDate(comment.createdAt)}</span>
-                                </div>
-                                <p className="text-neutral-200">{comment.content}</p>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-xs text-neutral-500">
-                              {t("No comments yet. Be the first to respond.", "Sin comentarios aún. Sé el primero en responder.")}
-                            </p>
+                      <div className="px-5 pt-2 pb-3">
+                        <h3 className="mb-1 text-base font-bold text-white">{post.title}</h3>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">{post.content}</p>
+                      </div>
+
+                      <div className="flex items-center gap-4 border-t border-neutral-800 px-5 py-3">
+                        <button
+                          type="button"
+                          onClick={() => handleLike(post.id)}
+                          disabled={liked}
+                          className={cn(
+                            "flex items-center gap-1.5 text-sm transition-colors",
+                            liked ? "text-red-400" : "text-neutral-400 active:text-red-400"
                           )}
-                        </div>
+                        >
+                          <Heart className={cn("h-5 w-5", liked && "fill-red-400")} />
+                          <span>{(post.likeCount || 0) + (liked && post.likeCount === 0 ? 0 : 0)}</span>
+                        </button>
 
-                        <div className="h-px bg-neutral-800" />
-
-                        <form className="space-y-3" onSubmit={(event) => handleSubmitComment(event, post.id)}>
-                          <div className="grid gap-2">
-                            <Label className="text-neutral-300" htmlFor={`post-comment-name-${post.id}`}>
-                              {t("Name", "Nombre")}
-                            </Label>
-                            <Input
-                              id={`post-comment-name-${post.id}`}
-                              value={commentForm.authorName}
-                              onChange={(event) => handleCommentChange(commentKey, "authorName", event.target.value)}
-                              placeholder={t("Optional", "Opcional")}
-                              className="border-neutral-700 bg-neutral-800 text-white"
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <Label className="text-neutral-300" htmlFor={`post-comment-content-${post.id}`}>
-                              {t("Comment", "Comentario")}
-                            </Label>
-                            <Textarea
-                              id={`post-comment-content-${post.id}`}
-                              value={commentForm.content}
-                              onChange={(event) => handleCommentChange(commentKey, "content", event.target.value)}
-                              required
-                              className="border-neutral-700 bg-neutral-800 text-white"
-                              rows={2}
-                            />
-                          </div>
-                          <Button
-                            type="submit"
-                            disabled={commentMutation.isPending || commentForm.content.trim().length === 0}
-                            className="w-full bg-red-600 hover:bg-red-700"
-                          >
-                            {t("Add Comment", "Agregar Comentario")}
-                          </Button>
-                        </form>
-                      </CardContent>
-                    </Card>
+                        <button
+                          type="button"
+                          onClick={() => setCommentDialogPostId(post.id)}
+                          className="flex items-center gap-1.5 text-sm text-neutral-400 transition-colors active:text-white"
+                        >
+                          <MessageCircle className="h-5 w-5" />
+                          <span>{post.comments.length}</span>
+                        </button>
+                      </div>
+                    </article>
                   );
                 })}
               </div>
 
               {!isLoading && !isError && posts.length === 0 && (
-                <p className="text-sm text-neutral-400">
-                  {t("No community posts yet. Start the conversation above!", "No hay publicaciones aún. ¡Comienza la conversación arriba!")}
+                <p className="text-center text-sm text-neutral-500 py-12">
+                  {t("No community posts yet. Start the conversation!", "No hay publicaciones aún. ¡Comienza la conversación!")}
                 </p>
               )}
             </section>
+
+            <Dialog open={commentDialogPostId !== null} onOpenChange={(open) => { if (!open) setCommentDialogPostId(null); }}>
+              <DialogContent className="flex max-h-[85vh] flex-col border-neutral-700 bg-neutral-900 text-white sm:max-w-lg">
+                {commentDialogPost && (
+                  <>
+                    <DialogHeader className="shrink-0 border-b border-neutral-800 pb-4">
+                      <DialogTitle className="text-white">{commentDialogPost.title}</DialogTitle>
+                      <div className="flex items-center gap-2 pt-1 text-xs text-neutral-400">
+                        <span>{commentDialogPost.authorName}</span>
+                        <span>•</span>
+                        <span>{formatDate(commentDialogPost.createdAt)}</span>
+                      </div>
+                    </DialogHeader>
+
+                    <div className="flex-1 space-y-4 overflow-y-auto py-4">
+                      <p className="whitespace-pre-wrap text-sm text-neutral-300">{commentDialogPost.content}</p>
+
+                      <div className="h-px bg-neutral-800" />
+
+                      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                        {t("Comments", "Comentarios")} ({commentDialogPost.comments.length})
+                      </p>
+
+                      {commentDialogPost.comments.length === 0 && (
+                        <p className="text-sm text-neutral-500">
+                          {t("No comments yet. Be the first to respond.", "Sin comentarios aún. Sé el primero en responder.")}
+                        </p>
+                      )}
+
+                      {commentDialogPost.comments.map((comment) => (
+                        <div key={comment.id} className="flex gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-xs font-bold text-neutral-300">
+                            {getInitials(comment.authorName)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="rounded-xl bg-neutral-800/80 px-3 py-2">
+                              <p className="text-xs font-semibold text-neutral-200">{comment.authorName}</p>
+                              <p className="text-sm text-neutral-300">{comment.content}</p>
+                            </div>
+                            <p className="mt-0.5 pl-3 text-[0.65rem] text-neutral-500">{formatDate(comment.createdAt)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <form
+                      className="shrink-0 flex items-end gap-2 border-t border-neutral-800 pt-3"
+                      onSubmit={(event) => handleSubmitComment(event, commentDialogPost.id)}
+                    >
+                      <div className="flex-1 space-y-2">
+                        <Input
+                          value={commentForms[`post-${commentDialogPost.id}`]?.authorName || ""}
+                          onChange={(e) => handleCommentChange(`post-${commentDialogPost.id}`, "authorName", e.target.value)}
+                          placeholder={t("Your name (optional)", "Tu nombre (opcional)")}
+                          className="border-neutral-700 bg-neutral-800 text-sm text-white placeholder:text-neutral-500"
+                        />
+                        <Textarea
+                          value={commentForms[`post-${commentDialogPost.id}`]?.content || ""}
+                          onChange={(e) => handleCommentChange(`post-${commentDialogPost.id}`, "content", e.target.value)}
+                          placeholder={t("Write a comment...", "Escribe un comentario...")}
+                          required
+                          rows={2}
+                          className="border-neutral-700 bg-neutral-800 text-sm text-white placeholder:text-neutral-500"
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        size="icon"
+                        disabled={commentMutation.isPending || !(commentForms[`post-${commentDialogPost.id}`]?.content || "").trim()}
+                        className="mb-0.5 h-10 w-10 shrink-0 rounded-full bg-red-600 hover:bg-red-700"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </form>
+                  </>
+                )}
+              </DialogContent>
+            </Dialog>
 
             <Dialog open={postDialogOpen} onOpenChange={setPostDialogOpen}>
               <DialogTrigger asChild>
@@ -584,9 +487,6 @@ export function BulletinBoard() {
                   aria-label={t("Create a new community post", "Crear una nueva publicación comunitaria")}
                 >
                   <Plus className="h-6 w-6" />
-                  <span className="sr-only">
-                    {t("Create a new community post", "Crear una nueva publicación comunitaria")}
-                  </span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="warm-card">
@@ -597,51 +497,18 @@ export function BulletinBoard() {
                 </DialogHeader>
                 <form onSubmit={handleSubmitPost} className="space-y-4">
                   <div>
-                    <Label htmlFor="bulletin-title" className="text-neutral-700">
-                      {t("Title", "Título")}
-                    </Label>
-                    <Input
-                      id="bulletin-title"
-                      value={newPost.title}
-                      onChange={(event) => setNewPost((prev) => ({ ...prev, title: event.target.value }))}
-                      required
-                      className="border-neutral-300 bg-white text-neutral-900"
-                    />
+                    <Label htmlFor="bulletin-title" className="text-neutral-700">{t("Title", "Título")}</Label>
+                    <Input id="bulletin-title" value={newPost.title} onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))} required className="border-neutral-300 bg-white text-neutral-900" />
                   </div>
                   <div>
-                    <Label htmlFor="bulletin-content" className="text-neutral-700">
-                      {t("Description", "Descripción")}
-                    </Label>
-                    <Textarea
-                      id="bulletin-content"
-                      value={newPost.content}
-                      onChange={(event) => setNewPost((prev) => ({ ...prev, content: event.target.value }))}
-                      required
-                      className="border-neutral-300 bg-white text-neutral-900"
-                      rows={4}
-                    />
+                    <Label htmlFor="bulletin-content" className="text-neutral-700">{t("Description", "Descripción")}</Label>
+                    <Textarea id="bulletin-content" value={newPost.content} onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))} required className="border-neutral-300 bg-white text-neutral-900" rows={4} />
                   </div>
                   <div>
-                    <Label htmlFor="bulletin-author" className="text-neutral-700">
-                      {t("Name", "Nombre")}
-                    </Label>
-                    <Input
-                      id="bulletin-author"
-                      value={newPost.authorName}
-                      onChange={(event) => setNewPost((prev) => ({ ...prev, authorName: event.target.value }))}
-                      placeholder={t("Optional", "Opcional")}
-                      className="border-neutral-300 bg-white text-neutral-900"
-                    />
+                    <Label htmlFor="bulletin-author" className="text-neutral-700">{t("Name", "Nombre")}</Label>
+                    <Input id="bulletin-author" value={newPost.authorName} onChange={(e) => setNewPost(prev => ({ ...prev, authorName: e.target.value }))} placeholder={t("Optional", "Opcional")} className="border-neutral-300 bg-white text-neutral-900" />
                   </div>
-                  <Button
-                    type="submit"
-                    disabled={
-                      createPostMutation.isPending ||
-                      newPost.content.trim().length === 0 ||
-                      newPost.title.trim().length === 0
-                    }
-                    className="warm-button-primary w-full"
-                  >
+                  <Button type="submit" disabled={createPostMutation.isPending || newPost.content.trim().length === 0 || newPost.title.trim().length === 0} className="warm-button-primary w-full">
                     {t("Publish", "Publicar")}
                   </Button>
                 </form>
@@ -651,71 +518,95 @@ export function BulletinBoard() {
         ) : (
           <>
             <section className="space-y-6">
+              <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
+                <div className="flex items-start gap-3">
+                  <Mail className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white">
+                      {t("Need to share something more personal?", "¿Necesitas compartir algo más personal?")}
+                    </p>
+                    <p className="mt-1 text-xs text-neutral-400">
+                      {t(
+                        "If your prayer request is private, you can reach out to us directly. Your message will be kept confidential.",
+                        "Si tu petición de oración es privada, puedes comunicarte con nosotros directamente. Tu mensaje será confidencial."
+                      )}
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={() => onNavigate?.("contact")}
+                      className="mt-3 bg-red-600 hover:bg-red-700 text-sm"
+                      size="sm"
+                    >
+                      <Mail className="mr-2 h-4 w-4" />
+                      {t("Contact Us Privately", "Contáctanos en Privado")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <h2 className="text-2xl font-semibold text-white">
                   {t("Prayer Requests", "Peticiones de Oración")}
                 </h2>
                 <p className="text-sm text-neutral-400">
-                  {t(
-                    "These requests were shared through the home page form—add a comment to encourage and pray.",
-                    "Estas peticiones fueron enviadas desde el formulario de la página principal; agrega un comentario para animar y orar."
-                  )}
+                  {t("Lift each other up in prayer and stand together in faith.", "Elévense mutuamente en oración y permanezcan juntos en fe.")}
                 </p>
               </div>
 
-              {isLoading && (
-                <p className="text-sm text-neutral-400">
-                  {t("Loading prayers...", "Cargando oraciones...")}
-                </p>
-              )}
+              {isLoading && <p className="text-sm text-neutral-400">{t("Loading prayers...", "Cargando oraciones...")}</p>}
 
-              <div className="grid gap-6 md:grid-cols-2">
-                {prayers.map((prayer) => (
-                  <Card key={prayer.id} className="border-neutral-800 bg-neutral-900/60">
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <CardTitle className="text-white">{prayer.title}</CardTitle>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-neutral-400">
-                            <User className="h-3 w-3" />
-                            <span>
-                              {prayer.isAnonymous
-                                ? t("Anonymous", "Anónimo")
-                                : prayer.userName || t("Guest", "Invitado")}
-                            </span>
-                            <span>•</span>
-                            <span>{formatDate(prayer.createdAt)}</span>
-                          </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {prayers.map((prayer) => {
+                  const prayed = prayedPrayerIds.has(prayer.id);
+                  return (
+                    <article key={prayer.id} className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/70">
+                      <div className="flex items-center gap-3 px-5 pt-5 pb-2">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600/20 text-sm font-bold text-red-400">
+                          <User className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-white">
+                            {prayer.isAnonymous ? t("Anonymous", "Anónimo") : prayer.userName || t("Guest", "Invitado")}
+                          </p>
+                          <p className="text-xs text-neutral-500">{formatDate(prayer.createdAt)}</p>
                         </div>
                         <span className="rounded-full bg-red-600/20 px-3 py-1 text-xs font-medium text-red-400">
-                          {t("Prayers", "Oraciones")}: {prayer.prayerCount}
+                          🙏 {prayer.prayerCount}
                         </span>
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="whitespace-pre-wrap text-sm text-neutral-300">{prayer.description}</p>
-                      
-                      <Button
-                        type="button"
-                        onClick={() => handlePray(prayer.id)}
-                        disabled={prayedPrayerIds.has(prayer.id) || activePrayerId === prayer.id}
-                        className={cn(
-                          "w-full",
-                          prayedPrayerIds.has(prayer.id)
-                            ? "bg-neutral-800 text-neutral-300 hover:bg-neutral-800"
-                            : "bg-red-600 hover:bg-red-700"
-                        )}
-                      >
-                        {prayedPrayerIds.has(prayer.id)
-                          ? t("Prayed", "Orado")
-                          : activePrayerId === prayer.id
-                          ? t("Recording...", "Registrando...")
-                          : t("I prayed", "Oré")}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+
+                      <div className="px-5 pt-2 pb-3">
+                        <h3 className="mb-1 text-base font-bold text-white">{prayer.title}</h3>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">{prayer.description}</p>
+                      </div>
+
+                      <div className="border-t border-neutral-800 px-5 py-3">
+                        <Button
+                          type="button"
+                          onClick={() => handlePray(prayer.id)}
+                          disabled={prayed || activePrayerId === prayer.id}
+                          className={cn(
+                            "w-full",
+                            prayed ? "bg-neutral-800 text-neutral-400" : "bg-red-600 hover:bg-red-700"
+                          )}
+                        >
+                          {prayed
+                            ? `✓ ${t("Prayed", "Orado")}`
+                            : activePrayerId === prayer.id
+                            ? t("Recording...", "Registrando...")
+                            : `🙏 ${t("I Prayed", "Oré")}`}
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
+
+              {!isLoading && prayers.length === 0 && (
+                <p className="text-center text-sm text-neutral-500 py-12">
+                  {t("No prayer requests yet. Share one below.", "No hay peticiones de oración aún. Comparte una abajo.")}
+                </p>
+              )}
             </section>
 
             <Dialog open={prayerDialogOpen} onOpenChange={setPrayerDialogOpen}>
@@ -726,9 +617,6 @@ export function BulletinBoard() {
                   aria-label={t("Share a new prayer request", "Compartir una nueva petición de oración")}
                 >
                   <Plus className="h-6 w-6" />
-                  <span className="sr-only">
-                    {t("Share a new prayer request", "Compartir una nueva petición de oración")}
-                  </span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="warm-card">
@@ -739,54 +627,19 @@ export function BulletinBoard() {
                 </DialogHeader>
                 <form onSubmit={handleSubmitPrayer} className="space-y-4">
                   <div>
-                    <Label htmlFor="prayer-title" className="text-neutral-700">
-                      {t("Title", "Título")}
-                    </Label>
-                    <Input
-                      id="prayer-title"
-                      value={newPrayer.title}
-                      onChange={(event) => setNewPrayer((prev) => ({ ...prev, title: event.target.value }))}
-                      required
-                      className="border-neutral-300 bg-white text-neutral-900"
-                    />
+                    <Label htmlFor="prayer-title" className="text-neutral-700">{t("Title", "Título")}</Label>
+                    <Input id="prayer-title" value={newPrayer.title} onChange={(e) => setNewPrayer(prev => ({ ...prev, title: e.target.value }))} required className="border-neutral-300 bg-white text-neutral-900" />
                   </div>
                   <div>
-                    <Label htmlFor="prayer-description" className="text-neutral-700">
-                      {t("Description", "Descripción")}
-                    </Label>
-                    <Textarea
-                      id="prayer-description"
-                      value={newPrayer.description}
-                      onChange={(event) => setNewPrayer((prev) => ({ ...prev, description: event.target.value }))}
-                      required
-                      className="border-neutral-300 bg-white text-neutral-900"
-                      rows={4}
-                    />
+                    <Label htmlFor="prayer-description" className="text-neutral-700">{t("Description", "Descripción")}</Label>
+                    <Textarea id="prayer-description" value={newPrayer.description} onChange={(e) => setNewPrayer(prev => ({ ...prev, description: e.target.value }))} required className="border-neutral-300 bg-white text-neutral-900" rows={4} />
                   </div>
                   <div>
-                    <Label htmlFor="prayer-author" className="text-neutral-700">
-                      {t("Name", "Nombre")}
-                    </Label>
-                    <Input
-                      id="prayer-author"
-                      value={newPrayer.authorName}
-                      onChange={(event) => setNewPrayer((prev) => ({ ...prev, authorName: event.target.value }))}
-                      placeholder={t("Optional", "Opcional")}
-                      className="border-neutral-300 bg-white text-neutral-900"
-                    />
+                    <Label htmlFor="prayer-author" className="text-neutral-700">{t("Name", "Nombre")}</Label>
+                    <Input id="prayer-author" value={newPrayer.authorName} onChange={(e) => setNewPrayer(prev => ({ ...prev, authorName: e.target.value }))} placeholder={t("Optional — leave blank for anonymous", "Opcional — dejar vacío para anónimo")} className="border-neutral-300 bg-white text-neutral-900" />
                   </div>
-                  <Button
-                    type="submit"
-                    disabled={
-                      createPrayerMutation.isPending ||
-                      newPrayer.title.trim().length === 0 ||
-                      newPrayer.description.trim().length === 0
-                    }
-                    className="warm-button-primary w-full"
-                  >
-                    {createPrayerMutation.isPending
-                      ? t("Sharing...", "Compartiendo...")
-                      : t("Share Request", "Compartir Petición")}
+                  <Button type="submit" disabled={createPrayerMutation.isPending || newPrayer.title.trim().length === 0 || newPrayer.description.trim().length === 0} className="warm-button-primary w-full">
+                    {createPrayerMutation.isPending ? t("Sharing...", "Compartiendo...") : t("Share Request", "Compartir Petición")}
                   </Button>
                 </form>
               </DialogContent>

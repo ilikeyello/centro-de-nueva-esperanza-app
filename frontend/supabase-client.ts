@@ -96,6 +96,7 @@ export interface BulletinPost {
   title: string;
   content: string;
   authorName: string;
+  likeCount: number;
   createdAt: string;
   comments: BulletinComment[];
 }
@@ -290,7 +291,7 @@ export class ChurchApiService {
   async listBulletinPosts(): Promise<{ posts: BulletinPost[] }> {
     const { data: postsData, error: postsError } = await this.client
       .from('bulletin_posts')
-      .select('id, organization_id, title, content, author_name, created_at')
+      .select('id, organization_id, title, content, author_name, like_count, created_at')
       .eq('organization_id', this.orgId)
       .order('created_at', { ascending: false });
 
@@ -332,6 +333,7 @@ export class ChurchApiService {
       title: p.title,
       content: p.content,
       authorName: p.author_name,
+      likeCount: p.like_count ?? 0,
       createdAt: p.created_at,
       comments: commentsByPostId.get(p.id) ?? [],
     }));
@@ -371,6 +373,7 @@ export class ChurchApiService {
       title: data.title,
       content: data.content,
       authorName: data.author_name,
+      likeCount: data.like_count ?? 0,
       createdAt: data.created_at,
       comments: []
     };
@@ -432,20 +435,39 @@ export class ChurchApiService {
   }
 
   async incrementPrayerCount(prayerId: number): Promise<void> {
-    // First get current count
     const { data: current, error: fetchError } = await this.client
       .from('prayer_requests')
       .select('prayer_count')
       .eq('id', prayerId)
+      .eq('organization_id', this.orgId)
       .single();
       
     if (fetchError) throw fetchError;
     
-    // Then increment
     const { error: updateError } = await this.client
       .from('prayer_requests')
       .update({ prayer_count: (current?.prayer_count || 0) + 1 })
-      .eq('id', prayerId);
+      .eq('id', prayerId)
+      .eq('organization_id', this.orgId);
+      
+    if (updateError) throw updateError;
+  }
+
+  async incrementLikeCount(postId: number): Promise<void> {
+    const { data: current, error: fetchError } = await this.client
+      .from('bulletin_posts')
+      .select('like_count')
+      .eq('id', postId)
+      .eq('organization_id', this.orgId)
+      .single();
+      
+    if (fetchError) throw fetchError;
+    
+    const { error: updateError } = await this.client
+      .from('bulletin_posts')
+      .update({ like_count: (current?.like_count || 0) + 1 })
+      .eq('id', postId)
+      .eq('organization_id', this.orgId);
       
     if (updateError) throw updateError;
   }
