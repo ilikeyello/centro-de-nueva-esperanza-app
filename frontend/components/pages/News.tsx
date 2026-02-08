@@ -145,8 +145,7 @@ export function News() {
 
   const deleteEvent = useMutation({
     mutationFn: async (data: { id: number; passcode: string }) =>
-      // Event deletion not yet implemented in Supabase
-      Promise.reject(new Error("Event deletion not yet implemented")),
+      backend.deleteEvent(data.id),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["events"], (oldData?: { events: Event[] }) => {
         if (!oldData) return oldData;
@@ -318,10 +317,9 @@ export function News() {
     },
   });
 
-  // Delete functionality not yet implemented in Supabase
   const deleteAnnouncement = useMutation({
     mutationFn: async (data: { id: number; passcode: string }) =>
-      Promise.reject(new Error("Delete not yet implemented")),
+      backend.deleteAnnouncement(data.id),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["announcements"], (oldData?: { announcements: Announcement[] }) => {
         if (!oldData) return oldData;

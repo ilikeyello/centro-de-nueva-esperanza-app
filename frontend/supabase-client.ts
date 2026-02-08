@@ -496,6 +496,106 @@ export class ChurchApiService {
       
     if (updateError) throw updateError;
   }
+
+  async createAnnouncement(announcement: {
+    titleEn: string;
+    titleEs: string;
+    contentEn: string;
+    contentEs: string;
+    priority?: string;
+  }): Promise<Announcement> {
+    const { data, error } = await this.client
+      .from('announcements')
+      .insert({
+        organization_id: this.orgId,
+        title_en: announcement.titleEn,
+        title_es: announcement.titleEs,
+        content_en: announcement.contentEn,
+        content_es: announcement.contentEs,
+        priority: announcement.priority || 'normal',
+        created_by: 'user',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      organization_id: data.organization_id,
+      titleEn: data.title_en,
+      titleEs: data.title_es,
+      contentEn: data.content_en,
+      contentEs: data.content_es,
+      priority: data.priority,
+      createdAt: data.created_at,
+      createdBy: data.created_by,
+      imageUrl: data.image_url,
+    };
+  }
+
+  async deleteAnnouncement(id: number): Promise<void> {
+    const { error } = await this.client
+      .from('announcements')
+      .delete()
+      .eq('id', id)
+      .eq('organization_id', this.orgId);
+
+    if (error) throw error;
+  }
+
+  async createEvent(event: {
+    titleEn: string;
+    titleEs: string;
+    descriptionEn?: string;
+    descriptionEs?: string;
+    eventDate: string;
+    location: string;
+    maxAttendees?: number;
+  }): Promise<Event> {
+    const { data, error } = await this.client
+      .from('events')
+      .insert({
+        organization_id: this.orgId,
+        title_en: event.titleEn,
+        title_es: event.titleEs,
+        description_en: event.descriptionEn || null,
+        description_es: event.descriptionEs || null,
+        event_date: event.eventDate,
+        location: event.location,
+        max_attendees: event.maxAttendees || null,
+        created_by: 'user',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      organization_id: data.organization_id,
+      titleEn: data.title_en,
+      titleEs: data.title_es,
+      descriptionEn: data.description_en,
+      descriptionEs: data.description_es,
+      eventDate: data.event_date,
+      location: data.location,
+      maxAttendees: data.max_attendees,
+      createdAt: data.created_at,
+      createdBy: data.created_by,
+      rsvpCount: 0,
+    };
+  }
+
+  async deleteEvent(id: number): Promise<void> {
+    const { error } = await this.client
+      .from('events')
+      .delete()
+      .eq('id', id)
+      .eq('organization_id', this.orgId);
+
+    if (error) throw error;
+  }
 }
 
 // --- Create and export a singleton instance ---
