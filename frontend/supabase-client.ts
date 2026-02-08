@@ -189,10 +189,10 @@ export class ChurchApiService {
     const events = data.map((e: any) => ({
       id: e.id,
       organization_id: e.organization_id,
-      titleEn: e.title_en,
-      titleEs: e.title_es,
-      descriptionEn: e.description_en,
-      descriptionEs: e.description_es,
+      titleEn: e.title_en ?? e.title ?? "",
+      titleEs: e.title_es ?? e.title ?? "",
+      descriptionEn: e.description_en ?? e.description ?? "",
+      descriptionEs: e.description_es ?? e.description ?? "",
       eventDate: e.event_date,
       location: e.location,
       maxAttendees: e.max_attendees,
@@ -540,7 +540,7 @@ export class ChurchApiService {
     location: string;
     maxAttendees?: number;
   }): Promise<Event> {
-    const { data, error } = await this.client
+    let result = await this.client
       .from('events')
       .insert({
         organization_id: this.orgId,
@@ -556,15 +556,32 @@ export class ChurchApiService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (result.error && result.error.message.includes('column')) {
+      result = await this.client
+        .from('events')
+        .insert({
+          organization_id: this.orgId,
+          title: event.titleEn,
+          description: event.descriptionEn || null,
+          event_date: event.eventDate,
+          location: event.location,
+          max_attendees: event.maxAttendees || null,
+          created_by: 'user',
+        })
+        .select()
+        .single();
+    }
+
+    if (result.error) throw result.error;
+    const data = result.data;
 
     return {
       id: data.id,
       organization_id: data.organization_id,
-      titleEn: data.title_en,
-      titleEs: data.title_es,
-      descriptionEn: data.description_en,
-      descriptionEs: data.description_es,
+      titleEn: data.title_en ?? data.title ?? "",
+      titleEs: data.title_es ?? data.title ?? "",
+      descriptionEn: data.description_en ?? data.description ?? "",
+      descriptionEs: data.description_es ?? data.description ?? "",
       eventDate: data.event_date,
       location: data.location,
       maxAttendees: data.max_attendees,
