@@ -130,6 +130,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       }
       playerRef.current = null;
       setPlayerReady(false);
+      lastPlaylistIdsRef.current = "";
       return;
     }
 
@@ -305,7 +306,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           {/* ===== MOBILE PLAYER (above nav tabs) ===== */}
           {youtubeTrackUrl && !isDesktop && (
             <div className="music-player-dark px-3 pt-1.5 md:hidden">
-              {/* Minimized pill */}
               {isMinimized ? (
                 <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 shadow-md">
                   <div className="min-w-0 flex-1 max-w-[60%]">
@@ -322,32 +322,37 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   </div>
                 </div>
               ) : (
-                <>
-                  {/* Expanded controls */}
-                  <div className="flex items-center justify-between rounded-t-2xl bg-neutral-900 px-3 py-1.5 shadow-inner">
-                    <div className="min-w-0 flex-1 pr-2">
-                      <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                        {t("Music", "Música")}
-                      </span>
-                      <div className="mt-0.5">{titleContent}</div>
-                    </div>
-                    <div className="flex flex-shrink-0 items-center gap-1">
-                      {playerControlBtn(
-                        isPlaying ? handlePauseClick : handlePlayClick,
-                        isPlaying ? t("Pause", "Pausar") : t("Play", "Reproducir"),
-                        isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />
-                      )}
-                      {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-4 w-4" />)}
-                      {playerControlBtn(toggleMinimize, t("Minimize", "Minimizar"), <Minimize2 className="h-4 w-4" />)}
-                      {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-4 w-4" />, "close")}
-                    </div>
+                <div className="flex items-center justify-between rounded-t-2xl bg-neutral-900 px-3 py-1.5 shadow-inner">
+                  <div className="min-w-0 flex-1 pr-2">
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                      {t("Music", "Música")}
+                    </span>
+                    <div className="mt-0.5">{titleContent}</div>
                   </div>
-                  {/* Player iframe container */}
-                  <div className="h-40 w-full overflow-hidden rounded-b-2xl border-x border-b border-neutral-800" style={{ backgroundColor: "#262626" }}>
-                    <div id="global-music-player" className="h-full w-full" />
+                  <div className="flex flex-shrink-0 items-center gap-1">
+                    {playerControlBtn(
+                      isPlaying ? handlePauseClick : handlePlayClick,
+                      isPlaying ? t("Pause", "Pausar") : t("Play", "Reproducir"),
+                      isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />
+                    )}
+                    {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-4 w-4" />)}
+                    {playerControlBtn(toggleMinimize, t("Minimize", "Minimizar"), <Minimize2 className="h-4 w-4" />)}
+                    {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-4 w-4" />, "close")}
                   </div>
-                </>
+                </div>
               )}
+              {/* Player iframe — always in DOM so music keeps playing when minimized */}
+              <div
+                className={cn(
+                  "w-full overflow-hidden transition-all",
+                  isMinimized
+                    ? "h-0 border-0"
+                    : "h-40 rounded-b-2xl border-x border-b border-neutral-800"
+                )}
+                style={{ backgroundColor: isMinimized ? undefined : "#262626" }}
+              >
+                <div id="global-music-player" className="h-full w-full" />
+              </div>
             </div>
           )}
 
@@ -401,10 +406,13 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         </div>
       </div>
 
-      {/* ===== DESKTOP FLOATING PLAYER (expanded) ===== */}
-      {youtubeTrackUrl && isDesktop && !isMinimized && (
+      {/* ===== DESKTOP FLOATING PLAYER — always in DOM so music persists when minimized ===== */}
+      {youtubeTrackUrl && isDesktop && (
         <div
-          className="music-player-dark fixed z-[60] w-80 transition-all"
+          className={cn(
+            "music-player-dark fixed z-[60] w-80 transition-all duration-200",
+            isMinimized && "pointer-events-none invisible"
+          )}
           style={{ top: desktopPlayerPosition.top, right: desktopPlayerPosition.right }}
         >
           <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 shadow-xl" style={{ backgroundColor: "#262626" }}>
