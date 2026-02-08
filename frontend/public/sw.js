@@ -1,16 +1,24 @@
-const CACHE_NAME = 'cne-app-v4';
+const CACHE_NAME = 'cne-app-v5';
 const urlsToCache = [
   '/',
   '/icon-192x192.png',
   '/icon-512x512.png'
 ];
 
-// Install event
+// Install event — skip waiting so new SW activates immediately
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
   );
+});
+
+// Listen for skip-waiting message from the page
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activate event - clean up old caches
@@ -30,26 +38,48 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Always go to the network first for dynamic API endpoints, especially playlist/livestream/sermons,
-  // then fall back to cache only if offline.
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
+
+  // Skip Supabase / API calls entirely — never cache these
   if (
+    url.hostname.includes('supabase') ||
+    url.pathname.includes('/rest/') ||
+    url.pathname.includes('/auth/') ||
+    url.pathname.includes('/api/') ||
     url.pathname.includes('/playlist') ||
     url.pathname.includes('/livestream') ||
     url.pathname.includes('/sermons')
   ) {
+    return;
+  }
+
+  // Network-first for navigation requests (HTML pages)
+  // This ensures new deployments are picked up immediately
+  if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request)
+        .then(response => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request).then(r => r || caches.match('/')))
     );
     return;
   }
 
-  // Default cache-first behavior for static assets and the app shell
+  // Cache-first for static assets (JS, CSS, images, fonts)
   event.respondWith(
-    caches.match(event.request).then(response => {
-      if (response) {
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+      return fetch(event.request).then(response => {
+        if (response.ok && url.origin === self.location.origin) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
         return response;
-      }
-      return fetch(event.request);
+      });
     })
   );
 });

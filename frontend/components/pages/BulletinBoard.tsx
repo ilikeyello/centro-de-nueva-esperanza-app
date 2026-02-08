@@ -188,18 +188,33 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
     mutationFn: async (variables: { prayerId: number; participantId?: string | null }) => {
       await backend.incrementPrayerCount(variables.prayerId);
     },
-    onMutate: (variables) => { setActivePrayerId(variables.prayerId); },
-    onSuccess: (_result, variables) => {
+    onMutate: async (variables) => {
+      setActivePrayerId(variables.prayerId);
+      await queryClient.cancelQueries({ queryKey: ["bulletin-board"] });
+      const previous = queryClient.getQueryData<BoardResponse>(["bulletin-board"]);
+      if (previous) {
+        queryClient.setQueryData<BoardResponse>(["bulletin-board"], {
+          ...previous,
+          prayers: previous.prayers.map(p => p.id === variables.prayerId ? { ...p, prayerCount: p.prayerCount + 1 } : p),
+        });
+      }
       setPrayedPrayerIds((prev) => {
         const updated = new Set(prev);
         updated.add(variables.prayerId);
         if (typeof window !== "undefined") window.localStorage.setItem(PRAYED_PRAYERS_KEY, JSON.stringify(Array.from(updated)));
         return updated;
       });
+      return { previous };
+    },
+    onSuccess: () => {
       toast({ title: t("Thank you for praying", "Gracias por orar"), description: t("We've recorded your prayer.", "Hemos registrado tu oración.") });
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
     },
-    onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
+    onError: (err: Error, variables, context) => {
+      if (context?.previous) queryClient.setQueryData(["bulletin-board"], context.previous);
+      setPrayedPrayerIds((prev) => { const updated = new Set(prev); updated.delete(variables.prayerId); return updated; });
+      toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" });
+    },
     onSettled: () => { setActivePrayerId(null); },
   });
 
@@ -207,16 +222,31 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
     mutationFn: async (postId: number) => {
       await backend.incrementLikeCount(postId);
     },
-    onSuccess: (_result, postId) => {
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ["bulletin-board"] });
+      const previous = queryClient.getQueryData<BoardResponse>(["bulletin-board"]);
+      if (previous) {
+        queryClient.setQueryData<BoardResponse>(["bulletin-board"], {
+          ...previous,
+          posts: previous.posts.map(p => p.id === postId ? { ...p, likeCount: (p.likeCount || 0) + 1 } : p),
+        });
+      }
       setLikedPostIds((prev) => {
         const updated = new Set(prev);
         updated.add(postId);
         if (typeof window !== "undefined") window.localStorage.setItem(LIKED_POSTS_KEY, JSON.stringify(Array.from(updated)));
         return updated;
       });
+      return { previous };
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
     },
-    onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
+    onError: (err: Error, postId, context) => {
+      if (context?.previous) queryClient.setQueryData(["bulletin-board"], context.previous);
+      setLikedPostIds((prev) => { const updated = new Set(prev); updated.delete(postId); return updated; });
+      toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" });
+    },
   });
 
   const handlePray = (prayerId: number) => {
@@ -377,7 +407,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                           )}
                         >
                           <Heart className={cn("h-5 w-5", liked && "fill-red-400")} />
-                          <span>{(post.likeCount || 0) + (liked && post.likeCount === 0 ? 0 : 0)}</span>
+                          <span>{post.likeCount || 0}</span>
                         </button>
 
                         <button
@@ -518,7 +548,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
         ) : (
           <>
             <section className="space-y-6">
-              <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-4">
+              <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/70 p-5">
                 <div className="flex items-start gap-3">
                   <Mail className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
                   <div className="flex-1">

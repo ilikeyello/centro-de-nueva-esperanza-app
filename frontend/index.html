@@ -66,6 +66,12 @@
       </div>
       <style>@keyframes splash-spin{to{transform:rotate(360deg)}}</style>
     </div>
-    <script type="module" src="/main.tsx?v=20241125-2"></script>
+    <script>
+      // Safety: remove static splash after 5s even if React fails to mount
+      setTimeout(function(){var s=document.getElementById('static-splash');if(s)s.remove();},5000);
+      // Force new service worker to activate immediately
+      if('serviceWorker' in navigator){navigator.serviceWorker.getRegistration().then(function(r){if(r&&r.waiting)r.waiting.postMessage({type:'SKIP_WAITING'})});}
+    </script>
+    <script type="module" src="/main.tsx?v=20250208"></script>
   </body>
 </html>
