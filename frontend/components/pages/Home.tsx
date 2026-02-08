@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { Calendar, DollarSign, MapPin, Megaphone, MessageCircle, Languages, Clock, Users, Car } from "lucide-react";
+import { Calendar, DollarSign, Gamepad2, MapPin, Megaphone, MessageCircle, Languages, Clock, Users, Car } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +95,13 @@ export function Home({ onNavigate }: HomeProps) {
       labelEs: "Dar Ahora",
       page: "donations",
       color: "bg-green-600 hover:bg-green-700",
+    },
+    {
+      icon: Gamepad2,
+      labelEn: "Games",
+      labelEs: "Juegos",
+      page: "games",
+      color: "bg-orange-600 hover:bg-orange-700",
     },
   ];
 
@@ -382,6 +389,10 @@ export function Home({ onNavigate }: HomeProps) {
                     {action.page === "donations" && t(
                       "Support our ministry",
                       "Apoya nuestro ministerio"
+                    )}
+                    {action.page === "games" && t(
+                      "Faith-filled fun for the family",
+                      "Diversión con fe para la familia"
                     )}
                   </p>
                 </button>

@@ -5,7 +5,6 @@ import {
   Play,
   Pause,
   SkipForward,
-  Gamepad2,
   MessageCircle,
   Minimize2,
   Maximize2,
@@ -253,7 +252,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     { id: "media", icon: Play, labelEn: "Media", labelEs: "Medios" },
     { id: "news", icon: Megaphone, labelEn: "News", labelEs: "Noticias" },
     { id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" },
-    { id: "games", icon: Gamepad2, labelEn: "Games", labelEs: "Juegos" },
   ];
 
   const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
