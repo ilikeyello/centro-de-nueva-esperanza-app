@@ -389,10 +389,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   className={cn(
                     "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-3 py-2 text-[0.8rem] font-medium transition-all md:flex-initial md:flex-row md:gap-2 md:px-4 md:py-2 md:text-sm nav-button",
                     isActive
-                      ? "text-warm-red bg-warm-red/15 border-2 border-warm-red/30 shadow-sm"
+                      ? "text-warm-red bg-warm-red/10"
                       : isTransparent
-                        ? "!text-white hover:text-warm-red hover:bg-warm-red/5 border-2 border-transparent"
-                        : "text-neutral-700 hover:text-warm-red hover:bg-warm-red/5 border-2 border-transparent"
+                        ? "!text-white hover:text-warm-red hover:bg-warm-red/5"
+                        : "text-neutral-700 hover:text-warm-red hover:bg-warm-red/5"
                   )}
                 >
                   <Icon className={cn("h-5 w-5 md:h-5 md:w-5", isActive && "text-warm-red", isTransparent && !isActive && "!text-white")} />
