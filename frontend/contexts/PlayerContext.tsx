@@ -65,6 +65,12 @@ function normalizePlaylistUrl(raw: string): string {
   }
 }
 
+export interface PlaylistVideoItem {
+  videoId: string;
+  title: string;
+  loading: boolean;
+}
+
 interface PlayerContextType {
   currentTrack: string | null;
   currentTrackTitle: string | null;
@@ -74,6 +80,8 @@ interface PlayerContextType {
   playlistUrl: string;
   playlists: MusicPlaylistFromMainSite[];
   isPlayingYouTubePlaylist: boolean;
+  currentPlaylistVideos: PlaylistVideoItem[];
+  currentPlaylistActiveIndex: number;
   livestreamUrl: string;
   livestreamTitle: string | null;
   livestreamScheduledStart: string | null;
@@ -88,6 +96,9 @@ interface PlayerContextType {
   playPlaylistByUrl: (url: string, title?: string) => void;
   playPlaylistFromIndex: (index: number) => void;
   playPlaylistShuffle: () => void;
+  playVideoAtIndex: (index: number) => void;
+  setCurrentPlaylistVideoIds: (ids: string[]) => void;
+  setCurrentPlaylistActiveIndex: (index: number) => void;
   startQueue: (
     urls: string[],
     startIndex: number,
@@ -124,7 +135,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const [playlists, setPlaylists] = useState<MusicPlaylistFromMainSite[]>([]);
   const [isPlayingYouTubePlaylist, setIsPlayingYouTubePlaylist] = useState(false);
+  const [currentPlaylistVideos, setCurrentPlaylistVideos] = useState<PlaylistVideoItem[]>([]);
+  const [currentPlaylistActiveIndex, setCurrentPlaylistActiveIndex] = useState<number>(0);
   const youtubePlayerRef = useRef<any>(null);
+  const titleFetchControllerRef = useRef<AbortController | null>(null);
 
   const [playlistUrl, setPlaylistUrlState] = useState<string>(() => {
     if (typeof window === "undefined") return defaultPlaylistUrl;
@@ -327,13 +341,69 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const toggleMinimize = () => setIsMinimized((prev) => !prev);
 
+  const playVideoAtIndex = useCallback((index: number) => {
+    if (!youtubePlayerRef.current) return;
+    const player = youtubePlayerRef.current;
+    try {
+      if (typeof player.playVideoAt === "function") {
+        player.playVideoAt(index);
+        setCurrentPlaylistActiveIndex(index);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const setCurrentPlaylistVideoIds = useCallback((ids: string[]) => {
+    if (titleFetchControllerRef.current) {
+      titleFetchControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    titleFetchControllerRef.current = controller;
+
+    const items: PlaylistVideoItem[] = ids.map((id) => ({
+      videoId: id,
+      title: "",
+      loading: true,
+    }));
+    setCurrentPlaylistVideos(items);
+
+    ids.forEach((videoId, idx) => {
+      fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`, {
+        signal: controller.signal,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (controller.signal.aborted) return;
+          setCurrentPlaylistVideos((prev) =>
+            prev.map((item, i) =>
+              i === idx ? { ...item, title: data.title || `Video ${idx + 1}`, loading: false } : item
+            )
+          );
+        })
+        .catch(() => {
+          if (controller.signal.aborted) return;
+          setCurrentPlaylistVideos((prev) =>
+            prev.map((item, i) =>
+              i === idx ? { ...item, title: `Video ${idx + 1}`, loading: false } : item
+            )
+          );
+        });
+    });
+  }, []);
+
   const closePlayer = () => {
+    if (titleFetchControllerRef.current) {
+      titleFetchControllerRef.current.abort();
+    }
     setCurrentTrack(null);
     setCurrentTrackTitle(null);
     setCurrentTrackArtist(null);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
     setIsPlayingYouTubePlaylist(false);
+    setCurrentPlaylistVideos([]);
+    setCurrentPlaylistActiveIndex(0);
     setQueue([]);
     setQueueIndex(null);
     setQueueMeta([]);
@@ -372,6 +442,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         playlistUrl,
         playlists,
         isPlayingYouTubePlaylist,
+        currentPlaylistVideos,
+        currentPlaylistActiveIndex,
         youtubePlayerRef,
         livestreamUrl,
         livestreamTitle,
@@ -386,6 +458,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         playPlaylistByUrl,
         playPlaylistFromIndex,
         playPlaylistShuffle,
+        playVideoAtIndex,
+        setCurrentPlaylistVideoIds,
+        setCurrentPlaylistActiveIndex,
         startQueue,
         playNextInQueue,
         pauseTrack,

@@ -6,11 +6,10 @@ import {
   Pause,
   SkipForward,
   Gamepad2,
-  Languages,
   MessageCircle,
   Minimize2,
   Maximize2,
-  Bell,
+  X,
   BookOpen,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -23,11 +22,10 @@ interface NavigationProps {
 }
 
 export function Navigation({ currentPage, onNavigate }: NavigationProps) {
-  const { t, language, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
   const {
     currentTrack: youtubeTrackUrl,
     currentTrackTitle,
-    currentTrackArtist,
     isPlaying,
     isMinimized,
     toggleMinimize,
@@ -36,36 +34,24 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     resumeTrack,
     playNextInQueue,
     youtubePlayerRef,
+    setCurrentPlaylistVideoIds,
+    setCurrentPlaylistActiveIndex,
   } = usePlayer();
 
-  // Convert YouTube playlist URL to embed format for iframe
-  const getEmbedUrl = (url: string | null) => {
-    if (!url) return url;
-    
-    // If already in embed format, return as-is
-    if (url.includes('youtube.com/embed/videoseries')) {
-      return url;
-    }
-    
-    // Extract playlist ID and session ID from regular YouTube playlist URL
-    const listMatch = url.match(/[?&]list=([^&]+)/);
-    const siMatch = url.match(/[?&]si=([^&]+)/);
-    
-    if (listMatch) {
-      const playlistId = listMatch[1];
-      const sessionId = siMatch ? siMatch[1] : '';
-      
-      // Create embed URL matching YouTube's exact format
-      let embedUrl = `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
-      if (sessionId) {
-        embedUrl += `&si=${sessionId}`;
-      }
-      
-      return embedUrl;
-    }
-    
-    return url;
-  };
+  const playerRef = youtubePlayerRef;
+  const [playerReady, setPlayerReady] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const lastLayoutIsDesktopRef = useRef<boolean | null>(null);
+  const lastPlaylistIdsRef = useRef<string>("");
+
+  const [desktopPlayerPosition, setDesktopPlayerPosition] = useState({ top: 160, right: 16 });
+  const [dragState, setDragState] = useState<{
+    startX: number;
+    startY: number;
+    startTop: number;
+    startRight: number;
+  } | null>(null);
 
   const handlePlayClick = () => {
     if (!playerRef.current) return;
@@ -93,69 +79,36 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     playNextInQueue();
   };
 
-  const embedUrl = getEmbedUrl(youtubeTrackUrl);
-
-  const playerRef = youtubePlayerRef;
-  const [playerReady, setPlayerReady] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const lastLayoutIsDesktopRef = useRef<boolean | null>(null);
-
-  const [desktopPlayerPosition, setDesktopPlayerPosition] = useState({ top: 160, right: 16 });
-  const [dragState, setDragState] = useState<{
-    startX: number;
-    startY: number;
-    startTop: number;
-    startRight: number;
-  } | null>(null);
-
-  // Track scroll position for transparent navbar effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    
-    // Initial check
     handleScroll();
-    
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Track whether we're on a desktop-sized viewport so we can adjust player layout.
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    const updateIsDesktop = () => {
-      setIsDesktop(window.innerWidth >= 768);
-    };
-
+    const updateIsDesktop = () => setIsDesktop(window.innerWidth >= 768);
     updateIsDesktop();
-
     window.addEventListener("resize", updateIsDesktop);
     return () => window.removeEventListener("resize", updateIsDesktop);
   }, []);
 
   useEffect(() => {
     if (!dragState) return;
-
     const handleMouseMove = (event: MouseEvent) => {
       const dx = event.clientX - dragState.startX;
       const dy = event.clientY - dragState.startY;
-
       setDesktopPlayerPosition({
         top: dragState.startTop + dy,
         right: dragState.startRight - dx,
       });
     };
-
-    const handleMouseUp = () => {
-      setDragState(null);
-    };
-
+    const handleMouseUp = () => setDragState(null);
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
-
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
@@ -167,33 +120,21 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     if (typeof window === "undefined") return;
 
     const w = window as any;
-
     const prevIsDesktop = lastLayoutIsDesktopRef.current;
     lastLayoutIsDesktopRef.current = isDesktop;
     const layoutChanged = prevIsDesktop !== null && prevIsDesktop !== isDesktop;
 
-    // When there is no active track, tear down the player
     if (!youtubeTrackUrl) {
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
-        try {
-          playerRef.current.destroy();
-        } catch {
-          // ignore
-        }
+        try { playerRef.current.destroy(); } catch {}
       }
       playerRef.current = null;
       setPlayerReady(false);
       return;
     }
 
-    // If the layout (desktop vs mobile) changed while a track is active,
-    // recreate the player so it attaches to the new container.
     if (layoutChanged && playerRef.current && typeof playerRef.current.destroy === "function") {
-      try {
-        playerRef.current.destroy();
-      } catch {
-        // ignore
-      }
+      try { playerRef.current.destroy(); } catch {}
       playerRef.current = null;
       setPlayerReady(false);
     }
@@ -211,17 +152,32 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           autoplay: 1,
           rel: 0,
           modestbranding: 1,
+          playsinline: 1,
         },
         events: {
-          onReady: () => {
-            setPlayerReady(true);
-          },
+          onReady: () => setPlayerReady(true),
           onStateChange: (event: any) => {
             const YT = w.YT;
             if (!YT || !YT.PlayerState) return;
-            // When the current video finishes, advance our own queue.
             if (event.data === YT.PlayerState.ENDED) {
               playNextInQueue();
+            }
+            // Capture playlist video IDs once the player starts playing
+            if (event.data === YT.PlayerState.PLAYING && event.target) {
+              try {
+                const playlist = event.target.getPlaylist?.();
+                if (Array.isArray(playlist) && playlist.length > 0) {
+                  const key = playlist.join(",");
+                  if (key !== lastPlaylistIdsRef.current) {
+                    lastPlaylistIdsRef.current = key;
+                    setCurrentPlaylistVideoIds(playlist);
+                  }
+                }
+                const idx = event.target.getPlaylistIndex?.();
+                if (typeof idx === "number" && idx >= 0) {
+                  setCurrentPlaylistActiveIndex(idx);
+                }
+              } catch {}
             }
           },
         },
@@ -236,7 +192,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         if (typeof prevReady === "function") prevReady();
         createPlayer();
       };
-
       const existingScript = document.querySelector(
         "script[src='https://www.youtube.com/iframe_api']"
       );
@@ -249,68 +204,37 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   }, [youtubeTrackUrl, playNextInQueue, isDesktop]);
 
   useEffect(() => {
-    if (!playerRef.current) return;
-    if (typeof window === "undefined") return;
-    if (!playerReady) return;
-
-    const player = playerRef.current as any;
-
-    if (youtubeTrackUrl) {
-      try {
-        // Check if it's a playlist embed URL
-        if (youtubeTrackUrl.includes("list=")) {
-          const listMatch = youtubeTrackUrl.match(/list=([^&]+)/);
-          if (listMatch && listMatch[1]) {
-            if (typeof player.loadPlaylist === "function") {
-              player.loadPlaylist({
-                list: listMatch[1],
-                listType: "playlist",
-              });
-              return; // Exit early since we handled the playlist
-            }
-          }
-        }
-
-        // Treat currentTrack as a YouTube video ID and use loadVideoById
-        if (typeof player.loadVideoById === "function") {
-          player.loadVideoById(youtubeTrackUrl);
-        } else {
-          // Fallback to URL-based loading if needed
-          player.loadVideoByUrl(`https://www.youtube.com/watch?v=${youtubeTrackUrl}`);
-        }
-        if (typeof player.playVideo === "function") {
-          player.playVideo();
-        }
-      } catch {
-      }
-    }
-  }, [youtubeTrackUrl, playerReady]);
-
-  // If the context says we should be playing and the player is ready,
-  // make sure the video is actually playing (helps recover from cases
-  // where autoplay was blocked or the player was recreated).
-  useEffect(() => {
-    if (!playerRef.current) return;
-    if (!playerReady) return;
-    if (!youtubeTrackUrl) return;
-    if (!isPlaying) return;
+    if (!playerRef.current || !playerReady || !youtubeTrackUrl) return;
 
     const player = playerRef.current as any;
     try {
+      if (youtubeTrackUrl.includes("list=")) {
+        const listMatch = youtubeTrackUrl.match(/list=([^&]+)/);
+        if (listMatch && listMatch[1] && typeof player.loadPlaylist === "function") {
+          player.loadPlaylist({ list: listMatch[1], listType: "playlist" });
+          return;
+        }
+      }
+      if (typeof player.loadVideoById === "function") {
+        player.loadVideoById(youtubeTrackUrl);
+      }
       if (typeof player.playVideo === "function") {
         player.playVideo();
       }
-    } catch {
-    }
+    } catch {}
+  }, [youtubeTrackUrl, playerReady]);
+
+  useEffect(() => {
+    if (!playerRef.current || !playerReady || !youtubeTrackUrl || !isPlaying) return;
+    const player = playerRef.current as any;
+    try {
+      if (typeof player.playVideo === "function") player.playVideo();
+    } catch {}
   }, [isPlaying, playerReady, youtubeTrackUrl]);
 
-  const handleDesktopPlayerMouseDown = (event: any) => {
-    if (window.innerWidth < 768) {
-      return;
-    }
-
+  const handleDesktopPlayerMouseDown = (event: React.MouseEvent) => {
+    if (window.innerWidth < 768) return;
     event.preventDefault();
-
     setDragState({
       startX: event.clientX,
       startY: event.clientY,
@@ -320,7 +244,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   };
 
   const isHome = currentPage === "home";
-  // Apply transparency on Home page when at the top AND on desktop
   const isTransparent = isHome && !isScrolled && isDesktop;
 
   const navItems = [
@@ -333,6 +256,36 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   ];
 
   const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
+
+  const titleContent = currentTrackTitle ? (
+    <div className="max-w-full text-[0.7rem] text-neutral-100 marquee-container">
+      {shouldScrollTitle ? (
+        <div className="marquee-track">
+          <span className="marquee-item">{currentTrackTitle}</span>
+          <span className="marquee-item" aria-hidden="true">{currentTrackTitle}</span>
+          <span className="marquee-item" aria-hidden="true">{currentTrackTitle}</span>
+        </div>
+      ) : (
+        <span className="marquee-item truncate">{currentTrackTitle}</span>
+      )}
+    </div>
+  ) : null;
+
+  const playerControlBtn = (onClick: () => void, label: string, icon: React.ReactNode, variant?: "close") => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex h-8 w-8 items-center justify-center rounded-full border text-neutral-200 transition-colors",
+        variant === "close"
+          ? "border-neutral-700 bg-neutral-900/90 hover:border-red-500 hover:text-red-400"
+          : "border-neutral-700 bg-neutral-900/90 hover:border-neutral-500 hover:text-neutral-50"
+      )}
+      aria-label={label}
+    >
+      {icon}
+    </button>
+  );
 
   return (
     <nav
@@ -347,140 +300,79 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         className={cn("container mx-auto py-0")}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" }}
       >
-        
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
-          {/* Mobile: minimized pill in navbar */}
-          {youtubeTrackUrl && isMinimized && (
-            <div className="flex items-center justify-between px-3 pt-1.5 md:hidden">
-              <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-md">
-                <div className="min-w-0 flex-1 max-w-[65%]">
-                  {currentTrackTitle && (
-                    <div className="max-w-full text-[0.7rem] text-neutral-100 marquee-container">
-                      {shouldScrollTitle ? (
-                        <div className="marquee-track">
-                          <span className="marquee-item">{currentTrackTitle}</span>
-                          <span className="marquee-item" aria-hidden="true">
-                            {currentTrackTitle}
-                          </span>
-                          <span className="marquee-item" aria-hidden="true">
-                            {currentTrackTitle}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="marquee-item truncate">
-                          {currentTrackTitle}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="ml-2 flex flex-shrink-0 items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={isPlaying ? handlePauseClick : handlePlayClick}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                    aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
-                  >
-                    {isPlaying ? (
-                      <Pause className="h-3.5 w-3.5" />
-                    ) : (
-                      <Play className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextClick}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                    aria-label={t("Next song", "Siguiente canción")}
-                  >
-                    <SkipForward className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={toggleMinimize}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                    aria-label={t("Expand music player", "Expandir reproductor de música")}
-                  >
-                    <Maximize2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* Mobile: open player integrated into navbar (kept mounted when minimized) */}
+          {/* ===== MOBILE PLAYER (above nav tabs) ===== */}
           {youtubeTrackUrl && !isDesktop && (
-            <div className={cn("px-3 pt-1.5 md:hidden", isMinimized && "hidden")}>
-              <div className="flex items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 text-[0.75rem] shadow-inner">
-                <div className="min-w-0 flex-1 pr-2">
-                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                    {t("Music", "Música")}
-                  </span>
-                  {currentTrackTitle && (
-                    <div className="mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container">
-                      {shouldScrollTitle ? (
-                        <div className="marquee-track">
-                          <span className="marquee-item">{currentTrackTitle}</span>
-                          <span className="marquee-item" aria-hidden="true">
-                            {currentTrackTitle}
-                          </span>
-                          <span className="marquee-item" aria-hidden="true">
-                            {currentTrackTitle}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="marquee-item truncate">
-                          {currentTrackTitle}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-shrink-0 items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={isPlaying ? handlePauseClick : handlePlayClick}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                    aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
-                  >
-                    {isPlaying ? (
-                      <Pause className="h-4 w-4" />
-                    ) : (
-                      <Play className="h-4 w-4" />
+            <div className="music-player-dark px-3 pt-1.5 md:hidden">
+              {/* Minimized pill */}
+              {isMinimized ? (
+                <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 shadow-md">
+                  <div className="min-w-0 flex-1 max-w-[60%]">
+                    {titleContent}
+                  </div>
+                  <div className="ml-2 flex flex-shrink-0 items-center gap-1">
+                    {playerControlBtn(
+                      isPlaying ? handlePauseClick : handlePlayClick,
+                      isPlaying ? t("Pause", "Pausar") : t("Play", "Reproducir"),
+                      isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />
                     )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextClick}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                    aria-label={t("Next song", "Siguiente canción")}
-                  >
-                    <SkipForward className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={toggleMinimize}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-                    aria-label={t("Minimize music player", "Minimizar reproductor de música")}
-                  >
-                    <Minimize2 className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={closeYouTubePlayer}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/90 text-neutral-200 hover:border-red-500 hover:text-red-400"
-                    aria-label={t("Close music player", "Cerrar reproductor de música")}
-                  >
-                    ×
-                  </button>
+                    {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-3.5 w-3.5" />)}
+                    {playerControlBtn(toggleMinimize, t("Expand", "Expandir"), <Maximize2 className="h-3.5 w-3.5" />)}
+                  </div>
                 </div>
-              </div>
-              <div className="mt-2 h-40 w-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/90">
-                <div id="mobile-music-player" className="h-full w-full" />
+              ) : (
+                <>
+                  {/* Expanded controls */}
+                  <div className="flex items-center justify-between rounded-t-2xl bg-neutral-900 px-3 py-1.5 shadow-inner">
+                    <div className="min-w-0 flex-1 pr-2">
+                      <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                        {t("Music", "Música")}
+                      </span>
+                      <div className="mt-0.5">{titleContent}</div>
+                    </div>
+                    <div className="flex flex-shrink-0 items-center gap-1">
+                      {playerControlBtn(
+                        isPlaying ? handlePauseClick : handlePlayClick,
+                        isPlaying ? t("Pause", "Pausar") : t("Play", "Reproducir"),
+                        isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />
+                      )}
+                      {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-4 w-4" />)}
+                      {playerControlBtn(toggleMinimize, t("Minimize", "Minimizar"), <Minimize2 className="h-4 w-4" />)}
+                      {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-4 w-4" />, "close")}
+                    </div>
+                  </div>
+                  {/* Player iframe container */}
+                  <div className="h-40 w-full overflow-hidden rounded-b-2xl border-x border-b border-neutral-800" style={{ backgroundColor: "#262626" }}>
+                    <div id="global-music-player" className="h-full w-full" />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ===== DESKTOP MINIMIZED BAR (integrated in navbar) ===== */}
+          {youtubeTrackUrl && isDesktop && isMinimized && (
+            <div className="music-player-dark hidden md:block px-3 py-1">
+              <div className="flex items-center justify-center gap-3 rounded-xl bg-neutral-900 px-4 py-1.5 shadow-sm">
+                <div className="min-w-0 max-w-[14rem]">
+                  {titleContent}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {playerControlBtn(
+                    isPlaying ? handlePauseClick : handlePlayClick,
+                    isPlaying ? t("Pause", "Pausar") : t("Play", "Reproducir"),
+                    isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />
+                  )}
+                  {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-3.5 w-3.5" />)}
+                  {playerControlBtn(toggleMinimize, t("Expand", "Expandir"), <Maximize2 className="h-3.5 w-3.5" />)}
+                  {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
+                </div>
               </div>
             </div>
           )}
 
+          {/* ===== NAV TABS ===== */}
           <div className="flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -509,159 +401,40 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         </div>
       </div>
 
-      {/* Desktop: single floating YouTube overlay */}
-      {youtubeTrackUrl && isDesktop && (
+      {/* ===== DESKTOP FLOATING PLAYER (expanded) ===== */}
+      {youtubeTrackUrl && isDesktop && !isMinimized && (
         <div
-          className={cn(
-            "z-60 transition-all",
-            // Desktop: draggable floating card.
-            isDesktop
-              ? "fixed w-80"
-              : // Mobile: full-width bar pinned just above the nav.
-                "fixed bottom-16 left-2 right-2 w-auto",
-            isMinimized && "pointer-events-none opacity-0"
-          )}
-          style={
-            isDesktop
-              ? { top: desktopPlayerPosition.top, right: desktopPlayerPosition.right }
-              : undefined
-          }
+          className="music-player-dark fixed z-[60] w-80 transition-all"
+          style={{ top: desktopPlayerPosition.top, right: desktopPlayerPosition.right }}
         >
-          <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/90 shadow-xl">
+          <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 shadow-xl" style={{ backgroundColor: "#262626" }}>
             <div
-              className={cn(
-                "flex items-center justify-between gap-3 px-3 pt-2",
-                isDesktop && "cursor-move"
-              )}
-              onMouseDown={isDesktop ? handleDesktopPlayerMouseDown : undefined}
+              className="flex cursor-move items-center justify-between gap-3 px-3 pt-2"
+              onMouseDown={handleDesktopPlayerMouseDown}
             >
               <div className="min-w-0 flex-1">
                 <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
                   {t("Music", "Música")}
                 </span>
-                {currentTrackTitle && (
-                  <div className="mt-0.5 max-w-full text-[0.7rem] text-neutral-100 marquee-container">
-                    {shouldScrollTitle ? (
-                      <div className="marquee-track">
-                        <span className="marquee-item">{currentTrackTitle}</span>
-                        <span className="marquee-item" aria-hidden="true">
-                          {currentTrackTitle}
-                        </span>
-                        <span className="marquee-item" aria-hidden="true">
-                          {currentTrackTitle}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="marquee-item truncate">
-                        {currentTrackTitle}
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="mt-0.5">{titleContent}</div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={isPlaying ? handlePauseClick : handlePlayClick}
-                  className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
-                  aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
-                >
-                  {isPlaying ? (
-                    <Pause className="h-3.5 w-3.5" />
-                  ) : (
-                    <Play className="h-3.5 w-3.5" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNextClick}
-                  className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
-                  aria-label={t("Next song", "Siguiente canción")}
-                >
-                  <SkipForward className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleMinimize}
-                  className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-neutral-500 hover:text-neutral-50"
-                  aria-label={t("Minimize music player", "Minimizar reproductor de música")}
-                >
-                  <Minimize2 className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={closeYouTubePlayer}
-                  className="rounded-full border border-neutral-700 px-2 py-0.5 text-[0.7rem] text-neutral-300 hover:border-red-500 hover:text-red-400"
-                  aria-label={t("Close music player", "Cerrar reproductor de música")}
-                >
-                  ×
-                </button>
+              <div className="flex items-center gap-1.5">
+                {playerControlBtn(
+                  isPlaying ? handlePauseClick : handlePlayClick,
+                  isPlaying ? t("Pause", "Pausar") : t("Play", "Reproducir"),
+                  isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />
+                )}
+                {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-3.5 w-3.5" />)}
+                {playerControlBtn(toggleMinimize, t("Minimize", "Minimizar"), <Minimize2 className="h-3.5 w-3.5" />)}
+                {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
               </div>
             </div>
-            <div
-              className={cn(
-                "mt-2 w-full overflow-hidden transition-all",
-                isMinimized ? "h-0" : isDesktop ? "aspect-video" : "h-40"
-              )}
-            >
+            <div className="mt-2 aspect-video w-full overflow-hidden">
               <div id="global-music-player" className="h-full w-full" />
             </div>
           </div>
         </div>
       )}
-
-      {youtubeTrackUrl && isMinimized && (
-        <div className="hidden md:flex fixed right-4 bottom-4 z-50 items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/90 px-3 py-1 text-[0.7rem] text-neutral-300 shadow-lg">
-          {currentTrackTitle && (
-            <div className="max-w-[10rem] text-[0.7rem] text-neutral-100 marquee-container">
-              {shouldScrollTitle ? (
-                <div className="marquee-track">
-                  <span className="marquee-item">{currentTrackTitle}</span>
-                  <span className="marquee-item" aria-hidden="true">
-                    {currentTrackTitle}
-                  </span>
-                  <span className="marquee-item" aria-hidden="true">
-                    {currentTrackTitle}
-                  </span>
-                </div>
-              ) : (
-                <span className="marquee-item truncate">
-                  {currentTrackTitle}
-                </span>
-              )}
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={isPlaying ? handlePauseClick : handlePlayClick}
-            className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-            aria-label={isPlaying ? t("Pause music", "Pausar música") : t("Play music", "Reproducir música")}
-          >
-            {isPlaying ? (
-              <Pause className="h-3.5 w-3.5" />
-            ) : (
-              <Play className="h-3.5 w-3.5" />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={handleNextClick}
-            className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-            aria-label={t("Next song", "Siguiente canción")}
-          >
-            <SkipForward className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={toggleMinimize}
-            className="rounded-full border border-neutral-700 bg-neutral-900/90 p-1 text-neutral-200 hover:border-neutral-500 hover:text-neutral-50"
-            aria-label={t("Expand music player", "Expandir reproductor de YouTube")}
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
-
     </nav>
   );
 }

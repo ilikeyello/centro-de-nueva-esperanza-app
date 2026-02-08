@@ -534,6 +534,55 @@ button.border-white:not(.bg-warm-red):not(.bg-red-600) {
   }
 }
 
+/* Music player always stays dark regardless of light-theme overrides */
+.music-player-dark,
+.music-player-dark * {
+  --tw-text-opacity: 1;
+}
+
+.music-player-dark.bg-neutral-900,
+.music-player-dark .bg-neutral-900 {
+  background-color: #262626 !important;
+  border-color: #44403C !important;
+}
+
+.music-player-dark .bg-neutral-900\/90 {
+  background-color: rgba(38, 38, 38, 0.9) !important;
+  border: none !important;
+}
+
+.music-player-dark .text-neutral-100 {
+  color: #FAFAF9 !important;
+}
+
+.music-player-dark .text-neutral-200 {
+  color: #F5F5F4 !important;
+}
+
+.music-player-dark .text-neutral-300 {
+  color: #E7E5E4 !important;
+}
+
+.music-player-dark .text-neutral-400 {
+  color: #D6D3D1 !important;
+}
+
+.music-player-dark .text-neutral-500 {
+  color: #A8A29E !important;
+}
+
+.music-player-dark .text-white {
+  color: #FFFFFF !important;
+}
+
+.music-player-dark .border-neutral-700 {
+  border-color: #57534E !important;
+}
+
+.music-player-dark .border-neutral-800 {
+  border-color: #44403C !important;
+}
+
 .marquee-container {
   position: relative;
   overflow: hidden;

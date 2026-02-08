@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Calendar, Music, Play } from "lucide-react";
+import { Calendar, ChevronDown, ChevronUp, Loader2, Music, Pause, Play } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { useBackend } from "../../hooks/useBackend";
+import { cn } from "@/lib/utils";
 
 // YouTube livestream detection
 let youtubeAPIReady = false;
@@ -37,10 +38,17 @@ export function Media({ onStartMusic }: MediaProps) {
   const {
     playPlaylistByUrl,
     playlists,
+    isPlayingYouTubePlaylist,
+    currentPlaylistVideos,
+    currentPlaylistActiveIndex,
+    playVideoAtIndex,
+    currentTrack,
+    isPlaying,
     livestreamUrl,
     livestreamTitle,
     livestreamIsLive,
   } = usePlayer();
+  const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
   const [manualLiveOverride, setManualLiveOverride] = useState(false);
@@ -536,35 +544,142 @@ export function Media({ onStartMusic }: MediaProps) {
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {playlists.map((playlist) => (
-            <Card
-              key={playlist.id}
-              className="group border-neutral-800 bg-neutral-900/60 transition-colors hover:border-red-600/40"
-            >
-              <CardContent className="flex items-center gap-4 p-4">
+        <div className="space-y-4">
+          {playlists.map((playlist) => {
+            const isExpanded = expandedPlaylistId === playlist.id;
+            const isThisPlaylistPlaying =
+              isPlayingYouTubePlaylist &&
+              currentTrack?.includes("list=") &&
+              playlist.url.includes(
+                currentTrack.match(/list=([^&]+)/)?.[1] || "__none__"
+              );
+
+            return (
+              <Card
+                key={playlist.id}
+                className="overflow-hidden border-neutral-800 bg-neutral-900/60 transition-colors"
+              >
                 <button
                   type="button"
-                  onClick={() => {
-                    playPlaylistByUrl(playlist.url, playlist.title);
-                    if (onStartMusic) onStartMusic();
-                  }}
-                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-transform group-hover:scale-105"
-                  aria-label={t(`Play ${playlist.title}`, `Reproducir ${playlist.title}`)}
+                  className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-neutral-800/30"
+                  onClick={() =>
+                    setExpandedPlaylistId(isExpanded ? null : playlist.id)
+                  }
                 >
-                  <Play className="h-5 w-5" />
+                  <div
+                    className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-lg"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      playPlaylistByUrl(playlist.url, playlist.title);
+                      setExpandedPlaylistId(playlist.id);
+                      if (onStartMusic) onStartMusic();
+                    }}
+                    role="button"
+                    aria-label={t(
+                      `Play ${playlist.title}`,
+                      `Reproducir ${playlist.title}`
+                    )}
+                  >
+                    {isThisPlaylistPlaying && isPlaying ? (
+                      <Pause className="h-5 w-5" />
+                    ) : (
+                      <Play className="h-5 w-5" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-white">
+                      {playlist.title}
+                    </p>
+                    <p className="text-xs text-neutral-400">
+                      {isThisPlaylistPlaying
+                        ? t("Now Playing", "Reproduciendo")
+                        : t("YouTube Playlist", "Lista de YouTube")}
+                    </p>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronUp className="h-5 w-5 flex-shrink-0 text-neutral-400" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 flex-shrink-0 text-neutral-400" />
+                  )}
                 </button>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-white">
-                    {playlist.title}
-                  </p>
-                  <p className="text-xs text-neutral-400">
-                    {t("YouTube Playlist", "Lista de YouTube")}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                {isExpanded && (
+                  <div className="border-t border-neutral-800 px-4 pb-4 pt-2">
+                    {!isThisPlaylistPlaying && (
+                      <button
+                        type="button"
+                        className="mb-3 w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                        onClick={() => {
+                          playPlaylistByUrl(playlist.url, playlist.title);
+                          if (onStartMusic) onStartMusic();
+                        }}
+                      >
+                        <Play className="mr-2 inline h-4 w-4" />
+                        {t("Play Playlist", "Reproducir Lista")}
+                      </button>
+                    )}
+
+                    {isThisPlaylistPlaying &&
+                    currentPlaylistVideos.length > 0 ? (
+                      <ul className="max-h-72 space-y-1 overflow-y-auto">
+                        {currentPlaylistVideos.map((video, idx) => {
+                          const isActive =
+                            idx === currentPlaylistActiveIndex;
+                          return (
+                            <li key={video.videoId}>
+                              <button
+                                type="button"
+                                onClick={() => playVideoAtIndex(idx)}
+                                className={cn(
+                                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                                  isActive
+                                    ? "bg-red-600/20 text-red-200 border border-red-500/40"
+                                    : "border border-transparent text-neutral-300 hover:bg-neutral-800/60 hover:text-white"
+                                )}
+                              >
+                                <span className="w-6 flex-shrink-0 text-center text-xs text-neutral-500">
+                                  {isActive && isPlaying ? (
+                                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
+                                  ) : (
+                                    idx + 1
+                                  )}
+                                </span>
+                                <span className="min-w-0 flex-1 truncate">
+                                  {video.loading ? (
+                                    <span className="inline-flex items-center gap-1.5 text-neutral-500">
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                      {t("Loading...", "Cargando...")}
+                                    </span>
+                                  ) : (
+                                    video.title
+                                  )}
+                                </span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : isThisPlaylistPlaying ? (
+                      <div className="flex items-center justify-center gap-2 py-4 text-sm text-neutral-500">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {t(
+                          "Loading playlist songs...",
+                          "Cargando canciones de la lista..."
+                        )}
+                      </div>
+                    ) : (
+                      <p className="py-2 text-center text-xs text-neutral-500">
+                        {t(
+                          "Press play to see all songs",
+                          "Presiona reproducir para ver todas las canciones"
+                        )}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
         </div>
       </section>
     </div>
