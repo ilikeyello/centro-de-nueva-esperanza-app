@@ -435,13 +435,37 @@ export class ChurchApiService {
   }
 
   async incrementPrayerCount(prayerId: number): Promise<void> {
-    const { error } = await this.client.rpc('increment_prayer_count', { prayer_id: prayerId });
-    if (error) throw error;
+    const { data: current, error: fetchError } = await this.client
+      .from('prayer_requests')
+      .select('prayer_count')
+      .eq('id', prayerId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const { error: updateError } = await this.client
+      .from('prayer_requests')
+      .update({ prayer_count: (current?.prayer_count || 0) + 1 })
+      .eq('id', prayerId);
+
+    if (updateError) throw updateError;
   }
 
   async incrementLikeCount(postId: number): Promise<void> {
-    const { error } = await this.client.rpc('increment_like_count', { post_id: postId });
-    if (error) throw error;
+    const { data: current, error: fetchError } = await this.client
+      .from('bulletin_posts')
+      .select('like_count')
+      .eq('id', postId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const { error: updateError } = await this.client
+      .from('bulletin_posts')
+      .update({ like_count: (current?.like_count || 0) + 1 })
+      .eq('id', postId);
+
+    if (updateError) throw updateError;
   }
 
   async createAnnouncement(announcement: {
