@@ -30,7 +30,7 @@ interface BulletinComment {
   createdAt: string;
 }
 
-interface PrayerWithComments {
+interface PrayerItem {
   id: number;
   title: string;
   description: string;
@@ -38,7 +38,6 @@ interface PrayerWithComments {
   userName: string | null;
   prayerCount: number;
   createdAt: string;
-  comments: BulletinComment[];
 }
 
 interface BulletinPost {
@@ -51,7 +50,7 @@ interface BulletinPost {
 }
 
 interface BoardResponse {
-  prayers: PrayerWithComments[];
+  prayers: PrayerItem[];
   posts: BulletinPost[];
 }
 
@@ -71,7 +70,6 @@ const fetchBoard = async (backend: ReturnType<typeof useBackend>): Promise<Board
       userName: p.userName,
       prayerCount: p.prayerCount,
       createdAt: p.createdAt,
-      comments: p.comments || []
     })),
     posts: postsResult.posts.map(p => ({
       id: p.id,
@@ -89,7 +87,7 @@ interface CommentFormState {
   content: string;
 }
 
-type CommentKey = `post-${number}` | `prayer-${number}`;
+type CommentKey = `post-${number}`;
 
 const emptyComment: CommentFormState = {
   authorName: "",
@@ -304,28 +302,19 @@ export function BulletinBoard() {
 
   const commentMutation = useMutation({
     mutationFn: async (data: {
-      targetType: "post" | "prayer";
+      targetType: "post";
       targetId: number;
       authorName: string;
       authorId: string | null;
       content: string;
       organizationId: string;
     }) => {
-      if (data.targetType === "post") {
-        return backend.createBulletinComment({
-          postId: data.targetId,
-          content: data.content,
-          authorName: data.authorName,
-          authorId: data.authorId
-        });
-      } else {
-        return backend.createPrayerComment({
-          prayerId: data.targetId,
-          content: data.content,
-          authorName: data.authorName,
-          authorId: data.authorId
-        });
-      }
+      return backend.createBulletinComment({
+        postId: data.targetId,
+        content: data.content,
+        authorName: data.authorName,
+        authorId: data.authorId
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
@@ -398,9 +387,9 @@ export function BulletinBoard() {
     }));
   };
 
-  const handleSubmitComment = (event: React.FormEvent<HTMLFormElement>, targetId: number, targetType: "post" | "prayer") => {
+  const handleSubmitComment = (event: React.FormEvent<HTMLFormElement>, targetId: number) => {
     event.preventDefault();
-    const key: CommentKey = `${targetType}-${targetId}` as CommentKey;
+    const key: CommentKey = `post-${targetId}`;
     const form = commentForms[key] ?? emptyComment;
 
     const orgId = import.meta.env.VITE_CHURCH_ORG_ID;
@@ -414,7 +403,7 @@ export function BulletinBoard() {
     }
     commentMutation.mutate(
       {
-        targetType,
+        targetType: "post",
         targetId,
         authorName: form.authorName.trim() || t("Anonymous", "Anónimo"),
         authorId: userId,
@@ -540,7 +529,7 @@ export function BulletinBoard() {
 
                         <div className="h-px bg-neutral-800" />
 
-                        <form className="space-y-3" onSubmit={(event) => handleSubmitComment(event, post.id, "post")}>
+                        <form className="space-y-3" onSubmit={(event) => handleSubmitComment(event, post.id)}>
                           <div className="grid gap-2">
                             <Label className="text-neutral-300" htmlFor={`post-comment-name-${post.id}`}>
                               {t("Name", "Nombre")}
@@ -723,63 +712,6 @@ export function BulletinBoard() {
                           ? t("Recording...", "Registrando...")
                           : t("I prayed", "Oré")}
                       </Button>
-
-                      <div className="h-px bg-neutral-800" />
-
-                      <div className="space-y-3">
-                        {prayer.comments.length > 0 ? (
-                          prayer.comments.map((comment) => (
-                            <div key={comment.id} className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3 text-sm">
-                              <div className="mb-1 flex items-center justify-between text-xs text-neutral-400">
-                                <span>{comment.authorName}</span>
-                                <span>{formatDate(comment.createdAt)}</span>
-                              </div>
-                              <p className="text-neutral-200">{comment.content}</p>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-xs text-neutral-500">
-                            {t("No comments yet. Share a word of encouragement.", "Sin comentarios aún. Comparte una palabra de aliento.")}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="h-px bg-neutral-800" />
-
-                      <form className="space-y-3" onSubmit={(event) => handleSubmitComment(event, prayer.id, "prayer")}>
-                        <div className="grid gap-2">
-                          <Label className="text-neutral-300" htmlFor={`prayer-comment-name-${prayer.id}`}>
-                            {t("Name", "Nombre")}
-                          </Label>
-                          <Input
-                            id={`prayer-comment-name-${prayer.id}`}
-                            value={commentForms[`prayer-${prayer.id}`]?.authorName || ""}
-                            onChange={(event) => handleCommentChange(`prayer-${prayer.id}`, "authorName", event.target.value)}
-                            placeholder={t("Optional", "Opcional")}
-                            className="border-neutral-700 bg-neutral-800 text-white"
-                          />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label className="text-neutral-300" htmlFor={`prayer-comment-content-${prayer.id}`}>
-                            {t("Comment", "Comentario")}
-                          </Label>
-                          <Textarea
-                            id={`prayer-comment-content-${prayer.id}`}
-                            value={commentForms[`prayer-${prayer.id}`]?.content || ""}
-                            onChange={(event) => handleCommentChange(`prayer-${prayer.id}`, "content", event.target.value)}
-                            required
-                            className="border-neutral-700 bg-neutral-800 text-white"
-                            rows={2}
-                          />
-                        </div>
-                        <Button
-                          type="submit"
-                          disabled={commentMutation.isPending || (commentForms[`prayer-${prayer.id}`]?.content || "").trim().length === 0}
-                          className="w-full bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
-                        >
-                          {t("Add Comment", "Agregar Comentario")}
-                        </Button>
-                      </form>
                     </CardContent>
                   </Card>
                 ))}
