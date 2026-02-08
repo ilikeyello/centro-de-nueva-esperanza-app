@@ -11,8 +11,10 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Keep the React-level splash visible just long enough to avoid
-    // a long black screen feeling on mobile, without delaying the app.
+    // Remove static HTML splash from index.html once React mounts
+    const staticSplash = document.getElementById("static-splash");
+    if (staticSplash) staticSplash.remove();
+
     const timeout = window.setTimeout(() => {
       setShowSplash(false);
     }, 800);
@@ -34,7 +36,6 @@ export default function App() {
                     src="./cne_logo_black.svg"
                     alt="Centro de Nueva Esperanza"
                     className="app-splash-logo"
-                    style={{ filter: "invert(1)" }}
                   />
                   <div className="app-splash-spinner" aria-hidden="true" />
                 </div>

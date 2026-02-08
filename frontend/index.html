@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>CNE</title>
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#F9F7F4" />
     <meta name="msapplication-TileColor" content="#dc2626" />
     <meta name="msapplication-config" content="/browserconfig.xml" />
     
@@ -26,22 +26,6 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="CNE App" />
     
-    <!-- Force cache clearing -->
-    <script>
-      // Force unregister service worker
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          registrations.forEach(reg => reg.unregister());
-        });
-      }
-      
-      // Clear all caches
-      if ('caches' in window) {
-        caches.keys().then(names => {
-          names.forEach(name => caches.delete(name));
-        });
-      }
-    </script>
     
     <!-- Safe area insets for notched devices -->
     <style>
@@ -74,7 +58,14 @@
     </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static splash shown instantly while JS loads -->
+      <div id="static-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;background:#F9F7F4;z-index:9999">
+        <img src="./cne_logo_black.svg" alt="" width="72" height="72" style="width:72px;height:auto" />
+        <div style="width:2.5rem;height:2.5rem;border-radius:9999px;border:2px solid rgba(0,0,0,0.1);border-top-color:#c73e1d;animation:splash-spin .9s linear infinite"></div>
+      </div>
+      <style>@keyframes splash-spin{to{transform:rotate(360deg)}}</style>
+    </div>
     <script type="module" src="/main.tsx?v=20241125-2"></script>
   </body>
 </html>
