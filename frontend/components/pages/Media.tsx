@@ -373,14 +373,14 @@ export function Media({ onStartMusic }: MediaProps) {
           <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 shadow-xl md:col-span-2">
             <div className="relative aspect-video">
               {!livestreamIsLive && !manualLiveOverride && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-neutral-900/95 px-6 text-center">
-                  <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black px-6 text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-500">
                     {livestreamTitle || t("Livestream", "Transmisión en vivo")}
                   </p>
-                  <p className="text-xl font-bold text-white sm:text-2xl">
+                  <p className="text-2xl font-bold text-white sm:text-3xl">
                     {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
                   </p>
-                  <p className="text-sm text-neutral-300">
+                  <p className="text-base text-white/70">
                     {t(
                       "The player will appear when we go live.",
                       "El reproductor aparecerá cuando estemos en vivo."

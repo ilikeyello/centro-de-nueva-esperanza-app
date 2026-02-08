@@ -244,15 +244,44 @@ export class ChurchApiService {
   
   // Prayer Requests
   async listPrayerRequests(): Promise<{ prayers: PrayerRequest[] }> {
-    const { data, error } = await this.client
+    const { data: prayersData, error: prayersError } = await this.client
       .from('prayer_requests')
-      .select('*, prayer_comments(*)')
+      .select('id, organization_id, title, description, is_anonymous, user_id, user_name, prayer_count, created_at')
       .eq('organization_id', this.orgId)
       .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    const prayers = data.map((p: any) => ({
+
+    if (prayersError) throw prayersError;
+
+    const prayerIds = (prayersData ?? []).map((p: any) => p.id).filter((id: any) => typeof id === 'number');
+
+    const { data: commentsData, error: commentsError } = prayerIds.length
+      ? await this.client
+          .from('prayer_comments')
+          .select('id, prayer_request_id, organization_id, author_name, author_id, content, created_at')
+          .eq('organization_id', this.orgId)
+          .in('prayer_request_id', prayerIds)
+          .order('created_at', { ascending: true })
+      : { data: [], error: null };
+
+    if (commentsError) throw commentsError;
+
+    const commentsByPrayerId = new Map<number, PrayerComment[]>();
+    (commentsData ?? []).forEach((c: any) => {
+      const mapped: PrayerComment = {
+        id: c.id,
+        prayerRequestId: c.prayer_request_id,
+        organization_id: c.organization_id,
+        authorName: c.author_name,
+        authorId: c.author_id,
+        content: c.content,
+        createdAt: c.created_at,
+      };
+      const existing = commentsByPrayerId.get(mapped.prayerRequestId) ?? [];
+      existing.push(mapped);
+      commentsByPrayerId.set(mapped.prayerRequestId, existing);
+    });
+
+    const prayers = (prayersData ?? []).map((p: any) => ({
       id: p.id,
       organization_id: p.organization_id,
       title: p.title,
@@ -262,17 +291,9 @@ export class ChurchApiService {
       userName: p.user_name,
       prayerCount: p.prayer_count,
       createdAt: p.created_at,
-      comments: (p.prayer_comments || []).map((c: any) => ({
-        id: c.id,
-        prayerRequestId: c.prayer_request_id,
-        organization_id: c.organization_id,
-        authorName: c.author_name,
-        authorId: c.author_id,
-        content: c.content,
-        createdAt: c.created_at
-      })).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      comments: commentsByPrayerId.get(p.id) ?? [],
     }));
-    
+
     return { prayers };
   }
   
