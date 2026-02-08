@@ -15,6 +15,7 @@ import { AdminUpload } from "./pages/AdminUpload";
 import { Bible } from "./pages/Bible";
 import { NotificationSettings } from "./notifications/NotificationSettings";
 import { PushNotificationPrompt } from "./PushNotificationPrompt";
+import { useNotificationChecker } from "../hooks/useNotificationChecker";
 import { Toaster } from "@/components/ui/toaster";
 import { Footer } from "./Footer";
 
@@ -51,6 +52,9 @@ export function AppInner() {
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
   }, [currentPage]);
+
+  // Initialize notification checker for PWA push notifications
+  useNotificationChecker(5); // Check every 5 minutes
 
   // Allow direct navigation to the hidden admin upload page via URL hash.
   useEffect(() => {

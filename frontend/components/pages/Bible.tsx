@@ -694,7 +694,7 @@ export function Bible({ onNavigate }: BibleProps) {
           disabled={selectedChapter <= 1 || loading}
           variant="outline"
           size="icon"
-          className="warm-button-secondary border-neutral-300 text-neutral-700 hover:text-warm-red hover:border-warm-red"
+          className="warm-button-secondary border-neutral-300 text-neutral-700 hover:text-white hover:border-warm-red hover:bg-warm-red"
           aria-label={t("Previous chapter", "Capítulo anterior")}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -815,7 +815,7 @@ export function Bible({ onNavigate }: BibleProps) {
           disabled={!currentBook || selectedChapter >= currentBook.chapters || loading}
           variant="outline"
           size="icon"
-          className="warm-button-secondary border-neutral-300 text-neutral-700 hover:text-warm-red hover:border-warm-red"
+          className="warm-button-secondary border-neutral-300 text-neutral-700 hover:text-white hover:border-warm-red hover:bg-warm-red"
           aria-label={t("Next chapter", "Siguiente capítulo")}
         >
           <ChevronRight className="h-4 w-4" />

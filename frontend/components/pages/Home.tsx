@@ -362,7 +362,7 @@ export function Home({ onNavigate }: HomeProps) {
           <h2 className="serif-heading text-3xl font-bold text-neutral-900">
             {t("Quick Actions", "Acciones Rápidas")}
           </h2>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-4">
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (

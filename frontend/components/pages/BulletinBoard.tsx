@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User, Heart, MessageCircle, Send, Mail } from "lucide-react";
+import { Plus, User, Heart, MessageCircle, Send, Mail, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -121,6 +121,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [prayerDialogOpen, setPrayerDialogOpen] = useState(false);
   const [commentDialogPostId, setCommentDialogPostId] = useState<number | null>(null);
+  const [isCommenting, setIsCommenting] = useState(false);
 
   const [newPost, setNewPost] = useState({ title: "", content: "", authorName: "" });
   const [userId, setUserId] = useState<string | null>(null);
@@ -219,21 +220,29 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   });
 
   const likeMutation = useMutation({
-    mutationFn: async (postId: number) => {
-      await backend.incrementLikeCount(postId);
+    mutationFn: async ({ postId, isLiked }: { postId: number; isLiked: boolean }) => {
+      if (isLiked) {
+        await backend.decrementLikeCount(postId);
+      } else {
+        await backend.incrementLikeCount(postId);
+      }
     },
-    onMutate: async (postId) => {
+    onMutate: async ({ postId, isLiked }) => {
       await queryClient.cancelQueries({ queryKey: ["bulletin-board"] });
       const previous = queryClient.getQueryData<BoardResponse>(["bulletin-board"]);
       if (previous) {
         queryClient.setQueryData<BoardResponse>(["bulletin-board"], {
           ...previous,
-          posts: previous.posts.map(p => p.id === postId ? { ...p, likeCount: (p.likeCount || 0) + 1 } : p),
+          posts: previous.posts.map(p => p.id === postId ? { ...p, likeCount: (p.likeCount || 0) + (isLiked ? -1 : 1) } : p),
         });
       }
       setLikedPostIds((prev) => {
         const updated = new Set(prev);
-        updated.add(postId);
+        if (isLiked) {
+          updated.delete(postId);
+        } else {
+          updated.add(postId);
+        }
         if (typeof window !== "undefined") window.localStorage.setItem(LIKED_POSTS_KEY, JSON.stringify(Array.from(updated)));
         return updated;
       });
@@ -242,9 +251,17 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
     },
-    onError: (err: Error, postId, context) => {
+    onError: (err: Error, { postId, isLiked }, context) => {
       if (context?.previous) queryClient.setQueryData(["bulletin-board"], context.previous);
-      setLikedPostIds((prev) => { const updated = new Set(prev); updated.delete(postId); return updated; });
+      setLikedPostIds((prev) => { 
+        const updated = new Set(prev);
+        if (isLiked) {
+          updated.add(postId);
+        } else {
+          updated.delete(postId);
+        }
+        return updated;
+      });
       toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" });
     },
   });
@@ -256,8 +273,8 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   };
 
   const handleLike = (postId: number) => {
-    if (likedPostIds.has(postId)) return;
-    likeMutation.mutate(postId);
+    const isLiked = likedPostIds.has(postId);
+    likeMutation.mutate({ postId, isLiked });
   };
 
   const createPostMutation = useMutation({
@@ -400,19 +417,24 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                         <button
                           type="button"
                           onClick={() => handleLike(post.id)}
-                          disabled={liked}
                           className={cn(
                             "flex items-center gap-1.5 text-sm transition-colors",
                             liked ? "text-red-500" : "text-red-400/60 active:text-red-500"
                           )}
                         >
-                          <Heart className={cn("h-5 w-5", liked && "fill-red-500")} />
+                          <Heart 
+                            className={cn("h-5 w-5", liked && "fill-red-500")} 
+                            style={liked ? { fill: '#C73E1D' } : {}}
+                          />
                           <span>{post.likeCount || 0}</span>
                         </button>
 
                         <button
                           type="button"
-                          onClick={() => setCommentDialogPostId(post.id)}
+                          onClick={() => {
+                            setCommentDialogPostId(post.id);
+                            setIsCommenting(false);
+                          }}
                           className="flex items-center gap-1.5 text-sm text-neutral-400 transition-colors active:text-white"
                         >
                           <MessageCircle className="h-5 w-5" />
@@ -436,18 +458,45 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                 {commentDialogPost && (
                   <>
                     <DialogHeader className="shrink-0 border-b border-neutral-800 pb-4">
-                      <DialogTitle className="text-white">{commentDialogPost.title}</DialogTitle>
-                      <div className="flex items-center gap-2 pt-1 text-xs text-neutral-400">
-                        <span>{commentDialogPost.authorName}</span>
-                        <span>•</span>
-                        <span>{formatDate(commentDialogPost.createdAt)}</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <DialogTitle className="text-white">{commentDialogPost.title}</DialogTitle>
+                          <div className="flex items-center gap-2 pt-1 text-xs text-neutral-400">
+                            <span>{commentDialogPost.authorName}</span>
+                            <span>•</span>
+                            <span>{formatDate(commentDialogPost.createdAt)}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCommentDialogPostId(null)}
+                          className="rounded-full p-1 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
                     </DialogHeader>
 
                     <div className="flex-1 space-y-4 overflow-y-auto py-4">
                       <p className="whitespace-pre-wrap text-sm text-neutral-300">{commentDialogPost.content}</p>
 
-                      <div className="h-px bg-neutral-800" />
+                      <div className="flex items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => handleLike(commentDialogPost.id)}
+                          className={cn(
+                            "flex items-center gap-1.5 text-sm transition-colors",
+                            likedPostIds.has(commentDialogPost.id) ? "text-red-500" : "text-red-400/60 active:text-red-500"
+                          )}
+                        >
+                          <Heart 
+                          className={cn("h-5 w-5", likedPostIds.has(commentDialogPost.id) && "fill-red-500")} 
+                          style={likedPostIds.has(commentDialogPost.id) ? { fill: '#C73E1D' } : {}}
+                        />
+                          <span>{commentDialogPost.likeCount || 0}</span>
+                        </button>
+                        <div className="h-px bg-neutral-800 flex-1" />
+                      </div>
 
                       <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
                         {t("Comments", "Comentarios")} ({commentDialogPost.comments.length})
@@ -461,13 +510,13 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
 
                       {commentDialogPost.comments.map((comment) => (
                         <div key={comment.id} className="flex gap-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-xs font-bold text-neutral-300">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warm-red text-xs font-bold text-white">
                             {getInitials(comment.authorName)}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="rounded-xl bg-neutral-800/80 px-3 py-2">
-                              <p className="text-xs font-semibold text-neutral-200">{comment.authorName}</p>
-                              <p className="text-sm text-neutral-300">{comment.content}</p>
+                            <div className="rounded-xl border border-neutral-300 bg-white px-3 py-2">
+                              <p className="text-xs font-semibold text-black">{comment.authorName}</p>
+                              <p className="text-sm text-black">{comment.content}</p>
                             </div>
                             <p className="mt-0.5 pl-3 text-[0.65rem] text-neutral-500">{formatDate(comment.createdAt)}</p>
                           </div>
@@ -483,16 +532,28 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                         <Input
                           value={commentForms[`post-${commentDialogPost.id}`]?.authorName || ""}
                           onChange={(e) => handleCommentChange(`post-${commentDialogPost.id}`, "authorName", e.target.value)}
+                          onClick={() => setIsCommenting(true)}
+                          onFocus={() => setIsCommenting(true)}
                           placeholder={t("Your name (optional)", "Tu nombre (opcional)")}
-                          className="border-neutral-700 bg-neutral-800 text-sm text-white placeholder:text-neutral-500"
+                          className={cn(
+                            "border-neutral-700 text-sm placeholder:text-neutral-500",
+                            isCommenting ? "bg-white text-black" : "bg-neutral-100 text-black"
+                          )}
+                          readOnly={!isCommenting}
                         />
                         <Textarea
                           value={commentForms[`post-${commentDialogPost.id}`]?.content || ""}
                           onChange={(e) => handleCommentChange(`post-${commentDialogPost.id}`, "content", e.target.value)}
+                          onClick={() => setIsCommenting(true)}
+                          onFocus={() => setIsCommenting(true)}
                           placeholder={t("Write a comment...", "Escribe un comentario...")}
                           required
                           rows={2}
-                          className="border-neutral-700 bg-neutral-800 text-sm text-white placeholder:text-neutral-500"
+                          className={cn(
+                            "border-neutral-700 text-sm placeholder:text-neutral-500",
+                            isCommenting ? "bg-white text-black" : "bg-neutral-100 text-black"
+                          )}
+                          readOnly={!isCommenting}
                         />
                       </div>
                       <Button

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Sparkles, Brain, Play, Clock, Target, Grid3X3 } from "lucide-react";
+import { Sparkles, Brain, Play, Clock, Target, Grid3X3, ArrowLeft } from "lucide-react";
 
 export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
   const { language, t } = useLanguage();
@@ -10,11 +10,22 @@ export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
     <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-warm-cream overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header - Condensed */}
       <section className="flex-shrink-0 px-4 pt-4 pb-2 text-center md:text-left">
-        <div className="flex items-center justify-center md:justify-start gap-2 text-warm-red mb-1">
-          <Sparkles className="h-4 w-4" />
-          <span className="text-xs font-semibold uppercase tracking-[0.2em]">
-            {t("Faith-filled Fun", "Diversión con Fe")}
-          </span>
+        <div className="flex items-center justify-between mb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate?.("home")}
+            className="text-neutral-600 hover:text-warm-red hover:bg-warm-red/10 p-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2 text-warm-red">
+            <Sparkles className="h-4 w-4" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em]">
+              {t("Faith-filled Fun", "Diversión con Fe")}
+            </span>
+          </div>
+          <div className="w-8" />
         </div>
         <h1 className="serif-heading text-2xl font-bold text-neutral-900 mb-1">
           {language === "es" ? "Juegos" : "Games"}

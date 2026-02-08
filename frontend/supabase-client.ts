@@ -468,6 +468,23 @@ export class ChurchApiService {
     if (updateError) throw updateError;
   }
 
+  async decrementLikeCount(postId: number): Promise<void> {
+    const { data: current, error: fetchError } = await this.client
+      .from('bulletin_posts')
+      .select('like_count')
+      .eq('id', postId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const { error: updateError } = await this.client
+      .from('bulletin_posts')
+      .update({ like_count: Math.max(0, (current?.like_count || 0) - 1) })
+      .eq('id', postId);
+
+    if (updateError) throw updateError;
+  }
+
   async createAnnouncement(announcement: {
     titleEn: string;
     titleEs: string;
