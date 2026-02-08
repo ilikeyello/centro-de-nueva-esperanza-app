@@ -606,6 +606,9 @@ export {
   getSermonsFromMainSite, 
   getLivestreamFromMainSite, 
   getMusicPlaylistFromMainSite,
+  getAllMusicPlaylistsFromMainSite,
   getEventsFromMainSite,
   getAnnouncementsFromMainSite 
 } from './lib/mainSiteData';
+
+export type { MusicPlaylistFromMainSite } from './lib/mainSiteData';

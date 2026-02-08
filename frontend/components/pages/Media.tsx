@@ -35,8 +35,8 @@ export function Media({ onStartMusic }: MediaProps) {
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
   const {
-    playTrack,
-    playlistUrl,
+    playPlaylistByUrl,
+    playlists,
     livestreamUrl,
     livestreamTitle,
     livestreamIsLive,
@@ -525,20 +525,46 @@ export function Media({ onStartMusic }: MediaProps) {
               "Escucha listas de reproducción de adoración que nos encanta cantar juntos."
             )}
           </p>
-          <div className="mt-3">
-            <Button
-              type="button"
-              className="warm-button-primary"
-              onClick={() => {
-                if (playlistUrl) {
-                  playTrack(playlistUrl);
-                }
-              }}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              {t("Play Worship Playlist", "Reproducir lista de adoración")}
-            </Button>
+        </div>
+
+        {playlists.length === 0 && (
+          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 text-center">
+            <Music className="mx-auto mb-2 h-8 w-8 text-neutral-600" />
+            <p className="text-sm text-neutral-500">
+              {t("No playlists available yet.", "Todavía no hay listas de reproducción disponibles.")}
+            </p>
           </div>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {playlists.map((playlist) => (
+            <Card
+              key={playlist.id}
+              className="group border-neutral-800 bg-neutral-900/60 transition-colors hover:border-red-600/40"
+            >
+              <CardContent className="flex items-center gap-4 p-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playPlaylistByUrl(playlist.url, playlist.title);
+                    if (onStartMusic) onStartMusic();
+                  }}
+                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-transform group-hover:scale-105"
+                  aria-label={t(`Play ${playlist.title}`, `Reproducir ${playlist.title}`)}
+                >
+                  <Play className="h-5 w-5" />
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-white">
+                    {playlist.title}
+                  </p>
+                  <p className="text-xs text-neutral-400">
+                    {t("YouTube Playlist", "Lista de YouTube")}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
     </div>

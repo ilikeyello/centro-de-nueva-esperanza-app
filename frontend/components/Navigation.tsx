@@ -35,6 +35,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     pauseTrack,
     resumeTrack,
     playNextInQueue,
+    youtubePlayerRef,
   } = usePlayer();
 
   // Convert YouTube playlist URL to embed format for iframe
@@ -94,7 +95,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   const embedUrl = getEmbedUrl(youtubeTrackUrl);
 
-  const playerRef = useRef<any | null>(null);
+  const playerRef = youtubePlayerRef;
   const [playerReady, setPlayerReady] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);

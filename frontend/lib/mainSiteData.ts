@@ -190,8 +190,28 @@ export async function getLivestreamFromMainSite(): Promise<LivestreamInfo> {
   };
 }
 
+export interface MusicPlaylistFromMainSite {
+  id: string;
+  title: string;
+  url: string;
+}
+
 /**
- * Fetch the music playlist URL uploaded via the main site admin
+ * Fetch all music playlists uploaded via the main site admin
+ */
+export async function getAllMusicPlaylistsFromMainSite(): Promise<MusicPlaylistFromMainSite[]> {
+  const content = await fetchContentByType('music');
+  return content
+    .filter((item) => item.youtube_playlist_url)
+    .map((item) => ({
+      id: item.id,
+      title: item.title || 'Worship Playlist',
+      url: item.youtube_playlist_url!,
+    }));
+}
+
+/**
+ * Fetch the first music playlist URL uploaded via the main site admin (legacy)
  */
 export async function getMusicPlaylistFromMainSite(): Promise<string | null> {
   const content = await fetchContentByType('music');

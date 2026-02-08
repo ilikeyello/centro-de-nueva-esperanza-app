@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { getLivestreamFromMainSite, getMusicPlaylistFromMainSite, type LivestreamInfo } from "../lib/mainSiteData";
+import { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { getLivestreamFromMainSite, getAllMusicPlaylistsFromMainSite, type LivestreamInfo, type MusicPlaylistFromMainSite } from "../lib/mainSiteData";
 
 function normalizeLivestreamUrl(raw: string, fallback: string): string {
   const trimmed = raw.trim();
@@ -66,13 +66,14 @@ function normalizePlaylistUrl(raw: string): string {
 }
 
 interface PlayerContextType {
-  // currentTrack and queue entries are YouTube video IDs when used for music playback.
   currentTrack: string | null;
   currentTrackTitle: string | null;
   currentTrackArtist: string | null;
   isPlaying: boolean;
   isMinimized: boolean;
   playlistUrl: string;
+  playlists: MusicPlaylistFromMainSite[];
+  isPlayingYouTubePlaylist: boolean;
   livestreamUrl: string;
   livestreamTitle: string | null;
   livestreamScheduledStart: string | null;
@@ -82,7 +83,9 @@ interface PlayerContextType {
   queue: string[];
   queueIndex: number | null;
   queueMeta: { title: string; artist?: string }[];
+  youtubePlayerRef: React.MutableRefObject<any>;
   playTrack: (url: string) => void;
+  playPlaylistByUrl: (url: string, title?: string) => void;
   playPlaylistFromIndex: (index: number) => void;
   playPlaylistShuffle: () => void;
   startQueue: (
@@ -118,6 +121,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const defaultLivestreamUrl =
     "https://www.youtube.com/embed/HF7qrZR1rDA?enablejsapi=1";
+
+  const [playlists, setPlaylists] = useState<MusicPlaylistFromMainSite[]>([]);
+  const [isPlayingYouTubePlaylist, setIsPlayingYouTubePlaylist] = useState(false);
+  const youtubePlayerRef = useRef<any>(null);
 
   const [playlistUrl, setPlaylistUrlState] = useState<string>(() => {
     if (typeof window === "undefined") return defaultPlaylistUrl;
@@ -173,15 +180,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Load playlist URL from backend on mount (only once)
+  // Load all playlists from backend on mount
   useEffect(() => {
-    const loadPlaylistUrl = async () => {
+    const loadPlaylists = async () => {
       try {
-        const rawUrl = await getMusicPlaylistFromMainSite();
-        if (rawUrl) {
-          const url = normalizePlaylistUrl(rawUrl);
+        const allPlaylists = await getAllMusicPlaylistsFromMainSite();
+        setPlaylists(allPlaylists);
+        if (allPlaylists.length > 0) {
+          const url = normalizePlaylistUrl(allPlaylists[0].url);
           setPlaylistUrlState(url);
-          // Also update localStorage for fallback
           try {
             if (typeof window !== "undefined") {
               window.localStorage.setItem("cne_music_playlist_url", url);
@@ -195,7 +202,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    loadPlaylistUrl();
+    loadPlaylists();
   }, []);
 
   const playTrack = (url: string) => {
@@ -204,6 +211,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCurrentTrackArtist(null);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
+    setIsPlayingYouTubePlaylist(false);
+    setQueue([]);
+    setQueueIndex(null);
+    setQueueMeta([]);
+    setIsPlaying(true);
+    setIsMinimized(false);
+  };
+
+  const playPlaylistByUrl = (url: string, title?: string) => {
+    const normalized = normalizePlaylistUrl(url);
+    setPlaylistUrlState(normalized);
+    setCurrentTrack(normalized);
+    setCurrentTrackTitle(title || null);
+    setCurrentTrackArtist(null);
+    setPlaylistIndex(0);
+    setPlaylistShuffle(false);
+    setIsPlayingYouTubePlaylist(true);
     setQueue([]);
     setQueueIndex(null);
     setQueueMeta([]);
@@ -218,6 +242,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCurrentTrack(playlistUrl);
     setCurrentTrackTitle(null);
     setCurrentTrackArtist(null);
+    setIsPlayingYouTubePlaylist(true);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -228,6 +253,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCurrentTrack(playlistUrl);
     setCurrentTrackTitle(null);
     setCurrentTrackArtist(null);
+    setIsPlayingYouTubePlaylist(true);
     setIsPlaying(true);
     setIsMinimized(false);
   };
@@ -265,11 +291,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIsMinimized(false);
   };
 
-  const playNextInQueue = () => {
+  const playNextInQueue = useCallback(() => {
+    // If playing a YouTube playlist, use the YouTube player's nextVideo()
+    if (isPlayingYouTubePlaylist && youtubePlayerRef.current) {
+      try {
+        const player = youtubePlayerRef.current;
+        if (typeof player.nextVideo === "function") {
+          player.nextVideo();
+          return;
+        }
+      } catch {
+        // fall through to queue-based logic
+      }
+    }
+
     if (!queue || queue.length === 0) return;
     if (queueIndex == null) return;
 
-    // Advance to the next index, looping back to the beginning when we reach the end
     const nextIndex = queueIndex + 1 >= queue.length ? 0 : queueIndex + 1;
 
     setQueueIndex(nextIndex);
@@ -278,7 +316,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCurrentTrackTitle(metaForTrack?.title || null);
     setCurrentTrackArtist(metaForTrack?.artist || null);
     setIsPlaying(true);
-  };
+  }, [isPlayingYouTubePlaylist, queue, queueIndex, queueMeta]);
 
   const pauseTrack = () => setIsPlaying(false);
 
@@ -295,6 +333,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCurrentTrackArtist(null);
     setPlaylistIndex(null);
     setPlaylistShuffle(false);
+    setIsPlayingYouTubePlaylist(false);
     setQueue([]);
     setQueueIndex(null);
     setQueueMeta([]);
@@ -331,6 +370,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         isPlaying,
         isMinimized,
         playlistUrl,
+        playlists,
+        isPlayingYouTubePlaylist,
+        youtubePlayerRef,
         livestreamUrl,
         livestreamTitle,
         livestreamScheduledStart,
@@ -341,6 +383,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         queueIndex,
         queueMeta,
         playTrack,
+        playPlaylistByUrl,
         playPlaylistFromIndex,
         playPlaylistShuffle,
         startQueue,
