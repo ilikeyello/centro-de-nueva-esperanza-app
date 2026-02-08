@@ -31,46 +31,46 @@ export function Contact({ onNavigate }: ContactProps) {
               variant="ghost"
               size="icon"
               onClick={() => onNavigate("home")}
-              className="text-neutral-300 hover:text-white"
+              className="text-neutral-700 hover:text-warm-red"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="serif-heading text-3xl font-bold text-neutral-900">
             {t("Contact Us", "Contáctanos")}
           </h1>
         </div>
-        <p className="text-neutral-400">
+        <p className="text-neutral-600">
           {t("We'd love to hear from you!", "¡Nos encantaría saber de ti!")}
         </p>
       </div>
 
-      <Card className="border-neutral-800 bg-neutral-900/50">
+      <Card className="warm-card">
         <CardHeader>
-          <CardTitle className="text-white">
+          <CardTitle className="serif-heading text-neutral-900">
             {language === "en" ? churchInfo.nameEn : churchInfo.nameEs}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start gap-3">
-            <MapPin className="mt-1 h-5 w-5 text-red-500" />
+            <MapPin className="mt-1 h-5 w-5 text-warm-red" />
             <div>
-              <p className="font-semibold text-white">
+              <p className="font-semibold text-neutral-900">
                 {t("Address", "Dirección")}
               </p>
-              <p className="text-neutral-300">{churchInfo.address}</p>
+              <p className="text-neutral-700">{churchInfo.address}</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <Phone className="mt-1 h-5 w-5 text-red-500" />
+            <Phone className="mt-1 h-5 w-5 text-warm-red" />
             <div>
-              <p className="font-semibold text-white">
+              <p className="font-semibold text-neutral-900">
                 {t("Phone", "Teléfono")}
               </p>
               <a
                 href={`tel:${churchInfo.phone}`}
-                className="text-neutral-300 hover:text-red-500"
+                className="text-neutral-700 hover:text-warm-red"
               >
                 {churchInfo.phone}
               </a>
@@ -78,14 +78,14 @@ export function Contact({ onNavigate }: ContactProps) {
           </div>
 
           <div className="flex items-start gap-3">
-            <Mail className="mt-1 h-5 w-5 text-red-500" />
+            <Mail className="mt-1 h-5 w-5 text-warm-red" />
             <div>
-              <p className="font-semibold text-white">
+              <p className="font-semibold text-neutral-900">
                 {t("Email", "Correo Electrónico")}
               </p>
               <a
                 href={`mailto:${churchInfo.email}`}
-                className="text-neutral-300 hover:text-red-500"
+                className="text-neutral-700 hover:text-warm-red"
               >
                 {churchInfo.email}
               </a>
@@ -93,12 +93,12 @@ export function Contact({ onNavigate }: ContactProps) {
           </div>
 
           <div className="flex items-start gap-3">
-            <Clock className="mt-1 h-5 w-5 text-red-500" />
+            <Clock className="mt-1 h-5 w-5 text-warm-red" />
             <div>
-              <p className="font-semibold text-white">
+              <p className="font-semibold text-neutral-900">
                 {t("Service Times", "Horarios de Servicio")}
               </p>
-              <p className="text-neutral-300">
+              <p className="text-neutral-700">
                 {language === "en"
                   ? churchInfo.serviceTimesEn
                   : churchInfo.serviceTimesEs}
@@ -108,16 +108,16 @@ export function Contact({ onNavigate }: ContactProps) {
 
           {churchInfo.facebookPageUrl && (
             <div className="flex items-start gap-3">
-              <Facebook className="mt-1 h-5 w-5 text-red-500" />
+              <Facebook className="mt-1 h-5 w-5 text-warm-red" />
               <div>
-                <p className="font-semibold text-white">
+                <p className="font-semibold text-neutral-900">
                   {t("Follow Us", "Síguenos")}
                 </p>
                 <a
                   href={churchInfo.facebookPageUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-neutral-300 hover:text-red-500"
+                  className="text-neutral-700 hover:text-warm-red"
                 >
                   {t("Visit our Facebook page", "Visita nuestra página de Facebook")}
                 </a>
@@ -127,48 +127,15 @@ export function Contact({ onNavigate }: ContactProps) {
         </CardContent>
       </Card>
 
-      {churchInfo.latitude && churchInfo.longitude && (
-        <Card className="border-neutral-800 bg-neutral-900/50">
-          <CardHeader>
-            <CardTitle className="text-white">
-              {t("Location", "Ubicación")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="aspect-video overflow-hidden rounded-lg">
-              <iframe
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                src={`https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${churchInfo.latitude},${churchInfo.longitude}`}
-                allowFullScreen
-              />
-            </div>
-            <Button
-              className="mt-4 w-full bg-red-600 hover:bg-red-700"
-              onClick={() =>
-                window.open(
-                  `https://www.google.com/maps/dir/?api=1&destination=${churchInfo.latitude},${churchInfo.longitude}`,
-                  "_blank"
-                )
-              }
-            >
-              <MapPin className="mr-2 h-4 w-4" />
-              {t("Get Directions", "Obtener Direcciones")}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {churchInfo.descriptionEn && churchInfo.descriptionEs && (
-        <Card className="border-neutral-800 bg-neutral-900/50">
+        <Card className="warm-card">
           <CardHeader>
-            <CardTitle className="text-white">
+            <CardTitle className="serif-heading text-neutral-900">
               {t("About Us", "Sobre Nosotros")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="leading-relaxed text-neutral-300">
+            <p className="leading-relaxed text-neutral-700">
               {language === "en"
                 ? churchInfo.descriptionEn
                 : churchInfo.descriptionEs}

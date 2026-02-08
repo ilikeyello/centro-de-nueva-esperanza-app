@@ -1,0 +1,25 @@
+{
+  "pages": {
+    "/_app": []
+  },
+  "devFiles": [],
+  "polyfillFiles": [
+    "static/chunks/90008_next_dist_build_polyfills_polyfill-nomodule.js"
+  ],
+  "lowPriorityFiles": [
+    "static/development/_ssgManifest.js",
+    "static/development/_buildManifest.js"
+  ],
+  "rootMainFiles": [
+    "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_5d9419f2._.js",
+    "static/chunks/90008_next_dist_compiled_react-dom_589004c6._.js",
+    "static/chunks/90008_next_dist_compiled_react-server-dom-turbopack_c1714865._.js",
+    "static/chunks/90008_next_dist_compiled_next-devtools_index_b25383a2.js",
+    "static/chunks/90008_next_dist_compiled_9242881d._.js",
+    "static/chunks/90008_next_dist_client_5147a583._.js",
+    "static/chunks/90008_next_dist_6cf430a8._.js",
+    "static/chunks/8ca92_@swc_helpers_cjs_96519ea3._.js",
+    "static/chunks/da5a4_com~apple~CloudDocs_Church-Sites_centro-de-nueva-esperanza_next-app_a0ff3932._.js",
+    "static/chunks/8f1e5_com~apple~CloudDocs_Church-Sites_centro-de-nueva-esperanza_next-app_f50f2bb5._.js"
+  ]
+}

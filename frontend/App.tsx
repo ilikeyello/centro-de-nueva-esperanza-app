@@ -27,7 +27,7 @@ export default function App() {
       <LanguageProvider>
         <PlayerProvider>
           <NotificationProvider>
-            <div className="dark">
+            <div>
               {showSplash && (
                 <div className="app-splash">
                   <img

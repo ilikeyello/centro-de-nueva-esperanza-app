@@ -31,9 +31,7 @@ interface BibleVerse {
   text: string;
 }
 
-const API_BASE =
-  import.meta.env.VITE_CLIENT_TARGET ??
-  (import.meta.env.DEV ? "http://localhost:4000" : "https://prod-cne-sh82.encr.app");
+const API_BASE = "/bible";
 
 const BIBLE_STORAGE_KEY = "cne:bible:selection";
 
@@ -259,6 +257,11 @@ export function Bible({ onNavigate }: BibleProps) {
 
   const currentBook = bibleBooks.find(book => book.id === selectedBook) || FALLBACK_BIBLE_BOOKS.find(book => book.id === selectedBook);
   const chapters = currentBook ? Array.from({ length: currentBook.chapters }, (_, i) => i + 1) : [];
+  
+  // Pending selection helpers
+  const pendingBookObj = bibleBooks.find(book => book.id === pendingBook) || FALLBACK_BIBLE_BOOKS.find(book => book.id === pendingBook);
+  const pendingChapters = pendingBookObj ? Array.from({ length: pendingBookObj.chapters }, (_, i) => i + 1) : [];
+
   const displayBooks = bibleBooks.length > 0 ? bibleBooks : FALLBACK_BIBLE_BOOKS;
   const displayVersions = bibleVersions.length > 0 ? bibleVersions : FALLBACK_BIBLE_VERSIONS;
 
@@ -283,81 +286,46 @@ export function Bible({ onNavigate }: BibleProps) {
   };
 
   const fetchTranslations = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/bible/translations`);
-      if (response.ok) {
-        const data = await response.json();
-        const apiVersions: BibleVersion[] = Array.isArray(data?.translations)
-          ? data.translations.map((v: any) => ({
-              id: String(v.id),
-              name: String(v.name ?? v.id),
-              abbreviation: String(v.id ?? "").toUpperCase(),
-              attribution: typeof v.attribution === "string" ? v.attribution : undefined,
-            }))
-          : [];
-
-        setBibleVersions(apiVersions);
-
-        const valid = apiVersions.some((v) => v.id === selectedVersion);
-        if (!valid && apiVersions.length > 0) {
-          setSelectedVersion(apiVersions[0].id);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch translations:", error);
-    } finally {
-      setVersionsLoading(false);
-    }
+    setBibleVersions(FALLBACK_BIBLE_VERSIONS);
+    setVersionsLoading(false);
   };
 
   const fetchBooks = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/bible/books`);
-      if (response.ok) {
-        const data = await response.json();
-        setBibleBooks(data.books);
-        
-        // Validate selected book exists in loaded books
-        const bookExists = data.books.some((b: BibleBook) => b.id === selectedBook);
-        if (!bookExists && data.books.length > 0) {
-          setSelectedBook(data.books[0].id); // Default to first book
-          setSelectedChapter(1);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch books:', error);
-    } finally {
-      setBooksLoading(false);
-    }
+    setBibleBooks(FALLBACK_BIBLE_BOOKS);
+    setBooksLoading(false);
   };
 
   const fetchChapter = async (bookId: string, chapterNum: number, version: string) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${API_BASE}/bible/chapter?translation=${encodeURIComponent(version)}&book=${encodeURIComponent(
-          bookId
-        )}&chapter=${encodeURIComponent(String(chapterNum))}`
-      );
+      // Fetch the full book JSON file
+      // URL: /bible/{version}/{bookId}.json
+      // e.g. /bible/kjv/genesis.json
+      const response = await fetch(`${API_BASE}/${version}/${bookId}.json?v=3`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch chapter');
+        throw new Error('Failed to fetch book data');
       }
       
       const data = await response.json();
       
-      if (data.verses) {
-        const verses: BibleVerse[] = data.verses.map((verse: any) => ({
-          number: verse.number,
-          text: verse.text,
-        }));
-        
+      // Find the specific chapter
+      const chapterData = data.chapters.find((c: any) => c.number === chapterNum);
+      
+      if (chapterData) {
         setChapter({
           number: chapterNum,
-          verses,
+          verses: chapterData.verses
+        });
+      } else {
+        setChapter(null);
+        toast({
+          title: t("Chapter not found", "Capítulo no encontrado"),
+          variant: "destructive",
         });
       }
     } catch (error) {
+      console.error(error);
       toast({
         title: t("Error", "Error"),
         description: t("Failed to load chapter", "No se pudo cargar el capítulo"),
@@ -371,6 +339,13 @@ export function Bible({ onNavigate }: BibleProps) {
   useEffect(() => {
     fetchBooks();
     fetchTranslations();
+    
+    // Migrate legacy/uppercase version IDs to lowercase for local files
+    if (selectedVersion === "RVR1909" || selectedVersion === "RV1960" || selectedVersion === "rvr09") {
+      setSelectedVersion("rv1909");
+    } else if (selectedVersion === "KJV") {
+      setSelectedVersion("kjv");
+    }
   }, []);
 
   useEffect(() => {
@@ -687,10 +662,10 @@ export function Bible({ onNavigate }: BibleProps) {
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-20">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">
+        <h1 className="serif-heading text-3xl font-bold text-neutral-900 mb-2">
           {t("Bible", "Biblia")}
         </h1>
-        <p className="text-neutral-400">
+        <p className="text-neutral-600">
           {t("Read and explore God's Word", "Lee y explora la Palabra de Dios")}
         </p>
       </div>
@@ -704,9 +679,9 @@ export function Bible({ onNavigate }: BibleProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            className="border-neutral-700 bg-neutral-800 text-white placeholder:text-neutral-500"
+            className="border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-500"
           />
-          <Button onClick={handleSearch} disabled={loading} className="bg-red-600 hover:bg-red-700">
+          <Button onClick={handleSearch} disabled={loading} className="warm-button-primary">
             <Search className="h-4 w-4" />
           </Button>
         </div>
@@ -719,7 +694,7 @@ export function Bible({ onNavigate }: BibleProps) {
           disabled={selectedChapter <= 1 || loading}
           variant="outline"
           size="icon"
-          className="border-neutral-700 bg-neutral-800 text-white hover:bg-neutral-700"
+          className="warm-button-secondary border-neutral-300 text-neutral-700 hover:text-warm-red hover:border-warm-red"
           aria-label={t("Previous chapter", "Capítulo anterior")}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -730,13 +705,13 @@ export function Bible({ onNavigate }: BibleProps) {
             <button
               type="button"
               disabled={loading}
-              className="text-center px-3 py-2 rounded-md hover:bg-neutral-800/60 transition-colors disabled:opacity-50"
+              className="text-center px-3 py-2 rounded-md hover:bg-neutral-100 transition-colors disabled:opacity-50"
             >
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="serif-heading text-xl font-semibold text-neutral-900">
                 {getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0])} {selectedChapter}
               </h2>
               {chapter && (
-                <p className="text-sm text-neutral-400">
+                <p className="text-sm text-neutral-600">
                   {chapter.verses.length} {t("verses", "versículos")}
                 </p>
               )}
@@ -745,9 +720,9 @@ export function Bible({ onNavigate }: BibleProps) {
               </p>
             </button>
           </DialogTrigger>
-          <DialogContent className="border-neutral-700 bg-neutral-900 text-white">
+          <DialogContent className="border-neutral-200 bg-white text-neutral-900">
             <DialogHeader>
-              <DialogTitle className="text-white">{t("Select passage", "Seleccionar pasaje")}</DialogTitle>
+              <DialogTitle className="serif-heading text-neutral-900">{t("Select passage", "Seleccionar pasaje")}</DialogTitle>
             </DialogHeader>
 
             <div className="grid grid-cols-1 gap-4">
@@ -757,12 +732,12 @@ export function Bible({ onNavigate }: BibleProps) {
                   onValueChange={setPendingVersion}
                   disabled={versionsLoading}
                 >
-                  <SelectTrigger className="w-full border-neutral-700 bg-neutral-800 text-white">
+                  <SelectTrigger className="w-full border-neutral-300 bg-white text-neutral-900">
                     <SelectValue placeholder={t("Version", "Versión")} />
                   </SelectTrigger>
-                  <SelectContent className="border-neutral-700 bg-neutral-800">
+                  <SelectContent className="border-neutral-200 bg-white">
                     {displayVersions.map((version) => (
-                      <SelectItem key={version.id} value={version.id} className="text-white">
+                      <SelectItem key={version.id} value={version.id} className="text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900">
                         {version.name} ({version.abbreviation})
                       </SelectItem>
                     ))}
@@ -777,20 +752,20 @@ export function Bible({ onNavigate }: BibleProps) {
                   }}
                   disabled={booksLoading}
                 >
-                  <SelectTrigger className="w-full border-neutral-700 bg-neutral-800 text-white">
+                  <SelectTrigger className="w-full border-neutral-300 bg-white text-neutral-900">
                     <SelectValue placeholder={t("Book", "Libro")} />
                   </SelectTrigger>
-                  <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
+                  <SelectContent className="border-neutral-200 bg-white max-h-60">
                     <div className="p-2">
-                      <div className="text-xs font-semibold text-neutral-400 mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
+                      <div className="text-xs font-semibold text-neutral-500 mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
                       {displayBooks.filter(book => book.testament === "OT").map((book) => (
-                        <SelectItem key={book.id} value={book.id} className="text-white">
+                        <SelectItem key={book.id} value={book.id} className="text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900">
                           {getLocalizedNameForVersion(book, pendingVersion)}
                         </SelectItem>
                       ))}
-                      <div className="text-xs font-semibold text-neutral-400 mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
+                      <div className="text-xs font-semibold text-neutral-500 mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
                       {displayBooks.filter(book => book.testament === "NT").map((book) => (
-                        <SelectItem key={book.id} value={book.id} className="text-white">
+                        <SelectItem key={book.id} value={book.id} className="text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900">
                           {getLocalizedNameForVersion(book, pendingVersion)}
                         </SelectItem>
                       ))}
@@ -804,12 +779,12 @@ export function Bible({ onNavigate }: BibleProps) {
                     setPendingChapter(parseInt(value));
                   }}
                 >
-                  <SelectTrigger className="w-full border-neutral-700 bg-neutral-800 text-white">
+                  <SelectTrigger className="w-full border-neutral-300 bg-white text-neutral-900">
                     <SelectValue placeholder={t("Chapter", "Capítulo")} />
                   </SelectTrigger>
-                  <SelectContent className="border-neutral-700 bg-neutral-800 max-h-60">
-                    {chapters.map((chapter) => (
-                      <SelectItem key={chapter} value={chapter.toString()} className="text-white">
+                  <SelectContent className="border-neutral-200 bg-white max-h-60">
+                    {pendingChapters.map((chapter) => (
+                      <SelectItem key={chapter} value={chapter.toString()} className="text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900">
                         {t("Chapter", "Capítulo")} {chapter}
                       </SelectItem>
                     ))}
@@ -826,7 +801,7 @@ export function Bible({ onNavigate }: BibleProps) {
                     setSelectedChapter(pendingChapter);
                     setSelectorsOpen(false);
                   }}
-                  className="bg-red-600 hover:bg-red-700"
+                  className="warm-button-primary"
                 >
                   {t("Apply", "Aplicar")}
                 </Button>
@@ -840,7 +815,7 @@ export function Bible({ onNavigate }: BibleProps) {
           disabled={!currentBook || selectedChapter >= currentBook.chapters || loading}
           variant="outline"
           size="icon"
-          className="border-neutral-700 bg-neutral-800 text-white hover:bg-neutral-700"
+          className="warm-button-secondary border-neutral-300 text-neutral-700 hover:text-warm-red hover:border-warm-red"
           aria-label={t("Next chapter", "Siguiente capítulo")}
         >
           <ChevronRight className="h-4 w-4" />
@@ -852,48 +827,47 @@ export function Bible({ onNavigate }: BibleProps) {
         <div className="space-y-4">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="h-4 bg-neutral-800 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-neutral-800 rounded w-full mb-2"></div>
+              <div className="h-4 bg-neutral-200 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-neutral-200 rounded w-full mb-2"></div>
             </div>
           ))}
         </div>
       ) : chapter ? (
-        <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/50">
-          <div className="space-y-3">
+        <div className="warm-card p-6 md:p-8">
+          <div className="space-y-4">
             {chapter.verses.map((verse) => (
               <div
                 key={verse.number}
                 id={`verse-${verse.number}`}
                 className={
-                  `flex items-start gap-4 rounded-md px-2 py-1 ` +
-                  (highlightedVerse === verse.number ? "bg-red-950/30 ring-1 ring-red-500/60" : "")
+                  `flex items-start gap-3 rounded-md px-2 py-1 transition-colors ` +
+                  (highlightedVerse === verse.number ? "bg-warm-red/10 ring-1 ring-warm-red/30" : "hover:bg-neutral-50")
                 }
               >
-                <span className="text-red-400 font-semibold min-w-[3rem] text-sm">
+                <span className="text-warm-red font-semibold min-w-[2rem] text-sm mt-1 select-none">
                   {verse.number}
                 </span>
-                <p className="text-neutral-200 leading-relaxed flex-1">
+                <p className="text-neutral-800 leading-relaxed flex-1 text-lg font-serif">
                   {verse.text}
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-neutral-800">
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              {displayVersions.find((v) => v.id === selectedVersion)?.attribution
-                ?? (selectedVersion === "spnbes"
-                  ? "La Biblia en Español Sencillo. © 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)."
-                  : selectedVersion === "rv1909"
-                    ? "Reina-Valera 1909 (RV1909), Public Domain in the United States."
-                    : "King James Version (KJV), Public Domain.")}
+          <div className="mt-8 pt-6 border-t border-neutral-200">
+            <p className="text-xs text-neutral-500 leading-relaxed text-center">
+              {selectedVersion === "spnbes"
+                ? "La Biblia en Español Sencillo. 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0."
+                : selectedVersion === "rv1909"
+                  ? "Reina-Valera 1909 (RV1909), Public Domain."
+                  : "King James Version (KJV), Public Domain."}
             </p>
           </div>
         </div>
       ) : (
         <div className="text-center py-12">
-          <BookOpen className="h-16 w-16 text-neutral-600 mx-auto mb-4" />
-          <p className="text-neutral-400">
+          <BookOpen className="h-16 w-16 text-neutral-400 mx-auto mb-4" />
+          <p className="text-neutral-600">
             {t("Select a book and chapter to begin reading", "Selecciona un libro y capítulo para comenzar a leer")}
           </p>
         </div>

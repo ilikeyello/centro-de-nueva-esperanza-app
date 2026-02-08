@@ -435,15 +435,16 @@ export function News() {
             </h1>
           </div>
           <div className="flex flex-col items-stretch gap-4 md:flex-row md:items-center">
-            <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/60 p-1 md:w-auto">
+            <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 border-neutral-300 bg-neutral-50 p-1 md:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveTab("announcements")}
+                style={activeTab === "announcements" ? { backgroundColor: "#C73E1D", color: "white", borderBottomColor: "#C73E1D" } : {}}
                 className={cn(
-                  "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors text-center md:flex-none",
+                  "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
                   activeTab === "announcements"
-                    ? "bg-red-600 text-white"
-                    : "text-neutral-300 hover:text-white"
+                    ? "shadow-md"
+                    : "text-neutral-600 hover:text-[#C73E1D] hover:bg-white border-b-transparent"
                 )}
               >
                 {t("Announcements", "Anuncios")}
@@ -451,247 +452,17 @@ export function News() {
               <button
                 type="button"
                 onClick={() => setActiveTab("events")}
+                style={activeTab === "events" ? { backgroundColor: "#C73E1D", color: "white", borderBottomColor: "#C73E1D" } : {}}
                 className={cn(
-                  "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors text-center md:flex-none",
+                  "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
                   activeTab === "events"
-                    ? "bg-red-600 text-white"
-                    : "text-neutral-300 hover:text-white"
+                    ? "shadow-md"
+                    : "text-neutral-600 hover:text-[#C73E1D] hover:bg-white border-b-transparent"
                 )}
               >
                 {t("Events", "Eventos")}
               </button>
             </div>
-            {activeTab === "announcements" ? (
-              <Dialog open={announcementDialogOpen} onOpenChange={setAnnouncementDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    size="icon"
-                    className="h-10 w-10 bg-red-600 hover:bg-red-700"
-                    aria-label={t("Create a new announcement", "Crear un nuevo anuncio")}
-                    onClick={() => setAnnouncementDialogOpen(true)}
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span className="sr-only">
-                      {t("Create a new announcement", "Crear un nuevo anuncio")}
-                    </span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="border-neutral-800 bg-neutral-900">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">
-                      {t("Create Announcement", "Crear Anuncio")}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleCreateAnnouncement} className="space-y-4">
-                    <div>
-                      <Label htmlFor="titleEn" className="text-neutral-200">
-                        {t("Title (English)", "Título (Inglés)")}
-                      </Label>
-                      <Input
-                        id="titleEn"
-                        name="titleEn"
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="titleEs" className="text-neutral-200">
-                        {t("Title (Spanish)", "Título (Español)")}
-                      </Label>
-                      <Input
-                        id="titleEs"
-                        name="titleEs"
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="contentEn" className="text-neutral-200">
-                        {t("Content (English)", "Contenido (Inglés)")}
-                      </Label>
-                      <Textarea
-                        id="contentEn"
-                        name="contentEn"
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="contentEs" className="text-neutral-200">
-                        {t("Content (Spanish)", "Contenido (Español)")}
-                      </Label>
-                      <Textarea
-                        id="contentEs"
-                        name="contentEs"
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="imageUrl" className="text-neutral-200">
-                        {t("Image URL (optional)", "URL de imagen (opcional)")}
-                      </Label>
-                      <Input
-                        id="imageUrl"
-                        name="imageUrl"
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-neutral-200">
-                        {t("Priority", "Prioridad")}
-                      </Label>
-                      <Select value={priority} onValueChange={(value) => setPriority(normalizePriority(value))}>
-                        <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="border-neutral-700 bg-neutral-800">
-                          {priorityOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {t(option === "normal" ? "Normal" : "Urgent", option === "normal" ? "Normal" : "Urgente")}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="announcementPasscode" className="text-neutral-200">
-                        {t("Passcode", "Código")}
-                      </Label>
-                      <Input
-                        id="announcementPasscode"
-                        type="password"
-                        value={announcementPasscode}
-                        onChange={(event) => setAnnouncementPasscode(event.target.value)}
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
-                      {t("Create Announcement", "Crear Anuncio")}
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            ) : (
-              <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    size="icon"
-                    className="h-10 w-10 bg-red-600 hover:bg-red-700"
-                    aria-label={t("Create a new event", "Crear un nuevo evento")}
-                    onClick={() => setEventDialogOpen(true)}
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span className="sr-only">
-                      {t("Create a new event", "Crear un nuevo evento")}
-                    </span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="border-neutral-800 bg-neutral-900">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">
-                      {t("Create New Event", "Crear Nuevo Evento")}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleCreateEvent} className="space-y-4">
-                    <div>
-                      <Label htmlFor="titleEn" className="text-neutral-200">
-                        {t("Title (English)", "Título (Inglés)")}
-                      </Label>
-                      <Input
-                        id="titleEn"
-                        name="titleEn"
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="titleEs" className="text-neutral-200">
-                        {t("Title (Spanish)", "Título (Español)")}
-                      </Label>
-                      <Input
-                        id="titleEs"
-                        name="titleEs"
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="descriptionEn" className="text-neutral-200">
-                        {t("Description (English)", "Descripción (Inglés)")}
-                      </Label>
-                      <Textarea
-                        id="descriptionEn"
-                        name="descriptionEn"
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="descriptionEs" className="text-neutral-200">
-                        {t("Description (Spanish)", "Descripción (Español)")}
-                      </Label>
-                      <Textarea
-                        id="descriptionEs"
-                        name="descriptionEs"
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="eventDate" className="text-neutral-200">
-                        {t("Date & Time", "Fecha y Hora")}
-                      </Label>
-                      <Input
-                        id="eventDate"
-                        name="eventDate"
-                        type="datetime-local"
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="location" className="text-neutral-200">
-                        {t("Location", "Ubicación")}
-                      </Label>
-                      <Input
-                        id="location"
-                        name="location"
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="maxAttendees" className="text-neutral-200">
-                        {t("Max Attendees (optional)", "Máximo de Asistentes (opcional)")}
-                      </Label>
-                      <Input
-                        id="maxAttendees"
-                        name="maxAttendees"
-                        type="number"
-                        min="1"
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="eventPasscode" className="text-neutral-200">
-                        {t("Passcode", "Código")}
-                      </Label>
-                      <Input
-                        id="eventPasscode"
-                        type="password"
-                        value={eventPasscode}
-                        onChange={(event) => setEventPasscode(event.target.value)}
-                        required
-                        className="border-neutral-700 bg-neutral-800 text-white"
-                      />
-                    </div>
-                    <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
-                      {t("Create Event", "Crear Evento")}
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            )}
           </div>
         </div>
 

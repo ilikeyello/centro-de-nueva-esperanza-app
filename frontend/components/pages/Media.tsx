@@ -36,76 +36,15 @@ export function Media({ onStartMusic }: MediaProps) {
   const [loadingSermons, setLoadingSermons] = useState(false);
   const {
     playTrack,
-    startQueue,
     playlistUrl,
     livestreamUrl,
     livestreamTitle,
-    livestreamScheduledStart,
     livestreamIsLive,
-    setLivestreamUrl,
   } = usePlayer();
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
   const [manualLiveOverride, setManualLiveOverride] = useState(false);
   const playerRef = useRef<any | null>(null);
-  const youtubePlayerRef = useRef<any | null>(null);
-
-  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
-  const [uploadPasscode, setUploadPasscode] = useState("");
-  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
-  const [uploadBusy, setUploadBusy] = useState(false);
-  const [playlistSongs, setPlaylistSongs] = useState<{
-    id: string;
-    title: string;
-    artist: string;
-    position: number;
-  }[]>([]);
-  const [loadingPlaylistSongs, setLoadingPlaylistSongs] = useState(false);
-
-  useEffect(() => {
-    const loadPlaylistSongs = async () => {
-      if (!playlistUrl) return;
-      setLoadingPlaylistSongs(true);
-      try {
-        const base = import.meta.env.DEV
-          ? "http://127.0.0.1:4000"
-          : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/playlist/items`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const rawItems = Array.isArray(data.items) ? data.items : [];
-        const songs = rawItems
-          .map((it: any) => ({
-            id: it.id as string,
-            title: (it.title as string) || "",
-            artist: (it.channelTitle as string) || "",
-            position: typeof it.position === "number" ? it.position : 0,
-          }))
-          .filter((s: { id: string; title: string }) => s.id && s.title);
-        setPlaylistSongs(songs);
-      } catch {
-        // ignore errors, just don't show list
-      } finally {
-        setLoadingPlaylistSongs(false);
-      }
-    };
-
-    void loadPlaylistSongs();
-  }, [playlistUrl]);
-
-  const sortedPlaylistSongs = useMemo(
-    () =>
-      playlistSongs
-        .slice()
-        .sort((a, b) => a.position - b.position),
-    [playlistSongs]
-  );
-
-  const sortedSongIds = useMemo(
-    () =>
-      sortedPlaylistSongs.map((song) => song.id),
-    [sortedPlaylistSongs]
-  );
 
   useEffect(() => {
     const loadSermons = async () => {
@@ -407,30 +346,6 @@ export function Media({ onStartMusic }: MediaProps) {
                   {t("Listen to Music", "Escuchar Música")}
                 </a>
               </Button>
-              {/* Debug button for testing livestream detection */}
-              <Button
-                variant="outline"
-                className="border-yellow-600 bg-yellow-900/20 text-yellow-400 hover:bg-yellow-900/30"
-                onClick={() => {
-                  setManualLiveOverride(!manualLiveOverride);
-                  console.log('Manual live override:', !manualLiveOverride);
-                }}
-              >
-                {manualLiveOverride ? '🔴 Live (Manual)' : '⚫ Test Live'}
-              </Button>
-              <Button
-                variant="outline"
-                className="border-neutral-700 bg-neutral-900 text-white hover:bg-neutral-800"
-                asChild
-              >
-                <a
-                  href="https://www.youtube.com/@centrodenuevaesperanzaiglesia"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {t("View All on YouTube", "Ver todo en YouTube")}
-                </a>
-              </Button>
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/70 p-4">
               <Calendar className="h-5 w-5 text-red-400" />
@@ -613,84 +528,16 @@ export function Media({ onStartMusic }: MediaProps) {
           <div className="mt-3">
             <Button
               type="button"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="warm-button-primary"
               onClick={() => {
-                if (!sortedPlaylistSongs.length) return;
-
-                const shuffledSongs = sortedPlaylistSongs
-                  .slice()
-                  .sort(() => Math.random() - 0.5);
-
-                const shuffledIds = shuffledSongs.map((song) => song.id);
-                const shuffledMeta = shuffledSongs.map((song) => ({
-                  title: song.title,
-                  artist: song.artist,
-                }));
-
-                startQueue(shuffledIds, 0, shuffledMeta);
+                if (playlistUrl) {
+                  playTrack(playlistUrl);
+                }
               }}
             >
               <Play className="mr-2 h-4 w-4" />
-              {t("Shuffle Worship Playlist", "Reproducir lista de adoración al azar")}
+              {t("Play Worship Playlist", "Reproducir lista de adoración")}
             </Button>
-          </div>
-          <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-xs text-neutral-200">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
-              {t("Songs in this playlist", "Canciones en esta lista")}
-            </p>
-            {loadingPlaylistSongs && (
-              <p className="mt-2 text-[0.75rem] text-neutral-500">
-                {t("Loading songs...", "Cargando canciones...")}
-              </p>
-            )}
-            {!loadingPlaylistSongs && playlistSongs.length === 0 && (
-              <p className="mt-2 text-[0.75rem] text-neutral-500">
-                {t("No songs found for this playlist.", "No se encontraron canciones para esta lista.")}
-              </p>
-            )}
-            {!loadingPlaylistSongs && playlistSongs.length > 0 && (
-              <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden md:max-h-none md:overflow-visible">
-                {sortedPlaylistSongs.map((song, index) => {
-                    const artist = song.artist?.trim() ?? "";
-                    const title = song.title?.trim() ?? "";
-                    const showArtist =
-                      artist.length > 0 &&
-                      artist.toLowerCase() !== title.toLowerCase() &&
-                      !title.toLowerCase().includes(artist.toLowerCase());
-
-                    return (
-                      <li key={song.id}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!sortedSongIds.length) return;
-                            const meta = sortedPlaylistSongs.map((s) => ({
-                              title: s.title,
-                              artist: s.artist,
-                            }));
-                            startQueue(sortedSongIds, index, meta);
-                          }}
-                          className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
-                        >
-                          {/* Mobile: static wrapped title, no horizontal marquee */}
-                          <span className="text-[0.8rem] font-medium text-white leading-snug break-words whitespace-normal md:hidden">
-                            {title}
-                          </span>
-                          {/* Desktop: static truncated title, no marquee */}
-                          <span className="hidden text-[0.8rem] font-medium text-white truncate md:inline">
-                            {title}
-                          </span>
-                          {showArtist && (
-                            <span className="mt-0.5 truncate text-[0.7rem] text-neutral-400">
-                              {artist}
-                            </span>
-                          )}
-                        </button>
-                      </li>
-                    );
-                  })}
-              </ul>
-            )}
           </div>
         </div>
       </section>

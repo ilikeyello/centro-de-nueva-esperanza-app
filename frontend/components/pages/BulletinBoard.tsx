@@ -135,9 +135,15 @@ export function BulletinBoard() {
   const [prayedPrayerIds, setPrayedPrayerIds] = useState<Set<number>>(() => new Set());
   const [activePrayerId, setActivePrayerId] = useState<number | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["bulletin-board"],
     queryFn: () => fetchBoard(backend),
+    retry: false,
   });
 
   useEffect(() => {
@@ -441,13 +447,14 @@ export function BulletinBoard() {
               )}
             </p>
           </div>
-          <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/60 p-1 md:w-auto">
+          <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 border-neutral-300 bg-neutral-50 p-1 md:w-auto">
             <button
               type="button"
               onClick={() => setActiveTab("community")}
+              style={activeTab === "community" ? { backgroundColor: "#C73E1D", color: "white", borderBottomColor: "#C73E1D" } : {}}
               className={cn(
-                "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors text-center md:flex-none",
-                activeTab === "community" ? "bg-red-600 text-white" : "text-neutral-300 hover:text-white"
+                "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
+                activeTab === "community" ? "shadow-md" : "text-neutral-600 hover:text-[#C73E1D] hover:bg-white border-b-transparent"
               )}
             >
               {t("Community", "Comunidad")}
@@ -455,12 +462,13 @@ export function BulletinBoard() {
             <button
               type="button"
               onClick={() => setActiveTab("prayers")}
+              style={activeTab === "prayers" ? { backgroundColor: "#C73E1D", color: "white", borderBottomColor: "#C73E1D" } : {}}
               className={cn(
-                "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors text-center md:flex-none",
-                activeTab === "prayers" ? "bg-red-600 text-white" : "text-neutral-300 hover:text-white"
+                "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
+                activeTab === "prayers" ? "shadow-md" : "text-neutral-600 hover:text-[#C73E1D] hover:bg-white border-b-transparent"
               )}
             >
-              {t("Prayer Wall", "Muro de Oración")}
+              {t("Prayer Requests", "Peticiones de Oración")}
             </button>
           </div>
         </div>
@@ -480,6 +488,12 @@ export function BulletinBoard() {
               {isLoading && (
                 <p className="text-sm text-neutral-400">
                   {t("Loading posts...", "Cargando publicaciones...")}
+                </p>
+              )}
+
+              {isError && (
+                <p className="text-sm text-red-400">
+                  {t("Error loading posts.", "Error al cargar publicaciones.")} {String((error as Error)?.message ?? error)}
                 </p>
               )}
 
@@ -566,7 +580,7 @@ export function BulletinBoard() {
                 })}
               </div>
 
-              {!isLoading && posts.length === 0 && (
+              {!isLoading && !isError && posts.length === 0 && (
                 <p className="text-sm text-neutral-400">
                   {t("No community posts yet. Start the conversation above!", "No hay publicaciones aún. ¡Comienza la conversación arriba!")}
                 </p>
@@ -586,15 +600,15 @@ export function BulletinBoard() {
                   </span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="border-neutral-800 bg-neutral-900">
+              <DialogContent className="warm-card">
                 <DialogHeader>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="serif-heading text-neutral-900">
                     {t("Create Post", "Crear Publicación")}
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmitPost} className="space-y-4">
                   <div>
-                    <Label htmlFor="bulletin-title" className="text-neutral-200">
+                    <Label htmlFor="bulletin-title" className="text-neutral-700">
                       {t("Title", "Título")}
                     </Label>
                     <Input
@@ -602,11 +616,11 @@ export function BulletinBoard() {
                       value={newPost.title}
                       onChange={(event) => setNewPost((prev) => ({ ...prev, title: event.target.value }))}
                       required
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-neutral-300 bg-white text-neutral-900"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="bulletin-content" className="text-neutral-200">
+                    <Label htmlFor="bulletin-content" className="text-neutral-700">
                       {t("Description", "Descripción")}
                     </Label>
                     <Textarea
@@ -614,12 +628,12 @@ export function BulletinBoard() {
                       value={newPost.content}
                       onChange={(event) => setNewPost((prev) => ({ ...prev, content: event.target.value }))}
                       required
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-neutral-300 bg-white text-neutral-900"
                       rows={4}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="bulletin-author" className="text-neutral-200">
+                    <Label htmlFor="bulletin-author" className="text-neutral-700">
                       {t("Name", "Nombre")}
                     </Label>
                     <Input
@@ -627,7 +641,7 @@ export function BulletinBoard() {
                       value={newPost.authorName}
                       onChange={(event) => setNewPost((prev) => ({ ...prev, authorName: event.target.value }))}
                       placeholder={t("Optional", "Opcional")}
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-neutral-300 bg-white text-neutral-900"
                     />
                   </div>
                   <Button
@@ -637,7 +651,7 @@ export function BulletinBoard() {
                       newPost.content.trim().length === 0 ||
                       newPost.title.trim().length === 0
                     }
-                    className="w-full bg-red-600 hover:bg-red-700"
+                    className="warm-button-primary w-full"
                   >
                     {t("Publish", "Publicar")}
                   </Button>
@@ -785,15 +799,15 @@ export function BulletinBoard() {
                   </span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="border-neutral-800 bg-neutral-900">
+              <DialogContent className="warm-card">
                 <DialogHeader>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="serif-heading text-neutral-900">
                     {t("Share Prayer Request", "Compartir Petición de Oración")}
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmitPrayer} className="space-y-4">
                   <div>
-                    <Label htmlFor="prayer-title" className="text-neutral-200">
+                    <Label htmlFor="prayer-title" className="text-neutral-700">
                       {t("Title", "Título")}
                     </Label>
                     <Input
@@ -801,11 +815,11 @@ export function BulletinBoard() {
                       value={newPrayer.title}
                       onChange={(event) => setNewPrayer((prev) => ({ ...prev, title: event.target.value }))}
                       required
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-neutral-300 bg-white text-neutral-900"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="prayer-description" className="text-neutral-200">
+                    <Label htmlFor="prayer-description" className="text-neutral-700">
                       {t("Description", "Descripción")}
                     </Label>
                     <Textarea
@@ -813,12 +827,12 @@ export function BulletinBoard() {
                       value={newPrayer.description}
                       onChange={(event) => setNewPrayer((prev) => ({ ...prev, description: event.target.value }))}
                       required
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-neutral-300 bg-white text-neutral-900"
                       rows={4}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="prayer-author" className="text-neutral-200">
+                    <Label htmlFor="prayer-author" className="text-neutral-700">
                       {t("Name", "Nombre")}
                     </Label>
                     <Input
@@ -826,7 +840,7 @@ export function BulletinBoard() {
                       value={newPrayer.authorName}
                       onChange={(event) => setNewPrayer((prev) => ({ ...prev, authorName: event.target.value }))}
                       placeholder={t("Optional", "Opcional")}
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-neutral-300 bg-white text-neutral-900"
                     />
                   </div>
                   <Button
@@ -836,7 +850,7 @@ export function BulletinBoard() {
                       newPrayer.title.trim().length === 0 ||
                       newPrayer.description.trim().length === 0
                     }
-                    className="w-full bg-red-600 hover:bg-red-700"
+                    className="warm-button-primary w-full"
                   >
                     {createPrayerMutation.isPending
                       ? t("Sharing...", "Compartiendo...")

@@ -144,16 +144,16 @@ function DonationForm({ onNavigate }: DonationFormProps) {
               variant="ghost"
               size="icon"
               onClick={() => onNavigate("home")}
-              className="text-neutral-300 hover:text-white"
+              className="text-neutral-700 hover:text-warm-red"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="serif-heading text-3xl font-bold text-neutral-900">
             {t("Give to Our Church", "Dar a Nuestra Iglesia")}
           </h1>
         </div>
-        <p className="text-neutral-400">
+        <p className="text-neutral-600">
           {t(
             "Your generosity helps us serve our community and spread God's love",
             "Tu generosidad nos ayuda a servir a nuestra comunidad y difundir el amor de Dios"
@@ -171,8 +171,8 @@ function DonationForm({ onNavigate }: DonationFormProps) {
               variant="outline"
               className={`h-auto flex-col gap-2 p-4 text-sm ${
                 isActive
-                  ? "border-red-500 bg-red-700/20 text-red-50"
-                  : "border-neutral-700 bg-neutral-900/70 text-neutral-100"
+                  ? "border-warm-red bg-warm-red/10 text-warm-red"
+                  : "border-neutral-300 bg-white text-neutral-700"
               }`}
               onClick={() => setDonationType(type.value as any)}
             >
@@ -185,16 +185,16 @@ function DonationForm({ onNavigate }: DonationFormProps) {
         })}
       </div>
 
-      <Card className="border-neutral-800 bg-neutral-900/50">
+      <Card className="warm-card">
         <CardHeader>
-          <CardTitle className="text-white">
+          <CardTitle className="serif-heading text-neutral-900">
             {t("Donation Details", "Detalles de Donación")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="amount" className="text-neutral-200">
+              <Label htmlFor="amount" className="text-neutral-700">
                 {t("Amount ($)", "Cantidad ($)")}
               </Label>
               <Input
@@ -205,30 +205,30 @@ function DonationForm({ onNavigate }: DonationFormProps) {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
-                className="border-neutral-700 bg-neutral-800 text-white"
+                className="border-neutral-300 bg-white text-neutral-900"
               />
             </div>
             <div>
-              <Label htmlFor="message" className="text-neutral-200">
+              <Label htmlFor="message" className="text-neutral-700">
                 {t("Message (optional)", "Mensaje (opcional)")}
               </Label>
               <Textarea
                 id="message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="border-neutral-700 bg-neutral-800 text-white"
+                className="border-neutral-300 bg-white text-neutral-900"
               />
             </div>
             <div>
-              <Label className="text-neutral-200">
+              <Label className="text-neutral-700">
                 {t("Card Details", "Detalles de Tarjeta")}
               </Label>
-              <div className="mt-2 rounded-md border border-neutral-700 bg-neutral-800 p-3">
+              <div className="mt-2 rounded-md border border-neutral-300 bg-white p-3">
                 <CardElement
                   options={{
                     style: {
                       base: {
-                        color: "#fff",
+                        color: "#171717",
                         fontSize: "16px",
                         "::placeholder": {
                           color: "#737373",
@@ -242,7 +242,7 @@ function DonationForm({ onNavigate }: DonationFormProps) {
             <Button
               type="submit"
               disabled={!stripe || processing}
-              className="w-full bg-red-600 hover:bg-red-700"
+              className="warm-button-primary w-full"
             >
               {processing
                 ? t("Processing...", "Procesando...")

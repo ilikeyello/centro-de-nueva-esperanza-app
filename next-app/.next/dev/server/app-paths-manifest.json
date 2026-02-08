@@ -1,0 +1,10 @@
+{
+  "/bible/page": "app/bible/page.js",
+  "/bulletin/page": "app/bulletin/page.js",
+  "/games/page": "app/games/page.js",
+  "/games/trivia/page": "app/games/trivia/page.js",
+  "/games/word-search/page": "app/games/word-search/page.js",
+  "/media/page": "app/media/page.js",
+  "/news/page": "app/news/page.js",
+  "/page": "app/page.js"
+}

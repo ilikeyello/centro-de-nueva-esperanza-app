@@ -1,0 +1,418 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Calendar, Music, Play } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { usePlayer } from "@/contexts/PlayerContext";
+import { useBackend } from "@/hooks/useBackend";
+
+let liveCheckInterval: any = null;
+
+declare global {
+  interface Window {
+    onYouTubeIframeAPIReady: () => void;
+    YT: any;
+  }
+}
+
+interface SermonItem {
+  id: number;
+  title: string;
+  youtubeUrl: string;
+  createdAt: string;
+}
+
+export function MediaPage() {
+  const { language, t } = useLanguage();
+  const backend = useBackend();
+  const [sermons, setSermons] = useState<SermonItem[]>([]);
+  const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
+  const [loadingSermons, setLoadingSermons] = useState(false);
+  const {
+    startQueue,
+    playlistUrl,
+    livestreamUrl,
+    livestreamTitle,
+    livestreamIsLive,
+  } = usePlayer();
+
+  const [manualLiveOverride, setManualLiveOverride] = useState(false);
+  const playerRef = useRef<any | null>(null);
+
+  const [playlistSongs, setPlaylistSongs] = useState<{
+    id: string;
+    title: string;
+    artist: string;
+    position: number;
+  }[]>([]);
+  const [loadingPlaylistSongs, setLoadingPlaylistSongs] = useState(false);
+
+  const apiBase = process.env.NEXT_PUBLIC_CLIENT_TARGET || "https://prod-cne-sh82.encr.app";
+
+  useEffect(() => {
+    const loadPlaylistSongs = async () => {
+      if (!playlistUrl) return;
+      setLoadingPlaylistSongs(true);
+      try {
+        const res = await fetch(`${apiBase}/playlist/items`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const rawItems = Array.isArray(data.items) ? data.items : [];
+        const songs = rawItems
+          .map((it: any) => ({
+            id: it.id as string,
+            title: (it.title as string) || "",
+            artist: (it.channelTitle as string) || "",
+            position: typeof it.position === "number" ? it.position : 0,
+          }))
+          .filter((s: { id: string; title: string }) => s.id && s.title);
+        setPlaylistSongs(songs);
+      } catch {
+        // ignore
+      } finally {
+        setLoadingPlaylistSongs(false);
+      }
+    };
+
+    void loadPlaylistSongs();
+  }, [playlistUrl, apiBase]);
+
+  const sortedPlaylistSongs = useMemo(
+    () => playlistSongs.slice().sort((a, b) => a.position - b.position),
+    [playlistSongs]
+  );
+
+  const sortedSongIds = useMemo(() => sortedPlaylistSongs.map((song) => song.id), [sortedPlaylistSongs]);
+
+  useEffect(() => {
+    const loadSermons = async () => {
+      try {
+        setLoadingSermons(true);
+        const { sermons } = await backend.listSermons();
+        const transformedSermons: SermonItem[] = sermons.map((sermon: any) => ({
+          id: sermon.id,
+          title: sermon.title,
+          youtubeUrl: sermon.youtube_url || sermon.youtubeUrl,
+          createdAt: sermon.created_at || sermon.createdAt,
+        }));
+        setSermons(transformedSermons);
+        if (transformedSermons.length > 0) {
+          setSelectedSermonId(transformedSermons[0].id);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoadingSermons(false);
+      }
+    };
+
+    void loadSermons();
+  }, [backend]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!livestreamUrl) return;
+
+    const w = window as any;
+    let cancelled = false;
+
+    const createPlayer = () => {
+      if (cancelled) return;
+      if (!w.YT || !w.YT.Player) return;
+
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        try {
+          playerRef.current.destroy();
+        } catch {
+          // ignore
+        }
+        playerRef.current = null;
+      }
+
+      const existing = document.getElementById("cne-livestream-player");
+      if (!existing) return;
+
+      playerRef.current = new w.YT.Player("cne-livestream-player", {
+        events: {
+          onReady: () => {
+            // no-op
+          },
+        },
+      });
+    };
+
+    if (w.YT && w.YT.Player) {
+      createPlayer();
+    } else {
+      const prevReady = w.onYouTubeIframeAPIReady;
+      w.onYouTubeIframeAPIReady = () => {
+        if (typeof prevReady === "function") prevReady();
+        createPlayer();
+      };
+
+      const existingScript = document.querySelector("script[src='https://www.youtube.com/iframe_api']");
+      if (!existingScript) {
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+      }
+    }
+
+    return () => {
+      cancelled = true;
+      if (liveCheckInterval) {
+        clearInterval(liveCheckInterval);
+        liveCheckInterval = null;
+      }
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        try {
+          playerRef.current.destroy();
+        } catch {
+          // ignore
+        }
+        playerRef.current = null;
+      }
+    };
+  }, [livestreamUrl]);
+
+  const selectedSermon = useMemo(() => {
+    if (!sermons.length) return null;
+    if (selectedSermonId == null) return sermons[0];
+    return sermons.find((s) => s.id === selectedSermonId) ?? sermons[0];
+  }, [sermons, selectedSermonId]);
+
+  const getEmbedUrl = (url: string) => {
+    if (!url || url.trim() === "") return "";
+    try {
+      const u = new URL(url);
+      if (u.hostname.includes("youtu.be")) {
+        const id = u.pathname.replace("/", "");
+        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+      }
+      if (u.searchParams.get("v")) {
+        const id = u.searchParams.get("v");
+        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+      }
+      if (u.pathname.includes("/live/")) {
+        const id = u.pathname.split("/live/")[1]?.split("?")[0];
+        return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+      }
+      if (u.pathname.includes("/embed/")) {
+        if (u.searchParams.has("enablejsapi")) return url;
+        u.searchParams.set("enablejsapi", "1");
+        return u.toString();
+      }
+      return url;
+    } catch {
+      return url;
+    }
+  };
+
+  return (
+    <div className="container mx-auto space-y-10 px-4 py-8">
+      <section className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-red-400">
+              <Play className="h-5 w-5" />
+              <span className="text-sm font-semibold uppercase tracking-[0.2em]">{t("Watch Live", "Ver en Vivo")}</span>
+            </div>
+            <h1 className="text-3xl font-bold text-white sm:text-4xl">{t("Experience CNE Online", "Experimenta CNE en Línea")}</h1>
+            <p className="text-neutral-300">
+              {t(
+                "Join us for our weekly services and special events. When we go live, the stream will begin automatically.",
+                "Únete a nosotros para nuestros servicios semanales y eventos especiales. Cuando estemos en vivo, la transmisión comenzará automáticamente."
+              )}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button className="bg-red-600 hover:bg-red-700" asChild>
+                <a href="#music" className="flex items-center gap-2">
+                  <Music className="h-4 w-4" />
+                  {t("Listen to Music", "Escuchar Música")}
+                </a>
+              </Button>
+              <Button
+                variant="outline"
+                className="border-yellow-600 bg-yellow-900/20 text-yellow-400 hover:bg-yellow-900/30"
+                onClick={() => setManualLiveOverride((v) => !v)}
+                type="button"
+              >
+                {manualLiveOverride ? "🔴 Live (Manual)" : "⚫ Test Live"}
+              </Button>
+              <Button variant="outline" className="border-neutral-700 bg-neutral-900 text-white hover:bg-neutral-800" asChild>
+                <a href="https://www.youtube.com/@centrodenuevaesperanzaiglesia" target="_blank" rel="noreferrer">
+                  {t("View All on YouTube", "Ver todo en YouTube")}
+                </a>
+              </Button>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/70 p-4">
+              <Calendar className="h-5 w-5 text-red-400" />
+              <div>
+                <p className="text-sm font-semibold text-white">{t("Live Sundays at 3:30 PM", "En vivo los domingos a las 3:30 PM")}</p>
+                <p className="text-sm text-neutral-400">{t("Arrive a few minutes early to chat and pray together.", "Llega unos minutos antes para conversar y orar juntos.")}</p>
+              </div>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 shadow-xl md:col-span-2">
+            <div className="relative aspect-video">
+              {!livestreamIsLive && !manualLiveOverride && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-neutral-950/90 px-6 text-center">
+                  <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400">{livestreamTitle || t("Livestream", "Transmisión en vivo")}</p>
+                  <p className="text-xl font-semibold text-white sm:text-2xl">{t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}</p>
+                  <p className="text-xs text-neutral-500">{t("The player will appear when we go live.", "El reproductor aparecerá cuando estemos en vivo.")}</p>
+                </div>
+              )}
+
+              {(livestreamIsLive || manualLiveOverride) && (
+                <iframe
+                  key={getEmbedUrl(livestreamUrl)}
+                  id="cne-livestream-player"
+                  src={getEmbedUrl(livestreamUrl)}
+                  title={livestreamTitle || t("CNE Live Stream", "Transmisión en Vivo de CNE")}
+                  className="absolute inset-0 h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white">{t("Devotionals", "Devocionales")}</h2>
+          <p className="text-neutral-400">{t("Catch up on previous devotionals and share them with friends.", "Ponte al día con los devocionales anteriores y compártelos con amigos.")}</p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="border-none bg-transparent shadow-none md:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-white">{selectedSermon ? selectedSermon.title : t("No devotional selected", "Ningún devocional seleccionado")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="relative aspect-video overflow-hidden rounded-2xl">
+                {loadingSermons && (
+                  <div className="flex h-full items-center justify-center text-xs text-neutral-500">{t("Loading sermons...", "Cargando sermones...")}</div>
+                )}
+                {!loadingSermons && selectedSermon && (
+                  <iframe
+                    src={getEmbedUrl(selectedSermon.youtubeUrl)}
+                    title={selectedSermon.title}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
+                {!loadingSermons && !selectedSermon && (
+                  <div className="flex h-full items-center justify-center text-xs text-neutral-500">{t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-neutral-800 bg-neutral-900/60">
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold text-white">{t("All Devotionals", "Todos los Devocionales")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-80 space-y-1 overflow-y-auto text-xs">
+                {loadingSermons && <p className="text-neutral-500">{t("Loading sermons...", "Cargando sermones...")}</p>}
+                {!loadingSermons && sermons.length === 0 && <p className="text-neutral-500">{t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}</p>}
+                {!loadingSermons && sermons.length > 0 && (
+                  <ul className="space-y-1">
+                    {sermons.map((sermon) => {
+                      const isActive = selectedSermon?.id === sermon.id;
+                      return (
+                        <li key={sermon.id}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSermonId(sermon.id)}
+                            className={`flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left transition-colors ${
+                              isActive
+                                ? "bg-red-600/20 text-red-50 border border-red-500"
+                                : "border border-transparent text-neutral-200 hover:border-neutral-700 hover:bg-neutral-800/80"
+                            }`}
+                          >
+                            <span className="truncate text-[0.8rem] font-medium">{sermon.title}</span>
+                            <span className="mt-0.5 text-[0.65rem] text-neutral-400">
+                              {new Date(sermon.createdAt).toLocaleDateString(language === "en" ? "en-US" : "es-MX", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section id="music" className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white">{t("Music & Worship", "Música y Adoración")}</h2>
+          <p className="text-neutral-400">{t("Listen to curated worship playlists that we love to sing together.", "Escucha listas de reproducción de adoración que nos encanta cantar juntos.")}</p>
+          <div className="mt-3">
+            <Button
+              type="button"
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => {
+                if (!sortedPlaylistSongs.length) return;
+                const shuffledSongs = sortedPlaylistSongs.slice().sort(() => Math.random() - 0.5);
+                const shuffledIds = shuffledSongs.map((song) => song.id);
+                const shuffledMeta = shuffledSongs.map((song) => ({ title: song.title, artist: song.artist }));
+                startQueue(shuffledIds, 0, shuffledMeta);
+              }}
+            >
+              <Play className="mr-2 h-4 w-4" />
+              {t("Shuffle Worship Playlist", "Reproducir lista de adoración al azar")}
+            </Button>
+          </div>
+          <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 text-xs text-neutral-200">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">{t("Songs in this playlist", "Canciones en esta lista")}</p>
+            {loadingPlaylistSongs && <p className="mt-2 text-[0.75rem] text-neutral-500">{t("Loading songs...", "Cargando canciones...")}</p>}
+            {!loadingPlaylistSongs && playlistSongs.length === 0 && <p className="mt-2 text-[0.75rem] text-neutral-500">{t("No songs found for this playlist.", "No se encontraron canciones para esta lista.")}</p>}
+            {!loadingPlaylistSongs && playlistSongs.length > 0 && (
+              <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto overflow-x-hidden md:max-h-none md:overflow-visible">
+                {sortedPlaylistSongs.map((song, index) => {
+                  const artist = song.artist?.trim() ?? "";
+                  const title = song.title?.trim() ?? "";
+                  const showArtist =
+                    artist.length > 0 &&
+                    artist.toLowerCase() !== title.toLowerCase() &&
+                    !title.toLowerCase().includes(artist.toLowerCase());
+
+                  return (
+                    <li key={song.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!sortedSongIds.length) return;
+                          const meta = sortedPlaylistSongs.map((s) => ({ title: s.title, artist: s.artist }));
+                          startQueue(sortedSongIds, index, meta);
+                        }}
+                        className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-neutral-800/80"
+                      >
+                        <span className="text-[0.8rem] font-medium text-white leading-snug break-words whitespace-normal md:hidden">{title}</span>
+                        <span className="hidden text-[0.8rem] font-medium text-white truncate md:inline">{title}</span>
+                        {showArtist && <span className="mt-0.5 truncate text-[0.7rem] text-neutral-400">{artist}</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { getLivestreamFromMainSite, type LivestreamInfo } from "../lib/mainSiteData";
+import { getLivestreamFromMainSite, getMusicPlaylistFromMainSite, type LivestreamInfo } from "../lib/mainSiteData";
 
 function normalizeLivestreamUrl(raw: string, fallback: string): string {
   const trimmed = raw.trim();
@@ -37,6 +37,31 @@ function normalizeLivestreamUrl(raw: string, fallback: string): string {
     return trimmed;
   } catch {
     return fallback;
+  }
+}
+
+function normalizePlaylistUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+
+  try {
+    const url = new URL(trimmed);
+    
+    // Check for list param
+    const listId = url.searchParams.get("list");
+    if (listId) {
+      return `https://www.youtube.com/embed/videoseries?list=${listId}`;
+    }
+
+    // If it's already an embed URL, return as is
+    if (url.pathname.includes("/embed/")) {
+      return trimmed;
+    }
+
+    // Fallback: return original if we can't parse a list ID
+    return trimmed;
+  } catch {
+    return trimmed;
   }
 }
 
@@ -148,28 +173,21 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Load playlist URL from backend on mount (only once), bypassing caches
+  // Load playlist URL from backend on mount (only once)
   useEffect(() => {
     const loadPlaylistUrl = async () => {
       try {
-        const base = import.meta.env.DEV
-          ? "http://127.0.0.1:4000"
-          : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/playlist?ts=${Date.now()}` as string, {
-          cache: "no-store",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.url) {
-            setPlaylistUrlState(data.url);
-            // Also update localStorage for fallback
-            try {
-              if (typeof window !== "undefined") {
-                window.localStorage.setItem("cne_music_playlist_url", data.url);
-              }
-            } catch {
-              // ignore storage errors
+        const rawUrl = await getMusicPlaylistFromMainSite();
+        if (rawUrl) {
+          const url = normalizePlaylistUrl(rawUrl);
+          setPlaylistUrlState(url);
+          // Also update localStorage for fallback
+          try {
+            if (typeof window !== "undefined") {
+              window.localStorage.setItem("cne_music_playlist_url", url);
             }
+          } catch {
+            // ignore storage errors
           }
         }
       } catch {

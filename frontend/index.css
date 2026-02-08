@@ -4,6 +4,34 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Church Community Color Palette */
+:root {
+  --warm-cream: #F9F7F4;
+  --soft-brown: #8B7355;
+  --warm-taupe: #A0926D;
+  --earth-green: #7A8B7A;
+  --warm-red: #C73E1D;
+  --light-warm-red: #E85D4C;
+  --neutral-100: #FAFAF9;
+  --neutral-200: #F5F5F4;
+  --neutral-300: #E7E5E4;
+  --neutral-400: #D6D3D1;
+  --neutral-500: #A8A29E;
+  --neutral-600: #78716C;
+  --neutral-700: #57534E;
+  --neutral-800: #44403C;
+  --neutral-900: #262626;
+}
+
+.dark {
+  --warm-cream: #262626;
+  --soft-brown: #A0926D;
+  --warm-taupe: #B8A878;
+  --earth-green: #8B9B8B;
+  --warm-red: #E85D4C;
+  --light-warm-red: #F07060;
+}
+
 @utility container {
   margin-inline: auto;
   padding-inline: 1rem;
@@ -11,6 +39,34 @@
   @media (width >= theme(--breakpoint-sm)) {
     padding-inline: 2rem;
   }
+}
+
+/* Typography */
+.serif-heading {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Hero gradient blend */
+.hero-gradient-blend {
+  background: linear-gradient(to top, 
+    #F9F7F4 0%, 
+    rgba(249, 247, 244, 0.95) 12%,
+    rgba(249, 247, 244, 0.85) 20%,
+    rgba(249, 247, 244, 0.7) 28%,
+    rgba(249, 247, 244, 0.5) 36%,
+    rgba(249, 247, 244, 0.3) 44%,
+    rgba(249, 247, 244, 0.15) 52%,
+    transparent 60%
+  );
+}
+
+.warm-text-gradient {
+  background: linear-gradient(135deg, var(--warm-red) 0%, var(--soft-brown) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Safe area support for mobile devices */
@@ -98,9 +154,177 @@
   }
   
   .hero-subtitle {
-    font-size: 1rem !important;
-    line-height: 1.4;
+    font-size: 1.1rem !important;
+    line-height: 1.5;
   }
+  
+  /* Larger touch targets for accessibility */
+  .cta-button {
+    min-height: 48px !important;
+    padding: 14px 28px !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* Warm background gradients */
+.warm-gradient {
+  background: linear-gradient(135deg, #F9F7F4 0%, #F5F5F4 50%, #E7E5E4 100%);
+}
+
+.dark .warm-gradient {
+  background: linear-gradient(135deg, #262626 0%, #1C1C1C 50%, #171717 100%);
+}
+
+/* Card styles for sections */
+.warm-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Button styles */
+.warm-button-primary {
+  background: var(--warm-red);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.warm-button-primary:hover {
+  background: var(--light-warm-red);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(199, 62, 29, 0.3);
+}
+
+.warm-button-secondary {
+  background: transparent;
+  color: var(--warm-red);
+  border: 2px solid var(--warm-red);
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.warm-button-secondary:hover {
+  background: var(--warm-red);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Global overrides for consistent warm theme */
+.bg-red-600, .bg-red-700 {
+  background-color: var(--warm-red) !important;
+}
+
+.hover\:bg-red-700:hover {
+  background-color: var(--light-warm-red) !important;
+}
+
+.text-red-400, .text-red-500, .text-red-600 {
+  color: var(--warm-red) !important;
+}
+
+.hover\:text-red-500:hover {
+  color: var(--warm-red) !important;
+}
+
+.border-red-500 {
+  border-color: var(--warm-red) !important;
+}
+
+.border-l-warm-red {
+  border-left-color: var(--warm-red) !important;
+}
+
+.border-l-transparent {
+  border-left-color: transparent !important;
+}
+
+.border-b-warm-red {
+  border-bottom-color: var(--warm-red) !important;
+}
+
+.border-b-transparent {
+  border-bottom-color: transparent !important;
+}
+
+.bg-warm-red {
+  background-color: var(--warm-red) !important;
+}
+
+.text-warm-red {
+  color: var(--warm-red) !important;
+}
+
+.hover\:text-warm-red:hover {
+  color: var(--warm-red) !important;
+}
+
+.hover\:bg-warm-red\/5:hover {
+  background-color: rgba(199, 62, 29, 0.05) !important;
+}
+
+/* Dedicated active tab style to ensure overrides work */
+.warm-tab-active {
+  background-color: var(--warm-red) !important;
+  color: white !important;
+  border-bottom-color: var(--warm-red) !important;
+  border-bottom-width: 4px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Override white text to dark text for light theme */
+h1.text-white:not(.hero-title), h2.text-white:not(.hero-title), h3.text-white, h4.text-white {
+  color: var(--neutral-900) !important;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.text-white:not(button):not(.bg-neutral-900):not(.bg-neutral-800):not(.bg-red-600):not(.bg-warm-red):not(.hero-title):not(.hero-subtitle) {
+  color: var(--neutral-900) !important;
+}
+
+/* Keep hero text white */
+.hero-title, .hero-subtitle {
+  color: white !important;
+}
+
+/* Fix white buttons to have dark text */
+button.bg-white .text-white,
+button.bg-white.text-white,
+.bg-white button.text-white {
+  color: var(--neutral-900) !important;
+}
+
+button.border-white:not(.bg-warm-red):not(.bg-red-600) {
+  border-color: var(--neutral-300) !important;
+  color: var(--neutral-900) !important;
+}
+
+.text-neutral-300:not(button):not(.bg-neutral-900):not(.bg-neutral-800) {
+  color: var(--neutral-700) !important;
+}
+
+.text-neutral-400:not(button):not(.bg-neutral-900):not(.bg-neutral-800) {
+  color: var(--neutral-600) !important;
+}
+
+/* Override dark backgrounds to light */
+.bg-neutral-900, .bg-neutral-900\/50, .bg-neutral-900\/60, .bg-neutral-900\/70 {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+}
+
+.border-neutral-800, .border-neutral-700 {
+  border-color: #E5E7EB !important;
+}
+
+.bg-neutral-800 {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
 }
 
 @media screen and (max-width: 390px) {
@@ -113,7 +337,11 @@
     font-size: 2rem !important;
   }
   
+  .hero-subtitle {
+    font-size: 1rem !important;
+    line-height: 1.4;
   }
+}
 
 /* Safe area improvements for notched iPhones */
 @supports (padding: max(0px)) {

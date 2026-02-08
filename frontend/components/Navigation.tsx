@@ -97,6 +97,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const playerRef = useRef<any | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const lastLayoutIsDesktopRef = useRef<boolean | null>(null);
 
   const [desktopPlayerPosition, setDesktopPlayerPosition] = useState({ top: 160, right: 16 });
@@ -106,6 +107,19 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     startTop: number;
     startRight: number;
   } | null>(null);
+
+  // Track scroll position for transparent navbar effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    
+    // Initial check
+    handleScroll();
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Track whether we're on a desktop-sized viewport so we can adjust player layout.
   useEffect(() => {
@@ -242,6 +256,20 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
     if (youtubeTrackUrl) {
       try {
+        // Check if it's a playlist embed URL
+        if (youtubeTrackUrl.includes("list=")) {
+          const listMatch = youtubeTrackUrl.match(/list=([^&]+)/);
+          if (listMatch && listMatch[1]) {
+            if (typeof player.loadPlaylist === "function") {
+              player.loadPlaylist({
+                list: listMatch[1],
+                listType: "playlist",
+              });
+              return; // Exit early since we handled the playlist
+            }
+          }
+        }
+
         // Treat currentTrack as a YouTube video ID and use loadVideoById
         if (typeof player.loadVideoById === "function") {
           player.loadVideoById(youtubeTrackUrl);
@@ -290,6 +318,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     });
   };
 
+  const isHome = currentPage === "home";
+  // Apply transparency on Home page when at the top AND on desktop
+  const isTransparent = isHome && !isScrolled && isDesktop;
+
   const navItems = [
     { id: "home", icon: Home, labelEn: "Home", labelEs: "Inicio" },
     { id: "bible", icon: BookOpen, labelEn: "Bible", labelEs: "Biblia" },
@@ -302,7 +334,14 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur transition-transform md:sticky md:top-0 md:border-b md:border-t-0">
+    <nav
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-300 bg-white shadow-lg transition-all duration-300 md:sticky md:top-0 md:border-t-0",
+        isTransparent
+          ? "md:bg-transparent md:border-transparent md:shadow-none"
+          : "md:bg-warm-cream/95 md:backdrop-blur-sm md:border-b md:border-neutral-300 md:shadow-sm"
+      )}
+    >
       <div
         className={cn("container mx-auto py-0")}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" }}
@@ -312,7 +351,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           {/* Mobile: minimized pill in navbar */}
           {youtubeTrackUrl && isMinimized && (
             <div className="flex items-center justify-between px-3 pt-1.5 md:hidden">
-              <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-inner">
+              <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1 text-[0.75rem] shadow-md">
                 <div className="min-w-0 flex-1 max-w-[65%]">
                   {currentTrackTitle && (
                     <div className="max-w-full text-[0.7rem] text-neutral-100 marquee-container">
@@ -436,7 +475,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 </div>
               </div>
               <div className="mt-2 h-40 w-full overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/90">
-                <div id="global-music-player" className="h-full w-full" />
+                <div id="mobile-music-player" className="h-full w-full" />
               </div>
             </div>
           )}
@@ -450,34 +489,21 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
                   className={cn(
-                    "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] transition-colors md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
+                    "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-3 py-2 text-[0.8rem] font-medium transition-all md:flex-initial md:flex-row md:gap-2 md:px-4 md:py-2 md:text-sm nav-button",
                     isActive
-                      ? "text-red-500"
-                      : "text-neutral-400 hover:text-neutral-200"
+                      ? "text-warm-red bg-warm-red/15 border-2 border-warm-red/30 shadow-sm"
+                      : isTransparent
+                        ? "!text-white hover:text-warm-red hover:bg-warm-red/5 border-2 border-transparent"
+                        : "text-neutral-700 hover:text-warm-red hover:bg-warm-red/5 border-2 border-transparent"
                   )}
                 >
-                  <Icon className={cn("h-6 w-6 md:h-5 md:w-5", isActive && "text-red-500")} />
-                  <span className="text-xs font-medium whitespace-nowrap md:text-sm">
+                  <Icon className={cn("h-5 w-5 md:h-5 md:w-5", isActive && "text-warm-red", isTransparent && !isActive && "!text-white")} />
+                  <span className={cn("text-xs font-medium whitespace-nowrap md:text-sm", isActive ? "text-warm-red" : isTransparent && "!text-white")}>
                     {t(item.labelEn, item.labelEs)}
                   </span>
                 </button>
               );
             })}
-            {/* Desktop-only translate button */}
-            {isDesktop && (
-              <button
-                type="button"
-                onClick={toggleLanguage}
-                className={cn(
-                  "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.75rem] text-neutral-400 transition-colors hover:text-neutral-200 md:flex-initial md:flex-row md:gap-2 md:px-3 md:py-2 md:text-sm nav-button",
-                  "border border-transparent md:border-neutral-700 md:bg-neutral-900"
-                )}
-                aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
-              >
-                <Languages className="h-6 w-6 md:h-5 md:w-5" />
-                <span className="text-xs font-medium md:text-sm">{language === "en" ? "ESP" : "ENG"}</span>
-              </button>
-            )}
           </div>
         </div>
       </div>

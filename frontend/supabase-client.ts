@@ -308,32 +308,54 @@ export class ChurchApiService {
   
   // Bulletin Posts
   async listBulletinPosts(): Promise<{ posts: BulletinPost[] }> {
-    const { data, error } = await this.client
+    const { data: postsData, error: postsError } = await this.client
       .from('bulletin_posts')
-      .select('*, bulletin_comments(*)')
+      .select('id, organization_id, title, content, author_name, created_at')
       .eq('organization_id', this.orgId)
       .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    const posts = data.map((p: any) => ({
-      id: p.id,
-      organization_id: p.organization_id,
-      title: p.title,
-      content: p.content,
-      authorName: p.author_name,
-      createdAt: p.created_at,
-      comments: (p.bulletin_comments || []).map((c: any) => ({
+
+    if (postsError) throw postsError;
+
+    const postIds = (postsData ?? []).map((p: any) => p.id).filter((id: any) => typeof id === 'number');
+
+    const { data: commentsData, error: commentsError } = postIds.length
+      ? await this.client
+          .from('bulletin_comments')
+          .select('id, bulletin_post_id, organization_id, author_name, author_id, content, created_at')
+          .eq('organization_id', this.orgId)
+          .in('bulletin_post_id', postIds)
+          .order('created_at', { ascending: true })
+      : { data: [], error: null };
+
+    if (commentsError) throw commentsError;
+
+    const commentsByPostId = new Map<number, BulletinComment[]>();
+    (commentsData ?? []).forEach((c: any) => {
+      const mapped: BulletinComment = {
         id: c.id,
         bulletinPostId: c.bulletin_post_id,
         organization_id: c.organization_id,
         authorName: c.author_name,
         authorId: c.author_id,
         content: c.content,
-        createdAt: c.created_at
-      })).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        createdAt: c.created_at,
+      };
+
+      const existing = commentsByPostId.get(mapped.bulletinPostId) ?? [];
+      existing.push(mapped);
+      commentsByPostId.set(mapped.bulletinPostId, existing);
+    });
+
+    const posts = (postsData ?? []).map((p: any) => ({
+      id: p.id,
+      organization_id: p.organization_id,
+      title: p.title,
+      content: p.content,
+      authorName: p.author_name,
+      createdAt: p.created_at,
+      comments: commentsByPostId.get(p.id) ?? [],
     }));
-    
+
     return { posts };
   }
   
