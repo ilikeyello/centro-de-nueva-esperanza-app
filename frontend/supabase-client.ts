@@ -97,6 +97,7 @@ export interface BulletinPost {
   title: string;
   content: string;
   authorName: string;
+  authorId: string | null;
   likeCount: number;
   createdAt: string;
   comments: BulletinComment[];
@@ -118,6 +119,7 @@ export interface ChurchInfo {
   latitude: number | null;
   longitude: number | null;
 }
+
 
 // --- API Service (Read-Only) ---
 export class ChurchApiService {
@@ -336,6 +338,7 @@ export class ChurchApiService {
       title: p.title,
       content: p.content,
       authorName: p.author_name,
+      authorId: p.author_id ?? null,
       likeCount: p.like_count ?? 0,
       createdAt: p.created_at,
       comments: commentsByPostId.get(p.id) ?? [],
@@ -376,6 +379,7 @@ export class ChurchApiService {
       title: data.title,
       content: data.content,
       authorName: data.author_name,
+      authorId: data.author_id ?? null,
       likeCount: data.like_count ?? 0,
       createdAt: data.created_at,
       comments: []
@@ -620,7 +624,8 @@ export class ChurchApiService {
 
     if (error) throw error;
   }
-}
+
+  }
 
 // --- Create and export a singleton instance ---
 export const churchApi = new ChurchApiService();

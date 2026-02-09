@@ -71,7 +71,7 @@ class NotificationService {
         if (latest.createdAt > lastTime) {
           await this.sendNotification({
             title: this.t('New Announcement', 'Nuevo Anuncio'),
-            body: latest.titleEn || latest.title || '',
+            body: latest.titleEn || latest.titleEs || '',
             tag: 'announcement',
             data: { type: 'announcement', id: latest.id }
           });
@@ -94,7 +94,7 @@ class NotificationService {
         const lastTime = this.lastCheck[key] || '0';
         
         if (latest.createdAt > lastTime) {
-          const title = latest.titleEn || latest.title || '';
+          const title = latest.titleEn || latest.titleEs || '';
           const date = new Date(latest.eventDate).toLocaleDateString();
           
           await this.sendNotification({
@@ -167,6 +167,38 @@ class NotificationService {
     }
   }
 
+  async checkComments() {
+    try {
+      const { posts } = await this.backend.listBulletinPosts();
+      
+      // Check each post for new comments
+      for (const post of posts) {
+        if (!post.authorId) continue; // Skip posts without authorId
+        
+        const postComments = post.comments.filter(comment => comment.authorId !== post.authorId);
+        
+        if (postComments.length > 0) {
+          const latest = postComments[postComments.length - 1];
+          const key = `comments_${post.authorId}`;
+          const lastTime = this.lastCheck[key] || '0';
+          
+          if (latest.createdAt > lastTime) {
+            await this.sendNotification({
+              title: this.t('New Comment on Your Post', 'Nuevo Comentario en Tu Publicación'),
+              body: `${latest.authorName}: ${latest.content.substring(0, 100)}${latest.content.length > 100 ? '...' : ''}`,
+              tag: 'comment',
+              data: { type: 'comment', id: latest.id, postId: post.id, userId: post.authorId }
+            });
+            this.lastCheck[key] = latest.createdAt;
+            this.saveLastCheck();
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking comments:', error);
+    }
+  }
+
   startPeriodicCheck(intervalMinutes: number = 5) {
     // Clear existing interval
     if (this.checkInterval) {
@@ -194,7 +226,8 @@ class NotificationService {
       this.checkAnnouncements(),
       this.checkEvents(),
       this.checkLivestream(),
-      this.checkDevotionals()
+      this.checkDevotionals(),
+      this.checkComments()
     ]);
   }
 }

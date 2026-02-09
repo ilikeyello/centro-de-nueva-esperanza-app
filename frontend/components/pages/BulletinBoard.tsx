@@ -45,6 +45,7 @@ interface BulletinPost {
   title: string;
   content: string;
   authorName: string;
+  authorId: string | null;
   likeCount: number;
   createdAt: string;
   comments: BulletinComment[];
@@ -76,6 +77,7 @@ const fetchBoard = async (backend: ReturnType<typeof useBackend>): Promise<Board
       title: p.title,
       content: p.content,
       authorName: p.authorName,
+      authorId: p.authorId ?? null,
       likeCount: p.likeCount ?? 0,
       createdAt: p.createdAt,
       comments: p.comments || []
@@ -307,7 +309,12 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
 
   const commentMutation = useMutation({
     mutationFn: async (data: { targetId: number; authorName: string; authorId: string | null; content: string }) => {
-      return backend.createBulletinComment({ postId: data.targetId, content: data.content, authorName: data.authorName, authorId: data.authorId });
+      return backend.createBulletinComment({ 
+        postId: data.targetId, 
+        content: data.content, 
+        authorName: data.authorName, 
+        authorId: data.authorId 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bulletin-board"] });
