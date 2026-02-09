@@ -147,6 +147,12 @@
     height: 40rem !important;
   }
   
+  @media (max-width: 768px) {
+    .hero-image {
+      height: 250vh !important;
+    }
+  }
+  
   /* Text scaling for readability */
   .hero-title {
     font-size: 2.2rem !important;
