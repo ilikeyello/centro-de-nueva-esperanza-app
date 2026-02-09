@@ -38,6 +38,7 @@ export interface SermonItem {
   title: string;
   youtubeUrl: string;
   createdAt: string;
+  description?: string;
 }
 
 export interface Event {
@@ -131,7 +132,8 @@ export class ChurchApiService {
       id: parseInt(s.id) || 0,
       title: s.title,
       youtubeUrl: s.youtubeUrl,
-      createdAt: s.createdAt
+      createdAt: s.createdAt,
+      description: s.description
     }));
 
     let localSermons: SermonItem[] = [];
@@ -150,7 +152,8 @@ export class ChurchApiService {
           id: s.id,
           title: s.title,
           youtubeUrl: s.youtube_url,
-          createdAt: s.created_at
+          createdAt: s.created_at,
+          description: s.description
         }));
       }
     } catch (e) {

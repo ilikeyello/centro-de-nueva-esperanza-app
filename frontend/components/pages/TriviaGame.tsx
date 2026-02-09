@@ -351,8 +351,7 @@ export function TriviaGame() {
             <div className="flex gap-4 justify-center">
               <Button 
                 onClick={resetGame}
-                variant="outline"
-                className="border-neutral-700 hover:bg-neutral-800"
+                className="bg-white text-black hover:bg-red-600 hover:text-white border border-neutral-300"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t("Back to Menu", "Volver al Menú")}

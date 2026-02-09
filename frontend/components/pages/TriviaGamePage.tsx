@@ -79,6 +79,29 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       setLevels(data.levels);
     } catch (error) {
       console.error('Failed to load levels:', error);
+      // Add fallback test data
+      const testLevels = [
+        {
+          id: "kids",
+          name: "Kids (Test)",
+          description: "For children ages 6-12",
+          target_group: "Children",
+          shuffle_questions: true,
+          time_limit: 30,
+          passing_score: 70
+        },
+        {
+          id: "youth",
+          name: "Youth (Test)",
+          description: "For teenagers and young adults",
+          target_group: "Youth",
+          shuffle_questions: true,
+          time_limit: 20,
+          passing_score: 80
+        }
+      ];
+      setLevels(testLevels);
+      console.log('Using fallback test levels:', testLevels.length);
     } finally {
       setLoading(false);
     }
@@ -93,7 +116,54 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       return data.questions.filter((q: TriviaQuestion) => q.level_id === levelId);
     } catch (error) {
       console.error('Failed to load questions:', error);
-      return [];
+      // Add fallback test questions
+      const testQuestions = [
+        {
+          id: 1,
+          question_en: "Who built the ark?",
+          question_es: "¿Quién construyó el arca?",
+          options_en: ["Noah", "Moses", "Abraham", "David"],
+          options_es: ["Noé", "Moisés", "Abraham", "David"],
+          correct_answer: 0,
+          category: "Old Testament",
+          reference: "Genesis 6:9-22",
+          level_id: levelId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          question_en: "What was the first miracle Jesus performed?",
+          question_es: "¿Cuál fue el primer milagro que Jesús realizó?",
+          options_en: ["Walking on water", "Turning water into wine", "Healing the blind", "Raising Lazarus"],
+          options_es: ["Caminar sobre el agua", "Convertir agua en vino", "Sanar a los ciegos", "Resucitar a Lázaro"],
+          correct_answer: 1,
+          category: "New Testament",
+          reference: "John 2:1-11",
+          level_id: levelId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 3,
+          question_en: "How many books are in the Bible?",
+          question_es: "¿Cuántos libros hay en la Biblia?",
+          options_en: ["39", "66", "73", "27"],
+          options_es: ["39", "66", "73", "27"],
+          correct_answer: 1,
+          category: "General",
+          reference: "N/A",
+          level_id: levelId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+      setGameState(prev => ({
+        ...prev,
+        questions: testQuestions
+      }));
+      console.log('Using fallback test questions:', testQuestions.length);
+      return testQuestions;
     }
   };
 
@@ -315,7 +385,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-white">
+        <div className="text-center text-neutral-900">
           <Brain className="h-12 w-12 mx-auto mb-4 animate-pulse" />
           <p>{t("Loading trivia...", "Cargando trivia...")}</p>
         </div>
@@ -329,8 +399,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
         {/* Back Button */}
         <Button 
           onClick={() => onNavigate?.("games")}
-          variant="outline" 
-          className="mb-6 border-neutral-700 hover:bg-neutral-800 text-white"
+          className="mb-6 bg-white text-black hover:bg-red-600 hover:text-white border border-neutral-300"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t("Back to Games", "Volver a Juegos")}
@@ -339,7 +408,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
         <div className="text-center space-y-6">
           <div className="flex items-center justify-center gap-3">
             <Brain className="h-8 w-8 text-red-400" />
-            <h1 className="text-4xl font-bold text-white">
+            <h1 className="text-4xl font-bold text-neutral-900">
               {language === 'es' ? 'Trivia Bíblica' : 'Bible Trivia'}
             </h1>
           </div>
@@ -355,17 +424,17 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
           {levels.map((level) => (
             <Card 
               key={level.id} 
-              className={`bg-neutral-900 border-neutral-800 transition-all cursor-pointer group ${
+              className={`warm-card transition-all cursor-pointer group ${
                 selectedLevelForConfirmation?.id === level.id 
-                  ? 'border-red-600 ring-2 ring-red-600/50' 
-                  : 'hover:border-red-600'
+                  ? 'border-warm-red ring-2 ring-warm-red/50' 
+                  : 'hover:border-warm-red'
               }`}
               onClick={() => setSelectedLevelForConfirmation(level)}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-white mb-2">
+                    <h3 className="text-xl font-semibold text-neutral-900 mb-2">
                       {language === 'es' ? level.name : level.name}
                     </h3>
                     {level.description && (
@@ -425,18 +494,17 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       : (typeof currentQuestion.options_en === 'string' ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en);
 
     return (
-      <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-warm-cream overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         {/* Header/Back Button - Moved higher */}
         <div className="flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between">
           <Button 
             onClick={resetGame}
-            variant="outline" 
-            className="border-neutral-700 hover:bg-neutral-800 text-white h-8 text-xs"
+            className="bg-white text-black hover:bg-red-600 hover:text-white border border-neutral-300 h-8 text-xs"
           >
             <ArrowLeft className="h-3 w-3 mr-1" />
             {t("Levels", "Niveles")}
           </Button>
-          <div className={`flex items-center gap-2 ${gameState.timeRemaining <= 5 ? 'text-red-500' : 'text-neutral-300'}`}>
+          <div className={`flex items-center gap-2 ${gameState.timeRemaining <= 5 ? 'text-warm-red' : 'text-neutral-700'}`}>
             <Clock className="h-4 w-4" />
             <span className="font-mono text-base">{gameState.isTimerActive ? `${gameState.timeRemaining}s` : '∞'}</span>
           </div>
@@ -457,10 +525,10 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
         </div>
 
         <div className="flex-1 p-3 overflow-hidden flex flex-col min-h-0">
-          <Card className="bg-neutral-900 border-neutral-800 flex flex-col h-full min-h-0">
+          <Card className="warm-card border-neutral-300 flex flex-col h-full min-h-0">
             <CardContent className="p-3 md:p-6 flex flex-col h-full min-h-0">
               <div className="flex-1 flex flex-col justify-between gap-2 min-h-0">
-                <h3 className="text-base md:text-xl font-semibold text-white leading-tight flex-shrink-0">
+                <h3 className="text-base md:text-xl font-semibold text-neutral-900 leading-tight flex-shrink-0">
                   {question}
                 </h3>
                 
@@ -478,26 +546,26 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                         className={`justify-start h-auto p-2.5 md:p-4 text-left transition-all text-xs md:text-base relative min-h-[44px] ${
                           gameState.showFeedback
                             ? isCorrect
-                              ? 'bg-green-600 border-green-400 text-white opacity-100'
+                              ? 'bg-green-100 border-green-400 text-green-800 opacity-100'
                               : isSelected
-                              ? 'bg-red-600 border-red-400 text-white opacity-100'
-                              : 'bg-neutral-800 border-neutral-700 text-neutral-500 opacity-50'
+                              ? 'bg-red-100 border-red-400 text-red-800 opacity-100'
+                              : 'bg-neutral-100 border-neutral-300 text-neutral-500 opacity-50'
                             : isSelected
-                            ? 'bg-red-600 border-red-400 text-white ring-2 ring-red-400/50'
-                            : 'bg-neutral-800 border-neutral-700 hover:bg-neutral-800 hover:border-red-600 text-neutral-200'
+                            ? 'bg-warm-red border-warm-red text-white ring-2 ring-warm-red/50'
+                            : 'bg-white border-neutral-300 hover:bg-neutral-50 hover:border-warm-red text-neutral-900'
                         }`}
                       >
                         <span className="font-bold mr-2 opacity-50">{String.fromCharCode(65 + index)}.</span>
                         <span className="flex-1 pr-4">{option}</span>
-                        {gameState.showFeedback && isCorrect && <span className="ml-auto text-white">✓</span>}
-                        {gameState.showFeedback && isSelected && !isCorrect && <span className="ml-auto text-white">✗</span>}
+                        {gameState.showFeedback && isCorrect && <span className="ml-auto text-green-600">✓</span>}
+                        {gameState.showFeedback && isSelected && !isCorrect && <span className="ml-auto text-red-600">✗</span>}
                       </Button>
                     );
                   })}
                 </div>
 
                 {/* Action Button */}
-                <div className="flex-shrink-0 pt-2 border-t border-neutral-800/50">
+                <div className="flex-shrink-0 pt-2 border-t border-neutral-200">
                   {!gameState.showFeedback ? (
                     <Button
                       onClick={submitAnswer}
@@ -531,11 +599,11 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
     
     return (
       <div className="container mx-auto space-y-6 px-4 py-8 max-w-2xl">
-        <Card className={`bg-neutral-900 border-2 ${passed ? 'border-green-600' : 'border-red-600'}`}>
+        <Card className={`warm-card border-2 ${passed ? 'border-green-600' : 'border-red-600'}`}>
           <CardContent className="p-8 text-center space-y-6">
-            <div className={`flex items-center justify-center gap-3 ${passed ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`flex items-center justify-center gap-3 ${passed ? 'text-green-600' : 'text-red-600'}`}>
               {passed ? <Trophy className="h-8 w-8" /> : <RotateCcw className="h-8 w-8" />}
-              <h2 className="text-3xl font-bold">
+              <h2 className="text-3xl font-bold text-neutral-900">
                 {passed 
                   ? (language === 'es' ? '¡Aprobado!' : 'Passed!') 
                   : (language === 'es' ? '¡Fracasado!' : 'Failed!')
@@ -557,7 +625,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t("Restart", "Reiniciar")}
               </Button>
-              <Button onClick={resetGame} variant="outline" className="border-neutral-700 hover:bg-neutral-800 text-white">
+              <Button onClick={resetGame} className="bg-white text-black hover:bg-red-600 hover:text-white border border-neutral-300">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t("Back to Levels", "Volver a Niveles")}
               </Button>

@@ -23,6 +23,7 @@ interface SermonItem {
   title: string;
   youtubeUrl: string;
   createdAt: string;
+  description?: string;
 }
 
 interface MediaProps {
@@ -64,7 +65,8 @@ export function Media({ onStartMusic }: MediaProps) {
           id: sermon.id,
           title: sermon.title,
           youtubeUrl: sermon.youtube_url || sermon.youtubeUrl,
-          createdAt: sermon.created_at || sermon.createdAt
+          createdAt: sermon.created_at || sermon.createdAt,
+          description: sermon.description
         }));
         setSermons(transformedSermons);
         if (transformedSermons.length > 0) {
@@ -373,14 +375,14 @@ export function Media({ onStartMusic }: MediaProps) {
           <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 shadow-xl md:col-span-2">
             <div className="relative aspect-video">
               {!livestreamIsLive && !manualLiveOverride && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black px-6 text-center">
-                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-500">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-100 px-6 text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-600">
                     {livestreamTitle || t("Livestream", "Transmisión en vivo")}
                   </p>
-                  <p className="text-2xl font-bold text-white sm:text-3xl">
+                  <p className="text-2xl font-bold text-neutral-900 sm:text-3xl">
                     {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
                   </p>
-                  <p className="text-base text-white/70">
+                  <p className="text-base text-neutral-700">
                     {t(
                       "The player will appear when we go live.",
                       "El reproductor aparecerá cuando estemos en vivo."
@@ -432,6 +434,11 @@ export function Media({ onStartMusic }: MediaProps) {
                   ? effectiveSelectedSermon.title
                   : t("No devotional selected", "Ningún devocional seleccionado")}
               </CardTitle>
+              {!loadingSermons && effectiveSelectedSermon && effectiveSelectedSermon.description && (
+                <p className="text-sm text-neutral-300 leading-relaxed mt-2">
+                  {effectiveSelectedSermon.description}
+                </p>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="relative aspect-video overflow-hidden rounded-2xl">
@@ -495,12 +502,12 @@ export function Media({ onStartMusic }: MediaProps) {
                             onClick={() => setSelectedSermonId(sermon.id)}
                             className={`flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left transition-colors ${
                               isActive
-                                ? "bg-red-600/20 text-red-50 border border-red-500"
-                                : "border border-transparent text-neutral-200 hover:border-neutral-700 hover:bg-neutral-800/80"
+                                ? "bg-red-600 text-white"
+                                : "border border-transparent text-black bg-white hover:border-neutral-300 hover:bg-neutral-50"
                             }`}
                           >
                             <span className="truncate text-[0.8rem] font-medium">{sermon.title}</span>
-                            <span className="mt-0.5 text-[0.65rem] text-neutral-400">
+                            <span className="mt-0.5 text-[0.65rem] text-neutral-600">
                               {new Date(sermon.createdAt).toLocaleDateString(
                                 language === "en" ? "en-US" : "es-MX",
                                 {
