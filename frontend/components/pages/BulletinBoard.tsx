@@ -539,7 +539,6 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                             "border-neutral-700 text-sm placeholder:text-neutral-500",
                             isCommenting ? "bg-white text-black" : "bg-neutral-100 text-black"
                           )}
-                          readOnly={!isCommenting}
                         />
                         <Textarea
                           value={commentForms[`post-${commentDialogPost.id}`]?.content || ""}

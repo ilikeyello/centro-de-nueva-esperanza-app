@@ -29,9 +29,10 @@ export default function App() {
       <LanguageProvider>
         <PlayerProvider>
           <NotificationProvider>
-            <div>
+            <div className="relative">
+              <AppInner />
               {showSplash && (
-                <div className="app-splash">
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-neutral-900">
                   <img
                     src="./cne_logo_black.svg"
                     alt="Centro de Nueva Esperanza"
@@ -40,7 +41,6 @@ export default function App() {
                   <div className="app-splash-spinner" aria-hidden="true" />
                 </div>
               )}
-              <AppInner />
             </div>
           </NotificationProvider>
         </PlayerProvider>

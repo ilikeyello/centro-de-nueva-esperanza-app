@@ -144,7 +144,7 @@ export function Home({ onNavigate }: HomeProps) {
         <img
           src={heroImageUrl}
           alt={t("Church congregation worshiping together", "Congregación adorando juntos")}
-          className="hero-image w-full object-cover h-[115vh] md:h-[60rem] object-[center_55%]"
+          className="hero-image w-full object-cover h-[150vh] md:h-[60rem] object-[center_55%]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-warm-red/10 via-transparent to-transparent" />
         <div className="absolute inset-0 hero-gradient-blend md:bg-gradient-to-b md:from-black/20 md:via-black/40 md:to-black/60" />
@@ -160,7 +160,7 @@ export function Home({ onNavigate }: HomeProps) {
             </button>
           </div>
           
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding translate-y-6 md:-translate-y-24">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding -translate-y-20 md:-translate-y-24">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-warm-red drop-shadow-lg">
             {t("Welcome to", "Bienvenidos a")}
           </p>
