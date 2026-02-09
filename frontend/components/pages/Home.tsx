@@ -160,7 +160,7 @@ export function Home({ onNavigate }: HomeProps) {
             </button>
           </div>
           
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding -translate-y-4 md:-translate-y-24">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding -translate-y-12 md:-translate-y-24">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-warm-red drop-shadow-lg">
             {t("Welcome to", "Bienvenidos a")}
           </p>
