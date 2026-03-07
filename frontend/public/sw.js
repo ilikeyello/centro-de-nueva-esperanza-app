@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cne-app-v6';
+const CACHE_NAME = 'cne-app-v7';
 const urlsToCache = [
   '/',
   '/icon-192x192.png',
