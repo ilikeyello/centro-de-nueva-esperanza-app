@@ -398,8 +398,9 @@ export function Media({ onStartMusic }: MediaProps) {
                   src={getEmbedUrl(livestreamUrl)}
                   title={livestreamTitle || t("CNE Live Stream", "Transmisión en Vivo de CNE")}
                   className="absolute inset-0 h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
+                  playsInline
                   onLoad={() => {
                     console.log('Livestream iframe loaded with src:', getEmbedUrl(livestreamUrl));
                   }}
@@ -452,8 +453,9 @@ export function Media({ onStartMusic }: MediaProps) {
                     src={getEmbedUrl(effectiveSelectedSermon.youtubeUrl)}
                     title={effectiveSelectedSermon.title}
                     className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
+                    playsInline
                   />
                 )}
                 {!loadingSermons && !effectiveSelectedSermon && (

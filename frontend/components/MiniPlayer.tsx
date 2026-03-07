@@ -47,8 +47,8 @@ export default function MiniPlayer() {
           title="YouTube player"
           className="h-[180px] w-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
+          playsInline
         />
       </div>
     </div>

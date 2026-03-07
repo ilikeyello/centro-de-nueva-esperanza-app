@@ -149,7 +149,7 @@
   
   @media (max-width: 768px) {
     .hero-image {
-      height: 140vh !important;
+      height: 60vh !important;
     }
   }
   
@@ -349,7 +349,7 @@ button.border-white:not(.bg-warm-red):not(.bg-red-600) {
 @media screen and (max-width: 390px) {
   /* iPhone 12/13/14 and similar */
   .hero-image {
-    height: 36rem !important;
+    height: 50vh !important;
   }
   
   .hero-title {
