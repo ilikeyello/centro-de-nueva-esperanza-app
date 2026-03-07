@@ -10,7 +10,6 @@ import {
   Maximize2,
   X,
   BookOpen,
-  Shuffle,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
@@ -36,9 +35,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     youtubePlayerRef,
     setCurrentPlaylistVideoIds,
     setCurrentPlaylistActiveIndex,
-    playPlaylistShuffle,
-    playlistUrl,
-    isPlayingYouTubePlaylist,
   } = usePlayer();
 
   const playerRef = youtubePlayerRef;
@@ -80,10 +76,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   const handleNextClick = () => {
     playNextInQueue();
-  };
-
-  const handleShuffleClick = () => {
-    playPlaylistShuffle();
   };
 
   useEffect(() => {
@@ -324,7 +316,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                       isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />
                     )}
                     {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-3.5 w-3.5" />)}
-                    {isPlayingYouTubePlaylist && playerControlBtn(handleShuffleClick, t("Shuffle", "Aleatorio"), <Shuffle className="h-3.5 w-3.5" />)}
                     {playerControlBtn(toggleMinimize, t("Expand", "Expandir"), <Maximize2 className="h-3.5 w-3.5" />)}
                   </div>
                 </div>
@@ -343,7 +334,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                       isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />
                     )}
                     {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-4 w-4" />)}
-                    {isPlayingYouTubePlaylist && playerControlBtn(handleShuffleClick, t("Shuffle", "Aleatorio"), <Shuffle className="h-4 w-4" />)}
                     {playerControlBtn(toggleMinimize, t("Minimize", "Minimizar"), <Minimize2 className="h-4 w-4" />)}
                     {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-4 w-4" />, "close")}
                   </div>
@@ -378,7 +368,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />
                   )}
                   {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-3.5 w-3.5" />)}
-                  {isPlayingYouTubePlaylist && playerControlBtn(handleShuffleClick, t("Shuffle", "Aleatorio"), <Shuffle className="h-3.5 w-3.5" />)}
                   {playerControlBtn(toggleMinimize, t("Expand", "Expandir"), <Maximize2 className="h-3.5 w-3.5" />)}
                   {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
                 </div>
