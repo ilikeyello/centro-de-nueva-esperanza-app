@@ -48,15 +48,20 @@
   }
   
   .prose ul {
-    @apply list-disc list-inside mb-4 space-y-2;
+    @apply list-disc list-outside mb-4 space-y-2 pl-6;
   }
   
   .prose ol {
-    @apply list-decimal list-inside mb-4 space-y-2;
+    @apply list-decimal list-outside mb-4 space-y-2 pl-6;
   }
   
   .prose li {
-    @apply pl-2;
+    @apply pl-1;
+  }
+
+  .prose li > p {
+    display: inline;
+    margin: 0;
   }
   
   .prose blockquote {
