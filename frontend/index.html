@@ -8,6 +8,16 @@
     <meta name="msapplication-TileColor" content="#dc2626" />
     <meta name="msapplication-config" content="/browserconfig.xml" />
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/apple-touch-icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/apple-touch-icon-512x512.png" />
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +25,6 @@
     
     <!-- PWA Manifest for Android -->
     <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/icon-192x192.png" />
     
     <!-- Mobile Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -61,7 +70,7 @@
     <div id="root">
       <!-- Static splash shown instantly while JS loads -->
       <div id="static-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;background:#F9F7F4;z-index:9999">
-        <img src="./cne_logo_black.svg" alt="" width="72" height="72" style="width:72px;height:auto" />
+        <img src="./CNE.png" alt="CNE Logo" width="120" height="120" style="width:120px;height:auto" />
         <div style="width:2.5rem;height:2.5rem;border-radius:9999px;border:2px solid rgba(0,0,0,0.1);border-top-color:#c73e1d;animation:splash-spin .9s linear infinite"></div>
       </div>
       <style>@keyframes splash-spin{to{transform:rotate(360deg)}}</style>
@@ -72,6 +81,6 @@
       // Force new service worker to activate immediately
       if('serviceWorker' in navigator){navigator.serviceWorker.getRegistration().then(function(r){if(r&&r.waiting)r.waiting.postMessage({type:'SKIP_WAITING'})});}
     </script>
-    <script type="module" src="/main.tsx?v=20250208"></script>
+    <script type="module" src="/main.tsx?v=20250306"></script>
   </body>
 </html>
