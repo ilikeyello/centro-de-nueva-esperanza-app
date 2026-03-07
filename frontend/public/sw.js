@@ -1,8 +1,14 @@
-const CACHE_NAME = 'cne-app-v5';
+const CACHE_NAME = 'cne-app-v6';
 const urlsToCache = [
   '/',
   '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/icon-512x512.png',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
+  '/favicon.ico',
+  '/apple-touch-icon.png',
+  '/apple-touch-icon-192x192.png',
+  '/apple-touch-icon-512x512.png'
 ];
 
 // Install event — skip waiting so new SW activates immediately
