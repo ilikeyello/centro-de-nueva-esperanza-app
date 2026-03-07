@@ -519,8 +519,8 @@ button.border-white:not(.bg-warm-red):not(.bg-red-600) {
 }
 
 .app-splash-logo {
-  width: min(72px, 20vw);
-  max-height: 72px;
+  width: min(180px, 40vw);
+  max-height: 180px;
   height: auto;
   display: block;
 }
