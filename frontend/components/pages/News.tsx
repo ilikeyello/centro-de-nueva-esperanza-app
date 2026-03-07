@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { BlogPost } from "../BlogPost";
 
 const API_BASE =
   import.meta.env.VITE_CLIENT_TARGET ??
@@ -466,53 +467,34 @@ export function News() {
 
         {activeTab === "announcements" ? (
           <>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {announcementsData?.announcements.map((announcement: Announcement) => (
-                <Card
-                  key={announcement.id}
-                  className={cn("border-2", getPriorityColor(normalizePriority(announcement.priority)))}
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="flex items-center gap-2 text-white">
-                          {getPriorityIcon(normalizePriority(announcement.priority))}
-                          {language === "en" ? announcement.titleEn : announcement.titleEs}
-                        </CardTitle>
-                        <p className="mt-1 text-xs text-neutral-400">
-                          {new Date(announcement.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
-                        onClick={() => {
-                          setAnnouncementToDelete(announcement as any);
-                          setDeletePasscode("");
-                          setDeleteDialogOpen(true);
-                        }}
-                        aria-label={t("Delete announcement", "Eliminar anuncio")}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {announcement.imageUrl && (
-                      <div className="mb-3 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
-                        <img
-                          src={announcement.imageUrl}
-                          alt={language === "en" ? announcement.titleEn : announcement.titleEs}
-                          className="max-h-64 w-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <p className="whitespace-pre-wrap text-neutral-300">
-                      {language === "en" ? announcement.contentEn : announcement.contentEs}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div key={announcement.id} className="relative group">
+                  <BlogPost
+                    id={announcement.id}
+                    titleEn={announcement.titleEn}
+                    titleEs={announcement.titleEs}
+                    contentEn={announcement.contentEn}
+                    contentEs={announcement.contentEs}
+                    imageUrl={announcement.imageUrl}
+                    date={announcement.createdAt}
+                    type="announcement"
+                    priority={announcement.priority}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
+                    onClick={() => {
+                      setAnnouncementToDelete(announcement as any);
+                      setDeletePasscode("");
+                      setDeleteDialogOpen(true);
+                    }}
+                    aria-label={t("Delete announcement", "Eliminar anuncio")}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               ))}
             </div>
 
@@ -579,58 +561,23 @@ export function News() {
           </>
         ) : (
           <>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-6">
               {upcomingEvents.map((eventItem) => (
-                <Card key={eventItem.id} className="border-neutral-800 bg-neutral-900/50">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-white">
-                        {language === "en" ? eventItem.titleEn : eventItem.titleEs}
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
-                        onClick={() => {
-                          setEventToDelete(eventItem as any);
-                          setEventDeletePasscode("");
-                          setEventDeleteDialogOpen(true);
-                        }}
-                        aria-label={t("Delete event", "Eliminar evento")}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-neutral-300">
-                      {language === "en" ? eventItem.descriptionEn : eventItem.descriptionEs}
-                    </p>
-                    <div className="space-y-2 text-sm text-neutral-400">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {new Date(eventItem.eventDate).toLocaleString(
-                            language === "en" ? "en-US" : "es-ES",
-                            {
-                              dateStyle: "full",
-                              timeStyle: "short",
-                            }
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        <span>{eventItem.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        <span>
-                          {eventItem.rsvpCount} {t("attending", "asistirán")}
-                          {eventItem.maxAttendees && ` / ${eventItem.maxAttendees}`}
-                        </span>
-                      </div>
-                    </div>
+                <div key={eventItem.id} className="relative group">
+                  <BlogPost
+                    id={eventItem.id}
+                    titleEn={eventItem.titleEn}
+                    titleEs={eventItem.titleEs}
+                    contentEn={eventItem.descriptionEn || ''}
+                    contentEs={eventItem.descriptionEs || ''}
+                    date={eventItem.createdAt}
+                    location={eventItem.location}
+                    type="event"
+                    eventDate={eventItem.eventDate}
+                    maxAttendees={eventItem.maxAttendees}
+                    rsvpCount={eventItem.rsvpCount}
+                  />
+                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       onClick={() => {
                         setSelectedEvent(eventItem as any);
@@ -638,7 +585,6 @@ export function News() {
                       }}
                       disabled={rsvpedEventIds.has(eventItem.id)}
                       className={cn(
-                        "w-full",
                         rsvpedEventIds.has(eventItem.id)
                           ? "bg-neutral-800 text-neutral-300 hover:bg-neutral-800"
                           : "bg-red-600 hover:bg-red-700"
@@ -648,8 +594,21 @@ export function News() {
                         ? t("You're attending", "Ya confirmaste")
                         : t("RSVP", "Confirmar Asistencia")}
                     </Button>
-                  </CardContent>
-                </Card>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
+                      onClick={() => {
+                        setEventToDelete(eventItem as any);
+                        setEventDeletePasscode("");
+                        setEventDeleteDialogOpen(true);
+                      }}
+                      aria-label={t("Delete event", "Eliminar evento")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
 
