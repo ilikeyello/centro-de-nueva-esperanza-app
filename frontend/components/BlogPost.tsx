@@ -59,7 +59,7 @@ export function BlogPost({
       case 'high': return 'border-orange-500 bg-orange-50 dark:bg-orange-950/20';
       case 'normal': return 'border-blue-500 bg-blue-50 dark:bg-blue-950/20';
       case 'low': return 'border-gray-500 bg-gray-50 dark:bg-gray-950/20';
-      default: return 'border-warm-red bg-warm-cream';
+      default: return 'border-red-600 bg-neutral-50 dark:bg-neutral-900';
     }
   };
 
@@ -87,7 +87,7 @@ export function BlogPost({
       <div className="p-6 md:p-8">
         {/* Meta Information */}
         <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-warm-red/10 text-warm-red rounded-full font-medium">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full font-medium">
             {getTypeLabel()}
           </span>
           
@@ -125,7 +125,7 @@ export function BlogPost({
         
         {/* Content */}
         <div 
-          className="prose prose-lg prose-neutral dark:prose-invert max-w-none prose-headings:font-serif prose-headings:text-warm-red prose-a:text-warm-red hover:prose-a:text-light-warm-red prose-strong:text-neutral-900 dark:prose-strong:text-white"
+          className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-red-600 prose-a:text-red-600 hover:prose-a:text-red-500 prose-strong:text-neutral-900 dark:prose-invert"
           dangerouslySetInnerHTML={{ __html: content }}
         />
         
