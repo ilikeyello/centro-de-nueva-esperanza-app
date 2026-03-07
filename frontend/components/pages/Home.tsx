@@ -144,7 +144,7 @@ export function Home({ onNavigate }: HomeProps) {
         <img
           src={heroImageUrl}
           alt={t("Church congregation worshiping together", "Congregación adorando juntos")}
-          className="hero-image w-full object-cover h-[80vh] md:h-[40rem] object-[center_55%]"
+          className="hero-image w-full object-cover h-[90vh] md:h-[40rem] object-[center_55%]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-warm-red/10 via-transparent to-transparent" />
         <div className="absolute inset-0 hero-gradient-blend md:bg-gradient-to-b md:from-black/20 md:via-black/40 md:to-black/60" />
