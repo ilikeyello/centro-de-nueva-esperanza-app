@@ -26,12 +26,12 @@ function normalizeLivestreamUrl(raw: string, fallback: string): string {
     }
 
     if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
+      return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
     }
 
     if (!trimmed.includes("enablejsapi=1")) {
       const separator = trimmed.includes("?") ? "&" : "?";
-      return `${trimmed}${separator}enablejsapi=1`;
+      return `${trimmed}${separator}enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
     }
 
     return trimmed;
@@ -128,10 +128,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [queueMeta, setQueueMeta] = useState<{ title: string; artist?: string }[]>([]);
 
   const defaultPlaylistUrl =
-    "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW";
+    "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW&playsinline=1&controls=1&modestbranding=1";
 
   const defaultLivestreamUrl =
-    "https://www.youtube.com/embed/HF7qrZR1rDA?enablejsapi=1";
+    "https://www.youtube.com/embed/HF7qrZR1rDA?enablejsapi=1&playsinline=1&controls=1&modestbranding=1";
 
   const [playlists, setPlaylists] = useState<MusicPlaylistFromMainSite[]>([]);
   const [isPlayingYouTubePlaylist, setIsPlayingYouTubePlaylist] = useState(false);

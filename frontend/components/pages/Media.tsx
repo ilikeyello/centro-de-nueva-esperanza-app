@@ -263,29 +263,35 @@ export function Media({ onStartMusic }: MediaProps) {
       // Handle regular YouTube URLs
       if (u.hostname.includes('youtu.be')) {
         const id = u.pathname.replace('/', '');
-        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
         console.log('getEmbedUrl output (youtu.be):', result);
         return result;
       }
       if (u.searchParams.get('v')) {
         const id = u.searchParams.get('v');
-        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
         console.log('getEmbedUrl output (watch):', result);
         return result;
       }
       if (u.pathname.includes('/live/')) {
         const id = u.pathname.split('/live/')[1]?.split('?')[0];
-        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1`;
+        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
         console.log('getEmbedUrl output (live):', result);
         return result;
       }
       if (u.pathname.includes('/embed/')) {
         // Already in embed format, just add enablejsapi if missing
         if (u.searchParams.has('enablejsapi')) {
-          console.log('getEmbedUrl output (already embed):', url);
-          return url;
+          u.searchParams.set('playsinline', '1');
+          u.searchParams.set('controls', '1');
+          u.searchParams.set('modestbranding', '1');
+          console.log('getEmbedUrl output (already embed):', u.toString());
+          return u.toString();
         }
         u.searchParams.set('enablejsapi', '1');
+        u.searchParams.set('playsinline', '1');
+        u.searchParams.set('controls', '1');
+        u.searchParams.set('modestbranding', '1');
         const result = u.toString();
         console.log('getEmbedUrl output (embed with enablejsapi):', result);
         return result;
