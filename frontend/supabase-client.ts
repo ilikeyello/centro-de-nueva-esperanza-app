@@ -625,7 +625,49 @@ export class ChurchApiService {
     if (error) throw error;
   }
 
+  // --- Property getters for backward compatibility ---
+  get events() {
+    return {
+      list: (params?: { upcoming?: boolean }) => this.listEvents(params || {}),
+      create: (event: {
+        titleEn: string;
+        titleEs: string;
+        descriptionEn?: string;
+        descriptionEs?: string;
+        eventDate: string;
+        location: string;
+        maxAttendees?: number;
+      }) => this.createEvent(event),
+      delete: (id: number) => this.deleteEvent(id)
+    };
   }
+
+  get prayers() {
+    return {
+      create: (prayer: { title: string; description: string; isAnonymous: boolean; authorName?: string | null; userId?: string | null }) => 
+        this.createPrayerRequest(prayer)
+    };
+  }
+
+  get announcements() {
+    return {
+      list: (params?: { limit?: number }) => this.listAnnouncements(params || {}),
+      create: (announcement: { titleEn: string; titleEs: string; contentEn: string; contentEs: string; priority?: string; imageUrl?: string | null }) =>
+        this.createAnnouncement(announcement),
+      delete: (id: number) => this.deleteAnnouncement(id)
+    };
+  }
+
+  get bulletin() {
+    return {
+      posts: {
+        list: () => this.listBulletinPosts(),
+        create: (post: { title: string; content: string; authorName: string; authorId?: string | null }) =>
+          this.createBulletinPost(post)
+      }
+    };
+  }
+}
 
 // --- Create and export a singleton instance ---
 export const churchApi = new ChurchApiService();
