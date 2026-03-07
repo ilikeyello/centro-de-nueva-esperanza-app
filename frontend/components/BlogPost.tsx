@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Clock, User } from 'lucide-react';
+import { Calendar, MapPin, Clock, User, Users } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface BlogPostProps {
