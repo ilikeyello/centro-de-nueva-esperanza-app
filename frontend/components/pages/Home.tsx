@@ -103,6 +103,14 @@ export function Home({ onNavigate }: HomeProps) {
       page: "games",
       color: "bg-orange-600 hover:bg-orange-700",
     },
+    {
+      icon: Users,
+      labelEn: "Church Staff",
+      labelEs: "Personal de la Iglesia",
+      page: "https://www.emanuelavina.com/dashboard/client-portal",
+      color: "bg-neutral-600 hover:bg-neutral-700",
+      isExternal: true,
+    },
   ];
 
   const createPrayerMutation = useMutation({
@@ -317,8 +325,8 @@ export function Home({ onNavigate }: HomeProps) {
               </div>
               <p className="mt-4 text-neutral-600">
                 {t(
-                  nextEvent.descriptionEn ?? "Join us as we gather together.",
-                  nextEvent.descriptionEs ?? "Únete a nosotros mientras nos reunimos."
+                  nextEvent.descriptionEn?.replace(/<[^>]*>?/gm, '') ?? "Join us as we gather together.",
+                  nextEvent.descriptionEs?.replace(/<[^>]*>?/gm, '') ?? "Únete a nosotros mientras nos reunimos."
                 )}
               </p>
               <Button
@@ -362,9 +370,35 @@ export function Home({ onNavigate }: HomeProps) {
           <h2 className="serif-heading text-3xl font-bold text-neutral-900">
             {t("Quick Actions", "Acciones Rápidas")}
           </h2>
-          <div className="grid gap-6 md:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-4 lg:grid-cols-5">
             {quickActions.map((action) => {
               const Icon = action.icon;
+              
+              if (action.isExternal) {
+                return (
+                  <a
+                    key={action.page}
+                    href={action.page}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="warm-card group p-6 text-left transition-all hover:scale-105"
+                  >
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-warm-red/10 group-hover:bg-warm-red/20">
+                      <Icon className="h-6 w-6 text-warm-red" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-semibold text-neutral-900">
+                      {t(action.labelEn, action.labelEs)}
+                    </h3>
+                    <p className="text-sm text-neutral-600">
+                      {t(
+                        "Access the church admin dashboard",
+                        "Acceder al panel de administración de la iglesia"
+                      )}
+                    </p>
+                  </a>
+                );
+              }
+
               return (
                 <button
                   key={action.page}
