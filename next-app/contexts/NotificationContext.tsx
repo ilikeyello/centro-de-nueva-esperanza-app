@@ -39,22 +39,19 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setIsSupported(Boolean(supported));
 
       if (supported) {
-        navigator.serviceWorker.register('/sw.js').then((registration) => {
+        navigator.serviceWorker.register('/sw.js').then(registration => {
           console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        }).catch((err) => {
-          console.log('ServiceWorker registration failed: ', err);
+          // Wait for the service worker to be active
+          return navigator.serviceWorker.ready;
+        }).then(registration => {
+          setPermission(Notification.permission);
+          return registration.pushManager.getSubscription();
+        }).then(sub => {
+          setSubscription(sub);
+          setIsSubscribed(Boolean(sub));
+        }).catch(err => {
+          console.error('ServiceWorker registration failed: ', err);
         });
-
-        setPermission(Notification.permission);
-        navigator.serviceWorker.ready
-          .then((registration) => registration.pushManager.getSubscription())
-          .then((sub) => {
-            setSubscription(sub);
-            setIsSubscribed(Boolean(sub));
-          })
-          .catch(() => {
-            // ignore
-          });
       }
     };
 
