@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 // Push notifications disabled - no backend
 import { useLanguage } from "../contexts/LanguageContext";
+import { supabase } from '../supabase-client';
 
 interface PushSubscription {
   endpoint: string;
@@ -75,39 +76,25 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         const p256dhKey = subscription.getKey ? subscription.getKey('p256dh') : null;
         const authKey = subscription.getKey ? subscription.getKey('auth') : null;
         
+        const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
+
         const subscriptionData = {
+          org_id: orgId,
           endpoint: subscription.endpoint,
-          keys: {
-            p256dh: p256dhKey ? 
-              btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
-            auth: authKey ? 
-              btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ''
-          },
-          userAgent: navigator.userAgent,
-          language,
+          p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
+          auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : '',
+          user_agent: navigator.userAgent,
+          language
         };
 
-        console.log('🔔 Saving existing subscription to backend:', {
-          endpoint: subscriptionData.endpoint.substring(0, 50) + '...',
-          hasP256dh: !!subscriptionData.keys.p256dh,
-          hasAuth: !!subscriptionData.keys.auth,
-          userAgent: subscriptionData.userAgent
-        });
+        const { error: upsertError } = await supabase
+          .from('push_subscriptions')
+          .upsert(subscriptionData, { onConflict: 'endpoint' });
         
-        // Use direct fetch to save subscription
-        const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(subscriptionData)
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          console.log('✅ Existing subscription saved to database:', result);
+        if (upsertError) {
+          console.warn('⚠️ Failed to save existing subscription:', upsertError.message);
         } else {
-          console.warn('⚠️ Failed to save existing subscription:', response.status);
+          console.log('✅ Existing subscription saved to database successfully');
         }
       }
       
@@ -174,8 +161,6 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         const authKey = subscription.getKey ? subscription.getKey('auth') : null;
         
         const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
         const subscriptionData = {
           org_id: orgId,
@@ -186,20 +171,12 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
           language
         };
 
-        // Use direct fetch to Supabase
-        const response = await fetch(`${supabaseUrl}/rest/v1/push_subscriptions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabaseAnonKey,
-            'Authorization': `Bearer ${supabaseAnonKey}`,
-            'Prefer': 'resolution=merge-duplicates'
-          },
-          body: JSON.stringify(subscriptionData)
-        });
+        const { error: upsertError } = await supabase
+          .from('push_subscriptions')
+          .upsert(subscriptionData, { onConflict: 'endpoint' });
         
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        if (upsertError) {
+          throw new Error(`Supabase Error: ${upsertError.message}`);
         }
         
         setIsSubscribed(true);
@@ -221,8 +198,6 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       const authKey = (subscription as any).getKey('auth');
       
       const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
       const subscriptionData = {
         org_id: orgId,
@@ -233,19 +208,12 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         language
       };
 
-      const response = await fetch(`${supabaseUrl}/rest/v1/push_subscriptions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseAnonKey,
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify(subscriptionData)
-      });
+      const { error: upsertError } = await supabase
+        .from('push_subscriptions')
+        .upsert(subscriptionData, { onConflict: 'endpoint' });
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (upsertError) {
+        throw new Error(`Supabase Error: ${upsertError.message}`);
       }
       
       console.log('✅ Subscription saved to backend successfully');
