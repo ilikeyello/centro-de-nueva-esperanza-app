@@ -31,7 +31,7 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
   const [initialized, setInitialized] = useState(false);
 
   // VAPID public key
-  const VAPID_PUBLIC_KEY = 'BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E';
+  const VAPID_PUBLIC_KEY = 'BFu6P2hNff03H5fYkekEuF3HW9d-vetEXxfV5ggOC2DAqXpEcNGCAl9-qIbMAaciFi7uqsheYvIE1vvXgXE1sDg';
 
   useEffect(() => {
     const init = async () => {
@@ -168,36 +168,32 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       if (existingSubscription) {
         console.log('🔔 User already subscribed locally, saving to database...');
         
-        // Save the existing subscription to database
+        // Save the existing subscription to Supabase database
         const subscription = existingSubscription;
         const p256dhKey = subscription.getKey ? subscription.getKey('p256dh') : null;
         const authKey = subscription.getKey ? subscription.getKey('auth') : null;
         
+        const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
         const subscriptionData = {
+          org_id: orgId,
           endpoint: subscription.endpoint,
-          keys: {
-            p256dh: p256dhKey ? 
-              btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
-            auth: authKey ? 
-              btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ''
-          },
-          userAgent: navigator.userAgent
+          p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
+          auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : '',
+          user_agent: navigator.userAgent,
+          language
         };
 
-        console.log('🔔 Saving existing subscription to backend:', {
-          endpoint: subscriptionData.endpoint.substring(0, 50) + '...',
-          hasP256dh: !!subscriptionData.keys.p256dh,
-          hasAuth: !!subscriptionData.keys.auth,
-          userAgent: subscriptionData.userAgent
-        });
-        
-        // Use direct fetch since Encore client notifications service isn't available
-        console.log('🔔 Saving existing subscription via direct fetch...');
-        
-        const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
+        // Use direct fetch to Supabase
+        const response = await fetch(`${supabaseUrl}/rest/v1/push_subscriptions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Prefer': 'resolution=merge-duplicates'
           },
           body: JSON.stringify(subscriptionData)
         });
@@ -206,16 +202,13 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const result = await response.json();
-        console.log('✅ Existing subscription saved via direct fetch:', result);
-        
         setIsSubscribed(true);
         setIsLoading(false);
         console.log('✅ Existing subscription saved to database successfully');
         return;
       }
 
-      // Subscribe to push notifications - simplified without timeout
+      // Subscribe to push notifications
       console.log('Subscribing to push notifications...');
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -227,32 +220,26 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       const p256dhKey = (subscription as any).getKey('p256dh');
       const authKey = (subscription as any).getKey('auth');
       
+      const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
       const subscriptionData = {
+        org_id: orgId,
         endpoint: subscription.endpoint,
-        keys: {
-          p256dh: p256dhKey ? 
-            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
-          auth: authKey ? 
-            btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : ''
-        },
-        userAgent: navigator.userAgent,
-        language,
+        p256dh: p256dhKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(p256dhKey)))) : '',
+        auth: authKey ? btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(authKey)))) : '',
+        user_agent: navigator.userAgent,
+        language
       };
 
-      console.log('🔔 Sending subscription to backend:', {
-        endpoint: subscriptionData.endpoint.substring(0, 50) + '...',
-        hasP256dh: !!subscriptionData.keys.p256dh,
-        hasAuth: !!subscriptionData.keys.auth,
-        userAgent: subscriptionData.userAgent
-      });
-      
-      // Use direct fetch since Encore client notifications service isn't available
-      console.log('🔔 Saving new subscription via direct fetch...');
-      
-      const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
+      const response = await fetch(`${supabaseUrl}/rest/v1/push_subscriptions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'apikey': supabaseAnonKey,
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+          'Prefer': 'resolution=merge-duplicates'
         },
         body: JSON.stringify(subscriptionData)
       });
@@ -260,9 +247,6 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
-      const result = await response.json();
-      console.log('✅ New subscription saved via direct fetch:', result);
       
       console.log('✅ Subscription saved to backend successfully');
 

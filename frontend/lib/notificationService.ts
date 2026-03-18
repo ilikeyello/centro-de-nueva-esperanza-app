@@ -200,25 +200,13 @@ class NotificationService {
   }
 
   startPeriodicCheck(intervalMinutes: number = 5) {
-    // Clear existing interval
-    if (this.checkInterval) {
-      clearInterval(this.checkInterval);
-    }
-
-    // Check immediately
-    this.checkAllNotifications();
-
-    // Set up periodic checking
-    this.checkInterval = setInterval(() => {
-      this.checkAllNotifications();
-    }, intervalMinutes * 60 * 1000);
+    // Disabled client-side polling.
+    // Notifications now arrive natively via the Service Worker (Push Background Events)
+    // driven by Supabase Edge Functions.
   }
 
   stopPeriodicCheck() {
-    if (this.checkInterval) {
-      clearInterval(this.checkInterval);
-      this.checkInterval = null;
-    }
+    // No-op
   }
 
   async checkAllNotifications() {
