@@ -26,16 +26,22 @@ Deno.serve(async (req) => {
     // Parse the payload from the webhook
     const payload: WebhookPayload = await req.json();
     
-    // Extract Auth
-    const authHeader = req.headers.get('Authorization');
+    // Verify the request is made with the Custom Webhook Secret
+    const webhookSecret = req.headers.get('x-webhook-secret');
+    if (webhookSecret !== 'cne-internal-trigger-secret-2026') {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid webhook secret' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Verify JWT Signature (managed by Supabase gateway automatically)
+    // We just ensure a token is present
+    const token = authHeader?.replace('Bearer ', '');
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Missing token' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     // We only process specific payload types
     if (!['announcement', 'event', 'devotional', 'comment'].includes(payload.type)) {
       return new Response(JSON.stringify({ message: "Ignored payload type" }), { headers: corsHeaders, status: 200 });
-    }
-
-    if (authHeader !== `Bearer ${supabaseKey}`) {
-      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
     }
 
     // Configure Web Push with our new keys
