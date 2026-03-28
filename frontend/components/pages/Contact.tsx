@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, Phone, Mail, Clock, Facebook } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, Mail, Clock, Facebook, Youtube } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export function Contact({ onNavigate }: ContactProps) {
       <Card className="warm-card">
         <CardHeader>
           <CardTitle className="serif-heading text-neutral-900">
-            {language === "en" ? churchInfo.nameEn : churchInfo.nameEs}
+            {churchInfo.name}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -99,9 +99,7 @@ export function Contact({ onNavigate }: ContactProps) {
                 {t("Service Times", "Horarios de Servicio")}
               </p>
               <p className="text-neutral-700">
-                {language === "en"
-                  ? churchInfo.serviceTimesEn
-                  : churchInfo.serviceTimesEs}
+                {churchInfo.serviceTimes}
               </p>
             </div>
           </div>
@@ -111,7 +109,7 @@ export function Contact({ onNavigate }: ContactProps) {
               <Facebook className="mt-1 h-5 w-5 text-warm-red" />
               <div>
                 <p className="font-semibold text-neutral-900">
-                  {t("Follow Us", "Síguenos")}
+                  {t("Facebook", "Facebook")}
                 </p>
                 <a
                   href={churchInfo.facebookPageUrl}
@@ -124,10 +122,29 @@ export function Contact({ onNavigate }: ContactProps) {
               </div>
             </div>
           )}
+
+          {churchInfo.youtubeUrl && (
+            <div className="flex items-start gap-3">
+              <Youtube className="mt-1 h-5 w-5 text-warm-red" />
+              <div>
+                <p className="font-semibold text-neutral-900">
+                  {t("YouTube", "YouTube")}
+                </p>
+                <a
+                  href={churchInfo.youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-neutral-700 hover:text-warm-red"
+                >
+                  {t("Visit our YouTube channel", "Visita nuestro canal de YouTube")}
+                </a>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {churchInfo.descriptionEn && churchInfo.descriptionEs && (
+      {churchInfo.description && (
         <Card className="warm-card">
           <CardHeader>
             <CardTitle className="serif-heading text-neutral-900">
@@ -136,9 +153,7 @@ export function Contact({ onNavigate }: ContactProps) {
           </CardHeader>
           <CardContent>
             <p className="leading-relaxed text-neutral-700">
-              {language === "en"
-                ? churchInfo.descriptionEn
-                : churchInfo.descriptionEs}
+              {churchInfo.description}
             </p>
           </CardContent>
         </Card>

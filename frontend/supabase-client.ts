@@ -106,16 +106,14 @@ export interface BulletinPost {
 export interface ChurchInfo {
   id: string;
   organization_id: string;
-  nameEn: string;
-  nameEs: string;
+  name: string;
   address: string;
   phone: string;
   email: string;
-  serviceTimesEn: string;
-  serviceTimesEs: string;
-  descriptionEn: string | null;
-  descriptionEs: string | null;
+  serviceTimes: string;
+  description: string | null;
   facebookPageUrl: string | null;
+  youtubeUrl: string | null;
   latitude: number | null;
   longitude: number | null;
 }
@@ -277,16 +275,14 @@ export class ChurchApiService {
     return {
       id: data.id,
       organization_id: data.organization_id,
-      nameEn: data.name_en,
-      nameEs: data.name_es,
+      name: data.name,
       address: data.address,
       phone: data.phone,
       email: data.email,
-      serviceTimesEn: data.service_times_en,
-      serviceTimesEs: data.service_times_es,
-      descriptionEn: data.description_en,
-      descriptionEs: data.description_es,
+      serviceTimes: data.service_times,
+      description: data.description,
       facebookPageUrl: data.facebook_page_url,
+      youtubeUrl: data.youtube_url,
       latitude: data.latitude,
       longitude: data.longitude
     };
@@ -665,6 +661,12 @@ export class ChurchApiService {
         create: (post: { title: string; content: string; authorName: string; authorId?: string | null }) =>
           this.createBulletinPost(post)
       }
+    };
+  }
+
+  get church() {
+    return {
+      info: () => this.getChurchInfo()
     };
   }
 }
