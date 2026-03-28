@@ -61,7 +61,7 @@ export function NewHere({ onNavigate }: NewHereProps) {
             {t("New Here?", "¿Eres Nuevo?")}
           </h1>
           <p className="mt-3 max-w-2xl text-neutral-700 whitespace-pre-wrap">
-            {churchInfo?.description_en || t(
+            {churchInfo?.description || t(
               "We can't wait to welcome you. Here's what you can expect when you join us for worship and community.",
               "Estamos emocionados de darte la bienvenida. Esto es lo que puedes esperar cuando te unas a nosotros para adorar y hacer comunidad."
             )}
@@ -87,7 +87,7 @@ export function NewHere({ onNavigate }: NewHereProps) {
       </div>
 
       {/* Locations and Services Section */}
-      {churchInfo && (churchInfo.address || churchInfo.service_times_en) ? (
+      {churchInfo && (churchInfo.address || churchInfo.service_times) ? (
         <div className="warm-card p-6">
           <h2 className="serif-heading text-xl font-semibold text-neutral-900 mb-4">
             {t("Our Church", "Nuestra Iglesia")}
@@ -104,14 +104,14 @@ export function NewHere({ onNavigate }: NewHereProps) {
                 </div>
               </div>
             )}
-            {churchInfo.service_times_en && (
+            {churchInfo.service_times && (
               <div className="border-l-4 border-warm-red pl-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="h-5 w-5 text-warm-red" />
                   <h3 className="font-semibold text-neutral-900">{t("Service Times", "Horarios de Servicio")}</h3>
                 </div>
                 <div className="text-sm text-neutral-600 whitespace-pre-wrap">
-                  <p>{churchInfo.service_times_en}</p>
+                  <p>{churchInfo.service_times}</p>
                 </div>
               </div>
             )}

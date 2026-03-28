@@ -1,8 +1,19 @@
 import { Facebook, Instagram, Youtube, Mail, Phone, MapPin, Clock } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useState, useEffect } from "react";
+import { getChurchAdditionalInfo, ChurchAdditionalInfo } from "../lib/mainSiteData";
 
 export function Footer() {
   const { t, language } = useLanguage();
+  const [churchInfo, setChurchInfo] = useState<ChurchAdditionalInfo | null>(null);
+
+  useEffect(() => {
+    async function fetchInfo() {
+      const info = await getChurchAdditionalInfo();
+      if (info) setChurchInfo(info);
+    }
+    fetchInfo();
+  }, []);
 
   const footerContent = {
     en: {
@@ -173,15 +184,27 @@ export function Footer() {
               {content.socialTitle}
             </h3>
             <div className="flex gap-3">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
+              {churchInfo?.facebook_page_url ? (
+                <a
+                  href={churchInfo.facebook_page_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+              ) : (
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+              )}
               <a
                 href="https://instagram.com"
                 target="_blank"
@@ -191,15 +214,27 @@ export function Footer() {
               >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
-                aria-label="YouTube"
-              >
-                <Youtube className="h-5 w-5" />
-              </a>
+              {churchInfo?.youtube_url ? (
+                <a
+                  href={churchInfo.youtube_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-5 w-5" />
+                </a>
+              ) : (
+                <a
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-5 w-5" />
+                </a>
+              )}
             </div>
             <p className="text-sm text-neutral-400 mt-4">
               {t(

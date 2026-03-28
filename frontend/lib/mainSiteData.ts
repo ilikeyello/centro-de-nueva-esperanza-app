@@ -306,14 +306,14 @@ export async function getChurchInfoFromMainSite(): Promise<ChurchRow | null> {
 }
 
 export interface ChurchAdditionalInfo {
-  name_en: string;
-  description_en: string | null;
-  service_times_en: string;
+  name: string;
+  description: string | null;
+  service_times: string;
   address: string;
   phone: string;
   email: string;
   facebook_page_url: string | null;
-  website_url: string | null;
+  youtube_url: string | null;
   tithely_url?: string | null;
 }
 
