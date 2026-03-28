@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
+import { TithelyEmbed } from "../giving/TithelyEmbed";
 
 export interface DonationsProps {
   onNavigate?: (page: string) => void;
@@ -43,7 +44,7 @@ export function Donations({ onNavigate }: DonationsProps) {
         </p>
       </div>
 
-      {churchInfo?.tithely_url ? (
+      {churchInfo?.tithely_embed || churchInfo?.tithely_url ? (
         <Card className="warm-card border-green-500/50 shadow-md">
           <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-4">
             <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-2">
@@ -54,17 +55,24 @@ export function Donations({ onNavigate }: DonationsProps) {
             </h2>
             <p className="text-neutral-600 max-w-md">
               {t(
-                "We have partnered with Tithe.ly to make giving secure and easy. Click the button below to open our official donation portal.",
-                "Nos hemos asociado con Tithe.ly para que ofrendar sea seguro y fácil. Haz clic en el botón de abajo para abrir nuestro portal oficial de donaciones."
+                "We have partnered with Tithe.ly to make giving secure and easy.",
+                "Nos hemos asociado con Tithe.ly para que ofrendar sea seguro y fácil."
               )}
             </p>
-            <Button
-              className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-10 py-7 mt-6 text-lg tracking-wide rounded-xl shadow-md transition-transform hover:scale-105 flex items-center gap-3"
-              onClick={() => window.open(churchInfo.tithely_url!, "_blank")}
-            >
-              <span>{t("Give with Tithe.ly", "Dar con Tithe.ly")}</span>
-              <ExternalLink className="h-5 w-5" />
-            </Button>
+            
+            {churchInfo?.tithely_embed ? (
+              <div className="w-full mt-4 flex justify-center">
+                <TithelyEmbed embedCode={churchInfo.tithely_embed} />
+              </div>
+            ) : (
+              <Button
+                className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-10 py-7 mt-6 text-lg tracking-wide rounded-xl shadow-md transition-transform hover:scale-105 flex items-center gap-3"
+                onClick={() => window.open(churchInfo!.tithely_url!, "_blank")}
+              >
+                <span>{t("Give with Tithe.ly", "Dar con Tithe.ly")}</span>
+                <ExternalLink className="h-5 w-5" />
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (

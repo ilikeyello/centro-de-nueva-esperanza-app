@@ -316,6 +316,7 @@ export interface ChurchAdditionalInfo {
   facebook_page_url: string | null;
   youtube_url: string | null;
   tithely_url?: string | null;
+  tithely_embed?: string | null;
 }
 
 /**
