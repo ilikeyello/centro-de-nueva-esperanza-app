@@ -75,7 +75,7 @@ export function Footer() {
   const content = footerContent[language];
 
   return (
-    <footer className="bg-neutral-900 text-white">
+    <footer className="bg-warm-cream border-t border-neutral-200 text-neutral-900">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Church Info */}
@@ -83,14 +83,14 @@ export function Footer() {
             <h3 className="serif-heading text-xl font-bold text-warm-red">
               {content.churchName}
             </h3>
-            <div className="space-y-4 text-sm text-neutral-300">
+            <div className="space-y-4 text-sm text-neutral-600">
               {content.locations.map((location, index) => (
                 <div key={index} className="space-y-1">
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-white">{location.name}</p>
-                      <p className="text-neutral-400">{location.address}</p>
+                      <p className="font-semibold text-neutral-900">{location.name}</p>
+                      <p className="text-neutral-500">{location.address}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-6">
@@ -129,8 +129,8 @@ export function Footer() {
             </div>
             
             {/* Note about two locations */}
-            <div className="mt-4 p-3 bg-neutral-800 rounded-lg">
-              <p className="text-xs text-neutral-400">
+            <div className="mt-4 p-3 bg-neutral-100 rounded-lg">
+              <p className="text-xs text-neutral-600">
                 {t(
                   "We now have two locations to serve you better!",
                   "¡Ahora tenemos dos ubicaciones para servirte mejor!"
@@ -146,32 +146,32 @@ export function Footer() {
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#home" className="text-neutral-300 hover:text-warm-red transition-colors">
+                <a href="#home" className="text-neutral-600 hover:text-warm-red transition-colors">
                   {content.quickLinks.home}
                 </a>
               </li>
               <li>
-                <a href="#newHere" className="text-neutral-300 hover:text-warm-red transition-colors">
+                <a href="#newHere" className="text-neutral-600 hover:text-warm-red transition-colors">
                   {content.quickLinks.about}
                 </a>
               </li>
               <li>
-                <a href="#news" className="text-neutral-300 hover:text-warm-red transition-colors">
+                <a href="#news" className="text-neutral-600 hover:text-warm-red transition-colors">
                   {content.quickLinks.events}
                 </a>
               </li>
               <li>
-                <a href="#media" className="text-neutral-300 hover:text-warm-red transition-colors">
+                <a href="#media" className="text-neutral-600 hover:text-warm-red transition-colors">
                   {content.quickLinks.media}
                 </a>
               </li>
               <li>
-                <a href="#donations" className="text-neutral-300 hover:text-warm-red transition-colors">
+                <a href="#donations" className="text-neutral-600 hover:text-warm-red transition-colors">
                   {content.quickLinks.give}
                 </a>
               </li>
               <li>
-                <a href="#contact" className="text-neutral-300 hover:text-warm-red transition-colors">
+                <a href="#contact" className="text-neutral-600 hover:text-warm-red transition-colors">
                   {content.quickLinks.contact}
                 </a>
               </li>
@@ -246,7 +246,7 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 border-t border-neutral-800 pt-8 text-center text-sm text-neutral-400">
+        <div className="mt-12 border-t border-neutral-200 pt-8 text-center text-sm text-neutral-500">
           <p>{content.copyright}</p>
         </div>
       </div>
