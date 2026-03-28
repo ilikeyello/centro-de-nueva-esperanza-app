@@ -1,145 +1,21 @@
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, DollarSign, Heart, Building2, Globe } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { useBackend } from "../../hooks/useBackend";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, ExternalLink, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
 
-const stripePromise = loadStripe("pk_test_placeholder");
-
-interface DonationFormProps {
+export interface DonationsProps {
   onNavigate?: (page: string) => void;
 }
 
-function DonationForm({ onNavigate }: DonationFormProps) {
-  const backend = useBackend();
+export function Donations({ onNavigate }: DonationsProps) {
   const { t } = useLanguage();
-  const { toast } = useToast();
-  const stripe = useStripe();
-  const elements = useElements();
-  const [amount, setAmount] = useState("");
-  const [donationType, setDonationType] = useState<"general" | "missions" | "building" | "other">("general");
-  const [message, setMessage] = useState("");
-  const [processing, setProcessing] = useState(false);
-
+  
   const { data: churchInfo } = useQuery({
     queryKey: ["churchInfo"],
     queryFn: () => getChurchAdditionalInfo(),
   });
-
-  const createDonationMutation = useMutation({
-    mutationFn: (data: {
-      amount: number;
-      donationType: "general" | "missions" | "building" | "other";
-      message: string;
-    }) => {
-      return backend.donations.create(data);
-    },
-  });
-
-  const confirmDonationMutation = useMutation({
-    mutationFn: (data: { donationId: number; success: boolean }) => {
-      return backend.donations.confirm(data);
-    },
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      return;
-    }
-
-    setProcessing(true);
-
-    try {
-      const donation = await createDonationMutation.mutateAsync({
-        amount: parseFloat(amount),
-        donationType,
-        message,
-      });
-
-      const result = await stripe.confirmCardPayment(donation.clientSecret, {
-        payment_method: {
-          card: cardElement,
-        },
-      });
-
-      if (result.error) {
-        await confirmDonationMutation.mutateAsync({
-          donationId: donation.id,
-          success: false,
-        });
-        toast({
-          title: t("Error", "Error"),
-          description: result.error.message,
-          variant: "destructive",
-        });
-      } else {
-        await confirmDonationMutation.mutateAsync({
-          donationId: donation.id,
-          success: true,
-        });
-        toast({
-          title: t("Thank you!", "¡Gracias!"),
-          description: t("Your donation has been received", "Tu donación ha sido recibida"),
-        });
-        setAmount("");
-        setMessage("");
-        cardElement.clear();
-      }
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: t("Error", "Error"),
-        description: t("Failed to process donation", "Error al procesar donación"),
-        variant: "destructive",
-      });
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const donationTypes = [
-    {
-      value: "general",
-      icon: Heart,
-      labelEn: "General Fund",
-      labelEs: "Fondo General",
-    },
-    {
-      value: "missions",
-      icon: Globe,
-      labelEn: "Missions",
-      labelEs: "Misiones",
-    },
-    {
-      value: "building",
-      icon: Building2,
-      labelEn: "Building Fund",
-      labelEs: "Fondo de Edificio",
-    },
-    {
-      value: "other",
-      icon: DollarSign,
-      labelEn: "Other",
-      labelEs: "Otro",
-    },
-  ];
 
   return (
     <div className="container mx-auto max-w-2xl space-y-6 px-4 py-8">
@@ -150,7 +26,7 @@ function DonationForm({ onNavigate }: DonationFormProps) {
               variant="ghost"
               size="icon"
               onClick={() => onNavigate("home")}
-              className="text-neutral-700 hover:text-warm-red"
+              className="text-neutral-700 hover:text-warm-red flex-shrink-0"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -167,143 +43,48 @@ function DonationForm({ onNavigate }: DonationFormProps) {
         </p>
       </div>
 
-      {churchInfo?.tithely_url && (
+      {churchInfo?.tithely_url ? (
         <Card className="warm-card border-green-500/50 shadow-md">
-          <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
+          <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-4">
+            <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-2">
+              <Heart className="h-8 w-8 text-green-600" />
+            </div>
             <h2 className="serif-heading text-2xl font-bold text-neutral-900">
               {t("Donate via Tithe.ly", "Donar a través de Tithe.ly")}
             </h2>
-            <p className="text-neutral-600">
+            <p className="text-neutral-600 max-w-md">
               {t(
-                "You can now give securely and easily through our Tithe.ly link.",
-                "Ahora puedes ofrendar de forma segura y fácil a través de nuestro enlace de Tithe.ly."
+                "We have partnered with Tithe.ly to make giving secure and easy. Click the button below to open our official donation portal.",
+                "Nos hemos asociado con Tithe.ly para que ofrendar sea seguro y fácil. Haz clic en el botón de abajo para abrir nuestro portal oficial de donaciones."
               )}
             </p>
             <Button
-              className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-8 py-6 text-lg tracking-wide rounded-xl shadow-md transition-transform hover:scale-105"
+              className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-10 py-7 mt-6 text-lg tracking-wide rounded-xl shadow-md transition-transform hover:scale-105 flex items-center gap-3"
               onClick={() => window.open(churchInfo.tithely_url!, "_blank")}
             >
-              {t("Give with Tithe.ly", "Dar con Tithe.ly")}
+              <span>{t("Give with Tithe.ly", "Dar con Tithe.ly")}</span>
+              <ExternalLink className="h-5 w-5" />
             </Button>
           </CardContent>
         </Card>
+      ) : (
+        <Card className="warm-card mt-8">
+          <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-4">
+            <div className="h-16 w-16 bg-neutral-100 rounded-full flex items-center justify-center mb-2">
+              <Heart className="h-8 w-8 text-neutral-400" />
+            </div>
+            <h2 className="serif-heading text-2xl font-bold text-neutral-900">
+              {t("Online Giving Coming Soon", "Donaciones en línea Próximamente")}
+            </h2>
+            <p className="text-neutral-600 max-w-sm">
+              {t(
+                "We are currently setting up our online giving platform! Please check back soon or contact us to give directly.",
+                "¡Actualmente estamos configurando nuestra plataforma de donaciones en línea! Por favor, vuelve pronto o contáctanos para ofrendar directamente."
+              )}
+            </p>
+          </CardContent>
+        </Card>
       )}
-
-      {churchInfo?.tithely_url && (
-        <div className="relative my-8">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-neutral-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-[#FCFBF9] px-4 text-neutral-500 uppercase tracking-widest text-xs font-bold">
-              {t("Or use our internal form", "O usa nuestro formulario interno")}
-            </span>
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {donationTypes.map((type) => {
-          const Icon = type.icon;
-          const isActive = donationType === type.value;
-          return (
-            <Button
-              key={type.value}
-              variant="outline"
-              className={`h-auto flex-col gap-2 p-4 text-sm ${
-                isActive
-                  ? "border-warm-red bg-warm-red/10 text-warm-red"
-                  : "border-neutral-300 bg-white text-neutral-700"
-              }`}
-              onClick={() => setDonationType(type.value as any)}
-            >
-              <Icon className="h-6 w-6" />
-              <span className="font-semibold">
-                {t(type.labelEn, type.labelEs)}
-              </span>
-            </Button>
-          );
-        })}
-      </div>
-
-      <Card className="warm-card">
-        <CardHeader>
-          <CardTitle className="serif-heading text-neutral-900">
-            {t("Donation Details", "Detalles de Donación")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="amount" className="text-neutral-700">
-                {t("Amount ($)", "Cantidad ($)")}
-              </Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="1"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                required
-                className="border-neutral-300 bg-white text-neutral-900"
-              />
-            </div>
-            <div>
-              <Label htmlFor="message" className="text-neutral-700">
-                {t("Message (optional)", "Mensaje (opcional)")}
-              </Label>
-              <Textarea
-                id="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="border-neutral-300 bg-white text-neutral-900"
-              />
-            </div>
-            <div>
-              <Label className="text-neutral-700">
-                {t("Card Details", "Detalles de Tarjeta")}
-              </Label>
-              <div className="mt-2 rounded-md border border-neutral-300 bg-white p-3">
-                <CardElement
-                  options={{
-                    style: {
-                      base: {
-                        color: "#171717",
-                        fontSize: "16px",
-                        "::placeholder": {
-                          color: "#737373",
-                        },
-                      },
-                    },
-                  }}
-                />
-              </div>
-            </div>
-            <Button
-              type="submit"
-              disabled={!stripe || processing}
-              className="warm-button-primary w-full"
-            >
-              {processing
-                ? t("Processing...", "Procesando...")
-                : t("Donate Now", "Donar Ahora")}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
     </div>
-  );
-}
-
-interface DonationsProps {
-  onNavigate?: (page: string) => void;
-}
-
-export function Donations({ onNavigate }: DonationsProps) {
-  return (
-    <Elements stripe={stripePromise}>
-      <DonationForm onNavigate={onNavigate} />
-    </Elements>
   );
 }
