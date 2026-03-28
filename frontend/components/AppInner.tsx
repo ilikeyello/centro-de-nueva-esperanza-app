@@ -17,7 +17,6 @@ import { NotificationSettings } from "./notifications/NotificationSettings";
 import { PushNotificationPrompt } from "./PushNotificationPrompt";
 import { useNotificationChecker } from "../hooks/useNotificationChecker";
 import { Toaster } from "@/components/ui/toaster";
-import { Footer } from "./Footer";
 
 type Page =
   | "home"
@@ -97,9 +96,6 @@ export function AppInner() {
       </main>
       <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40">
         <PushNotificationPrompt />
-      </div>
-      <div className="hidden md:block">
-        <Footer />
       </div>
       <Toaster />
     </div>
