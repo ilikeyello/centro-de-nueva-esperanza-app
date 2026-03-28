@@ -379,57 +379,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
 }
 
-/* Override white text to dark text for light theme */
-h1.text-white:not(.hero-title), h2.text-white:not(.hero-title), h3.text-white, h4.text-white {
-  color: var(--neutral-900) !important;
-  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.02em !important;
-}
 
-.text-white:not(button):not(.bg-neutral-900):not(.bg-neutral-800):not(.bg-red-600):not(.bg-warm-red):not(.hero-title):not(.hero-subtitle) {
-  color: var(--neutral-900) !important;
-}
-
-/* Keep hero text white */
-.hero-title, .hero-subtitle {
-  color: white !important;
-}
-
-/* Fix white buttons to have dark text */
-button.bg-white .text-white,
-button.bg-white.text-white,
-.bg-white button.text-white {
-  color: var(--neutral-900) !important;
-}
-
-button.border-white:not(.bg-warm-red):not(.bg-red-600) {
-  border-color: var(--neutral-300) !important;
-  color: var(--neutral-900) !important;
-}
-
-.text-neutral-300:not(button):not(.bg-neutral-900):not(.bg-neutral-800) {
-  color: var(--neutral-700) !important;
-}
-
-.text-neutral-400:not(button):not(.bg-neutral-900):not(.bg-neutral-800) {
-  color: var(--neutral-600) !important;
-}
-
-/* Override dark backgrounds to light */
-.bg-neutral-900, .bg-neutral-900\/50, .bg-neutral-900\/60, .bg-neutral-900\/70 {
-  background-color: #FFFFFF !important;
-  border: 1px solid #E5E7EB !important;
-}
-
-.border-neutral-800, .border-neutral-700 {
-  border-color: #E5E7EB !important;
-}
-
-.bg-neutral-800 {
-  background-color: #FFFFFF !important;
-  border: 1px solid #E5E7EB !important;
-}
 
 @media screen and (max-width: 390px) {
   /* iPhone 12/13/14 and similar */
