@@ -21,7 +21,7 @@ export function TithelyEmbed({ embedCode }: TithelyEmbedProps) {
           src="https://give.tithe.ly/?formId=${formId}" 
           width="100%" 
           height="800px" 
-          style="border:none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" 
+          style="border:none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); filter: invert(1) hue-rotate(180deg);" 
           allow="payment"
         ></iframe>
       `;
@@ -63,7 +63,7 @@ export function TithelyEmbed({ embedCode }: TithelyEmbedProps) {
   return (
     <div 
       ref={containerRef} 
-      className="tithely-container flex flex-col items-center justify-center w-full min-h-[400px] bg-neutral-900 rounded-2xl p-1 md:p-4 shadow-2xl border border-neutral-800"
+      className="tithely-container flex flex-col items-center justify-center w-full min-h-[400px] bg-warm-cream/50 rounded-2xl p-1 md:p-4 shadow-inner border border-neutral-200"
     />
   );
 }
