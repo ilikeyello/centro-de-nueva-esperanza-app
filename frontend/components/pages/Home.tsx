@@ -82,6 +82,13 @@ export function Home({ onNavigate }: HomeProps) {
 
   const quickActions = [
     {
+      icon: DollarSign,
+      labelEn: "Give Now",
+      labelEs: "Dar Ahora",
+      page: "donations",
+      color: "bg-green-600 hover:bg-green-700",
+    },
+    {
       icon: Megaphone,
       labelEn: "Get in Contact",
       labelEs: "Ponerse en Contacto",
@@ -94,13 +101,6 @@ export function Home({ onNavigate }: HomeProps) {
       labelEs: "Tablón Comunitario",
       page: "bulletin",
       color: "bg-purple-600 hover:bg-purple-700",
-    },
-    {
-      icon: DollarSign,
-      labelEn: "Give Now",
-      labelEs: "Dar Ahora",
-      page: "donations",
-      color: "bg-green-600 hover:bg-green-700",
     },
     {
       icon: Gamepad2,

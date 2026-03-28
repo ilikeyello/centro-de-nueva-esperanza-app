@@ -3,11 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Brain, Play, Clock, Target, Trophy, RotateCcw, ChevronRight, ArrowLeft } from "lucide-react";
+import { supabase, churchOrgId } from "../../lib/mainSiteData";
 
 interface TriviaLevel {
   id: string;
-  name: string;
-  description?: string;
+  name_en: string;
+  name_es: string;
+  description_en?: string;
+  description_es?: string;
   target_group?: string;
   shuffle_questions: boolean;
   time_limit: number;
@@ -70,38 +73,18 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
 
   const loadLevels = async () => {
     try {
-      const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/simple`);
-      const data = await response.json();
-      
-      console.log('Game page - loaded levels:', data.levels.length);
-      
-      setLevels(data.levels);
+      const { data, error } = await supabase
+        .from('trivia_levels')
+        .select('*')
+        .eq('church_id', churchOrgId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      console.log('Game page - loaded levels:', data?.length);
+      setLevels(data || []);
     } catch (error) {
       console.error('Failed to load levels:', error);
-      // Add fallback test data
-      const testLevels = [
-        {
-          id: "kids",
-          name: "Kids (Test)",
-          description: "For children ages 6-12",
-          target_group: "Children",
-          shuffle_questions: true,
-          time_limit: 30,
-          passing_score: 70
-        },
-        {
-          id: "youth",
-          name: "Youth (Test)",
-          description: "For teenagers and young adults",
-          target_group: "Youth",
-          shuffle_questions: true,
-          time_limit: 20,
-          passing_score: 80
-        }
-      ];
-      setLevels(testLevels);
-      console.log('Using fallback test levels:', testLevels.length);
+      setLevels([]);
     } finally {
       setLoading(false);
     }
@@ -109,61 +92,16 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
 
   const loadQuestions = async (levelId: string) => {
     try {
-      const base = import.meta.env.DEV ? "http://127.0.0.1:4000" : "https://prod-cne-sh82.encr.app";
-      const response = await fetch(`${base}/trivia/simple`);
-      const data = await response.json();
-      
-      return data.questions.filter((q: TriviaQuestion) => q.level_id === levelId);
+      const { data, error } = await supabase
+        .from('trivia_questions')
+        .select('*')
+        .eq('level_id', levelId);
+
+      if (error) throw error;
+      return data || [];
     } catch (error) {
       console.error('Failed to load questions:', error);
-      // Add fallback test questions
-      const testQuestions = [
-        {
-          id: 1,
-          question_en: "Who built the ark?",
-          question_es: "¿Quién construyó el arca?",
-          options_en: ["Noah", "Moses", "Abraham", "David"],
-          options_es: ["Noé", "Moisés", "Abraham", "David"],
-          correct_answer: 0,
-          category: "Old Testament",
-          reference: "Genesis 6:9-22",
-          level_id: levelId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          question_en: "What was the first miracle Jesus performed?",
-          question_es: "¿Cuál fue el primer milagro que Jesús realizó?",
-          options_en: ["Walking on water", "Turning water into wine", "Healing the blind", "Raising Lazarus"],
-          options_es: ["Caminar sobre el agua", "Convertir agua en vino", "Sanar a los ciegos", "Resucitar a Lázaro"],
-          correct_answer: 1,
-          category: "New Testament",
-          reference: "John 2:1-11",
-          level_id: levelId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 3,
-          question_en: "How many books are in the Bible?",
-          question_es: "¿Cuántos libros hay en la Biblia?",
-          options_en: ["39", "66", "73", "27"],
-          options_es: ["39", "66", "73", "27"],
-          correct_answer: 1,
-          category: "General",
-          reference: "N/A",
-          level_id: levelId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-      setGameState(prev => ({
-        ...prev,
-        questions: testQuestions
-      }));
-      console.log('Using fallback test questions:', testQuestions.length);
-      return testQuestions;
+      return [];
     }
   };
 
@@ -435,11 +373,11 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                      {language === 'es' ? level.name : level.name}
+                      {language === 'es' ? level.name_es : level.name_en}
                     </h3>
-                    {level.description && (
+                    {level.description_en && (
                       <p className="text-neutral-400 mb-3">
-                        {language === 'es' ? level.description : level.description}
+                        {language === 'es' ? level.description_es : level.description_en}
                       </p>
                     )}
                     <div className="flex gap-4 text-sm text-neutral-500">

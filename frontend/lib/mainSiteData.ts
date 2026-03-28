@@ -27,7 +27,8 @@ if (!churchOrgId) {
 }
 
 // Public client (no auth needed - RLS allows public reads)
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export { churchOrgId };
 
 // Types from main site's schema
 interface ChurchContentRow {

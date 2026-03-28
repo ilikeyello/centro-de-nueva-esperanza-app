@@ -3,14 +3,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Sparkles, Grid3X3, ArrowLeft, Play } from "lucide-react";
+import { supabase, churchOrgId } from "../../lib/mainSiteData";
 
 interface WordSearchLevel {
   id: string;
-  name: string;
-  description: string | null;
+  name_en: string;
+  name_es: string;
+  description_en: string | null;
+  description_es: string | null;
   rows: number;
   cols: number;
-  words: { id: number; word_en: string; word_es: string | null }[];
+  words?: { id: string; word_en: string; word_es: string | null }[];
 }
 
 interface PuzzleLevelInfo {
@@ -81,45 +84,24 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
     try {
       setLoadingLevels(true);
       setError(null);
-      const res = await fetch(`${base}/games/wordsearch/levels`);
-      if (!res.ok) throw new Error("Failed to load levels");
-      const data = await res.json();
-      setLevels(data.levels || []);
+      
+      const { data, error } = await supabase
+        .from('word_search_levels')
+        .select('*, word_search_words(id, word_en, word_es)')
+        .eq('church_id', churchOrgId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      const formattedData = data?.map(d => ({
+        ...d,
+        words: d.word_search_words || []
+      })) || [];
+      
+      setLevels(formattedData);
     } catch (err) {
       console.error(err);
-      // Add fallback test levels
-      const testLevels = [
-        {
-          id: "bible-stories",
-          name: "Bible Stories (Test)",
-          description: "Famous stories from the Bible",
-          rows: 10,
-          cols: 10,
-          words: [
-            { id: 1, word_en: "NOAH", word_es: "NOÉ" },
-            { id: 2, word_en: "MOSES", word_es: "MOISÉS" },
-            { id: 3, word_en: "DAVID", word_es: "DAVID" },
-            { id: 4, word_en: "JESUS", word_es: "JESÚS" },
-            { id: 5, word_en: "ADAM", word_es: "ADÁN" }
-          ]
-        },
-        {
-          id: "bible-places",
-          name: "Bible Places (Test)",
-          description: "Important locations in the Bible",
-          rows: 12,
-          cols: 12,
-          words: [
-            { id: 1, word_en: "BETHLEHEM", word_es: "BELÉN" },
-            { id: 2, word_en: "JERUSALEM", word_es: "JERUSALÉN" },
-            { id: 3, word_en: "EGYPT", word_es: "EGIPTO" },
-            { id: 4, word_en: "NAZARETH", word_es: "NAZARET" },
-            { id: 5, word_en: "GALILEE", word_es: "GALILEA" }
-          ]
-        }
-      ];
-      setLevels(testLevels);
-      console.log('Using fallback test levels:', testLevels.length);
+      setLevels([]);
     } finally {
       setLoadingLevels(false);
     }
@@ -158,28 +140,19 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       setSelectedStart(null);
       setFoundSegments([]);
 
-      const langParam = language === "es" ? "es" : "en";
-      const res = await fetch(
-        `${base}/games/wordsearch/puzzle/${encodeURIComponent(levelId)}?lang=${langParam}`
-      );
-
-      const data: PuzzleResult = await res.json();
-
-      if (!res.ok || data.error || !data.level || !data.grid || !data.words) {
-        throw new Error(data.error || "Failed to load puzzle");
-      }
-
-      setPuzzle(data);
-      snapToTop();
-    } catch (err) {
-      console.error(err);
-      // Generate a simple fallback puzzle
       const level = levels.find(l => l.id === levelId);
-      if (level) {
-        const words = (language === "es" 
-          ? level.words.map(w => w.word_es || w.word_en)
-          : level.words.map(w => w.word_en)
-        ).filter(w => w && w.length > 0);
+      if (!level) throw new Error("Level not found");
+
+      // Use the local algorithmic matrix generator with Supabase words
+      const words = (language === "es" 
+        ? level.words?.map(w => w.word_es || w.word_en)
+        : level.words?.map(w => w.word_en)
+      ) || [];
+      const validWords = words.filter(w => w && w.length > 0);
+      
+      if (validWords.length === 0) {
+        throw new Error("No words available in this level yet.");
+      }
         
         // 1. Initialize grid with placeholders
         const gridChars: string[][] = Array(level.rows).fill(null).map(() => Array(level.cols).fill('_'));
@@ -236,11 +209,11 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         );
         
         
-        const fallbackPuzzle: PuzzleResult = {
+        const generatedPuzzle: PuzzleResult = {
           level: {
             id: level.id,
-            name: level.name,
-            description: level.description,
+            name: language === 'es' ? level.name_es : level.name_en,
+            description: language === 'es' ? level.description_es : level.description_en,
             rows: level.rows,
             cols: level.cols
           },
@@ -248,12 +221,10 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
           grid: grid
         };
         
-        setPuzzle(fallbackPuzzle);
-      } else {
-        setError(
-          t("Failed to load puzzle.", "Error al cargar el rompecabezas.")
-        );
-      }
+        setPuzzle(generatedPuzzle);
+        snapToTop();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("Failed to load puzzle.", "Error al cargar el rompecabezas."));
     } finally {
       setLoadingPuzzle(false);
     }
@@ -410,14 +381,14 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
               >
                 <CardContent className="p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-neutral-900">{level.name}</h3>
-                    {level.description && (
+                    <h3 className="text-lg font-semibold text-neutral-900">{language === 'es' ? level.name_es : level.name_en}</h3>
+                    {(level.description_en || level.description_es) && (
                       <p className="text-xs text-neutral-400 max-w-xl">
-                        {level.description}
+                        {language === 'es' ? level.description_es : level.description_en}
                       </p>
                     )}
                     <p className="text-[0.75rem] text-neutral-500">
-                      {level.rows}x{level.cols} - {level.words.length}{" "}
+                      {level.rows}x{level.cols} - {level.words?.length || 0}{" "}
                       {t("words", "palabras")}
                     </p>
                   </div>
