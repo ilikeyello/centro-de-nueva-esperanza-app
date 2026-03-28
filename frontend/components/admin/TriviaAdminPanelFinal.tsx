@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Plus, Edit2, Trash2, Save, X, Brain, Clock, Target, ChevronDown, ChevronRight, AlertCircle, Check } from "lucide-react";
+import { Plus, Edit2, Trash2, Save, X, Brain, Clock, Target, ChevronDown, ChevronRight, AlertCircle, Check, Globe } from "lucide-react";
 
 interface TriviaLevel {
   id: string;
@@ -59,6 +59,9 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
   // Track which items are new (for highlighting)
   const [newLevelIds, setNewLevelIds] = useState<Set<string>>(new Set());
   const [newQuestionTempIds, setNewQuestionTempIds] = useState<Set<string>>(new Set());
+  
+  // Translation toggle
+  const [showTranslations, setShowTranslations] = useState(false);
   
   // State for the "Quick Add" row in each level
   const [quickAddQuestions, setQuickAddQuestions] = useState<Record<string, Partial<TriviaQuestion>>>({});
@@ -183,14 +186,23 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     ));
   };
 
-  const handleOptionChange = (qId: number | string, index: number, value: string) => {
+  const handleOptionChange = (qId: number | string, lang: 'en' | 'es', index: number, value: string) => {
     setLocalQuestions(prev => prev.map(q => {
       if (q.id === qId) {
-        const newOptionsEn = [...(q.options_en as string[])];
-        const newOptionsEs = [...(q.options_es as string[])];
-        newOptionsEn[index] = value;
-        newOptionsEs[index] = value; // Default to same for now to simplify
-        return { ...q, options_en: newOptionsEn, options_es: newOptionsEs };
+        if (lang === 'en') {
+          const newOptionsEn = [...(q.options_en as string[])];
+          newOptionsEn[index] = value;
+          // If Spanish is empty or a copy of English, keep them synced
+          const newOptionsEs = [...(q.options_es as string[])];
+          if (!newOptionsEs[index] || newOptionsEs[index] === (q.options_en as string[])[index]) {
+            newOptionsEs[index] = value;
+          }
+          return { ...q, options_en: newOptionsEn, options_es: newOptionsEs };
+        } else {
+          const newOptionsEs = [...(q.options_es as string[])];
+          newOptionsEs[index] = value;
+          return { ...q, options_es: newOptionsEs };
+        }
       }
       return q;
     }));
@@ -233,11 +245,11 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     const newQ: TriviaQuestion = {
       id: tempId as any,
       question_en: draft.question_en,
-      question_es: draft.question_en,
+      question_es: draft.question_es || draft.question_en,
       options_en: draft.options_en || ['', '', '', ''],
-      options_es: draft.options_en || ['', '', '', ''],
+      options_es: draft.options_es || draft.options_en || ['', '', '', ''],
       correct_answer: draft.correct_answer || 0,
-      category: 'General',
+      category: draft.category || 'General',
       level_id: levelId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -264,15 +276,28 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
     }));
   };
 
-  const updateQuickAddOption = (levelId: string, index: number, value: string) => {
+  const updateQuickAddOption = (levelId: string, lang: 'en' | 'es', index: number, value: string) => {
     setQuickAddQuestions(prev => {
-      const draft = prev[levelId] || { options_en: ['', '', '', ''], correct_answer: 0 };
-      const newOptions = [...(draft.options_en as string[])];
-      newOptions[index] = value;
-      return {
-        ...prev,
-        [levelId]: { ...draft, options_en: newOptions }
-      };
+      const draft = prev[levelId] || { options_en: ['', '', '', ''], options_es: ['', '', '', ''], correct_answer: 0 };
+      if (lang === 'en') {
+        const newOptionsEn = [...(draft.options_en as string[])];
+        newOptionsEn[index] = value;
+        const newOptionsEs = [...(draft.options_es as string[])];
+        if (!newOptionsEs[index] || newOptionsEs[index] === (draft.options_en as string[])[index]) {
+          newOptionsEs[index] = value;
+        }
+        return {
+          ...prev,
+          [levelId]: { ...draft, options_en: newOptionsEn, options_es: newOptionsEs }
+        };
+      } else {
+        const newOptionsEs = [...(draft.options_es as string[])];
+        newOptionsEs[index] = value;
+        return {
+          ...prev,
+          [levelId]: { ...draft, options_es: newOptionsEs }
+        };
+      }
     });
   };
 
@@ -442,6 +467,15 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
             </div>
             <div className="flex items-center gap-2">
               <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowTranslations(!showTranslations)}
+                className={`flex items-center gap-2 text-[0.7rem] uppercase font-bold px-2 h-7 ${showTranslations ? 'text-red-400 bg-red-400/10 border-red-400/20 border' : 'text-neutral-500 border-neutral-800 border'}`}
+              >
+                <Globe className="h-3.5 w-3.5" />
+                {t("Show Spanish", "Mostrar Español")}
+              </Button>
+              <Button 
                 onClick={executeBatchOperations}
                 disabled={!hasChanges()}
                 className="bg-green-600 hover:bg-green-700 h-9"
@@ -597,23 +631,47 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                           </h4>
                         </div>
                         
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                           {levelQuestions.map((q, qIndex) => (
-                            <div key={q.id} className="relative group/q bg-neutral-900/40 p-3 rounded-lg border border-neutral-800 hover:border-neutral-700 transition-colors">
+                            <div key={q.id} className="relative group/q bg-neutral-900/40 p-4 rounded-lg border border-neutral-800 hover:border-neutral-700 transition-colors">
                               <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 mb-3">
-                                <Input
-                                  value={q.question_en}
-                                  onChange={e => handleQuestionChange(q.id, 'question_en', e.target.value)}
-                                  className="bg-neutral-950 border-neutral-800 text-white font-medium italic h-8"
-                                  placeholder={t("Question text...", "Texto de la pregunta...")}
-                                />
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      value={q.question_en}
+                                      onChange={e => {
+                                        handleQuestionChange(q.id, 'question_en', e.target.value);
+                                        // Auto-sync Spanish if empty
+                                        if (!q.question_es || q.question_es === q.question_en) {
+                                          handleQuestionChange(q.id, 'question_es', e.target.value);
+                                        }
+                                      }}
+                                      className="bg-neutral-950 border-neutral-800 text-white font-medium italic h-9"
+                                      placeholder={t("Question text (EN)...", "Texto de la pregunta (ING)...")}
+                                    />
+                                    <Input
+                                      value={q.category || 'General'}
+                                      onChange={e => handleQuestionChange(q.id, 'category', e.target.value)}
+                                      className="bg-neutral-950 border-neutral-800 text-neutral-400 font-bold uppercase text-[0.6rem] w-32 h-9"
+                                      placeholder={t("Category...", "Categoría...")}
+                                    />
+                                  </div>
+                                  {showTranslations && (
+                                    <Input
+                                      value={q.question_es || ''}
+                                      onChange={e => handleQuestionChange(q.id, 'question_es', e.target.value)}
+                                      className="bg-neutral-950/50 border-neutral-800 text-neutral-300 font-medium italic h-8 border-dashed"
+                                      placeholder={t("Spanish translation...", "Traducción al español...")}
+                                    />
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-2">
                                   <Label className="text-[0.6rem] uppercase text-neutral-500 whitespace-nowrap">Correct:</Label>
                                   <Select 
                                     value={String(q.correct_answer)} 
                                     onValueChange={val => handleQuestionChange(q.id, 'correct_answer', parseInt(val))}
                                   >
-                                    <SelectTrigger className="bg-neutral-950 border-neutral-800 h-8 h-8 text-xs">
+                                    <SelectTrigger className="bg-neutral-950 border-neutral-800 h-9 text-xs">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
@@ -626,7 +684,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-neutral-600 hover:text-red-400 opacity-0 group-hover/q:opacity-100 transition-opacity"
+                                    className="h-9 w-9 text-neutral-600 hover:text-red-400 opacity-0 group-hover/q:opacity-100 transition-opacity"
                                     onClick={() => stageQuestionDelete(q.id)}
                                   >
                                     <Trash2 className="h-4 w-4" />
@@ -634,20 +692,32 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                 </div>
                               </div>
                               
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {(q.options_en as string[]).map((opt, oIdx) => (
-                                  <div key={oIdx} className="flex items-center gap-2">
-                                    <span className={`text-[0.6rem] font-bold w-4 h-4 flex items-center justify-center rounded-sm ${q.correct_answer === oIdx ? 'bg-green-600 text-white' : 'bg-neutral-800 text-neutral-500'}`}>
-                                      {String.fromCharCode(65 + oIdx)}
-                                    </span>
-                                    <Input
-                                      value={opt}
-                                      onChange={e => handleOptionChange(q.id, oIdx, e.target.value)}
-                                      className="bg-neutral-950 border-neutral-800 text-xs h-7"
-                                      placeholder={t("Option", "Opción")}
-                                    />
-                                  </div>
-                                ))}
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                  {(q.options_en as string[]).map((opt, oIdx) => (
+                                    <div key={oIdx} className="space-y-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className={`text-[0.6rem] font-bold w-4 h-4 flex items-center justify-center rounded-sm ${q.correct_answer === oIdx ? 'bg-green-600 text-white' : 'bg-neutral-800 text-neutral-500'}`}>
+                                          {String.fromCharCode(65 + oIdx)}
+                                        </span>
+                                        <Input
+                                          value={opt}
+                                          onChange={e => handleOptionChange(q.id, 'en', oIdx, e.target.value)}
+                                          className="bg-neutral-950 border-neutral-800 text-xs h-7"
+                                          placeholder={t("Option (EN)", "Opción (ING)")}
+                                        />
+                                      </div>
+                                      {showTranslations && (
+                                        <Input
+                                          value={(q.options_es as string[])[oIdx] || ''}
+                                          onChange={e => handleOptionChange(q.id, 'es', oIdx, e.target.value)}
+                                          className="bg-neutral-950/30 border-neutral-800/50 text-[0.65rem] h-6 border-dashed ml-6"
+                                          placeholder={t("Option (ES)", "Opción (ESP)")}
+                                        />
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -657,13 +727,36 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                         <div className="bg-red-950/5 border border-dashed border-red-900/30 p-4 rounded-lg space-y-3">
                           <Label className="text-[0.65rem] font-bold uppercase text-red-400/60 block mb-1">{t("Quickly add new question", "Agregar nueva pregunta rápido")}</Label>
                           <div className="flex gap-3">
-                            <Input
-                              value={draft.question_en}
-                              onChange={e => updateQuickAddDraft(levelId, 'question_en', e.target.value)}
-                              className="bg-neutral-950 border-neutral-800 text-white font-medium h-9"
-                              placeholder={t("New question text...", "Nueva pregunta...")}
-                              onKeyDown={e => e.key === 'Enter' && addLocalQuestion(levelId)}
-                            />
+                            <div className="flex-1 space-y-2">
+                              <div className="flex gap-2">
+                                <Input
+                                  value={draft.question_en}
+                                  onChange={e => {
+                                    updateQuickAddDraft(levelId, 'question_en', e.target.value);
+                                    if (!draft.question_es || draft.question_es === draft.question_en) {
+                                      updateQuickAddDraft(levelId, 'question_es', e.target.value);
+                                    }
+                                  }}
+                                  className="bg-neutral-950 border-neutral-800 text-white font-medium h-9"
+                                  placeholder={t("New question (EN)...", "Nueva pregunta (ING)...")}
+                                  onKeyDown={e => e.key === 'Enter' && addLocalQuestion(levelId)}
+                                />
+                                <Input
+                                  value={draft.category || 'General'}
+                                  onChange={e => updateQuickAddDraft(levelId, 'category', e.target.value)}
+                                  className="bg-neutral-950 border-neutral-800 text-neutral-400 font-bold uppercase text-[0.6rem] w-32 h-9"
+                                  placeholder={t("Category...", "Categoría...")}
+                                />
+                              </div>
+                              {showTranslations && (
+                                <Input
+                                  value={draft.question_es || ''}
+                                  onChange={e => updateQuickAddDraft(levelId, 'question_es', e.target.value)}
+                                  className="bg-neutral-950/50 border-neutral-800 text-neutral-300 font-medium italic h-8 border-dashed"
+                                  placeholder={t("Spanish translation...", "Traducción al español...")}
+                                />
+                              )}
+                            </div>
                             <Button 
                               onClick={() => addLocalQuestion(levelId)}
                               disabled={!draft.question_en}
@@ -675,7 +768,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {(draft.options_en as string[]).map((opt, oIdx) => (
-                              <div key={oIdx} className="flex flex-col gap-1">
+                              <div key={oIdx} className="space-y-1">
                                 <div className="flex items-center justify-between">
                                   <span className="text-[0.6rem] font-bold text-neutral-500">{String.fromCharCode(65 + oIdx)}</span>
                                   <input 
@@ -688,10 +781,18 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                 </div>
                                 <Input
                                   value={opt}
-                                  onChange={e => updateQuickAddOption(levelId, oIdx, e.target.value)}
-                                  className="bg-neutral-950 border-neutral-800 text-xs h-8"
-                                  placeholder={t("Option", "Opción")}
+                                  onChange={e => updateQuickAddOption(levelId, 'en', oIdx, e.target.value)}
+                                  className="bg-neutral-950 border-neutral-800 text-xs h-7"
+                                  placeholder={t("Option (EN)", "Opción (ING)")}
                                 />
+                                {showTranslations && (
+                                  <Input
+                                    value={(draft.options_es as string[])?.[oIdx] || ''}
+                                    onChange={e => updateQuickAddOption(levelId, 'es', oIdx, e.target.value)}
+                                    className="bg-neutral-950/30 border-neutral-800/50 text-[0.65rem] h-6 border-dashed"
+                                    placeholder={t("Option (ES)", "Opción (ESP)")}
+                                  />
+                                )}
                               </div>
                             ))}
                           </div>
