@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, DollarSign, Heart, Building2, Globe } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
 
 const stripePromise = loadStripe("pk_test_placeholder");
 
@@ -29,6 +30,11 @@ function DonationForm({ onNavigate }: DonationFormProps) {
   const [donationType, setDonationType] = useState<"general" | "missions" | "building" | "other">("general");
   const [message, setMessage] = useState("");
   const [processing, setProcessing] = useState(false);
+
+  const { data: churchInfo } = useQuery({
+    queryKey: ["churchInfo"],
+    queryFn: () => getChurchAdditionalInfo(),
+  });
 
   const createDonationMutation = useMutation({
     mutationFn: (data: {
@@ -160,6 +166,41 @@ function DonationForm({ onNavigate }: DonationFormProps) {
           )}
         </p>
       </div>
+
+      {churchInfo?.tithely_url && (
+        <Card className="warm-card border-green-500/50 shadow-md">
+          <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
+            <h2 className="serif-heading text-2xl font-bold text-neutral-900">
+              {t("Donate via Tithe.ly", "Donar a través de Tithe.ly")}
+            </h2>
+            <p className="text-neutral-600">
+              {t(
+                "You can now give securely and easily through our Tithe.ly link.",
+                "Ahora puedes ofrendar de forma segura y fácil a través de nuestro enlace de Tithe.ly."
+              )}
+            </p>
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto px-8 py-6 text-lg tracking-wide rounded-xl shadow-md transition-transform hover:scale-105"
+              onClick={() => window.open(churchInfo.tithely_url!, "_blank")}
+            >
+              {t("Give with Tithe.ly", "Dar con Tithe.ly")}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {churchInfo?.tithely_url && (
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-neutral-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-[#FCFBF9] px-4 text-neutral-500 uppercase tracking-widest text-xs font-bold">
+              {t("Or use our internal form", "O usa nuestro formulario interno")}
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         {donationTypes.map((type) => {

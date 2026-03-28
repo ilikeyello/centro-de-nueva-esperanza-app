@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
+import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -58,6 +59,11 @@ export function Home({ onNavigate }: HomeProps) {
   } = useQuery({
     queryKey: ["events"],
     queryFn: () => backend.events.list({ upcoming: true }),
+  });
+
+  const { data: churchInfo } = useQuery({
+    queryKey: ["churchInfo"],
+    queryFn: () => getChurchAdditionalInfo(),
   });
 
   const nextEvent = eventsData?.events?.[0];
@@ -262,8 +268,8 @@ export function Home({ onNavigate }: HomeProps) {
           <h2 className="serif-heading text-3xl font-bold text-neutral-900">
             {t("Who We Are", "Quiénes Somos")}
           </h2>
-          <p className="max-w-3xl text-lg leading-relaxed text-neutral-700">
-            {t(
+          <p className="max-w-3xl text-lg leading-relaxed text-neutral-700 whitespace-pre-wrap">
+            {churchInfo?.description_en || t(
               "We are a family of believers seeking Jesus together, serving our neighbors, and sharing His hope in practical ways across our city.",
               "Somos una familia de creyentes buscando a Jesús juntos, sirviendo a nuestros vecinos y compartiendo Su esperanza de manera práctica en toda nuestra ciudad."
             )}
@@ -294,14 +300,23 @@ export function Home({ onNavigate }: HomeProps) {
                 )}
               </p>
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-neutral-700">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-warm-red" />
-                  <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-warm-red" />
-                  <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
-                </div>
+                {churchInfo?.service_times_en ? (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-warm-red" />
+                    <span>{churchInfo.service_times_en}</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-warm-red" />
+                      <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-warm-red" />
+                      <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           ) : nextEvent ? (

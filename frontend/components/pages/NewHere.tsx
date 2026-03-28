@@ -1,6 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Sparkles, Users, Coffee, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
 
 interface NewHereProps {
   onNavigate?: (page: string) => void;
@@ -8,6 +10,11 @@ interface NewHereProps {
 
 export function NewHere({ onNavigate }: NewHereProps) {
   const { t } = useLanguage();
+
+  const { data: churchInfo } = useQuery({
+    queryKey: ["churchInfo"],
+    queryFn: () => getChurchAdditionalInfo(),
+  });
 
   const highlights = [
     {
@@ -53,8 +60,8 @@ export function NewHere({ onNavigate }: NewHereProps) {
           <h1 className="mt-2 serif-heading text-3xl font-bold text-neutral-900 sm:text-4xl">
             {t("New Here?", "¿Eres Nuevo?")}
           </h1>
-          <p className="mt-3 max-w-2xl text-neutral-700">
-            {t(
+          <p className="mt-3 max-w-2xl text-neutral-700 whitespace-pre-wrap">
+            {churchInfo?.description_en || t(
               "We can't wait to welcome you. Here's what you can expect when you join us for worship and community.",
               "Estamos emocionados de darte la bienvenida. Esto es lo que puedes esperar cuando te unas a nosotros para adorar y hacer comunidad."
             )}
@@ -79,34 +86,66 @@ export function NewHere({ onNavigate }: NewHereProps) {
         })}
       </div>
 
-      {/* Locations Section */}
-      <div className="warm-card p-6">
-        <h2 className="serif-heading text-xl font-semibold text-neutral-900 mb-4">
-          {t("Our Locations", "Nuestras Ubicaciones")}
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="border-l-4 border-warm-red pl-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-5 w-5 text-warm-red" />
-              <h3 className="font-semibold text-neutral-900">Yuma, Colorado</h3>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
-              <Clock className="h-4 w-4 text-warm-red" />
-              <span>{t("Service at", "Servicio a las")} 3:00 PM</span>
-            </div>
+      {/* Locations and Services Section */}
+      {churchInfo && (churchInfo.address || churchInfo.service_times_en) ? (
+        <div className="warm-card p-6">
+          <h2 className="serif-heading text-xl font-semibold text-neutral-900 mb-4">
+            {t("Our Church", "Nuestra Iglesia")}
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {churchInfo.address && (
+              <div className="border-l-4 border-warm-red pl-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="h-5 w-5 text-warm-red" />
+                  <h3 className="font-semibold text-neutral-900">{t("Location", "Ubicación")}</h3>
+                </div>
+                <div className="text-sm text-neutral-600">
+                  <p>{churchInfo.address}</p>
+                </div>
+              </div>
+            )}
+            {churchInfo.service_times_en && (
+              <div className="border-l-4 border-warm-red pl-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-5 w-5 text-warm-red" />
+                  <h3 className="font-semibold text-neutral-900">{t("Service Times", "Horarios de Servicio")}</h3>
+                </div>
+                <div className="text-sm text-neutral-600 whitespace-pre-wrap">
+                  <p>{churchInfo.service_times_en}</p>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="border-l-4 border-warm-red pl-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-5 w-5 text-warm-red" />
-              <h3 className="font-semibold text-neutral-900">Holyoke, Colorado</h3>
+        </div>
+      ) : (
+        <div className="warm-card p-6">
+          <h2 className="serif-heading text-xl font-semibold text-neutral-900 mb-4">
+            {t("Our Locations", "Nuestras Ubicaciones")}
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="border-l-4 border-warm-red pl-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="h-5 w-5 text-warm-red" />
+                <h3 className="font-semibold text-neutral-900">Yuma, Colorado</h3>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-neutral-600">
+                <Clock className="h-4 w-4 text-warm-red" />
+                <span>{t("Service at", "Servicio a las")} 3:00 PM</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
-              <Clock className="h-4 w-4 text-warm-red" />
-              <span>{t("Service at", "Servicio a las")} 7:00 PM</span>
+            <div className="border-l-4 border-warm-red pl-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="h-5 w-5 text-warm-red" />
+                <h3 className="font-semibold text-neutral-900">Holyoke, Colorado</h3>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-neutral-600">
+                <Clock className="h-4 w-4 text-warm-red" />
+                <span>{t("Service at", "Servicio a las")} 7:00 PM</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="warm-card p-6">
         <h2 className="serif-heading text-xl font-semibold text-neutral-900">

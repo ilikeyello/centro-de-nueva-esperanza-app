@@ -304,3 +304,35 @@ export async function getChurchInfoFromMainSite(): Promise<ChurchRow | null> {
 
   return data;
 }
+
+export interface ChurchAdditionalInfo {
+  name_en: string;
+  description_en: string | null;
+  service_times_en: string;
+  address: string;
+  phone: string;
+  email: string;
+  facebook_page_url: string | null;
+  website_url: string | null;
+  tithely_url?: string | null;
+}
+
+/**
+ * Fetch detailed church info (address, description, service times, etc.)
+ */
+export async function getChurchAdditionalInfo(): Promise<ChurchAdditionalInfo | null> {
+  if (!churchOrgId) return null;
+
+  const { data, error } = await supabase
+    .from('church_info')
+    .select('*')
+    .eq('organization_id', churchOrgId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching additional church info:', error);
+    return null;
+  }
+
+  return data as ChurchAdditionalInfo;
+}
