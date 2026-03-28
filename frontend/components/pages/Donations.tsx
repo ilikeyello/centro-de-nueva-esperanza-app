@@ -18,8 +18,10 @@ export function Donations({ onNavigate }: DonationsProps) {
     queryFn: () => getChurchAdditionalInfo(),
   });
 
+  const hasEmbed = Boolean(churchInfo?.tithely_embed);
+
   return (
-    <div className="container mx-auto max-w-2xl space-y-6 px-4 py-8">
+    <div className={`container mx-auto space-y-6 px-4 py-8 ${hasEmbed ? 'max-w-4xl' : 'max-w-2xl'}`}>
       <div className="flex flex-col gap-3 text-center sm:text-left">
         <div className="flex items-center gap-3">
           {onNavigate && (
