@@ -63,7 +63,7 @@ export function TithelyEmbed({ embedCode }: TithelyEmbedProps) {
   return (
     <div 
       ref={containerRef} 
-      className="tithely-container flex flex-col items-center justify-center w-full"
+      className="tithely-container flex flex-col items-center justify-center w-full min-h-[400px] bg-neutral-900 rounded-2xl p-1 md:p-4 shadow-2xl border border-neutral-800"
     />
   );
 }

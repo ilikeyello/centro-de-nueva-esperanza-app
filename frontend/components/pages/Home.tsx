@@ -160,17 +160,18 @@ export function Home({ onNavigate }: HomeProps) {
           alt={t("Church congregation worshiping together", "Congregación adorando juntos")}
           className="hero-image w-full object-cover h-[90vh] md:h-[40rem] object-[center_55%]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-warm-red/10 via-transparent to-transparent" />
-        <div className="absolute inset-0 hero-gradient-blend md:bg-gradient-to-b md:from-black/20 md:via-black/40 md:to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-black/30 z-0" />
+        <div className="absolute inset-0 hero-gradient-blend md:bg-gradient-to-b md:from-black/40 md:via-black/20 md:to-black/60" />
         <div className="absolute top-20 right-4 md:top-24 z-20">
             <button
               type="button"
               onClick={toggleLanguage}
-              className="flex items-center justify-center gap-1 rounded-full bg-warm-red/90 px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-red shadow-md"
+               className="flex items-center justify-center gap-1 rounded-full bg-black/40 backdrop-blur-md px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-red shadow-lg border border-white/20"
               aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
             >
               <Languages className="h-4 w-4" />
-              <span>{language === "en" ? "ESP" : "ENG"}</span>
+              <span className="font-bold">{language === "en" ? "ESP" : "ENG"}</span>
             </button>
           </div>
           
@@ -197,7 +198,7 @@ export function Home({ onNavigate }: HomeProps) {
             <Button
               variant="outline"
               onClick={() => onNavigate("media")}
-              className="border-white bg-transparent px-8 py-4 text-lg text-white hover:bg-white hover:text-neutral-900"
+              className="border-white/80 bg-black/20 backdrop-blur-sm px-8 py-4 text-lg text-white hover:bg-white hover:text-neutral-900 shadow-xl"
             >
               {t("Watch Live", "Ver en Vivo")}
             </Button>
