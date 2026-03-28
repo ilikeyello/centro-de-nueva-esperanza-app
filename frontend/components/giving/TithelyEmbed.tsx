@@ -21,7 +21,7 @@ export function TithelyEmbed({ embedCode }: TithelyEmbedProps) {
           src="https://give.tithe.ly/?formId=${formId}" 
           width="100%" 
           height="800px" 
-          style="border:none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); filter: invert(1) hue-rotate(180deg);" 
+          style="border:none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" 
           allow="payment"
         ></iframe>
       `;
