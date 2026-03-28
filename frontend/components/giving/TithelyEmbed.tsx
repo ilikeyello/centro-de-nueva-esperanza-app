@@ -16,13 +16,17 @@ export function TithelyEmbed({ embedCode }: TithelyEmbedProps) {
     if (formIdMatch && formIdMatch[1]) {
       const formId = formIdMatch[1];
       // Transform into a full-height direct-embed iframe for the "In-App" Look
+      // Adding theme=light to ensure it matches the warm cream branding
       containerRef.current.innerHTML = `
-        <iframe 
-          src="https://give.tithe.ly/?formId=${formId}" 
-          width="100%" 
-          style="border:none; border-radius: 12px; height: 850px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);" 
-          allow="payment"
-        ></iframe>
+        <div style="width: 100%; position: relative; min-height: 700px;">
+          <iframe 
+            src="https://give.tithe.ly/?formId=${formId}&theme=light" 
+            width="100%" 
+            style="border:none; border-radius: 12px; height: 800px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); background-color: transparent;" 
+            allow="payment"
+            title="Tithely Giving Form"
+          ></iframe>
+        </div>
       `;
       return;
     }

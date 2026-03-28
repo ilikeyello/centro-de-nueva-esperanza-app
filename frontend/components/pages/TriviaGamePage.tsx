@@ -105,8 +105,19 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
     }
   };
 
+  const standardizeQuestions = (questions: any[]) => {
+    return questions.map(q => ({
+      ...q,
+      // Convert database 1-based index to internal 0-based index
+      correct_answer: typeof q.correct_answer === 'number' ? q.correct_answer - 1 : parseInt(q.correct_answer) - 1,
+      options_en: typeof q.options_en === 'string' ? JSON.parse(q.options_en) : q.options_en,
+      options_es: typeof q.options_es === 'string' ? JSON.parse(q.options_es) : q.options_es,
+    }));
+  };
+
   const startGame = async (level: TriviaLevel) => {
-    const questions = await loadQuestions(level.id);
+    const rawQuestions = await loadQuestions(level.id);
+    const questions = standardizeQuestions(rawQuestions);
     if (questions.length === 0) {
       alert(language === 'es' ? 'No hay preguntas disponibles para este nivel.' : 'No questions available for this level.');
       return;
@@ -135,12 +146,12 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       const shuffledOptions_en = shuffledIndices.map(i => options_en[i]);
       const shuffledOptions_es = shuffledIndices.map(i => options_es[i]);
       
-      // Update correct answer index - Ensure correct_answer is treated as a number
-      const newCorrectIndex = shuffledIndices.indexOf(Number(question.correct_answer));
+      // Update correct answer index - Database uses 1-based indexing
+      const newCorrectIndex = shuffledIndices.indexOf(question.correct_answer);
       
       return {
         ...question,
-        options_en: shuffledOptions_en, // Store as array to avoid double stringification
+        options_en: shuffledOptions_en,
         options_es: shuffledOptions_es,
         correct_answer: newCorrectIndex
       };
@@ -246,7 +257,8 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
   const restartLevel = async () => {
     if (!gameState.selectedLevel) return;
     
-    const questions = await loadQuestions(gameState.selectedLevel.id);
+    const rawQuestions = await loadQuestions(gameState.selectedLevel.id);
+    const questions = standardizeQuestions(rawQuestions);
     if (questions.length === 0) return;
 
     const shuffledQuestions = gameState.selectedLevel.shuffle_questions 
@@ -272,12 +284,12 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       const shuffledOptions_en = shuffledIndices.map(i => options_en[i]);
       const shuffledOptions_es = shuffledIndices.map(i => options_es[i]);
       
-      // Update correct answer index - Ensure correct_answer is treated as a number
-      const newCorrectIndex = shuffledIndices.indexOf(Number(question.correct_answer));
+      // Update correct answer index - Database uses 1-based indexing
+      const newCorrectIndex = shuffledIndices.indexOf(question.correct_answer);
       
       return {
         ...question,
-        options_en: shuffledOptions_en, // Store as array to avoid double stringification
+        options_en: shuffledOptions_en,
         options_es: shuffledOptions_es,
         correct_answer: newCorrectIndex
       };
@@ -427,10 +439,13 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
 
   if (gameState.status === 'playing' && gameState.questions.length > 0) {
     const currentQuestion = gameState.questions[gameState.currentQuestionIndex];
-    const question = language === 'es' ? currentQuestion.question_es : currentQuestion.question_en;
+    const questionText = language === 'es' ? currentQuestion.question_es : currentQuestion.question_en;
     const options = language === 'es' 
       ? (typeof currentQuestion.options_es === 'string' ? JSON.parse(currentQuestion.options_es) : currentQuestion.options_es)
       : (typeof currentQuestion.options_en === 'string' ? JSON.parse(currentQuestion.options_en) : currentQuestion.options_en);
+    
+    // Safety check for correct_answer
+    const correctAnswerIndex = currentQuestion.correct_answer;
 
     return (
       <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-warm-cream overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
@@ -468,7 +483,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
             <CardContent className="p-3 md:p-6 flex flex-col h-full min-h-0">
               <div className="flex-1 flex flex-col justify-between gap-2 min-h-0">
                 <h3 className="text-base md:text-xl font-semibold text-neutral-900 leading-tight flex-shrink-0">
-                  {question}
+                  {questionText}
                 </h3>
                 
                 <div className="grid gap-1.5 md:gap-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">

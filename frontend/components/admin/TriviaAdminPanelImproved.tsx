@@ -61,7 +61,15 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
       const data = await response.json();
       
       setLevels(data.levels || []);
-      setQuestions(data.questions || []);
+      // Standardize questions
+      const standardizedQuestions = (data.questions || []).map((q: any) => ({
+        ...q,
+        correct_answer: Number(q.correct_answer) - 1,
+        options_en: typeof q.options_en === 'string' ? JSON.parse(q.options_en) : q.options_en,
+        options_es: typeof q.options_es === 'string' ? JSON.parse(q.options_es) : q.options_es,
+      }));
+      setQuestions(standardizedQuestions);
+      console.log('TriviaAdminPanelImproved - standardized questions:', standardizedQuestions.length);
     } catch (error) {
       console.error('Failed to load trivia data:', error);
       setStatus('Failed to load data');
@@ -111,7 +119,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
           question_es: question.question_es,
           options_en: JSON.stringify(question.options_en || []),
           options_es: JSON.stringify(question.options_es || []),
-          correct_answer: question.correct_answer,
+          correct_answer: Number(question.correct_answer) + 1, // Convert to 1-based for DB
           category: question.category || 'General',
           level_id: question.level_id
         })

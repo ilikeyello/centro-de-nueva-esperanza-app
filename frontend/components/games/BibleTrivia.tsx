@@ -68,10 +68,9 @@ const loadQuestions = async (levelId: string) => {
           en: q.options_en,
           es: q.options_es
         },
-        correctAnswer: q.correct_answer,
-        category: q.category,
-        reference: q.reference,
-        level: q.level_id
+        level: q.level_id,
+        // Convert database 1-based index to internal 0-based index
+        correctAnswer: typeof q.correct_answer === 'number' ? q.correct_answer - 1 : parseInt(q.correct_answer) - 1,
       }));
       return formattedQuestions;
     }
