@@ -338,10 +338,10 @@ export function Media({ onStartMusic }: MediaProps) {
                 {t("Watch Live", "Ver en Vivo")}
               </span>
             </div>
-            <h1 className="text-3xl font-bold text-white sm:text-4xl">
+            <h1 className="text-3xl font-bold text-neutral-900 sm:text-4xl">
               {t("Experience CNE Online", "Experimenta CNE en Línea")}
             </h1>
-            <p className="text-neutral-300">
+            <p className="text-neutral-700">
               {t(
                 "Join us for our weekly services and special events. When we go live, the stream will begin automatically.",
                 "Únete a nosotros para nuestros servicios semanales y eventos especiales. Cuando estemos en vivo, la transmisión comenzará automáticamente."
@@ -363,13 +363,13 @@ export function Media({ onStartMusic }: MediaProps) {
                 </a>
               </Button>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/70 p-4">
-              <Calendar className="h-5 w-5 text-red-400" />
+            <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <Calendar className="h-5 w-5 text-red-600" />
               <div>
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-neutral-900">
                   {t("Live Sundays at 3:30 PM", "En vivo los domingos a las 3:30 PM")}
                 </p>
-                <p className="text-sm text-neutral-400">
+                <p className="text-sm text-neutral-600">
                   {t(
                     "Arrive a few minutes early to chat and pray together.",
                     "Llega unos minutos antes para conversar y orar juntos."
@@ -378,7 +378,7 @@ export function Media({ onStartMusic }: MediaProps) {
               </div>
             </div>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 shadow-xl md:col-span-2">
+          <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl md:col-span-2">
             <div className="relative aspect-video">
               {!livestreamIsLive && !manualLiveOverride && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-100 px-6 text-center">
@@ -422,10 +422,10 @@ export function Media({ onStartMusic }: MediaProps) {
 
       <section className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-neutral-900">
             {t("Devotionals", "Devocionales")}
           </h2>
-          <p className="text-neutral-400">
+          <p className="text-neutral-600">
             {t(
               "Catch up on previous devotionals and share them with friends.",
               "Ponte al día con los devocionales anteriores y compártelos con amigos."
@@ -436,13 +436,13 @@ export function Media({ onStartMusic }: MediaProps) {
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="border-none bg-transparent shadow-none md:col-span-2">
             <CardHeader>
-              <CardTitle className="text-white">
+              <CardTitle className="text-neutral-900">
                 {effectiveSelectedSermon
                   ? effectiveSelectedSermon.title
                   : t("No devotional selected", "Ningún devocional seleccionado")}
               </CardTitle>
               {!loadingSermons && effectiveSelectedSermon && effectiveSelectedSermon.description && (
-                <p className="text-sm text-neutral-300 leading-relaxed mt-2">
+                <p className="text-sm text-neutral-700 leading-relaxed mt-2">
                   {effectiveSelectedSermon.description}
                 </p>
               )}
@@ -481,9 +481,9 @@ export function Media({ onStartMusic }: MediaProps) {
             </CardContent>
           </Card>
 
-          <Card className="border-neutral-800 bg-neutral-900/60">
+          <Card className="border-neutral-200 bg-white">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-white">
+              <CardTitle className="text-sm font-semibold text-neutral-900">
                 {t("All Devotionals", "Todos los Devocionales")}
               </CardTitle>
             </CardHeader>
@@ -539,10 +539,10 @@ export function Media({ onStartMusic }: MediaProps) {
 
       <section id="music" className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-neutral-900">
             {t("Music & Worship", "Música y Adoración")}
           </h2>
-          <p className="text-neutral-400">
+          <p className="text-neutral-600">
             {t(
               "Listen to curated worship playlists that we love to sing together.",
               "Escucha listas de reproducción de adoración que nos encanta cantar juntos."
@@ -551,7 +551,7 @@ export function Media({ onStartMusic }: MediaProps) {
         </div>
 
         {playlists.length === 0 && (
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 text-center">
+          <div className="rounded-xl border border-neutral-200 bg-white p-6 text-center">
             <Music className="mx-auto mb-2 h-8 w-8 text-neutral-600" />
             <p className="text-sm text-neutral-500">
               {t("No playlists available yet.", "Todavía no hay listas de reproducción disponibles.")}
@@ -572,11 +572,11 @@ export function Media({ onStartMusic }: MediaProps) {
             return (
               <Card
                 key={playlist.id}
-                className="overflow-hidden border-neutral-800 bg-neutral-900/60 transition-colors"
+                className="overflow-hidden border-neutral-200 bg-white transition-colors"
               >
                 <button
                   type="button"
-                  className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-neutral-800/30"
+                  className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-neutral-50"
                   onClick={() =>
                     setExpandedPlaylistId(isExpanded ? null : playlist.id)
                   }
@@ -602,7 +602,7 @@ export function Media({ onStartMusic }: MediaProps) {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-white">
+                    <p className="truncate text-sm font-semibold text-neutral-900">
                       {playlist.title}
                     </p>
                     <p className="text-xs text-neutral-400">
@@ -618,8 +618,8 @@ export function Media({ onStartMusic }: MediaProps) {
                   )}
                 </button>
 
-                {isExpanded && (
-                  <div className="border-t border-neutral-800 px-4 pb-4 pt-2">
+                  {isExpanded && (
+                    <div className="border-t border-neutral-200 px-4 pb-4 pt-2">
                     {!isThisPlaylistPlaying && (
                       <button
                         type="button"
@@ -648,8 +648,8 @@ export function Media({ onStartMusic }: MediaProps) {
                                 className={cn(
                                   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                                   isActive
-                                    ? "bg-red-600/20 text-red-200 border border-red-500/40"
-                                    : "border border-transparent text-neutral-300 hover:bg-neutral-800/60 hover:text-white"
+                                    ? "bg-red-600 text-white"
+                                    : "border border-transparent text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900"
                                 )}
                               >
                                 <span className="w-6 flex-shrink-0 text-center text-xs text-neutral-500">

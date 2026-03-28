@@ -361,10 +361,10 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
       <div className="space-y-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-neutral-900">
               {t("Community Hub", "Centro Comunitario")}
             </h1>
-            <p className="mt-2 text-sm text-neutral-400">
+            <p className="mt-2 text-sm text-neutral-600">
               {t("Share updates, testimonies, and prayer needs with our bilingual church family.", "Comparte actualizaciones, testimonios y peticiones de oración con nuestra familia bilingüe.")}
             </p>
           </div>
@@ -397,36 +397,36 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
         {activeTab === "community" ? (
           <>
             <section className="space-y-4">
-              {isLoading && <p className="text-sm text-neutral-400">{t("Loading posts...", "Cargando publicaciones...")}</p>}
-              {isError && <p className="text-sm text-red-400">{t("Error loading posts.", "Error al cargar publicaciones.")} {String((error as Error)?.message ?? error)}</p>}
+              {isLoading && <p className="text-sm text-neutral-600">{t("Loading posts...", "Cargando publicaciones...")}</p>}
+              {isError && <p className="text-sm text-red-600">{t("Error loading posts.", "Error al cargar publicaciones.")} {String((error as Error)?.message ?? error)}</p>}
 
               <div className="space-y-4">
                 {posts.map((post) => {
                   const liked = likedPostIds.has(post.id);
                   return (
-                    <article key={post.id} className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/70">
+                    <article key={post.id} className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
                       <div className="flex items-center gap-3 px-5 pt-5 pb-2">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600/20 text-sm font-bold text-red-400">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-600">
                           {getInitials(post.authorName)}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-white">{post.authorName}</p>
+                          <p className="truncate text-sm font-semibold text-neutral-900">{post.authorName}</p>
                           <p className="text-xs text-neutral-500">{formatDate(post.createdAt)}</p>
                         </div>
                       </div>
 
                       <div className="px-5 pt-2 pb-3">
-                        <h3 className="mb-1 text-base font-bold text-white">{post.title}</h3>
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">{post.content}</p>
+                        <h3 className="mb-1 text-base font-bold text-neutral-900">{post.title}</h3>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">{post.content}</p>
                       </div>
 
-                      <div className="flex items-center gap-4 border-t border-neutral-800 px-5 py-3">
+                      <div className="flex items-center gap-4 border-t border-neutral-100 px-5 py-3">
                         <button
                           type="button"
                           onClick={() => handleLike(post.id)}
                           className={cn(
                             "flex items-center gap-1.5 text-sm transition-colors",
-                            liked ? "text-red-500" : "text-red-400/60 active:text-red-500"
+                            liked ? "text-red-500" : "text-neutral-400 active:text-red-500"
                           )}
                         >
                           <Heart 
@@ -442,7 +442,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                             setCommentDialogPostId(post.id);
                             setIsCommenting(false);
                           }}
-                          className="flex items-center gap-1.5 text-sm text-neutral-400 transition-colors active:text-white"
+                          className="flex items-center gap-1.5 text-sm text-neutral-400 transition-colors active:text-neutral-900"
                         >
                           <MessageCircle className="h-5 w-5" />
                           <span>{post.comments.length}</span>
@@ -461,14 +461,14 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
             </section>
 
             <Dialog open={commentDialogPostId !== null} onOpenChange={(open) => { if (!open) setCommentDialogPostId(null); }}>
-              <DialogContent className="flex max-h-[85vh] flex-col border-neutral-700 bg-neutral-900 text-white sm:max-w-lg">
+              <DialogContent className="flex max-h-[85vh] flex-col border-neutral-200 bg-white text-neutral-900 sm:max-w-lg shadow-2xl">
                 {commentDialogPost && (
                   <>
-                    <DialogHeader className="shrink-0 border-b border-neutral-800 pb-4">
+                    <DialogHeader className="shrink-0 border-b border-neutral-100 pb-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <DialogTitle className="text-white">{commentDialogPost.title}</DialogTitle>
-                          <div className="flex items-center gap-2 pt-1 text-xs text-neutral-400">
+                          <DialogTitle className="text-neutral-900">{commentDialogPost.title}</DialogTitle>
+                          <div className="flex items-center gap-2 pt-1 text-xs text-neutral-500">
                             <span>{commentDialogPost.authorName}</span>
                             <span>•</span>
                             <span>{formatDate(commentDialogPost.createdAt)}</span>
@@ -477,7 +477,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                         <button
                           type="button"
                           onClick={() => setCommentDialogPostId(null)}
-                          className="rounded-full p-1 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                          className="rounded-full p-1 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-50 transition-colors"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -485,7 +485,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                     </DialogHeader>
 
                     <div className="flex-1 space-y-4 overflow-y-auto py-4">
-                      <p className="whitespace-pre-wrap text-sm text-neutral-300">{commentDialogPost.content}</p>
+                      <p className="whitespace-pre-wrap text-sm text-neutral-700">{commentDialogPost.content}</p>
 
                       <div className="flex items-center gap-4">
                         <button
@@ -502,7 +502,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                         />
                           <span>{commentDialogPost.likeCount || 0}</span>
                         </button>
-                        <div className="h-px bg-neutral-800 flex-1" />
+                        <div className="h-px bg-neutral-100 flex-1" />
                       </div>
 
                       <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
@@ -532,7 +532,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                     </div>
 
                     <form
-                      className="shrink-0 flex items-end gap-2 border-t border-neutral-800 pt-3"
+                      className="shrink-0 flex items-end gap-2 border-t border-neutral-100 pt-3"
                       onSubmit={(event) => handleSubmitComment(event, commentDialogPost.id)}
                     >
                       <div className="flex-1 space-y-2">
@@ -615,14 +615,14 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
         ) : (
           <>
             <section className="space-y-6">
-              <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/70 p-5">
+              <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
                 <div className="flex items-start gap-3">
-                  <Mail className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+                  <Mail className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-sm font-medium text-neutral-900">
                       {t("Need to share something more personal?", "¿Necesitas compartir algo más personal?")}
                     </p>
-                    <p className="mt-1 text-xs text-neutral-400">
+                    <p className="mt-1 text-xs text-neutral-600">
                       {t(
                         "If your prayer request is private, you can reach out to us directly. Your message will be kept confidential.",
                         "Si tu petición de oración es privada, puedes comunicarte con nosotros directamente. Tu mensaje será confidencial."
@@ -631,7 +631,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                     <Button
                       type="button"
                       onClick={() => onNavigate?.("contact")}
-                      className="mt-3 bg-red-600 hover:bg-red-700 text-sm"
+                      className="mt-3 bg-red-600 hover:bg-red-700 text-sm text-white"
                       size="sm"
                     >
                       <Mail className="mr-2 h-4 w-4" />
@@ -642,10 +642,10 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
               </div>
 
               <div>
-                <h2 className="text-2xl font-semibold text-white">
+                <h2 className="text-2xl font-semibold text-neutral-900">
                   {t("Prayer Requests", "Peticiones de Oración")}
                 </h2>
-                <p className="text-sm text-neutral-400">
+                <p className="text-sm text-neutral-600">
                   {t("Lift each other up in prayer and stand together in faith.", "Elévense mutuamente en oración y permanezcan juntos en fe.")}
                 </p>
               </div>
@@ -656,28 +656,28 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                 {prayers.map((prayer) => {
                   const prayed = prayedPrayerIds.has(prayer.id);
                   return (
-                    <article key={prayer.id} className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/70">
+                    <article key={prayer.id} className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
                       <div className="flex items-center gap-3 px-5 pt-5 pb-2">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600/20 text-sm font-bold text-red-400">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-600">
                           <User className="h-5 w-5" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-white">
+                          <p className="truncate text-sm font-semibold text-neutral-900">
                             {prayer.isAnonymous ? t("Anonymous", "Anónimo") : prayer.userName || t("Guest", "Invitado")}
                           </p>
                           <p className="text-xs text-neutral-500">{formatDate(prayer.createdAt)}</p>
                         </div>
-                        <span className="rounded-full bg-red-600/20 px-3 py-1 text-xs font-medium text-red-400">
+                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600">
                           🙏 {prayer.prayerCount}
                         </span>
                       </div>
 
                       <div className="px-5 pt-2 pb-3">
-                        <h3 className="mb-1 text-base font-bold text-white">{prayer.title}</h3>
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">{prayer.description}</p>
+                        <h3 className="mb-1 text-base font-bold text-neutral-900">{prayer.title}</h3>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">{prayer.description}</p>
                       </div>
 
-                      <div className="border-t border-neutral-800 px-5 py-3">
+                      <div className="border-t border-neutral-100 px-5 py-3">
                         <Button
                           type="button"
                           onClick={() => handlePray(prayer.id)}

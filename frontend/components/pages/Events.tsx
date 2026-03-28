@@ -116,7 +116,7 @@ export function Events() {
   return (
     <div className="container mx-auto space-y-6 px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-3xl font-bold text-neutral-900">
           {t("Church Events", "Eventos de la Iglesia")}
         </h1>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -126,57 +126,57 @@ export function Events() {
               {t("Create Event", "Crear Evento")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-neutral-800 bg-neutral-900">
+          <DialogContent className="border-neutral-200 bg-white shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-neutral-900">
                 {t("Create New Event", "Crear Nuevo Evento")}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateEvent} className="space-y-4">
               <div>
-                <Label htmlFor="titleEn" className="text-neutral-200">
+                <Label htmlFor="titleEn" className="text-neutral-700">
                   {t("Title (English)", "Título (Inglés)")}
                 </Label>
                 <Input
                   id="titleEn"
                   name="titleEn"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="titleEs" className="text-neutral-200">
+                <Label htmlFor="titleEs" className="text-neutral-700">
                   {t("Title (Spanish)", "Título (Español)")}
                 </Label>
                 <Input
                   id="titleEs"
                   name="titleEs"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="descriptionEn" className="text-neutral-200">
+                <Label htmlFor="descriptionEn" className="text-neutral-700">
                   {t("Description (English)", "Descripción (Inglés)")}
                 </Label>
                 <Textarea
                   id="descriptionEn"
                   name="descriptionEn"
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="descriptionEs" className="text-neutral-200">
+                <Label htmlFor="descriptionEs" className="text-neutral-700">
                   {t("Description (Spanish)", "Descripción (Español)")}
                 </Label>
                 <Textarea
                   id="descriptionEs"
                   name="descriptionEs"
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="eventDate" className="text-neutral-200">
+                <Label htmlFor="eventDate" className="text-neutral-700">
                   {t("Date & Time", "Fecha y Hora")}
                 </Label>
                 <Input
@@ -184,22 +184,22 @@ export function Events() {
                   name="eventDate"
                   type="datetime-local"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="location" className="text-neutral-200">
+                <Label htmlFor="location" className="text-neutral-700">
                   {t("Location", "Ubicación")}
                 </Label>
                 <Input
                   id="location"
                   name="location"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="maxAttendees" className="text-neutral-200">
+                <Label htmlFor="maxAttendees" className="text-neutral-700">
                   {t("Max Attendees (optional)", "Máximo de Asistentes (opcional)")}
                 </Label>
                 <Input
@@ -207,11 +207,11 @@ export function Events() {
                   name="maxAttendees"
                   type="number"
                   min="1"
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="passcode" className="text-neutral-200">
+                <Label htmlFor="passcode" className="text-neutral-700">
                   {t("Passcode", "Contraseña")}
                 </Label>
                 <Input
@@ -220,10 +220,10 @@ export function Events() {
                   type="password"
                   required
                   placeholder={t("Enter a passcode for editing/deleting", "Ingrese una contraseña para editar/eliminar")}
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
+              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">
                 {t("Create Event", "Crear Evento")}
               </Button>
             </form>
@@ -233,27 +233,27 @@ export function Events() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {eventsData?.events.map((event: Event) => (
-          <Card key={event.id} className="border-neutral-800 bg-neutral-900/50">
+          <Card key={event.id} className="border-neutral-200 bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">
+              <CardTitle className="text-neutral-900">
                 {language === "en" ? event.titleEn : event.titleEs}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-neutral-300">
+              <p className="text-sm text-neutral-700">
                 {language === "en" ? event.descriptionEn : event.descriptionEs}
               </p>
-              <div className="space-y-2 text-sm text-neutral-400">
+              <div className="space-y-2 text-sm text-neutral-600">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 text-red-600" />
                   <span>{new Date(event.eventDate).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="h-4 w-4 text-red-600" />
                   <span>{event.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+                  <Users className="h-4 w-4 text-red-600" />
                   <span>
                     {event.rsvpCount} {t("attending", "asistirán")}
                     {event.maxAttendees && ` / ${event.maxAttendees}`}
@@ -275,15 +275,15 @@ export function Events() {
       </div>
 
       <Dialog open={showRsvpDialog} onOpenChange={setShowRsvpDialog}>
-        <DialogContent className="border-neutral-800 bg-neutral-900">
+        <DialogContent className="border-neutral-200 bg-white shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-white">
+            <DialogTitle className="text-neutral-900">
               {t("RSVP for Event", "Confirmar Asistencia al Evento")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleRsvp} className="space-y-4">
             <div>
-              <Label htmlFor="attendees" className="text-neutral-200">
+              <Label htmlFor="attendees" className="text-neutral-700">
                 {t("Number of Attendees", "Número de Asistentes")}
               </Label>
               <Input
@@ -293,10 +293,10 @@ export function Events() {
                 min="1"
                 defaultValue="1"
                 required
-                className="border-neutral-700 bg-neutral-800 text-white"
+                className="border-neutral-300 bg-white text-neutral-900"
               />
             </div>
-            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
+            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">
               {t("Confirm RSVP", "Confirmar Asistencia")}
             </Button>
           </form>

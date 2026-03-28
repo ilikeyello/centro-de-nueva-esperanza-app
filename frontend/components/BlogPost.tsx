@@ -59,7 +59,7 @@ export function BlogPost({
       case 'high': return 'border-orange-500 bg-orange-50 dark:bg-orange-950/20';
       case 'normal': return 'border-blue-500 bg-blue-50 dark:bg-blue-950/20';
       case 'low': return 'border-gray-500 bg-gray-50 dark:bg-gray-950/20';
-      default: return 'border-red-600 bg-neutral-50 dark:bg-neutral-900';
+      default: return 'border-red-600 bg-white';
     }
   };
 
@@ -86,8 +86,8 @@ export function BlogPost({
       {/* Content */}
       <div className="p-6 md:p-8">
         {/* Meta Information */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full font-medium">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 mb-4">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-600 rounded-full font-medium">
             {getTypeLabel()}
           </span>
           
@@ -119,13 +119,13 @@ export function BlogPost({
         </div>
         
         {/* Title */}
-        <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white mb-4 serif-heading">
+        <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4 serif-heading">
           {title}
         </h1>
         
         {/* Content */}
         <div 
-          className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-red-600 prose-a:text-red-600 hover:prose-a:text-red-500 prose-strong:text-neutral-900 dark:prose-invert"
+          className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-red-600 prose-a:text-red-600 hover:prose-a:text-red-500 prose-strong:text-neutral-900"
           dangerouslySetInnerHTML={{ __html: content }}
         />
         

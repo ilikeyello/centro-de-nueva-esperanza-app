@@ -89,17 +89,17 @@ export function Announcements() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return "border-orange-600 bg-orange-950/30";
+        return "border-red-500 bg-red-50";
       case "normal":
       default:
-        return "border-neutral-700 bg-neutral-900/50";
+        return "border-neutral-200 bg-white";
     }
   };
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-3xl font-bold text-neutral-900">
           {t("Church Announcements", "Anuncios de la Iglesia")}
         </h1>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -109,59 +109,59 @@ export function Announcements() {
               {t("New Announcement", "Nuevo Anuncio")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-neutral-800 bg-neutral-900">
+          <DialogContent className="border-neutral-200 bg-white shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-neutral-900">
                 {t("Create Announcement", "Crear Anuncio")}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateAnnouncement} className="space-y-4">
               <div>
-                <Label htmlFor="titleEn" className="text-neutral-200">
+                <Label htmlFor="titleEn" className="text-neutral-700">
                   {t("Title (English)", "Título (Inglés)")}
                 </Label>
                 <Input
                   id="titleEn"
                   name="titleEn"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="titleEs" className="text-neutral-200">
+                <Label htmlFor="titleEs" className="text-neutral-700">
                   {t("Title (Spanish)", "Título (Español)")}
                 </Label>
                 <Input
                   id="titleEs"
                   name="titleEs"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="contentEn" className="text-neutral-200">
+                <Label htmlFor="contentEn" className="text-neutral-700">
                   {t("Content (English)", "Contenido (Inglés)")}
                 </Label>
                 <Textarea
                   id="contentEn"
                   name="contentEn"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="contentEs" className="text-neutral-200">
+                <Label htmlFor="contentEs" className="text-neutral-700">
                   {t("Content (Spanish)", "Contenido (Español)")}
                 </Label>
                 <Textarea
                   id="contentEs"
                   name="contentEs"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label htmlFor="imageUrl" className="text-neutral-200">
+                <Label htmlFor="imageUrl" className="text-neutral-700">
                   {t("Image URL (optional)", "URL de imagen (opcional)")}
                 </Label>
                 <Input
@@ -169,25 +169,25 @@ export function Announcements() {
                   name="imageUrl"
                   type="url"
                   placeholder={t("https://example.com/image.jpg", "https://ejemplo.com/imagen.jpg")}
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
               <div>
-                <Label className="text-neutral-200">
+                <Label className="text-neutral-700">
                   {t("Priority", "Prioridad")}
                 </Label>
                 <Select value={priority} onValueChange={(v) => setPriority(v as any)}>
-                  <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                  <SelectTrigger className="border-neutral-300 bg-white text-neutral-900">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-neutral-700 bg-neutral-800">
+                  <SelectContent className="border-neutral-200 bg-white">
                     <SelectItem value="normal">{t("Normal", "Normal")}</SelectItem>
                     <SelectItem value="urgent">{t("Urgent", "Urgente")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="passcode" className="text-neutral-200">
+                <Label htmlFor="passcode" className="text-neutral-700">
                   {t("Passcode", "Contraseña")}
                 </Label>
                 <Input
@@ -196,10 +196,10 @@ export function Announcements() {
                   type="password"
                   required
                   placeholder={t("Enter a passcode for editing/deleting", "Ingrese una contraseña para editar/eliminar")}
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-neutral-300 bg-white text-neutral-900"
                 />
               </div>
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
+              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">
                 {t("Create Announcement", "Crear Anuncio")}
               </Button>
             </form>
@@ -216,11 +216,11 @@ export function Announcements() {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="flex items-center gap-2 text-white">
+                  <CardTitle className="flex items-center gap-2 text-neutral-900">
                     {getPriorityIcon(announcement.priority)}
                     {language === "en" ? announcement.titleEn : announcement.titleEs}
                   </CardTitle>
-                  <p className="mt-1 text-xs text-neutral-400">
+                  <p className="mt-1 text-xs text-neutral-500">
                     {new Date(announcement.createdAt).toLocaleDateString()}
                   </p>
                 </div>
@@ -228,7 +228,7 @@ export function Announcements() {
             </CardHeader>
             <CardContent>
               {announcement.imageUrl && (
-                <div className="mb-3 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
+                <div className="mb-3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
                   <img
                     src={announcement.imageUrl}
                     alt={language === "en" ? announcement.titleEn : announcement.titleEs}
@@ -236,7 +236,7 @@ export function Announcements() {
                   />
                 </div>
               )}
-              <p className="whitespace-pre-wrap text-neutral-300">
+              <p className="whitespace-pre-wrap text-neutral-700">
                 {language === "en" ? announcement.contentEn : announcement.contentEs}
               </p>
             </CardContent>
