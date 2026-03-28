@@ -389,12 +389,12 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     isActive
                       ? "text-warm-red bg-warm-red/10"
                       : isTransparent
-                        ? "text-white drop-shadow-md hover:text-warm-red hover:bg-white/10 backdrop-blur-sm"
+                        ? "!text-white hover:text-warm-red hover:bg-warm-red/5"
                         : "text-neutral-700 hover:text-warm-red hover:bg-warm-red/5"
                   )}
                 >
-                  <Icon className={cn("h-5 w-5 md:h-5 md:w-5", isActive && "text-warm-red", isTransparent && !isActive && "text-white drop-shadow-sm")} />
-                  <span className={cn("text-xs font-medium whitespace-nowrap md:text-sm", isActive ? "text-warm-red" : isTransparent && "text-white drop-shadow-sm")}>
+                  <Icon className={cn("h-5 w-5 md:h-5 md:w-5", isActive && "text-warm-red", isTransparent && !isActive && "!text-white")} />
+                  <span className={cn("text-xs font-medium whitespace-nowrap md:text-sm", isActive ? "text-warm-red" : isTransparent && "!text-white")}>
                     {t(item.labelEn, item.labelEs)}
                   </span>
                 </button>
