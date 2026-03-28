@@ -300,6 +300,12 @@ export function Home({ onNavigate }: HomeProps) {
                 )}
               </p>
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-neutral-700">
+                {churchInfo?.address && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-warm-red" />
+                    <span>{churchInfo.address}</span>
+                  </div>
+                )}
                 {churchInfo?.service_times ? (
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-warm-red" />
@@ -368,14 +374,29 @@ export function Home({ onNavigate }: HomeProps) {
                 )}
               </p>
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-neutral-700">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-warm-red" />
-                  <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-warm-red" />
-                  <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
-                </div>
+                {churchInfo?.address && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-warm-red" />
+                    <span>{churchInfo.address}</span>
+                  </div>
+                )}
+                {churchInfo?.service_times ? (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-warm-red" />
+                    <span>{churchInfo.service_times}</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-warm-red" />
+                      <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-warm-red" />
+                      <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}

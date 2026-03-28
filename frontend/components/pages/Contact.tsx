@@ -104,60 +104,8 @@ export function Contact({ onNavigate }: ContactProps) {
             </div>
           </div>
 
-          {churchInfo.facebookPageUrl && (
-            <div className="flex items-start gap-3">
-              <Facebook className="mt-1 h-5 w-5 text-warm-red" />
-              <div>
-                <p className="font-semibold text-neutral-900">
-                  {t("Facebook", "Facebook")}
-                </p>
-                <a
-                  href={churchInfo.facebookPageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-neutral-700 hover:text-warm-red"
-                >
-                  {t("Visit our Facebook page", "Visita nuestra página de Facebook")}
-                </a>
-              </div>
-            </div>
-          )}
-
-          {churchInfo.youtubeUrl && (
-            <div className="flex items-start gap-3">
-              <Youtube className="mt-1 h-5 w-5 text-warm-red" />
-              <div>
-                <p className="font-semibold text-neutral-900">
-                  {t("YouTube", "YouTube")}
-                </p>
-                <a
-                  href={churchInfo.youtubeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-neutral-700 hover:text-warm-red"
-                >
-                  {t("Visit our YouTube channel", "Visita nuestro canal de YouTube")}
-                </a>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
-
-      {churchInfo.description && (
-        <Card className="warm-card">
-          <CardHeader>
-            <CardTitle className="serif-heading text-neutral-900">
-              {t("About Us", "Sobre Nosotros")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="leading-relaxed text-neutral-700">
-              {churchInfo.description}
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

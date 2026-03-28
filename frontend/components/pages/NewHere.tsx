@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Sparkles, Users, Coffee, Clock, MapPin } from "lucide-react";
+import { ArrowLeft, Sparkles, Users, Coffee, Clock, MapPin, Facebook, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
@@ -66,6 +66,32 @@ export function NewHere({ onNavigate }: NewHereProps) {
               "Estamos emocionados de darte la bienvenida. Esto es lo que puedes esperar cuando te unas a nosotros para adorar y hacer comunidad."
             )}
           </p>
+          {(churchInfo?.facebook_page_url || churchInfo?.youtube_url) && (
+            <div className="mt-4 flex gap-3">
+              {churchInfo.facebook_page_url && (
+                <a
+                  href={churchInfo.facebook_page_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red text-white hover:bg-light-warm-red transition-colors shadow-sm"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+              )}
+              {churchInfo.youtube_url && (
+                <a
+                  href={churchInfo.youtube_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red text-white hover:bg-light-warm-red transition-colors shadow-sm"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-5 w-5" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
