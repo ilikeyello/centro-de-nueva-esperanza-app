@@ -489,8 +489,8 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                               ? 'bg-red-100 border-red-400 text-red-800 opacity-100'
                               : 'bg-neutral-100 border-neutral-300 text-neutral-500 opacity-50'
                             : isSelected
-                            ? 'bg-warm-red border-warm-red text-white ring-2 ring-warm-red/50'
-                            : 'bg-white border-neutral-300 hover:bg-neutral-50 hover:border-warm-red text-neutral-900'
+                            ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-600/30'
+                            : 'bg-white border-neutral-300 hover:bg-neutral-50 hover:border-blue-500 text-neutral-900'
                         }`}
                       >
                         <span className="font-bold mr-2 opacity-50">{String.fromCharCode(65 + index)}.</span>
