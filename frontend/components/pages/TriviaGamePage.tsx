@@ -135,13 +135,13 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       const shuffledOptions_en = shuffledIndices.map(i => options_en[i]);
       const shuffledOptions_es = shuffledIndices.map(i => options_es[i]);
       
-      // Update correct answer index
-      const newCorrectIndex = shuffledIndices.indexOf(question.correct_answer);
+      // Update correct answer index - Ensure correct_answer is treated as a number
+      const newCorrectIndex = shuffledIndices.indexOf(Number(question.correct_answer));
       
       return {
         ...question,
-        options_en: JSON.stringify(shuffledOptions_en),
-        options_es: JSON.stringify(shuffledOptions_es),
+        options_en: shuffledOptions_en, // Store as array to avoid double stringification
+        options_es: shuffledOptions_es,
         correct_answer: newCorrectIndex
       };
     });
@@ -272,13 +272,13 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
       const shuffledOptions_en = shuffledIndices.map(i => options_en[i]);
       const shuffledOptions_es = shuffledIndices.map(i => options_es[i]);
       
-      // Update correct answer index
-      const newCorrectIndex = shuffledIndices.indexOf(question.correct_answer);
+      // Update correct answer index - Ensure correct_answer is treated as a number
+      const newCorrectIndex = shuffledIndices.indexOf(Number(question.correct_answer));
       
       return {
         ...question,
-        options_en: JSON.stringify(shuffledOptions_en),
-        options_es: JSON.stringify(shuffledOptions_es),
+        options_en: shuffledOptions_en, // Store as array to avoid double stringification
+        options_es: shuffledOptions_es,
         correct_answer: newCorrectIndex
       };
     });
@@ -286,6 +286,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
     setGameState(prev => ({
       ...prev,
       status: 'playing',
+      questions: processedQuestions, // FIX: must update questions in state
       currentQuestionIndex: 0,
       userAnswers: [],
       score: 0,
