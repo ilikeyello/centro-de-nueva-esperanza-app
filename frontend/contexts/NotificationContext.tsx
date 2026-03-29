@@ -79,7 +79,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Subscribe to push notifications
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array('BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E')
+        applicationServerKey: urlBase64ToUint8Array('BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E') as any
       });
 
       setSubscription(sub);
@@ -180,7 +180,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     for (let i = 0; i < rawData.length; ++i) {
       outputArray[i] = rawData.charCodeAt(i);
     }
-    return outputArray as any;
+    return outputArray;
   }
 
   const value: NotificationContextType = {

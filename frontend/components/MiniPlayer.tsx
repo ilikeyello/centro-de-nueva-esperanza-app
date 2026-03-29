@@ -48,7 +48,6 @@ export default function MiniPlayer() {
           className="h-[180px] w-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
-          playsInline
         />
       </div>
     </div>

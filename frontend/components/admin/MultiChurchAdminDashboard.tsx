@@ -75,10 +75,10 @@ export function MultiChurchAdminDashboard() {
     priority: "normal", image_url: ""
   });
 
-  // Supabase client (you'll need to configure this)
+  // Supabase client (configured for Vite env)
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY!
+    import.meta.env.VITE_SUPABASE_URL || "",
+    import.meta.env.VITE_SUPABASE_ANON_KEY || ""
   );
 
   useEffect(() => {

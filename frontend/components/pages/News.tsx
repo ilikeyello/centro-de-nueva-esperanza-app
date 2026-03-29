@@ -574,8 +574,8 @@ export function News() {
                     location={eventItem.location}
                     type="event"
                     eventDate={eventItem.eventDate}
-                    maxAttendees={eventItem.maxAttendees}
-                    rsvpCount={eventItem.rsvpCount}
+                    maxAttendees={eventItem.maxAttendees || 0}
+                    rsvpCount={eventItem.rsvpCount || 0}
                   />
                   <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button

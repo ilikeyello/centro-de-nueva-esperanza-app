@@ -406,7 +406,6 @@ export function Media({ onStartMusic }: MediaProps) {
                   className="absolute inset-0 h-full w-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
-                  playsInline
                   onLoad={() => {
                     console.log('Livestream iframe loaded with src:', getEmbedUrl(livestreamUrl));
                   }}
@@ -461,7 +460,6 @@ export function Media({ onStartMusic }: MediaProps) {
                     className="h-full w-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
-                    playsInline
                   />
                 )}
                 {!loadingSermons && !effectiveSelectedSermon && (
