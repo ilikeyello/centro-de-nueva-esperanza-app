@@ -38,15 +38,18 @@ const loadLevels = async () => {
   try {
     const res = await fetch(`${base}/trivia/levels`);
     if (res.ok) {
-      const levelsData = await res.json();
-      const formattedLevels = levelsData.levels.map((level: any) => ({
+      const data = await res.json();
+      // Handle both { levels: [] } (Encore) and [] (Supabase)
+      const levelsArray = Array.isArray(data) ? data : (data.levels || []);
+      
+      const formattedLevels = levelsArray.map((level: any) => ({
         id: level.id,
-        name: level.name,
-        description: level.description || "",
+        name: level.name_en || level.name || "Untitled Level",
+        description: level.description_en || level.description || "",
         targetGroup: level.target_group || "",
-        shuffleQuestions: level.shuffle_questions,
-        timeLimit: level.time_limit,
-        passingScore: level.passing_score
+        shuffleQuestions: level.shuffle_questions || false,
+        timeLimit: level.time_limit || 0,
+        passingScore: level.passing_score || 70
       }));
       return formattedLevels;
     }
@@ -59,22 +62,35 @@ const loadQuestions = async (levelId: string) => {
   try {
     const res = await fetch(`${base}/trivia/questions?level_id=${levelId}`);
     if (res.ok) {
-      const questionsData = await res.json();
-      const formattedQuestions = questionsData.questions.map((q: any) => ({
-        id: q.id,
-        questionEn: q.question_en,
-        questionEs: q.question_es,
-        options: {
-          en: q.options_en,
-          es: q.options_es
-        },
-        level: q.level_id,
-        // Convert database 1-based index (1-4) to internal 0-based index (0-3).
-        // Defensive: ensure we never get a negative index if the database already has a 0.
-        correctAnswer: typeof q.correct_answer === 'number' 
-          ? Math.max(0, q.correct_answer - 1) 
-          : Math.max(0, parseInt(q.correct_answer || '1') - 1),
-      }));
+      const data = await res.json();
+      // Handle both { questions: [] } (Encore) and [] (Supabase)
+      const questionsArray = Array.isArray(data) ? data : (data.questions || []);
+
+      const formattedQuestions = questionsArray.map((q: any) => {
+        // Handle both older column-style and newer array-style options
+        const optionsEn = q.options_en || [q.option_a_en, q.option_b_en, q.option_c_en, q.option_d_en];
+        const optionsEs = q.options_es || [q.option_a_es, q.option_b_es, q.option_c_es, q.option_d_es];
+
+        // USER RULE: Correct answer is in slot 1 (index 0). 
+        // We handle 1, 0, or undefined/null by treating all as index 0.
+        // Old DB data might have 1, new has 0.
+        let rawCorrect = typeof q.correct_answer === 'number' ? q.correct_answer : parseInt(q.correct_answer || '1');
+        const finalCorrectIndex = rawCorrect > 0 ? rawCorrect - 1 : 0;
+
+        return {
+          id: q.id,
+          questionEn: q.question_en,
+          questionEs: q.question_es,
+          options: {
+            en: optionsEn,
+            es: optionsEs
+          },
+          level: q.level_id,
+          correctAnswer: finalCorrectIndex,
+          category: q.category || 'General',
+          reference: q.reference
+        };
+      });
       return formattedQuestions;
     }
   } catch (err) {
@@ -84,7 +100,7 @@ const loadQuestions = async (levelId: string) => {
 
 export function BibleTrivia({ onBack }: { onBack?: () => void }) {
   const { language, t } = useLanguage();
-  const [selectedLevel, setSelectedLevel] = useState<string>('kids');
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const [levels, setLevels] = useState<TriviaLevel[]>([]);
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -123,8 +139,11 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
 
   // Load levels and questions from local storage
   useEffect(() => {
-    loadLevels().then(levels => {
-      if (levels) setLevels(levels);
+    loadLevels().then(lvls => {
+      if (lvls && lvls.length > 0) {
+        setLevels(lvls);
+        setSelectedLevel(lvls[0].id); // Default to the first found level (e.g. 'Easy')
+      }
     });
   }, []);
 
