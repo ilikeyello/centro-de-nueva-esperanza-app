@@ -379,6 +379,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
             options_en: q.options_en,
             options_es: q.options_es || q.options_en,
             correct_answer: Number(q.correct_answer) + 1, // Convert 0-based to 1-based for DB
+            reference: q.reference || null,
             category: q.category || 'General',
             level_id: q.level_id
           };
@@ -635,61 +636,86 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                           {levelQuestions.map((q, qIndex) => (
                             <div key={q.id} className="relative group/q bg-neutral-900/40 p-4 rounded-lg border border-neutral-800 hover:border-neutral-700 transition-colors">
                               <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 mb-3">
-                                <div className="space-y-2">
-                                  <div className="flex items-center gap-2">
-                                    <Input
-                                      value={q.question_en}
-                                      onChange={e => {
-                                        handleQuestionChange(q.id, 'question_en', e.target.value);
-                                        // Auto-sync Spanish if empty
-                                        if (!q.question_es || q.question_es === q.question_en) {
-                                          handleQuestionChange(q.id, 'question_es', e.target.value);
-                                        }
-                                      }}
-                                      className="bg-neutral-950 border-neutral-800 text-white font-medium italic h-9"
-                                      placeholder={t("Question text (EN)...", "Texto de la pregunta (ING)...")}
-                                    />
-                                    <Input
-                                      value={q.category || 'General'}
-                                      onChange={e => handleQuestionChange(q.id, 'category', e.target.value)}
-                                      className="bg-neutral-950 border-neutral-800 text-neutral-400 font-bold uppercase text-[0.6rem] w-32 h-9"
-                                      placeholder={t("Category...", "Categoría...")}
-                                    />
-                                  </div>
-                                  {showTranslations && (
-                                    <Input
-                                      value={q.question_es || ''}
-                                      onChange={e => handleQuestionChange(q.id, 'question_es', e.target.value)}
-                                      className="bg-neutral-950/50 border-neutral-800 text-neutral-300 font-medium italic h-8 border-dashed"
-                                      placeholder={t("Spanish translation...", "Traducción al español...")}
-                                    />
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Label className="text-[0.6rem] uppercase text-neutral-500 whitespace-nowrap">Correct:</Label>
-                                  <Select 
-                                    value={String(q.correct_answer)} 
-                                    onValueChange={val => handleQuestionChange(q.id, 'correct_answer', parseInt(val))}
-                                  >
-                                    <SelectTrigger className="bg-neutral-950 border-neutral-800 h-9 text-xs">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
-                                      <SelectItem value="0">A</SelectItem>
-                                      <SelectItem value="1">B</SelectItem>
-                                      <SelectItem value="2">C</SelectItem>
-                                      <SelectItem value="3">D</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-9 w-9 text-neutral-600 hover:text-red-400 opacity-0 group-hover/q:opacity-100 transition-opacity"
-                                    onClick={() => stageQuestionDelete(q.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
+                                      <div className="flex-1 space-y-2">
+                                        <div className="grid grid-cols-[1fr_200px] gap-2">
+                                          <Input
+                                            value={q.question_en}
+                                            onChange={e => {
+                                              handleQuestionChange(q.id, 'question_en', e.target.value);
+                                              if (!q.question_es || q.question_es === q.question_en) {
+                                                handleQuestionChange(q.id, 'question_es', e.target.value);
+                                              }
+                                            }}
+                                            className="bg-neutral-950 border-neutral-800 text-white font-medium italic h-9"
+                                            placeholder={t("Question text (EN)...", "Texto de la pregunta (ING)...")}
+                                          />
+                                          <Input
+                                            value={q.category || 'General'}
+                                            onChange={e => handleQuestionChange(q.id, 'category', e.target.value)}
+                                            className="bg-neutral-950 border-neutral-800 text-neutral-400 font-bold uppercase text-[0.6rem] h-9"
+                                            placeholder={t("Category...", "Categoría...")}
+                                          />
+                                        </div>
+                                        <div className="grid grid-cols-[1fr_200px] gap-2">
+                                          {showTranslations && (
+                                            <Input
+                                              value={q.question_es || ''}
+                                              onChange={e => handleQuestionChange(q.id, 'question_es', e.target.value)}
+                                              className="bg-neutral-950/50 border-neutral-800 text-neutral-300 font-medium italic h-8 border-dashed"
+                                              placeholder={t("Spanish translation...", "Traducción al español...")}
+                                            />
+                                          )}
+                                          <Input
+                                            value={q.reference || ''}
+                                            onChange={e => handleQuestionChange(q.id, 'reference', e.target.value)}
+                                            className="bg-neutral-950 border-neutral-800 text-blue-400/70 text-[0.65rem] h-8 border-dashed"
+                                            placeholder={t("Biblical Reference (e.g., John 3:16)...", "Referencia (ej., Juan 3:16)...")}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-2">
+                                          <Label className="text-[0.6rem] uppercase text-neutral-500 whitespace-nowrap">Level:</Label>
+                                          <Select 
+                                            value={q.level_id} 
+                                            onValueChange={val => handleQuestionChange(q.id, 'level_id', val)}
+                                          >
+                                            <SelectTrigger className="bg-neutral-950 border-neutral-800 h-9 text-[0.65rem] w-28">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
+                                              {localLevels.map(l => (
+                                                <SelectItem key={l.id} value={l.id} className="text-xs">{l.name}</SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <Label className="text-[0.6rem] uppercase text-neutral-500 whitespace-nowrap">Correct:</Label>
+                                          <Select 
+                                            value={String(q.correct_answer)} 
+                                            onValueChange={val => handleQuestionChange(q.id, 'correct_answer', parseInt(val))}
+                                          >
+                                            <SelectTrigger className="bg-neutral-950 border-neutral-800 h-9 text-xs flex-1">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
+                                              <SelectItem value="0">A</SelectItem>
+                                              <SelectItem value="1">B</SelectItem>
+                                              <SelectItem value="2">C</SelectItem>
+                                              <SelectItem value="3">D</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-9 w-9 text-neutral-600 hover:text-red-400 opacity-0 group-hover/q:opacity-100 transition-opacity"
+                                            onClick={() => stageQuestionDelete(q.id)}
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </div>
                               </div>
                               
                               <div className="space-y-3">
@@ -728,7 +754,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                           <Label className="text-[0.65rem] font-bold uppercase text-red-400/60 block mb-1">{t("Quickly add new question", "Agregar nueva pregunta rápido")}</Label>
                           <div className="flex gap-3">
                             <div className="flex-1 space-y-2">
-                              <div className="flex gap-2">
+                              <div className="grid grid-cols-[1fr_200px] gap-2">
                                 <Input
                                   value={draft.question_en}
                                   onChange={e => {
@@ -744,18 +770,26 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                 <Input
                                   value={draft.category || 'General'}
                                   onChange={e => updateQuickAddDraft(levelId, 'category', e.target.value)}
-                                  className="bg-neutral-950 border-neutral-800 text-neutral-400 font-bold uppercase text-[0.6rem] w-32 h-9"
+                                  className="bg-neutral-950 border-neutral-800 text-neutral-400 font-bold uppercase text-[0.6rem] h-9"
                                   placeholder={t("Category...", "Categoría...")}
                                 />
                               </div>
-                              {showTranslations && (
+                              <div className="grid grid-cols-[1fr_200px] gap-2">
+                                {showTranslations && (
+                                  <Input
+                                    value={draft.question_es || ''}
+                                    onChange={e => updateQuickAddDraft(levelId, 'question_es', e.target.value)}
+                                    className="bg-neutral-950/50 border-neutral-800 text-neutral-300 font-medium italic h-8 border-dashed"
+                                    placeholder={t("Spanish translation...", "Traducción al español...")}
+                                  />
+                                )}
                                 <Input
-                                  value={draft.question_es || ''}
-                                  onChange={e => updateQuickAddDraft(levelId, 'question_es', e.target.value)}
-                                  className="bg-neutral-950/50 border-neutral-800 text-neutral-300 font-medium italic h-8 border-dashed"
-                                  placeholder={t("Spanish translation...", "Traducción al español...")}
+                                  value={draft.reference || ''}
+                                  onChange={e => updateQuickAddDraft(levelId, 'reference', e.target.value)}
+                                  className="bg-neutral-950 border-neutral-800 text-blue-400/70 text-[0.65rem] h-8 border-dashed"
+                                  placeholder={t("Reference (e.g., Genesis 1:1)...", "Referencia (ej., Génesis 1:1)...")}
                                 />
-                              )}
+                              </div>
                             </div>
                             <Button 
                               onClick={() => addLocalQuestion(levelId)}
