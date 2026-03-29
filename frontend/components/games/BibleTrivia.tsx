@@ -69,8 +69,11 @@ const loadQuestions = async (levelId: string) => {
           es: q.options_es
         },
         level: q.level_id,
-        // Convert database 1-based index to internal 0-based index
-        correctAnswer: typeof q.correct_answer === 'number' ? q.correct_answer - 1 : parseInt(q.correct_answer) - 1,
+        // Convert database 1-based index (1-4) to internal 0-based index (0-3).
+        // Defensive: ensure we never get a negative index if the database already has a 0.
+        correctAnswer: typeof q.correct_answer === 'number' 
+          ? Math.max(0, q.correct_answer - 1) 
+          : Math.max(0, parseInt(q.correct_answer || '1') - 1),
       }));
       return formattedQuestions;
     }
@@ -120,7 +123,9 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
 
   // Load levels and questions from local storage
   useEffect(() => {
-    loadLevels();
+    loadLevels().then(levels => {
+      if (levels) setLevels(levels);
+    });
   }, []);
 
   useEffect(() => {
@@ -492,7 +497,7 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
                 : selectedAnswer === -1
                 ? t("Time's up! The correct answer was:", "¡Se acabó el tiempo! La respuesta correcta era:")
                 : t(`Incorrect. The correct answer was: ${currentQuestion.options[language === "en" ? "en" : "es"][currentQuestion.correctAnswer]}`,
-                   `Incorrecto. La respuesta correcta era: ${currentQuestion.options[language === "en" ? "es" : "en"][currentQuestion.correctAnswer]}`)
+                   `Incorrecto. La respuesta correcta era: ${currentQuestion.options[language === "en" ? "en" : "es"][currentQuestion.correctAnswer]}`)
               }
               {selectedAnswer === -1 && (
                 <div className="mt-1">
