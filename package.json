@@ -8,8 +8,7 @@
     "next-app"
   ],
   "scripts": {
-    "build": "bun run --filter frontend build",
-    "install-all": "bun install"
+    "build": "cd frontend && bun install && bun run build"
   },
   "dependencies": {
     "@clerk/clerk-js": "^5.120.0",
