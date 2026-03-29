@@ -29,6 +29,7 @@ interface TriviaQuestion {
     es: string[];
   };
   correctAnswer: number;
+  correctAnswerText: string;
   category: string;
   reference?: string;
   level: string;
@@ -198,7 +199,7 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
 
       // Find the new index of the correct answer by matching its text
       // This is reliable regardless of index encoding (0 vs 1-based)
-      const correctText = (q as any).correctAnswerText;
+      const correctText = q.correctAnswerText;
       const newCorrectIndex = shuffledEn.findIndex(opt => opt === correctText);
 
       return {
