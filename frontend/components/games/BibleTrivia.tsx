@@ -78,6 +78,8 @@ const loadQuestions = async (levelId: string) => {
       // Store the text so shuffling cannot break it.
       const correctAnswerText = optionsEn[0] || '';
 
+      console.log('[Trivia] Loaded Q:', q.question_en, '| correctAnswerText:', `"${correctAnswerText}"`, '| options:', optionsEn);
+
       return {
         id: q.id,
         questionEn: q.question_en,
@@ -199,9 +201,10 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
       const shuffledEs = mapping.map(i => q.options.es[i]);
 
       // Find the new index of the correct answer by matching its text
-      // This is reliable regardless of index encoding (0 vs 1-based)
       const correctText = q.correctAnswerText;
       const newCorrectIndex = shuffledEn.findIndex(opt => opt === correctText);
+
+      console.log('[Trivia] Shuffle Q:', q.questionEn, '| correctText:', `"${correctText}"`, '| shuffledEn:', shuffledEn, '| newCorrectIndex:', newCorrectIndex);
 
       return {
         ...q,
@@ -216,7 +219,9 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
   const handleAnswerSelect = (answerIndex: number) => {
     if (showResult) return;
     
-    setTimerActive(false); // Stop timer when answer is selected
+    console.log('[Trivia] Answer picked index:', answerIndex, '| correctAnswer index:', currentQuestion.correctAnswer, '| MATCH:', answerIndex === currentQuestion.correctAnswer);
+    
+    setTimerActive(false);
     setSelectedAnswer(answerIndex);
     setShowResult(true);
     
