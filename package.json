@@ -8,7 +8,7 @@
     "next-app"
   ],
   "scripts": {
-    "build": "cd frontend && bun install && bun run build && cp -r dist ../dist"
+    "build": "cd frontend && bun install && bun run build"
   },
   "dependencies": {
     "@clerk/clerk-js": "^5.120.0",

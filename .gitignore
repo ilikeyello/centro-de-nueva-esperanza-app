@@ -6,6 +6,7 @@ node_modules
 /encore.gen
 
 frontend/dist/
+/dist/
 
 # macOS
 .DS_Store
