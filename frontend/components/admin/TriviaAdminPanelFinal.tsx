@@ -182,7 +182,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
 
   const handleQuestionChange = (id: number | string, field: keyof TriviaQuestion, value: any) => {
     setLocalQuestions(prev => prev.map(q => 
-      q.id === id ? { ...q, [field]: value } : q
+      q.id === id ? { ...q, [field]: value, correct_answer: 0 } : q
     ));
   };
 
@@ -248,7 +248,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       question_es: draft.question_es || draft.question_en,
       options_en: draft.options_en || ['', '', '', ''],
       options_es: draft.options_es || draft.options_en || ['', '', '', ''],
-      correct_answer: draft.correct_answer || 0,
+      correct_answer: 0, // Always Option A
       category: draft.category || 'General',
       level_id: levelId,
       created_at: new Date().toISOString(),
@@ -691,21 +691,10 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                           </Select>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <Label className="text-[0.6rem] uppercase text-neutral-500 whitespace-nowrap">Correct:</Label>
-                                          <Select 
-                                            value={String(q.correct_answer)} 
-                                            onValueChange={val => handleQuestionChange(q.id, 'correct_answer', parseInt(val))}
-                                          >
-                                            <SelectTrigger className="bg-neutral-950 border-neutral-800 h-9 text-xs flex-1">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
-                                              <SelectItem value="0">A</SelectItem>
-                                              <SelectItem value="1">B</SelectItem>
-                                              <SelectItem value="2">C</SelectItem>
-                                              <SelectItem value="3">D</SelectItem>
-                                            </SelectContent>
-                                          </Select>
+                                          <div className="bg-green-600/20 text-green-400 px-3 h-9 rounded-md border border-green-600/30 flex items-center gap-2 text-[0.6rem] font-bold uppercase w-full">
+                                            <Check className="h-3.5 w-3.5" />
+                                            {t("Correct Answer: Option A", "Respuesta Correcta: Opción A")}
+                                          </div>
                                           <Button
                                             variant="ghost"
                                             size="icon"
@@ -723,7 +712,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                   {(q.options_en as string[]).map((opt, oIdx) => (
                                     <div key={oIdx} className="space-y-1">
                                       <div className="flex items-center gap-2">
-                                        <span className={`text-[0.6rem] font-bold w-4 h-4 flex items-center justify-center rounded-sm ${q.correct_answer === oIdx ? 'bg-green-600 text-white' : 'bg-neutral-800 text-neutral-500'}`}>
+                                        <span className={`text-[0.6rem] font-bold w-4 h-4 flex items-center justify-center rounded-sm ${oIdx === 0 ? 'bg-green-600 text-white' : 'bg-neutral-800 text-neutral-500'}`}>
                                           {String.fromCharCode(65 + oIdx)}
                                         </span>
                                         <Input
@@ -805,13 +794,9 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                               <div key={oIdx} className="space-y-1">
                                 <div className="flex items-center justify-between">
                                   <span className="text-[0.6rem] font-bold text-neutral-500">{String.fromCharCode(65 + oIdx)}</span>
-                                  <input 
-                                    type="radio" 
-                                    name={`correct-${levelId}`} 
-                                    checked={draft.correct_answer === oIdx}
-                                    onChange={() => updateQuickAddDraft(levelId, 'correct_answer', oIdx)}
-                                    className="h-3 w-3 accent-red-600"
-                                  />
+                                  {oIdx === 0 && (
+                                    <span className="text-[0.55rem] font-bold text-green-500 uppercase">{t("Correct", "Correcto")}</span>
+                                  )}
                                 </div>
                                 <Input
                                   value={opt}

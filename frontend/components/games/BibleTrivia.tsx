@@ -143,9 +143,10 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
     setShowResult(false);
     setScore(0);
     setGameComplete(false);
+
+    const currentLevel = levels.find(l => l.id === selectedLevel);
     
     // Set timer based on level
-    const currentLevel = levels.find(l => l.id === selectedLevel);
     if (currentLevel?.timeLimit && currentLevel.timeLimit > 0) {
       setTimeLeft(currentLevel.timeLimit);
       setTimerActive(true);
@@ -153,12 +154,45 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
       setTimeLeft(0);
       setTimerActive(false);
     }
-    
+
+    // Helper to shuffle any array
+    const shuffleArray = <T,>(array: T[]): { shuffled: T[], mapping: number[] } => {
+      const mapping = array.map((_, i) => i);
+      for (let i = mapping.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [mapping[i], mapping[j]] = [mapping[j], mapping[i]];
+      }
+      return {
+        shuffled: mapping.map(i => array[i]),
+        mapping
+      };
+    };
+
     // Shuffle questions if level requires it
+    let finalQuestions = [...questions];
     if (currentLevel?.shuffleQuestions) {
-      const shuffled = [...questions].sort(() => Math.random() - 0.5);
-      setQuestions(shuffled);
+      finalQuestions = finalQuestions.sort(() => Math.random() - 0.5);
     }
+
+    // ALWAYS shuffle answers for every question
+    finalQuestions = finalQuestions.map(q => {
+      const { shuffled: shuffledEn, mapping } = shuffleArray(q.options.en);
+      const shuffledEs = mapping.map(i => q.options.es[i]);
+      
+      // Find where the original correct answer moved to
+      const newCorrectIndex = mapping.indexOf(q.correctAnswer);
+      
+      return {
+        ...q,
+        options: {
+          en: shuffledEn,
+          es: shuffledEs
+        },
+        correctAnswer: newCorrectIndex
+      };
+    });
+
+    setQuestions(finalQuestions);
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
