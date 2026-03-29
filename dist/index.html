@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>CNE</title>
+    <meta name="theme-color" content="#F9F7F4" />
+    <meta name="msapplication-TileColor" content="#dc2626" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/apple-touch-icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/apple-touch-icon-512x512.png" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- PWA Manifest for Android -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Mobile Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CNE App" />
+    
+    <!-- Android fixes -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="CNE App" />
+    
+    
+    <!-- Safe area insets for notched devices -->
+    <style>
+      /* Core styles */
+      * {
+        box-sizing: border-box;
+      }
+      
+      html {
+        height: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background-color: #F9F7F4;
+        overflow-x: hidden;
+      }
+      
+      #root {
+        min-height: 100vh;
+        /* Safe area support */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-Nz5EkVNL.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DezwHtK8.css">
+  </head>
+  <body>
+    <div id="root">
+      <!-- Static splash shown instantly while JS loads -->
+      <div id="static-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;background:#F9F7F4;z-index:9999">
+        <img src="./cne_logo_transparent.png" alt="CNE Logo" width="180" height="180" style="width:180px;height:auto" />
+        <div style="width:2.5rem;height:2.5rem;border-radius:9999px;border:2px solid rgba(0,0,0,0.1);border-top-color:#c73e1d;animation:splash-spin .9s linear infinite"></div>
+      </div>
+      <style>@keyframes splash-spin{to{transform:rotate(360deg)}}</style>
+    </div>
+    <script>
+      // Safety: remove static splash after 5s even if React fails to mount
+      setTimeout(function(){var s=document.getElementById('static-splash');if(s)s.remove();},5000);
+      // Force new service worker to activate immediately
+      if('serviceWorker' in navigator){navigator.serviceWorker.getRegistration().then(function(r){if(r&&r.waiting)r.waiting.postMessage({type:'SKIP_WAITING'})});}
+    </script>
+  </body>
+</html>
