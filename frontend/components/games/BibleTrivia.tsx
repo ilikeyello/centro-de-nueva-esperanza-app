@@ -142,14 +142,16 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
     loadLevels().then(lvls => {
       if (lvls && lvls.length > 0) {
         setLevels(lvls);
-        setSelectedLevel(lvls[0].id); // Default to the first found level (e.g. 'Easy')
+        setSelectedLevel(lvls[0].id);
       }
     });
   }, []);
 
   useEffect(() => {
     if (selectedLevel) {
-      loadQuestions(selectedLevel).then((questions) => setQuestions(questions));
+      loadQuestions(selectedLevel).then((qs) => {
+        if (qs) setQuestions(qs);
+      });
     }
   }, [selectedLevel]);
 
