@@ -67,26 +67,22 @@ const loadQuestions = async (levelId: string) => {
       const questionsArray = Array.isArray(data) ? data : (data.questions || []);
 
       const formattedQuestions = questionsArray.map((q: any) => {
-        // Handle both older column-style and newer array-style options
-        const optionsEn = q.options_en || [q.option_a_en, q.option_b_en, q.option_c_en, q.option_d_en];
-        const optionsEs = q.options_es || [q.option_a_es, q.option_b_es, q.option_c_es, q.option_d_es];
+        const optionsEn: string[] = q.options_en || [];
+        const optionsEs: string[] = q.options_es || [];
 
-        // USER RULE: Correct answer is in slot 1 (index 0). 
-        // We handle 1, 0, or undefined/null by treating all as index 0.
-        // Old DB data might have 1, new has 0.
-        let rawCorrect = typeof q.correct_answer === 'number' ? q.correct_answer : parseInt(q.correct_answer || '1');
-        const finalCorrectIndex = rawCorrect > 0 ? rawCorrect - 1 : 0;
+        // USER RULE: The correct answer is ALWAYS the first option (index 0) as entered in Admin portal.
+        // DB stores correct_answer as 0 (new) or 1 (legacy 1-based). Both mean index 0.
+        // We store the actual text of the correct answer so shuffling cannot break it.
+        const correctAnswerText = optionsEn[0] || '';
 
         return {
           id: q.id,
           questionEn: q.question_en,
           questionEs: q.question_es,
-          options: {
-            en: optionsEn,
-            es: optionsEs
-          },
+          options: { en: optionsEn, es: optionsEs },
           level: q.level_id,
-          correctAnswer: finalCorrectIndex,
+          correctAnswerText,         // Store the TEXT of the correct answer
+          correctAnswer: 0,          // Will be recalculated after shuffle
           category: q.category || 'General',
           reference: q.reference
         };
@@ -199,17 +195,16 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
     finalQuestions = finalQuestions.map(q => {
       const { shuffled: shuffledEn, mapping } = shuffleArray(q.options.en);
       const shuffledEs = mapping.map(i => q.options.es[i]);
-      
-      // Find where the original correct answer moved to
-      const newCorrectIndex = mapping.indexOf(q.correctAnswer);
-      
+
+      // Find the new index of the correct answer by matching its text
+      // This is reliable regardless of index encoding (0 vs 1-based)
+      const correctText = (q as any).correctAnswerText;
+      const newCorrectIndex = shuffledEn.findIndex(opt => opt === correctText);
+
       return {
         ...q,
-        options: {
-          en: shuffledEn,
-          es: shuffledEs
-        },
-        correctAnswer: newCorrectIndex
+        options: { en: shuffledEn, es: shuffledEs },
+        correctAnswer: newCorrectIndex >= 0 ? newCorrectIndex : 0
       };
     });
 
