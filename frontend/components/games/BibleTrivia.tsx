@@ -4,11 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { CheckCircle, XCircle, RotateCcw, Trophy, ArrowLeft, Play } from "lucide-react";
+import { supabase } from "../../supabase-client";
 
-// API base URLs
-const base = import.meta.env.DEV
-  ? "http://127.0.0.1:4000"
-  : "https://prod-cne-sh82.encr.app";
+// Church org ID from environment
+const churchOrgId = import.meta.env.VITE_CHURCH_ORG_ID?.trim();
 
 interface TriviaLevel {
   id: string;
@@ -37,61 +36,63 @@ interface TriviaQuestion {
 
 const loadLevels = async () => {
   try {
-    const res = await fetch(`${base}/trivia/levels`);
-    if (res.ok) {
-      const data = await res.json();
-      // Handle both { levels: [] } (Encore) and [] (Supabase)
-      const levelsArray = Array.isArray(data) ? data : (data.levels || []);
-      
-      const formattedLevels = levelsArray.map((level: any) => ({
-        id: level.id,
-        name: level.name_en || level.name || "Untitled Level",
-        description: level.description_en || level.description || "",
-        targetGroup: level.target_group || "",
-        shuffleQuestions: level.shuffle_questions || false,
-        timeLimit: level.time_limit || 0,
-        passingScore: level.passing_score || 70
-      }));
-      return formattedLevels;
-    }
+    const { data, error } = await supabase
+      .from('trivia_levels')
+      .select('*')
+      .eq('church_id', churchOrgId)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).map((level: any) => ({
+      id: level.id,
+      name: level.name_en || level.name || 'Untitled Level',
+      description: level.description_en || level.description || '',
+      targetGroup: level.target_group || '',
+      shuffleQuestions: level.shuffle_questions || false,
+      timeLimit: level.time_limit || 0,
+      passingScore: level.passing_score || 70
+    }));
   } catch (err) {
-    console.error("Failed to load levels:", err);
+    console.error('Failed to load levels:', err);
+    return [];
   }
 };
 
 const loadQuestions = async (levelId: string) => {
   try {
-    const res = await fetch(`${base}/trivia/questions?level_id=${levelId}`);
-    if (res.ok) {
-      const data = await res.json();
-      // Handle both { questions: [] } (Encore) and [] (Supabase)
-      const questionsArray = Array.isArray(data) ? data : (data.questions || []);
+    const { data, error } = await supabase
+      .from('trivia_questions')
+      .select('*')
+      .eq('level_id', levelId)
+      .eq('church_id', churchOrgId)
+      .order('created_at', { ascending: true });
 
-      const formattedQuestions = questionsArray.map((q: any) => {
-        const optionsEn: string[] = q.options_en || [];
-        const optionsEs: string[] = q.options_es || [];
+    if (error) throw error;
 
-        // USER RULE: The correct answer is ALWAYS the first option (index 0) as entered in Admin portal.
-        // DB stores correct_answer as 0 (new) or 1 (legacy 1-based). Both mean index 0.
-        // We store the actual text of the correct answer so shuffling cannot break it.
-        const correctAnswerText = optionsEn[0] || '';
+    return (data || []).map((q: any) => {
+      const optionsEn: string[] = q.options_en || [];
+      const optionsEs: string[] = q.options_es || optionsEn; // fallback to EN if no ES
 
-        return {
-          id: q.id,
-          questionEn: q.question_en,
-          questionEs: q.question_es,
-          options: { en: optionsEn, es: optionsEs },
-          level: q.level_id,
-          correctAnswerText,         // Store the TEXT of the correct answer
-          correctAnswer: 0,          // Will be recalculated after shuffle
-          category: q.category || 'General',
-          reference: q.reference
-        };
-      });
-      return formattedQuestions;
-    }
+      // USER RULE: The correct answer is ALWAYS the first option (index 0).
+      // Store the text so shuffling cannot break it.
+      const correctAnswerText = optionsEn[0] || '';
+
+      return {
+        id: q.id,
+        questionEn: q.question_en,
+        questionEs: q.question_es || q.question_en,
+        options: { en: optionsEn, es: optionsEs },
+        level: q.level_id,
+        correctAnswerText,
+        correctAnswer: 0,
+        category: q.category || 'General',
+        reference: q.reference
+      };
+    });
   } catch (err) {
-    console.error("Failed to load questions:", err);
+    console.error('Failed to load questions:', err);
+    return [];
   }
 };
 
