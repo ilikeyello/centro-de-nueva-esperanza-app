@@ -84,7 +84,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
-          "BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E"
+          "BBrkeboelGXOYj8h4wRqnldwBSAMnJiFFuCu4rrMXwyFWnpWwqMHtsoVVLCJ3J5auGInGcdzs-K_M8GO18JR8LQ"
         ) as unknown as BufferSource,
       });
 
