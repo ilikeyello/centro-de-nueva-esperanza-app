@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { createSupabaseServerClient, churchOrgId } from "@/lib/churchEnv";
 
 interface NotificationContextType {
   isSupported: boolean;
@@ -116,6 +117,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const sendSubscriptionToBackend = async (sub: PushSubscription) => {
     try {
+      const supabase = createSupabaseServerClient();
+      if (!supabase || !churchOrgId) {
+        console.error('Supabase client or church org ID not available');
+        return;
+      }
+
       let language: string | undefined;
       try {
         if (typeof window !== "undefined") {
@@ -126,42 +133,53 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         // ignore
       }
 
-      await fetch("https://prod-cne-sh82.encr.app/notifications/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          endpoint: sub.endpoint,
-          keys: {
-            p256dh: sub.getKey("p256dh")
-              ? btoa(String.fromCharCode(...new Uint8Array(sub.getKey("p256dh")!)))
-              : "",
-            auth: sub.getKey("auth")
-              ? btoa(String.fromCharCode(...new Uint8Array(sub.getKey("auth")!)))
-              : "",
-          },
-          language,
-        }),
-      });
-    } catch {
-      // ignore
+      const p256dhKey = sub.getKey("p256dh");
+      const authKey = sub.getKey("auth");
+
+      const subscriptionData = {
+        org_id: churchOrgId,
+        endpoint: sub.endpoint,
+        p256dh: p256dhKey ? btoa(String.fromCharCode(...new Uint8Array(p256dhKey))) : "",
+        auth: authKey ? btoa(String.fromCharCode(...new Uint8Array(authKey))) : "",
+        user_agent: navigator.userAgent,
+        language: language || "en",
+      };
+
+      const { error } = await supabase
+        .from("push_subscriptions")
+        .upsert(subscriptionData, { onConflict: "endpoint" });
+
+      if (error) {
+        console.error("Error saving subscription to Supabase:", error);
+      } else {
+        console.log("✅ Subscription saved to Supabase successfully");
+      }
+    } catch (error) {
+      console.error("Error in sendSubscriptionToBackend:", error);
     }
   };
 
   const removeSubscriptionFromBackend = async (sub: PushSubscription) => {
     try {
-      await fetch("https://prod-cne-sh82.encr.app/notifications/unsubscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          endpoint: sub.endpoint,
-        }),
-      });
-    } catch {
-      // ignore
+      const supabase = createSupabaseServerClient();
+      if (!supabase || !churchOrgId) {
+        console.error('Supabase client or church org ID not available');
+        return;
+      }
+
+      const { error } = await supabase
+        .from("push_subscriptions")
+        .delete()
+        .eq("endpoint", sub.endpoint)
+        .eq("org_id", churchOrgId);
+
+      if (error) {
+        console.error("Error removing subscription from Supabase:", error);
+      } else {
+        console.log("✅ Subscription removed from Supabase successfully");
+      }
+    } catch (error) {
+      console.error("Error in removeSubscriptionFromBackend:", error);
     }
   };
 
