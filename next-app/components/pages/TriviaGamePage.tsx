@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Brain, Play, Clock, Target, Trophy, RotateCcw, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { createSupabaseServerClient, churchOrgId } from "@/lib/churchEnv";
 
 interface TriviaLevel {
   id: string;
@@ -64,8 +65,6 @@ export function TriviaGamePage() {
     showFeedback: false,
   });
 
-  const base = process.env.NEXT_PUBLIC_CLIENT_TARGET || "https://prod-cne-sh82.encr.app";
-
   const snapToTop = () => {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
@@ -76,11 +75,26 @@ export function TriviaGamePage() {
 
   const loadLevels = async () => {
     try {
-      const response = await fetch(`${base}/trivia/simple`, { cache: "no-store" });
-      const data = await response.json();
-      setLevels(data.levels);
-    } catch {
-      // ignore
+      const supabase = createSupabaseServerClient();
+      if (!supabase || !churchOrgId) {
+        console.error('Supabase client or church org ID not available');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('trivia_levels')
+        .select('*')
+        .eq('church_id', churchOrgId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading trivia levels:', error);
+        return;
+      }
+
+      setLevels(data || []);
+    } catch (error) {
+      console.error('Error loading trivia levels:', error);
     } finally {
       setLoading(false);
     }
@@ -88,10 +102,27 @@ export function TriviaGamePage() {
 
   const loadQuestions = async (levelId: string) => {
     try {
-      const response = await fetch(`${base}/trivia/simple`, { cache: "no-store" });
-      const data = await response.json();
-      return data.questions.filter((q: TriviaQuestion) => q.level_id === levelId);
-    } catch {
+      const supabase = createSupabaseServerClient();
+      if (!supabase || !churchOrgId) {
+        console.error('Supabase client or church org ID not available');
+        return [];
+      }
+
+      const { data, error } = await supabase
+        .from('trivia_questions')
+        .select('*')
+        .eq('church_id', churchOrgId)
+        .eq('level_id', levelId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error loading trivia questions:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error loading trivia questions:', error);
       return [];
     }
   };
@@ -246,7 +277,7 @@ export function TriviaGamePage() {
 
   useEffect(() => {
     loadLevels();
-  }, [base]);
+  }, []);
 
   useEffect(() => {
     if (gameState.status !== "playing" || !gameState.isTimerActive) return;
