@@ -120,7 +120,13 @@ export function TriviaGamePage() {
         return [];
       }
 
-      return data || [];
+      // Ensure correct_answer is a number, not a string
+      const questions = (data || []).map(q => ({
+        ...q,
+        correct_answer: typeof q.correct_answer === 'string' ? parseInt(q.correct_answer, 10) : q.correct_answer
+      }));
+
+      return questions;
     } catch (error) {
       console.error('Error loading trivia questions:', error);
       return [];
