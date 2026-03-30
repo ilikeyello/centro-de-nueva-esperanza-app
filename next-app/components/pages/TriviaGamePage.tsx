@@ -121,10 +121,26 @@ export function TriviaGamePage() {
       }
 
       // Ensure correct_answer is a number, not a string
-      const questions = (data || []).map(q => ({
-        ...q,
-        correct_answer: typeof q.correct_answer === 'string' ? parseInt(q.correct_answer, 10) : q.correct_answer
-      }));
+      // Convert from 1-based (1,2,3,4) to 0-based (0,1,2,3) indexing
+      const questions = (data || []).map(q => {
+        let correctAnswer = typeof q.correct_answer === 'string' ? parseInt(q.correct_answer, 10) : q.correct_answer;
+        
+        // If the value is 1-based (1,2,3,4), convert to 0-based (0,1,2,3)
+        if (correctAnswer > 0) {
+          correctAnswer = correctAnswer - 1;
+        }
+        
+        console.log('Question loaded:', {
+          question: q.question_en,
+          correct_answer_raw: q.correct_answer,
+          correct_answer_converted: correctAnswer,
+          options: q.options_en
+        });
+        return {
+          ...q,
+          correct_answer: correctAnswer
+        };
+      });
 
       return questions;
     } catch (error) {
