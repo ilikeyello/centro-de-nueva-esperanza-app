@@ -104,11 +104,11 @@ serve(async (req) => {
       );
     }
 
-    // Call the send-push-notification function
+    // Call the send-push-notification function (deployed as 'smooth-function')
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
-    const response = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+    const response = await fetch(`${supabaseUrl}/functions/v1/smooth-function`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
