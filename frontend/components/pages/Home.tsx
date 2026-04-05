@@ -114,7 +114,7 @@ export function Home({ onNavigate }: HomeProps) {
       labelEn: "Church Staff",
       labelEs: "Personal de la Iglesia",
       page: "https://www.emanuelavina.com/dashboard/client-portal",
-      color: "bg-neutral-600 hover:bg-neutral-700",
+      color: "bg-[--ink-mid] hover:bg-[--ink-dark]",
       isExternal: true,
     },
   ];
@@ -160,13 +160,13 @@ export function Home({ onNavigate }: HomeProps) {
           alt={t("Church congregation worshiping together", "Congregación adorando juntos")}
           className="hero-image w-full object-cover h-[90vh] md:h-[40rem] object-[center_55%]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-warm-red/10 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[--sage]/10 via-transparent to-transparent" />
         <div className="absolute inset-0 hero-gradient-blend md:bg-gradient-to-b md:from-black/20 md:via-black/40 md:to-black/60" />
         <div className="absolute top-20 right-4 md:top-24 z-20">
             <button
               type="button"
               onClick={toggleLanguage}
-              className="flex items-center justify-center gap-1 rounded-full bg-warm-red/90 px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-red shadow-md"
+              className="flex items-center justify-center gap-1 rounded-full bg-[--sage]/90 px-3 py-1.5 text-sm font-medium text-white hover:bg-[--sage] shadow-md"
               aria-label={language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
             >
               <Languages className="h-4 w-4" />
@@ -175,13 +175,13 @@ export function Home({ onNavigate }: HomeProps) {
           </div>
           
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding translate-y-0 md:translate-y-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-warm-red drop-shadow-lg">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage] drop-shadow-lg">
             {t("Welcome to", "Bienvenidos a")}
           </p>
           <h2 className="mt-2 serif-heading hero-title text-4xl font-bold text-white sm:text-5xl md:text-6xl drop-shadow-2xl">
             {t("Center of New Hope", "Centro de Nueva Esperanza")}
           </h2>
-          <p className="mt-6 max-w-3xl hero-subtitle text-lg text-neutral-100 md:text-xl drop-shadow-lg">
+          <p className="mt-6 max-w-3xl hero-subtitle text-lg text-[--ink-mid] md:text-xl drop-shadow-lg">
             {t(
               "A welcoming family of believers seeking Jesus together, serving our neighbors, and sharing His hope in practical ways.",
               "Una familia acogedora de creyentes buscando a Jesús juntos, sirviendo a nuestros vecinos y compartiendo Su esperanza de manera práctica."
@@ -197,7 +197,7 @@ export function Home({ onNavigate }: HomeProps) {
             <Button
               variant="outline"
               onClick={() => onNavigate("media")}
-              className="border-white bg-transparent px-8 py-4 text-lg text-white hover:bg-white hover:text-neutral-900"
+              className="border-white bg-transparent px-8 py-4 text-lg text-white hover:bg-white hover:text-[--ink-dark]"
             >
               {t("Watch Live", "Ver en Vivo")}
             </Button>
@@ -207,18 +207,18 @@ export function Home({ onNavigate }: HomeProps) {
       <div className="container mx-auto space-y-12 px-4">
         {/* What to Expect Section */}
         <section className="warm-card p-8">
-          <h2 className="mb-6 serif-heading text-3xl font-bold text-neutral-900">
+          <h2 className="mb-6 serif-heading text-3xl font-bold text-[--ink-dark]">
             {t("What to Expect", "Qué Esperar")}
           </h2>
           <div className="grid gap-6 md:grid-cols-3">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-warm-red/10">
-                <Users className="h-8 w-8 text-warm-red" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[--sage]/10">
+                <Users className="h-8 w-8 text-[--sage]" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-neutral-900">
+              <h3 className="mb-2 text-xl font-semibold text-[--ink-dark]">
                 {t("Friendly People", "Gente Amigable")}
               </h3>
-              <p className="text-neutral-600">
+              <p className="text-[--ink-mid]">
                 {t(
                   "Join our warm and welcoming community. Come as you are!",
                   "Únete a nuestra comunidad cálida y acogedora. ¡Ven como estás!"
@@ -226,13 +226,13 @@ export function Home({ onNavigate }: HomeProps) {
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-warm-red/10">
-                <Clock className="h-8 w-8 text-warm-red" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[--sage]/10">
+                <Clock className="h-8 w-8 text-[--sage]" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-neutral-900">
+              <h3 className="mb-2 text-xl font-semibold text-[--ink-dark]">
                 {t("One Hour Service", "Servicio de Una Hora")}
               </h3>
-              <p className="text-neutral-600">
+              <p className="text-[--ink-mid]">
                 {t(
                   "Our services last about 60 minutes with worship and a relevant message.",
                   "Nuestros servicios duran aproximadamente 60 minutos con adoración y un mensaje relevante."
@@ -240,13 +240,13 @@ export function Home({ onNavigate }: HomeProps) {
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-warm-red/10">
-                <Car className="h-8 w-8 text-warm-red" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[--sage]/10">
+                <Car className="h-8 w-8 text-[--sage]" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-neutral-900">
+              <h3 className="mb-2 text-xl font-semibold text-[--ink-dark]">
                 {t("Easy Parking", "Estacionamiento Fácil")}
               </h3>
-              <p className="text-neutral-600">
+              <p className="text-[--ink-mid]">
                 {t(
                   "Plenty of free parking spaces available right at the entrance.",
                   "Amplios espacios de estacionamiento gratuitos disponibles en la entrada."
@@ -265,10 +265,10 @@ export function Home({ onNavigate }: HomeProps) {
         </section>
 
         <section className="space-y-6">
-          <h2 className="serif-heading text-3xl font-bold text-neutral-900">
+          <h2 className="serif-heading text-3xl font-bold text-[--ink-dark]">
             {t("Who We Are", "Quiénes Somos")}
           </h2>
-          <p className="max-w-3xl text-lg leading-relaxed text-neutral-700 whitespace-pre-wrap">
+          <p className="max-w-3xl text-lg leading-relaxed text-[--ink-mid] whitespace-pre-wrap">
             {churchInfo?.description || t(
               "We are a family of believers seeking Jesus together, serving our neighbors, and sharing His hope in practical ways across our city.",
               "Somos una familia de creyentes buscando a Jesús juntos, sirviendo a nuestros vecinos y compartiendo Su esperanza de manera práctica en toda nuestra ciudad."
@@ -283,42 +283,42 @@ export function Home({ onNavigate }: HomeProps) {
         </section>
 
         <section className="warm-card p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-warm-red">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage]">
             {t("Upcoming Event", "Próximo Evento")}
           </p>
           {eventsLoading ? (
-            <div className="mt-4 h-24 animate-pulse rounded-xl bg-neutral-200/50" />
+            <div className="mt-4 h-24 animate-pulse rounded-xl bg-[--surface-mid]/50" />
           ) : eventsError ? (
-            <div className="mt-6 rounded-xl bg-white p-6 border border-neutral-200">
-              <h3 className="text-xl font-semibold text-neutral-900">
+            <div className="mt-6 rounded-xl bg-[--surface] p-6 border border-[--border-color]">
+              <h3 className="text-xl font-semibold text-[--ink-dark]">
                 {t("Join Us This Sunday!", "¡Únete a Nosotros Este Domingo!")}
               </h3>
-              <p className="mt-2 text-neutral-600">
+              <p className="mt-2 text-[--ink-mid]">
                 {t(
                   "We gather every week to worship, learn, and grow together.",
                   "Nos reunimos cada semana para adorar, aprender y crecer juntos."
                 )}
               </p>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-neutral-700">
+              <div className="mt-4 flex flex-wrap gap-4 text-sm text-[--ink-mid]">
                 {churchInfo?.address && (
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-warm-red" />
+                    <MapPin className="h-4 w-4 text-[--sage]" />
                     <span>{churchInfo.address}</span>
                   </div>
                 )}
                 {churchInfo?.service_times ? (
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-warm-red" />
+                    <Clock className="h-4 w-4 text-[--sage]" />
                     <span>{churchInfo.service_times}</span>
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-warm-red" />
+                      <Clock className="h-4 w-4 text-[--sage]" />
                       <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-warm-red" />
+                      <Clock className="h-4 w-4 text-[--sage]" />
                       <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
                     </div>
                   </>
@@ -327,24 +327,24 @@ export function Home({ onNavigate }: HomeProps) {
             </div>
           ) : nextEvent ? (
             <>
-              <h3 className="mt-2 serif-heading text-2xl font-bold text-neutral-900">
+              <h3 className="mt-2 serif-heading text-2xl font-bold text-[--ink-dark]">
                 {t(nextEvent.titleEn, nextEvent.titleEs)}
               </h3>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-neutral-700">
+              <div className="mt-4 flex flex-wrap gap-4 text-sm text-[--ink-mid]">
                 {formattedDate && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-warm-red" />
+                    <Calendar className="h-4 w-4 text-[--sage]" />
                     <span>{formattedDate}</span>
                   </div>
                 )}
                 {nextEvent.location && (
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-warm-red" />
+                    <MapPin className="h-4 w-4 text-[--sage]" />
                     <span>{nextEvent.location}</span>
                   </div>
                 )}
               </div>
-              <p className="mt-4 text-neutral-600">
+              <p className="mt-4 text-[--ink-mid]">
                 {t(
                   nextEvent.descriptionEn?.replace(/<[^>]*>?/gm, '') ?? "Join us as we gather together.",
                   nextEvent.descriptionEs?.replace(/<[^>]*>?/gm, '') ?? "Únete a nosotros mientras nos reunimos."
@@ -363,36 +363,36 @@ export function Home({ onNavigate }: HomeProps) {
               </Button>
             </>
           ) : (
-            <div className="mt-6 rounded-xl bg-white p-6 border border-neutral-200">
-              <h3 className="text-xl font-semibold text-neutral-900">
+            <div className="mt-6 rounded-xl bg-[--surface] p-6 border border-[--border-color]">
+              <h3 className="text-xl font-semibold text-[--ink-dark]">
                 {t("Join Us This Sunday!", "¡Únete a Nosotros Este Domingo!")}
               </h3>
-              <p className="mt-2 text-neutral-600">
+              <p className="mt-2 text-[--ink-mid]">
                 {t(
                   "We gather every week to worship, learn, and grow together.",
                   "Nos reunimos cada semana para adorar, aprender y crecer juntos."
                 )}
               </p>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-neutral-700">
+              <div className="mt-4 flex flex-wrap gap-4 text-sm text-[--ink-mid]">
                 {churchInfo?.address && (
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-warm-red" />
+                    <MapPin className="h-4 w-4 text-[--sage]" />
                     <span>{churchInfo.address}</span>
                   </div>
                 )}
                 {churchInfo?.service_times ? (
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-warm-red" />
+                    <Clock className="h-4 w-4 text-[--sage]" />
                     <span>{churchInfo.service_times}</span>
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-warm-red" />
+                      <Clock className="h-4 w-4 text-[--sage]" />
                       <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-warm-red" />
+                      <Clock className="h-4 w-4 text-[--sage]" />
                       <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
                     </div>
                   </>
@@ -403,7 +403,7 @@ export function Home({ onNavigate }: HomeProps) {
         </section>
 
         <div className="space-y-6">
-          <h2 className="serif-heading text-3xl font-bold text-neutral-900">
+          <h2 className="serif-heading text-3xl font-bold text-[--ink-dark]">
             {t("Quick Actions", "Acciones Rápidas")}
           </h2>
           <div className="grid gap-6 md:grid-cols-4 lg:grid-cols-5">
@@ -419,13 +419,13 @@ export function Home({ onNavigate }: HomeProps) {
                     rel="noopener noreferrer"
                     className="warm-card group p-6 text-left transition-all hover:scale-105"
                   >
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-warm-red/10 group-hover:bg-warm-red/20">
-                      <Icon className="h-6 w-6 text-warm-red" />
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
+                      <Icon className="h-6 w-6 text-[--sage]" />
                     </div>
-                    <h3 className="mb-2 text-lg font-semibold text-neutral-900">
+                    <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
                       {t(action.labelEn, action.labelEs)}
                     </h3>
-                    <p className="text-sm text-neutral-600">
+                    <p className="text-sm text-[--ink-mid]">
                       {t(
                         "Access the church admin dashboard",
                         "Acceder al panel de administración de la iglesia"
@@ -441,13 +441,13 @@ export function Home({ onNavigate }: HomeProps) {
                   onClick={() => onNavigate(action.page)}
                   className="warm-card group p-6 text-left transition-all hover:scale-105"
                 >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-warm-red/10 group-hover:bg-warm-red/20">
-                    <Icon className="h-6 w-6 text-warm-red" />
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
+                    <Icon className="h-6 w-6 text-[--sage]" />
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold text-neutral-900">
+                  <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
                     {t(action.labelEn, action.labelEs)}
                   </h3>
-                  <p className="text-sm text-neutral-600">
+                  <p className="text-sm text-[--ink-mid]">
                     {action.page === "contact" && t(
                       "Get in touch with our team",
                       "Ponte en contacto con nuestro equipo"
@@ -472,10 +472,10 @@ export function Home({ onNavigate }: HomeProps) {
         </div>
 
         <section className="warm-card p-8">
-          <h2 className="mb-6 serif-heading text-3xl font-bold text-neutral-900">
+          <h2 className="mb-6 serif-heading text-3xl font-bold text-[--ink-dark]">
             {t("Submit a Prayer Request", "Enviar una petición de oración")}
           </h2>
-          <p className="text-lg text-neutral-600">
+          <p className="text-lg text-[--ink-mid]">
             {t(
               "Your request will appear on the Community Bulletin so everyone can pray along.",
               "Tu petición aparecerá en el Tablón Comunitario para que todos puedan orar contigo."
@@ -490,7 +490,7 @@ export function Home({ onNavigate }: HomeProps) {
             }}
           >
             <div className="space-y-2">
-              <Label htmlFor="prayer-title" className="text-neutral-700">
+              <Label htmlFor="prayer-title" className="text-[--ink-mid]">
                 {t("Title", "Título")}
               </Label>
               <Input
@@ -498,11 +498,11 @@ export function Home({ onNavigate }: HomeProps) {
                 value={prayerTitle}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => setPrayerTitle(event.target.value)}
                 required
-                className="border-neutral-300 bg-white text-neutral-900"
+                className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prayer-description" className="text-neutral-700">
+              <Label htmlFor="prayer-description" className="text-[--ink-mid]">
                 {t("Description", "Descripción")}
               </Label>
               <Textarea
@@ -513,11 +513,11 @@ export function Home({ onNavigate }: HomeProps) {
                 }
                 required
                 rows={4}
-                className="border-neutral-300 bg-white text-neutral-900"
+                className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prayer-name" className="text-neutral-700">
+              <Label htmlFor="prayer-name" className="text-[--ink-mid]">
                 {t("Name", "Nombre")}
               </Label>
               <Input
@@ -525,7 +525,7 @@ export function Home({ onNavigate }: HomeProps) {
                 value={prayerName}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => setPrayerName(event.target.value)}
                 placeholder={t("Optional", "Opcional")}
-                className="border-neutral-300 bg-white text-neutral-900"
+                className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
               />
             </div>
             <Button

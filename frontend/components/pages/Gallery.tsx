@@ -75,25 +75,25 @@ export function Gallery() {
   return (
     <div className="container mx-auto space-y-6 px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-3xl font-bold text-[--ink-dark]">
           {t("Photo Gallery", "Galería de Fotos")}
         </h1>
         <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-red-600 hover:bg-red-700">
+            <Button className="bg-[--sage] hover:bg-[--sage-mid]">
               <Upload className="mr-2 h-4 w-4" />
               {t("Upload Photo", "Subir Foto")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-neutral-800 bg-neutral-900">
+          <DialogContent className="border-[--border-color] bg-[--surface]">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-[--ink-dark]">
                 {t("Upload Photo", "Subir Foto")}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
-                <Label htmlFor="file" className="text-neutral-200">
+                <Label htmlFor="file" className="text-[--ink-mid]">
                   {t("Select Image", "Seleccionar Imagen")}
                 </Label>
                 <Input
@@ -102,16 +102,16 @@ export function Gallery() {
                   accept="image/*"
                   onChange={handleFileSelect}
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                 />
               </div>
               {selectedFile && (
-                <div className="text-sm text-neutral-400">
+                <div className="text-sm text-[--ink-light]">
                   {t("Selected:", "Seleccionado:")} {selectedFile.name}
                 </div>
               )}
               <div>
-                <Label htmlFor="uploadPasscode" className="text-neutral-200">
+                <Label htmlFor="uploadPasscode" className="text-[--ink-mid]">
                   {t("Passcode", "Código")}
                 </Label>
                 <Input
@@ -120,13 +120,13 @@ export function Gallery() {
                   value={uploadPasscode}
                   onChange={(event) => setUploadPasscode(event.target.value)}
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                 />
               </div>
               <Button
                 type="submit"
                 disabled={!selectedFile || uploadMutation.isPending || uploadPasscode.trim().length === 0}
-                className="w-full bg-red-600 hover:bg-red-700"
+                className="w-full bg-[--sage] hover:bg-[--sage-mid]"
               >
                 {uploadMutation.isPending
                   ? t("Uploading...", "Subiendo...")
@@ -142,7 +142,7 @@ export function Gallery() {
           <button
             key={item.id}
             onClick={() => setSelectedImage(item)}
-            className="group relative aspect-square overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900 transition-transform hover:scale-105"
+            className="group relative aspect-square overflow-hidden rounded-lg border border-[--border-color] bg-[--surface] transition-transform hover:scale-105"
           >
             <img
               src={item.url}
@@ -155,10 +155,10 @@ export function Gallery() {
       </div>
 
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl border-neutral-800 bg-neutral-900">
+        <DialogContent className="max-w-4xl border-[--border-color] bg-[--surface]">
           <DialogHeader>
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-white">{selectedImage?.name}</DialogTitle>
+              <DialogTitle className="text-[--ink-dark]">{selectedImage?.name}</DialogTitle>
               <Button
                 variant="ghost"
                 size="icon"

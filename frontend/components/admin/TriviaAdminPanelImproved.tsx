@@ -208,7 +208,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
     return (
       <div className="text-center py-8">
         <Brain className="h-8 w-8 mx-auto mb-2 animate-pulse text-red-400" />
-        <p className="text-neutral-400">{t("Loading trivia data...", "Cargando datos de trivia...")}</p>
+        <p className="text-[--ink-light]">{t("Loading trivia data...", "Cargando datos de trivia...")}</p>
       </div>
     );
   }
@@ -228,7 +228,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
       </div>
 
       {/* Levels Section */}
-      <Card className="bg-neutral-900 border-neutral-800">
+      <Card className="bg-[--surface] border-[--border-color]">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
             <span>{t("Levels", "Niveles")}</span>
@@ -243,15 +243,15 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           {levels.map((level) => (
-            <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
+            <div key={level.id} className="border border-[--border-color] rounded-lg bg-[--surface]/50">
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="font-semibold text-white">{level.name}</h3>
                     {level.description && (
-                      <p className="text-sm text-neutral-400 mt-1">{level.description}</p>
+                      <p className="text-sm text-[--ink-light] mt-1">{level.description}</p>
                     )}
-                    <div className="flex gap-4 mt-2 text-xs text-neutral-500">
+                    <div className="flex gap-4 mt-2 text-xs text-[--ink-light]">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {level.time_limit}s
@@ -268,7 +268,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
                       onClick={() => setEditingLevel(level)}
                       variant="outline"
                       size="sm"
-                      className="border-neutral-700 hover:bg-neutral-800"
+                      className="border-[--border-color] hover:bg-[--surface-mid]"
                     >
                       <Edit2 className="h-3 w-3" />
                     </Button>
@@ -287,7 +287,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
           ))}
 
           {showNewLevelForm && (
-            <div className="border border-neutral-800 rounded-lg bg-neutral-900/50 p-4">
+            <div className="border border-[--border-color] rounded-lg bg-[--surface]/50 p-4">
               <LevelForm
                 level={null}
                 onSave={handleSaveLevel}
@@ -297,7 +297,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
           )}
 
           {editingLevel && (
-            <div className="border border-neutral-800 rounded-lg bg-neutral-900/50 p-4">
+            <div className="border border-[--border-color] rounded-lg bg-[--surface]/50 p-4">
               <LevelForm
                 level={editingLevel}
                 onSave={handleSaveLevel}
@@ -309,7 +309,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
       </Card>
 
       {/* Questions Section - Grouped by Level */}
-      <Card className="bg-neutral-900 border-neutral-800">
+      <Card className="bg-[--surface] border-[--border-color]">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
             <span>{t("Questions by Level", "Preguntas por Nivel")}</span>
@@ -328,16 +328,16 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
             const isExpanded = expandedLevels.has(level.id);
             
             return (
-              <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
+              <div key={level.id} className="border border-[--border-color] rounded-lg bg-[--surface]/50">
                 <div 
-                  className="p-4 cursor-pointer hover:bg-neutral-800/50 transition-colors"
+                  className="p-4 cursor-pointer hover:bg-[--surface-mid]/50 transition-colors"
                   onClick={() => toggleLevelExpansion(level.id)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       <h3 className="font-semibold text-white">{level.name}</h3>
-                      <span className="text-sm text-neutral-400">({levelQuestions.length} {t("questions", "preguntas")})</span>
+                      <span className="text-sm text-[--ink-light]">({levelQuestions.length} {t("questions", "preguntas")})</span>
                     </div>
                     <Button
                       onClick={(e) => {
@@ -346,7 +346,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
                       }}
                       variant="outline"
                       size="sm"
-                      className="border-neutral-700 hover:bg-neutral-800"
+                      className="border-[--border-color] hover:bg-[--surface-mid]"
                     >
                       <Plus className="h-3 w-3 mr-1" />
                       {t("Add", "Agregar")}
@@ -355,21 +355,21 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
                 </div>
                 
                 {isExpanded && (
-                  <div className="border-t border-neutral-800">
+                  <div className="border-t border-[--border-color]">
                     {levelQuestions.length === 0 ? (
-                      <div className="p-4 text-center text-neutral-400">
+                      <div className="p-4 text-center text-[--ink-light]">
                         {t("No questions in this level yet.", "No hay preguntas en este nivel aún.")}
                       </div>
                     ) : (
                       <div className="space-y-2 p-4">
                         {levelQuestions.map((question) => (
-                          <div key={question.id} className="border border-neutral-700 rounded bg-neutral-800/50 p-3">
+                          <div key={question.id} className="border border-[--border-color] rounded bg-[--surface-mid]/50 p-3">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <p className="text-sm text-white font-medium">
                                   {language === 'es' ? question.question_es : question.question_en}
                                 </p>
-                                <p className="text-xs text-neutral-400 mt-1">
+                                <p className="text-xs text-[--ink-light] mt-1">
                                   {t("Category", "Categoría")}: {question.category} | 
                                   {t("Correct Answer", "Respuesta Correcta")}: {String.fromCharCode(65 + question.correct_answer)}
                                 </p>
@@ -379,7 +379,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
                                   onClick={() => setEditingQuestion(question)}
                                   variant="outline"
                                   size="sm"
-                                  className="border-neutral-700 hover:bg-neutral-800"
+                                  className="border-[--border-color] hover:bg-[--surface-mid]"
                                 >
                                   <Edit2 className="h-3 w-3" />
                                 </Button>
@@ -407,7 +407,7 @@ export function TriviaAdminPanelImproved({ passcode }: TriviaAdminPanelProps) {
 
       {/* New/Edit Question Form */}
       {(showNewQuestionForm || editingQuestion) && (
-        <Card className="bg-neutral-900 border-neutral-800">
+        <Card className="bg-[--surface] border-[--border-color]">
           <CardHeader>
             <CardTitle className="text-white">
               {editingQuestion ? t("Edit Question", "Editar Pregunta") : t("Add New Question", "Agregar Nueva Pregunta")}
@@ -458,26 +458,26 @@ function LevelForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
+          <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Level Name", "Nombre del Nivel")} *
           </Label>
           <Input
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value, id: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-            className="bg-neutral-950 border-neutral-700 text-white"
+            className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
             placeholder={t("e.g., Kids, Youth, Adults", "ej., Niños, Jóvenes, Adultos")}
             required
           />
         </div>
         <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
+          <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Time Limit (seconds)", "Límite de Tiempo (segundos)")}
           </Label>
           <Input
             type="number"
             value={formData.time_limit}
             onChange={(e) => setFormData({ ...formData, time_limit: parseInt(e.target.value) || 30 })}
-            className="bg-neutral-950 border-neutral-700 text-white"
+            className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
             min="10"
             max="300"
           />
@@ -485,13 +485,13 @@ function LevelForm({
       </div>
 
       <div>
-        <Label className="block text-sm font-medium text-neutral-300 mb-1">
+        <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
           {t("Description", "Descripción")}
         </Label>
         <Textarea
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="bg-neutral-950 border-neutral-700 text-white"
+          className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
           placeholder={t("Optional description for this level", "Descripción opcional para este nivel")}
           rows={2}
         />
@@ -499,14 +499,14 @@ function LevelForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
+          <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Passing Score (%)", "Puntuación para Aprobar (%)")}
           </Label>
           <Input
             type="number"
             value={formData.passing_score}
             onChange={(e) => setFormData({ ...formData, passing_score: parseInt(e.target.value) || 70 })}
-            className="bg-neutral-950 border-neutral-700 text-white"
+            className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
             min="0"
             max="100"
           />
@@ -517,9 +517,9 @@ function LevelForm({
             id="shuffle"
             checked={formData.shuffle_questions}
             onChange={(e) => setFormData({ ...formData, shuffle_questions: e.target.checked })}
-            className="rounded border-neutral-700 bg-neutral-950"
+            className="rounded border-[--border-color] bg-[--surface-mid]"
           />
-          <Label htmlFor="shuffle" className="text-sm text-neutral-300">
+          <Label htmlFor="shuffle" className="text-sm text-[--ink-mid]">
             {t("Shuffle questions", "Mezclar preguntas")}
           </Label>
         </div>
@@ -530,7 +530,7 @@ function LevelForm({
           <Save className="h-4 w-4 mr-2" />
           {t("Save Level", "Guardar Nivel")}
         </Button>
-        <Button type="button" onClick={onCancel} variant="outline" className="border-neutral-700 hover:bg-neutral-800">
+        <Button type="button" onClick={onCancel} variant="outline" className="border-[--border-color] hover:bg-[--surface-mid]">
           <X className="h-4 w-4 mr-2" />
           {t("Cancel", "Cancelar")}
         </Button>
@@ -584,26 +584,26 @@ function QuestionForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
+          <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Question (English)", "Pregunta (Inglés)")} *
           </Label>
           <Textarea
             value={formData.question_en}
             onChange={(e) => setFormData({ ...formData, question_en: e.target.value })}
-            className="bg-neutral-950 border-neutral-700 text-white"
+            className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
             placeholder={t("Enter question in English", "Ingresa la pregunta en inglés")}
             rows={2}
             required
           />
         </div>
         <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
+          <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Question (Spanish)", "Pregunta (Español)")} *
           </Label>
           <Textarea
             value={formData.question_es}
             onChange={(e) => setFormData({ ...formData, question_es: e.target.value })}
-            className="bg-neutral-950 border-neutral-700 text-white"
+            className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
             placeholder={t("Enter question in Spanish", "Ingresa la pregunta en español")}
             rows={2}
             required
@@ -613,11 +613,11 @@ function QuestionForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
+          <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Level", "Nivel")} *
           </Label>
           <Select value={formData.level_id} onValueChange={(value) => setFormData({ ...formData, level_id: value })}>
-            <SelectTrigger className="bg-neutral-950 border-neutral-700 text-white">
+            <SelectTrigger className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]">
               <SelectValue placeholder={t("Select a level", "Selecciona un nivel")} />
             </SelectTrigger>
             <SelectContent>
@@ -630,30 +630,30 @@ function QuestionForm({
           </Select>
         </div>
         <div>
-          <Label className="block text-sm font-medium text-neutral-300 mb-1">
+          <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Category", "Categoría")}
           </Label>
           <Input
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            className="bg-neutral-950 border-neutral-700 text-white"
+            className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
             placeholder={t("e.g., Old Testament, New Testament", "ej., Antiguo Testamento, Nuevo Testamento")}
           />
         </div>
       </div>
 
       <div>
-        <Label className="block text-sm font-medium text-neutral-300 mb-1">
+        <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
           {t("Answer Options (English)", "Opciones de Respuesta (Inglés)")} *
         </Label>
         <div className="space-y-2">
           {formData.options_en.map((option: string, index: number) => (
             <div key={index} className="flex items-center gap-2">
-              <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
+              <span className="text-sm text-[--ink-light] w-4">{String.fromCharCode(65 + index)}.</span>
               <Input
                 value={option}
                 onChange={(e) => updateOption('en', index, e.target.value)}
-                className="flex-1 bg-neutral-950 border-neutral-700 text-white"
+                className="flex-1 bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                 placeholder={`Option ${index + 1} in English`}
                 required
               />
@@ -662,7 +662,7 @@ function QuestionForm({
                 name="correct_answer"
                 checked={formData.correct_answer === index}
                 onChange={() => setFormData({ ...formData, correct_answer: index })}
-                className="border-neutral-700 bg-neutral-950"
+                className="border-[--border-color] bg-[--surface-mid]"
               />
             </div>
           ))}
@@ -670,17 +670,17 @@ function QuestionForm({
       </div>
 
       <div>
-        <Label className="block text-sm font-medium text-neutral-300 mb-1">
+        <Label className="block text-sm font-medium text-[--ink-mid] mb-1">
           {t("Answer Options (Spanish)", "Opciones de Respuesta (Español)")} *
         </Label>
         <div className="space-y-2">
           {formData.options_es.map((option: string, index: number) => (
             <div key={index} className="flex items-center gap-2">
-              <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
+              <span className="text-sm text-[--ink-light] w-4">{String.fromCharCode(65 + index)}.</span>
               <Input
                 value={option}
                 onChange={(e) => updateOption('es', index, e.target.value)}
-                className="flex-1 bg-neutral-950 border-neutral-700 text-white"
+                className="flex-1 bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                 placeholder={`Opción ${index + 1} en español`}
                 required
               />
@@ -694,7 +694,7 @@ function QuestionForm({
           <Save className="h-4 w-4 mr-2" />
           {t("Save Question", "Guardar Pregunta")}
         </Button>
-        <Button type="button" onClick={onCancel} variant="outline" className="border-neutral-700 hover:bg-neutral-800">
+        <Button type="button" onClick={onCancel} variant="outline" className="border-[--border-color] hover:bg-[--surface-mid]">
           <X className="h-4 w-4 mr-2" />
           {t("Cancel", "Cancelar")}
         </Button>

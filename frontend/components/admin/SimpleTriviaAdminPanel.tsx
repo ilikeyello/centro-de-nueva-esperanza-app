@@ -124,7 +124,7 @@ export default function SimpleTriviaAdminPanel() {
   if (!triviaData) {
     return (
       <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
-        <Card className="w-full max-w-2xl bg-neutral-900 border-neutral-800">
+        <Card className="w-full max-w-2xl bg-[--surface] border-[--border-color]">
           <CardContent className="text-center p-8">
             <p className="text-xl">
               {t("Loading trivia data...", "Cargando datos de trivia...")}
@@ -149,10 +149,10 @@ export default function SimpleTriviaAdminPanel() {
                 {t("Level", "Nivel")}:
               </Label>
               <Select value={selectedLevel} onValueChange={(value: 'kids' | 'youth' | 'adults') => setSelectedLevel(value)}>
-                <SelectTrigger className="bg-neutral-800 border-neutral-700 text-white">
+                <SelectTrigger className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-neutral-800 border-neutral-700">
+                <SelectContent className="bg-[--surface-mid] border-[--border-color]">
                   {Object.entries(triviaData.levels).map(([key, level]) => (
                     <SelectItem key={key} value={key} className="text-white">
                       {level.name}
@@ -181,7 +181,7 @@ export default function SimpleTriviaAdminPanel() {
         )}
 
         {/* Add Question Section */}
-        <Card className="bg-neutral-900 border-neutral-800">
+        <Card className="bg-[--surface] border-[--border-color]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl">
@@ -190,7 +190,7 @@ export default function SimpleTriviaAdminPanel() {
               <Button
                 onClick={() => setIsAdding(!isAdding)}
                 variant={isAdding ? "outline" : "default"}
-                className={isAdding ? "border-neutral-600" : "bg-red-600 hover:bg-red-700"}
+                className={isAdding ? "border-[--border-color]" : "bg-[--sage] hover:bg-[--sage-mid]"}
               >
                 {isAdding ? <X className="h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
                 {isAdding ? t("Cancel", "Cancelar") : t("Add Question", "Agregar Pregunta")}
@@ -206,7 +206,7 @@ export default function SimpleTriviaAdminPanel() {
                   value={newQuestion}
                   onChange={(e) => setNewQuestion(e.target.value)}
                   placeholder={t("Enter your question here...", "Ingresa tu pregunta aquí...")}
-                  className="bg-neutral-800 border-neutral-700 text-white"
+                  className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                 />
               </div>
               
@@ -217,7 +217,7 @@ export default function SimpleTriviaAdminPanel() {
                   value={newQuestionEs}
                   onChange={(e) => setNewQuestionEs(e.target.value)}
                   placeholder={t("Spanish translation...", "Traducción en español...")}
-                  className="bg-neutral-800 border-neutral-700 text-white"
+                  className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                 />
               </div>
 
@@ -230,7 +230,7 @@ export default function SimpleTriviaAdminPanel() {
                         value={answer}
                         onChange={(e) => handleAnswerChange(index, e.target.value)}
                         placeholder={`${t("Answer", "Respuesta")} ${String.fromCharCode(65 + index)}`}
-                        className="bg-neutral-800 border-neutral-700 text-white"
+                        className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                       />
                       <input
                         type="radio"
@@ -254,7 +254,7 @@ export default function SimpleTriviaAdminPanel() {
                       value={answer}
                       onChange={(e) => handleAnswerEsChange(index, e.target.value)}
                       placeholder={`${t("Spanish Answer", "Respuesta en Español")} ${String.fromCharCode(65 + index)}`}
-                      className="bg-neutral-800 border-neutral-700 text-white"
+                      className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                     />
                   ))}
                 </div>
@@ -268,7 +268,7 @@ export default function SimpleTriviaAdminPanel() {
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     placeholder={t("e.g., Old Testament, New Testament", "ej: Antiguo Testamento, Nuevo Testamento")}
-                    className="bg-neutral-800 border-neutral-700 text-white"
+                    className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                   />
                 </div>
                 <div>
@@ -278,7 +278,7 @@ export default function SimpleTriviaAdminPanel() {
                     value={newReference}
                     onChange={(e) => setNewReference(e.target.value)}
                     placeholder={t("e.g., John 3:16", "ej: Juan 3:16")}
-                    className="bg-neutral-800 border-neutral-700 text-white"
+                    className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                   />
                 </div>
               </div>
@@ -292,45 +292,45 @@ export default function SimpleTriviaAdminPanel() {
         </Card>
 
         {/* Questions List */}
-        <Card className="bg-neutral-900 border-neutral-800">
+        <Card className="bg-[--surface] border-[--border-color]">
           <CardHeader>
             <CardTitle className="text-xl">
               {t("Questions for Level", "Preguntas para Nivel")} {triviaData.levels[selectedLevel].name}
-              <span className="text-sm text-neutral-400 ml-2">
+              <span className="text-sm text-[--ink-light] ml-2">
                 ({levelQuestions.length} {t("questions", "preguntas")})
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {levelQuestions.length === 0 ? (
-              <p className="text-neutral-400 text-center py-8">
+              <p className="text-[--ink-light] text-center py-8">
                 {t("No questions for this level yet. Add your first question above!", 
                    "No hay preguntas para este nivel aún. ¡Agrega tu primera pregunta arriba!")}
               </p>
             ) : (
               <div className="space-y-4">
                 {levelQuestions.map((question) => (
-                  <div key={question.id} className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
+                  <div key={question.id} className="bg-[--surface-mid] border border-[--border-color] rounded-lg p-4">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <h4 className="font-semibold text-white mb-2">
                           {question.question}
                         </h4>
                         {question.question_es && (
-                          <p className="text-sm text-neutral-400 mb-2">
+                          <p className="text-sm text-[--ink-light] mb-2">
                             {question.question_es}
                           </p>
                         )}
                         <div className="space-y-1">
                           {question.answers.map((answer, index) => (
-                            <div key={index} className={`text-sm ${index === question.correctAnswer ? 'text-green-400 font-semibold' : 'text-neutral-300'}`}>
+                            <div key={index} className={`text-sm ${index === question.correctAnswer ? 'text-green-400 font-semibold' : 'text-[--ink-mid]'}`}>
                               {String.fromCharCode(65 + index)}. {answer}
                               {index === question.correctAnswer && " ✓"}
                             </div>
                           ))}
                         </div>
                         {(question.category || question.reference) && (
-                          <div className="text-xs text-neutral-400 mt-2">
+                          <div className="text-xs text-[--ink-light] mt-2">
                             {question.category && <span>{t("Category", "Categoría")}: {question.category}</span>}
                             {question.category && question.reference && " | "}
                             {question.reference && <span>{question.reference}</span>}

@@ -129,7 +129,7 @@ export default function SimpleTriviaAdmin() {
                 max="120"
                 value={triviaData.defaultTimer}
                 onChange={(e) => setTriviaData({ ...triviaData, defaultTimer: parseInt(e.target.value) || 30 })}
-                className="w-20 bg-neutral-800 border-neutral-700 text-white"
+                className="w-20 bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
               />
             </div>
             <Button onClick={handleSave} disabled={loading} className="bg-green-600 hover:bg-green-700">
@@ -152,7 +152,7 @@ export default function SimpleTriviaAdmin() {
         )}
 
         {/* Add Question Section */}
-        <Card className="bg-neutral-900 border-neutral-800">
+        <Card className="bg-[--surface] border-[--border-color]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl">
@@ -161,7 +161,7 @@ export default function SimpleTriviaAdmin() {
               <Button
                 onClick={() => setIsAdding(!isAdding)}
                 variant={isAdding ? "outline" : "default"}
-                className={isAdding ? "border-neutral-600" : "bg-red-600 hover:bg-red-700"}
+                className={isAdding ? "border-[--border-color]" : "bg-[--sage] hover:bg-[--sage-mid]"}
               >
                 {isAdding ? <X className="h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
                 {isAdding ? t("Cancel", "Cancelar") : t("Add Question", "Agregar Pregunta")}
@@ -177,7 +177,7 @@ export default function SimpleTriviaAdmin() {
                   value={newQuestion}
                   onChange={(e) => setNewQuestion(e.target.value)}
                   placeholder={t("Enter your question here...", "Ingresa tu pregunta aquí...")}
-                  className="bg-neutral-800 border-neutral-700 text-white mt-1"
+                  className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark] mt-1"
                 />
               </div>
 
@@ -191,7 +191,7 @@ export default function SimpleTriviaAdmin() {
                         value={answer}
                         onChange={(e) => handleAnswerChange(index, e.target.value)}
                         placeholder={`${t("Answer", "Respuesta")} ${index + 1}`}
-                        className="bg-neutral-800 border-neutral-700 text-white"
+                        className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]"
                       />
                       <input
                         type="radio"
@@ -215,7 +215,7 @@ export default function SimpleTriviaAdmin() {
         </Card>
 
         {/* Questions List */}
-        <Card className="bg-neutral-900 border-neutral-800">
+        <Card className="bg-[--surface] border-[--border-color]">
           <CardHeader>
             <CardTitle className="text-xl">
               {t("Current Questions", "Preguntas Actuales")} ({triviaData.questions.length})
@@ -223,13 +223,13 @@ export default function SimpleTriviaAdmin() {
           </CardHeader>
           <CardContent className="space-y-4">
             {triviaData.questions.length === 0 ? (
-              <p className="text-neutral-400 text-center py-8">
+              <p className="text-[--ink-light] text-center py-8">
                 {t("No questions yet. Add your first question above!", 
                    "No hay preguntas aún. ¡Agrega tu primera pregunta arriba!")}
               </p>
             ) : (
               triviaData.questions.map((question, index) => (
-                <div key={index} className="bg-neutral-800 border border-neutral-700 rounded p-4">
+                <div key={index} className="bg-[--surface-mid] border border-[--border-color] rounded p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="font-semibold text-lg mb-2">
@@ -240,7 +240,7 @@ export default function SimpleTriviaAdmin() {
                           <div 
                             key={answerIndex}
                             className={`flex items-center space-x-2 ${
-                              answerIndex === question.correctAnswer ? 'text-green-400' : 'text-neutral-300'
+                              answerIndex === question.correctAnswer ? 'text-green-400' : 'text-[--ink-mid]'
                             }`}
                           >
                             <span>{String.fromCharCode(65 + answerIndex)}.</span>
@@ -253,7 +253,7 @@ export default function SimpleTriviaAdmin() {
                           </div>
                         ))}
                       </div>
-                      <div className="text-xs text-neutral-400 mt-2">
+                      <div className="text-xs text-[--ink-light] mt-2">
                         {t("Timer", "Temporizador")}: {question.timer}s
                       </div>
                     </div>

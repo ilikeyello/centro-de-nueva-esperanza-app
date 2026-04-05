@@ -662,10 +662,10 @@ export function Bible({ onNavigate }: BibleProps) {
   return (
     <div className="container mx-auto px-4 py-8 pb-24 md:pb-20">
       <div className="mb-8">
-        <h1 className="serif-heading text-3xl font-bold text-neutral-900 mb-2">
+        <h1 className="serif-heading text-3xl font-bold text-[--ink-dark] mb-2">
           {t("Bible", "Biblia")}
         </h1>
-        <p className="text-neutral-600">
+        <p className="text-[--ink-mid]">
           {t("Read and explore God's Word", "Lee y explora la Palabra de Dios")}
         </p>
       </div>
@@ -679,7 +679,7 @@ export function Bible({ onNavigate }: BibleProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            className="border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-500"
+            className="border-[--border-color] bg-[--surface] text-[--ink-dark] placeholder:text-[--ink-light]"
           />
           <Button onClick={handleSearch} disabled={loading} className="warm-button-primary">
             <Search className="h-4 w-4" />
@@ -694,7 +694,7 @@ export function Bible({ onNavigate }: BibleProps) {
           disabled={selectedChapter <= 1 || loading}
           variant="outline"
           size="icon"
-          className="warm-button-secondary border-neutral-300 text-neutral-700 hover:text-white hover:border-warm-red hover:bg-warm-red"
+          className="warm-button-secondary border-[--border-color] text-[--ink-mid] hover:text-white hover:border-[--sage] hover:bg-[--sage]"
           aria-label={t("Previous chapter", "Capítulo anterior")}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -705,24 +705,24 @@ export function Bible({ onNavigate }: BibleProps) {
             <button
               type="button"
               disabled={loading}
-              className="text-center px-3 py-2 rounded-md hover:bg-neutral-100 transition-colors disabled:opacity-50"
+              className="text-center px-3 py-2 rounded-md hover:bg-[--surface-mid] transition-colors disabled:opacity-50"
             >
-              <h2 className="serif-heading text-xl font-semibold text-neutral-900">
+              <h2 className="serif-heading text-xl font-semibold text-[--ink-dark]">
                 {getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0])} {selectedChapter}
               </h2>
               {chapter && (
-                <p className="text-sm text-neutral-600">
+                <p className="text-sm text-[--ink-mid]">
                   {chapter.verses.length} {t("verses", "versículos")}
                 </p>
               )}
-              <p className="text-xs text-neutral-500 mt-1">
+              <p className="text-xs text-[--ink-light] mt-1">
                 {t("Tap to change", "Toca para cambiar")}
               </p>
             </button>
           </DialogTrigger>
-          <DialogContent className="border-neutral-200 bg-white text-neutral-900">
+          <DialogContent className="border-[--border-color] bg-[--surface] text-[--ink-dark]">
             <DialogHeader>
-              <DialogTitle className="serif-heading text-neutral-900">{t("Select passage", "Seleccionar pasaje")}</DialogTitle>
+              <DialogTitle className="serif-heading text-[--ink-dark]">{t("Select passage", "Seleccionar pasaje")}</DialogTitle>
             </DialogHeader>
 
             <div className="grid grid-cols-1 gap-4">
@@ -732,12 +732,12 @@ export function Bible({ onNavigate }: BibleProps) {
                   onValueChange={setPendingVersion}
                   disabled={versionsLoading}
                 >
-                  <SelectTrigger className="w-full border-neutral-300 bg-white text-neutral-900">
+                  <SelectTrigger className="w-full border-[--border-color] bg-[--surface] text-[--ink-dark]">
                     <SelectValue placeholder={t("Version", "Versión")} />
                   </SelectTrigger>
-                  <SelectContent className="border-neutral-200 bg-white">
+                  <SelectContent className="border-[--border-color] bg-[--surface]">
                     {displayVersions.map((version) => (
-                      <SelectItem key={version.id} value={version.id} className="text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900">
+                      <SelectItem key={version.id} value={version.id} className="text-[--ink-dark] focus:bg-[--surface-mid] focus:text-[--ink-dark]">
                         {version.name} ({version.abbreviation})
                       </SelectItem>
                     ))}
@@ -752,20 +752,20 @@ export function Bible({ onNavigate }: BibleProps) {
                   }}
                   disabled={booksLoading}
                 >
-                  <SelectTrigger className="w-full border-neutral-300 bg-white text-neutral-900">
+                  <SelectTrigger className="w-full border-[--border-color] bg-[--surface] text-[--ink-dark]">
                     <SelectValue placeholder={t("Book", "Libro")} />
                   </SelectTrigger>
-                  <SelectContent className="border-neutral-200 bg-white max-h-60">
+                  <SelectContent className="border-[--border-color] bg-[--surface] max-h-60">
                     <div className="p-2">
-                      <div className="text-xs font-semibold text-neutral-500 mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
+                      <div className="text-xs font-semibold text-[--ink-light] mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
                       {displayBooks.filter(book => book.testament === "OT").map((book) => (
-                        <SelectItem key={book.id} value={book.id} className="text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900">
+                        <SelectItem key={book.id} value={book.id} className="text-[--ink-dark] focus:bg-[--surface-mid] focus:text-[--ink-dark]">
                           {getLocalizedNameForVersion(book, pendingVersion)}
                         </SelectItem>
                       ))}
-                      <div className="text-xs font-semibold text-neutral-500 mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
+                      <div className="text-xs font-semibold text-[--ink-light] mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
                       {displayBooks.filter(book => book.testament === "NT").map((book) => (
-                        <SelectItem key={book.id} value={book.id} className="text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900">
+                        <SelectItem key={book.id} value={book.id} className="text-[--ink-dark] focus:bg-[--surface-mid] focus:text-[--ink-dark]">
                           {getLocalizedNameForVersion(book, pendingVersion)}
                         </SelectItem>
                       ))}
@@ -779,12 +779,12 @@ export function Bible({ onNavigate }: BibleProps) {
                     setPendingChapter(parseInt(value));
                   }}
                 >
-                  <SelectTrigger className="w-full border-neutral-300 bg-white text-neutral-900">
+                  <SelectTrigger className="w-full border-[--border-color] bg-[--surface] text-[--ink-dark]">
                     <SelectValue placeholder={t("Chapter", "Capítulo")} />
                   </SelectTrigger>
-                  <SelectContent className="border-neutral-200 bg-white max-h-60">
+                  <SelectContent className="border-[--border-color] bg-[--surface] max-h-60">
                     {pendingChapters.map((chapter) => (
-                      <SelectItem key={chapter} value={chapter.toString()} className="text-neutral-900 focus:bg-neutral-100 focus:text-neutral-900">
+                      <SelectItem key={chapter} value={chapter.toString()} className="text-[--ink-dark] focus:bg-[--surface-mid] focus:text-[--ink-dark]">
                         {t("Chapter", "Capítulo")} {chapter}
                       </SelectItem>
                     ))}
@@ -815,7 +815,7 @@ export function Bible({ onNavigate }: BibleProps) {
           disabled={!currentBook || selectedChapter >= currentBook.chapters || loading}
           variant="outline"
           size="icon"
-          className="warm-button-secondary border-neutral-300 text-neutral-700 hover:text-white hover:border-warm-red hover:bg-warm-red"
+          className="warm-button-secondary border-[--border-color] text-[--ink-mid] hover:text-white hover:border-[--sage] hover:bg-[--sage]"
           aria-label={t("Next chapter", "Siguiente capítulo")}
         >
           <ChevronRight className="h-4 w-4" />
@@ -827,8 +827,8 @@ export function Bible({ onNavigate }: BibleProps) {
         <div className="space-y-4">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="h-4 bg-neutral-200 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-neutral-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-[--surface-mid] rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-[--surface-mid] rounded w-full mb-2"></div>
             </div>
           ))}
         </div>
@@ -841,21 +841,21 @@ export function Bible({ onNavigate }: BibleProps) {
                 id={`verse-${verse.number}`}
                 className={
                   `flex items-start gap-3 rounded-md px-2 py-1 transition-colors ` +
-                  (highlightedVerse === verse.number ? "bg-warm-red/10 ring-1 ring-warm-red/30" : "hover:bg-neutral-50")
+                  (highlightedVerse === verse.number ? "bg-[--sage]/10 ring-1 ring-[--sage]/30" : "hover:bg-[--surface-mid]")
                 }
               >
-                <span className="text-warm-red font-semibold min-w-[2rem] text-sm mt-1 select-none">
+                <span className="text-[--sage] font-semibold min-w-[2rem] text-sm mt-1 select-none">
                   {verse.number}
                 </span>
-                <p className="text-neutral-800 leading-relaxed flex-1 text-lg font-serif">
+                <p className="text-[--ink-dark] leading-relaxed flex-1 text-lg font-serif">
                   {verse.text}
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 pt-6 border-t border-neutral-200">
-            <p className="text-xs text-neutral-500 leading-relaxed text-center">
+          <div className="mt-8 pt-6 border-t border-[--border-color]">
+            <p className="text-xs text-[--ink-light] leading-relaxed text-center">
               {selectedVersion === "spnbes"
                 ? "La Biblia en Español Sencillo. 2018–2019 AudioBiblia.org / Irma Flores. Licensed CC BY 4.0."
                 : selectedVersion === "rv1909"
@@ -866,8 +866,8 @@ export function Bible({ onNavigate }: BibleProps) {
         </div>
       ) : (
         <div className="text-center py-12">
-          <BookOpen className="h-16 w-16 text-neutral-400 mx-auto mb-4" />
-          <p className="text-neutral-600">
+          <BookOpen className="h-16 w-16 text-[--ink-light] mx-auto mb-4" />
+          <p className="text-[--ink-mid]">
             {t("Select a book and chapter to begin reading", "Selecciona un libro y capítulo para comenzar a leer")}
           </p>
         </div>

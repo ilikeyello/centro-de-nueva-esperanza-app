@@ -89,79 +89,79 @@ export function Announcements() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return "border-red-500 bg-red-50";
+        return "border-[--terra] bg-[--terra-light]";
       case "normal":
       default:
-        return "border-neutral-200 bg-white";
+        return "border-[--border-color] bg-[--surface]";
     }
   };
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-neutral-900">
+        <h1 className="text-3xl font-bold text-[--ink-dark]">
           {t("Church Announcements", "Anuncios de la Iglesia")}
         </h1>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-red-600 hover:bg-red-700">
+            <Button className="bg-[--sage] hover:bg-[--sage-mid]">
               <Plus className="mr-2 h-4 w-4" />
               {t("New Announcement", "Nuevo Anuncio")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-neutral-200 bg-white shadow-2xl">
+          <DialogContent className="border-[--border-color] bg-[--surface] shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="text-neutral-900">
+              <DialogTitle className="text-[--ink-dark]">
                 {t("Create Announcement", "Crear Anuncio")}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateAnnouncement} className="space-y-4">
               <div>
-                <Label htmlFor="titleEn" className="text-neutral-700">
+                <Label htmlFor="titleEn" className="text-[--ink-mid]">
                   {t("Title (English)", "Título (Inglés)")}
                 </Label>
                 <Input
                   id="titleEn"
                   name="titleEn"
                   required
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="titleEs" className="text-neutral-700">
+                <Label htmlFor="titleEs" className="text-[--ink-mid]">
                   {t("Title (Spanish)", "Título (Español)")}
                 </Label>
                 <Input
                   id="titleEs"
                   name="titleEs"
                   required
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="contentEn" className="text-neutral-700">
+                <Label htmlFor="contentEn" className="text-[--ink-mid]">
                   {t("Content (English)", "Contenido (Inglés)")}
                 </Label>
                 <Textarea
                   id="contentEn"
                   name="contentEn"
                   required
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="contentEs" className="text-neutral-700">
+                <Label htmlFor="contentEs" className="text-[--ink-mid]">
                   {t("Content (Spanish)", "Contenido (Español)")}
                 </Label>
                 <Textarea
                   id="contentEs"
                   name="contentEs"
                   required
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="imageUrl" className="text-neutral-700">
+                <Label htmlFor="imageUrl" className="text-[--ink-mid]">
                   {t("Image URL (optional)", "URL de imagen (opcional)")}
                 </Label>
                 <Input
@@ -169,25 +169,25 @@ export function Announcements() {
                   name="imageUrl"
                   type="url"
                   placeholder={t("https://example.com/image.jpg", "https://ejemplo.com/imagen.jpg")}
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label className="text-neutral-700">
+                <Label className="text-[--ink-mid]">
                   {t("Priority", "Prioridad")}
                 </Label>
                 <Select value={priority} onValueChange={(v) => setPriority(v as any)}>
-                  <SelectTrigger className="border-neutral-300 bg-white text-neutral-900">
+                  <SelectTrigger className="border-[--border-color] bg-[--surface] text-[--ink-dark]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-neutral-200 bg-white">
+                  <SelectContent className="border-[--border-color] bg-[--surface]">
                     <SelectItem value="normal">{t("Normal", "Normal")}</SelectItem>
                     <SelectItem value="urgent">{t("Urgent", "Urgente")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="passcode" className="text-neutral-700">
+                <Label htmlFor="passcode" className="text-[--ink-mid]">
                   {t("Passcode", "Contraseña")}
                 </Label>
                 <Input
@@ -196,10 +196,10 @@ export function Announcements() {
                   type="password"
                   required
                   placeholder={t("Enter a passcode for editing/deleting", "Ingrese una contraseña para editar/eliminar")}
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">
+              <Button type="submit" className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white">
                 {t("Create Announcement", "Crear Anuncio")}
               </Button>
             </form>
@@ -216,11 +216,11 @@ export function Announcements() {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="flex items-center gap-2 text-neutral-900">
+                  <CardTitle className="flex items-center gap-2 text-[--ink-dark]">
                     {getPriorityIcon(announcement.priority)}
                     {language === "en" ? announcement.titleEn : announcement.titleEs}
                   </CardTitle>
-                  <p className="mt-1 text-xs text-neutral-500">
+                  <p className="mt-1 text-xs text-[--ink-light]">
                     {new Date(announcement.createdAt).toLocaleDateString()}
                   </p>
                 </div>
@@ -228,7 +228,7 @@ export function Announcements() {
             </CardHeader>
             <CardContent>
               {announcement.imageUrl && (
-                <div className="mb-3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
+                <div className="mb-3 overflow-hidden rounded-lg border border-[--border-color] bg-[--surface-mid]">
                   <img
                     src={announcement.imageUrl}
                     alt={language === "en" ? announcement.titleEn : announcement.titleEs}
@@ -236,7 +236,7 @@ export function Announcements() {
                   />
                 </div>
               )}
-              <p className="whitespace-pre-wrap text-neutral-700">
+              <p className="whitespace-pre-wrap text-[--ink-mid]">
                 {language === "en" ? announcement.contentEn : announcement.contentEs}
               </p>
             </CardContent>

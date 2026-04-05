@@ -60,13 +60,13 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
   }, []);
 
   return (
-    <div className="h-screen w-full flex flex-col bg-neutral-950 overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="h-screen w-full flex flex-col bg-[--background] overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Back Button - Minimal spacing - Moved higher */}
       <div className="flex-shrink-0 px-4 pt-0 pb-0 mt-[-4px]">
         <Button
           variant="ghost"
           onClick={() => onNavigate?.("games")}
-          className="text-neutral-400 hover:text-white h-8"
+          className="text-[--ink-light] hover:text-[--ink-dark] h-8"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t("Back to Games", "Volver a Juegos")}
@@ -82,7 +82,7 @@ export function GraveyardShiftGamePage({ onNavigate }: { onNavigate?: (page: str
           allowFullScreen
           width="350"
           height="640"
-          className="border border-neutral-700 rounded-lg max-w-full max-h-[calc(100vh-60px)]"
+          className="border border-[--border-color] rounded-lg max-w-full max-h-[calc(100vh-60px)]"
           style={{ 
             width: '100%',
             maxWidth: '350px',

@@ -116,67 +116,67 @@ export function Events() {
   return (
     <div className="container mx-auto space-y-6 px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-neutral-900">
+        <h1 className="text-3xl font-bold text-[--ink-dark]">
           {t("Church Events", "Eventos de la Iglesia")}
         </h1>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-red-600 hover:bg-red-700">
+            <Button className="bg-[--sage] hover:bg-[--sage-mid]">
               <Plus className="mr-2 h-4 w-4" />
               {t("Create Event", "Crear Evento")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-neutral-200 bg-white shadow-2xl">
+          <DialogContent className="border-[--border-color] bg-[--surface] shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="text-neutral-900">
+              <DialogTitle className="text-[--ink-dark]">
                 {t("Create New Event", "Crear Nuevo Evento")}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateEvent} className="space-y-4">
               <div>
-                <Label htmlFor="titleEn" className="text-neutral-700">
+                <Label htmlFor="titleEn" className="text-[--ink-mid]">
                   {t("Title (English)", "Título (Inglés)")}
                 </Label>
                 <Input
                   id="titleEn"
                   name="titleEn"
                   required
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="titleEs" className="text-neutral-700">
+                <Label htmlFor="titleEs" className="text-[--ink-mid]">
                   {t("Title (Spanish)", "Título (Español)")}
                 </Label>
                 <Input
                   id="titleEs"
                   name="titleEs"
                   required
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="descriptionEn" className="text-neutral-700">
+                <Label htmlFor="descriptionEn" className="text-[--ink-mid]">
                   {t("Description (English)", "Descripción (Inglés)")}
                 </Label>
                 <Textarea
                   id="descriptionEn"
                   name="descriptionEn"
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="descriptionEs" className="text-neutral-700">
+                <Label htmlFor="descriptionEs" className="text-[--ink-mid]">
                   {t("Description (Spanish)", "Descripción (Español)")}
                 </Label>
                 <Textarea
                   id="descriptionEs"
                   name="descriptionEs"
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="eventDate" className="text-neutral-700">
+                <Label htmlFor="eventDate" className="text-[--ink-mid]">
                   {t("Date & Time", "Fecha y Hora")}
                 </Label>
                 <Input
@@ -184,22 +184,22 @@ export function Events() {
                   name="eventDate"
                   type="datetime-local"
                   required
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="location" className="text-neutral-700">
+                <Label htmlFor="location" className="text-[--ink-mid]">
                   {t("Location", "Ubicación")}
                 </Label>
                 <Input
                   id="location"
                   name="location"
                   required
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="maxAttendees" className="text-neutral-700">
+                <Label htmlFor="maxAttendees" className="text-[--ink-mid]">
                   {t("Max Attendees (optional)", "Máximo de Asistentes (opcional)")}
                 </Label>
                 <Input
@@ -207,11 +207,11 @@ export function Events() {
                   name="maxAttendees"
                   type="number"
                   min="1"
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="passcode" className="text-neutral-700">
+                <Label htmlFor="passcode" className="text-[--ink-mid]">
                   {t("Passcode", "Contraseña")}
                 </Label>
                 <Input
@@ -220,10 +220,10 @@ export function Events() {
                   type="password"
                   required
                   placeholder={t("Enter a passcode for editing/deleting", "Ingrese una contraseña para editar/eliminar")}
-                  className="border-neutral-300 bg-white text-neutral-900"
+                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
                 />
               </div>
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">
+              <Button type="submit" className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white">
                 {t("Create Event", "Crear Evento")}
               </Button>
             </form>
@@ -233,27 +233,27 @@ export function Events() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {eventsData?.events.map((event: Event) => (
-          <Card key={event.id} className="border-neutral-200 bg-white shadow-sm">
+          <Card key={event.id} className="border-[--border-color] bg-[--surface] shadow-sm">
             <CardHeader>
-              <CardTitle className="text-neutral-900">
+              <CardTitle className="text-[--ink-dark]">
                 {language === "en" ? event.titleEn : event.titleEs}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-neutral-700">
+              <p className="text-sm text-[--ink-mid]">
                 {language === "en" ? event.descriptionEn : event.descriptionEs}
               </p>
-              <div className="space-y-2 text-sm text-neutral-600">
+              <div className="space-y-2 text-sm text-[--ink-mid]">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-red-600" />
+                  <Calendar className="h-4 w-4 text-[--sage]" />
                   <span>{new Date(event.eventDate).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-red-600" />
+                  <MapPin className="h-4 w-4 text-[--sage]" />
                   <span>{event.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-red-600" />
+                  <Users className="h-4 w-4 text-[--sage]" />
                   <span>
                     {event.rsvpCount} {t("attending", "asistirán")}
                     {event.maxAttendees && ` / ${event.maxAttendees}`}
@@ -265,7 +265,7 @@ export function Events() {
                   setSelectedEvent(event as any);
                   setShowRsvpDialog(true);
                 }}
-                className="w-full bg-red-600 hover:bg-red-700"
+                className="w-full bg-[--sage] hover:bg-[--sage-mid]"
               >
                 {t("RSVP", "Confirmar Asistencia")}
               </Button>
@@ -275,15 +275,15 @@ export function Events() {
       </div>
 
       <Dialog open={showRsvpDialog} onOpenChange={setShowRsvpDialog}>
-        <DialogContent className="border-neutral-200 bg-white shadow-2xl">
+        <DialogContent className="border-[--border-color] bg-[--surface] shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-neutral-900">
+            <DialogTitle className="text-[--ink-dark]">
               {t("RSVP for Event", "Confirmar Asistencia al Evento")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleRsvp} className="space-y-4">
             <div>
-              <Label htmlFor="attendees" className="text-neutral-700">
+              <Label htmlFor="attendees" className="text-[--ink-mid]">
                 {t("Number of Attendees", "Número de Asistentes")}
               </Label>
               <Input
@@ -293,10 +293,10 @@ export function Events() {
                 min="1"
                 defaultValue="1"
                 required
-                className="border-neutral-300 bg-white text-neutral-900"
+                className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
               />
             </div>
-            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">
+            <Button type="submit" className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white">
               {t("Confirm RSVP", "Confirmar Asistencia")}
             </Button>
           </form>

@@ -237,7 +237,7 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
 
         <div className="space-y-2">
           {levels.map((level) => (
-            <div key={level.id} className="border border-neutral-800 rounded-lg p-4 bg-neutral-900/40">
+            <div key={level.id} className="border border-[--border-color] rounded-lg p-4 bg-[--surface]/40">
               {editingLevel?.id === level.id ? (
                 <LevelForm
                   level={editingLevel}
@@ -248,8 +248,8 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <h4 className="font-semibold text-white">{level.name}</h4>
-                    {level.description && <p className="text-sm text-neutral-400">{level.description}</p>}
-                    <div className="flex gap-4 text-sm text-neutral-300">
+                    {level.description && <p className="text-sm text-[--ink-light]">{level.description}</p>}
+                    <div className="flex gap-4 text-sm text-[--ink-mid]">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         <span>{level.time_limit}s</span>
@@ -266,7 +266,7 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
                       onClick={() => setEditingLevel(level)}
                       variant="outline"
                       size="sm"
-                      className="border-neutral-700 hover:bg-neutral-800"
+                      className="border-[--border-color] hover:bg-[--surface-mid]"
                     >
                       <Edit2 className="h-3 w-3" />
                     </Button>
@@ -286,7 +286,7 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
         </div>
 
         {showNewLevelForm && (
-          <div className="border border-neutral-800 rounded-lg p-4 bg-neutral-900/40">
+          <div className="border border-[--border-color] rounded-lg p-4 bg-[--surface]/40">
             <LevelForm
               level={{
                 id: '',
@@ -320,7 +320,7 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
 
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {questions.map((question) => (
-            <div key={question.id} className="border border-neutral-800 rounded-lg p-4 bg-neutral-900/40">
+            <div key={question.id} className="border border-[--border-color] rounded-lg p-4 bg-[--surface]/40">
               {editingQuestion?.id === question.id ? (
                 <QuestionForm
                   question={editingQuestion}
@@ -333,17 +333,17 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <p className="font-medium text-white">{language === 'es' ? question.question_es : question.question_en}</p>
-                      <p className="text-sm text-neutral-400 mt-1">
+                      <p className="text-sm text-[--ink-light] mt-1">
                         {t("Level", "Nivel")}: {levels.find(l => l.id === question.level_id)?.name || question.level_id}
                       </p>
-                      <p className="text-sm text-neutral-500">{t("Category", "Categoría")}: {question.category}</p>
+                      <p className="text-sm text-[--ink-light]">{t("Category", "Categoría")}: {question.category}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         onClick={() => setEditingQuestion(question)}
                         variant="outline"
                         size="sm"
-                        className="border-neutral-700 hover:bg-neutral-800"
+                        className="border-[--border-color] hover:bg-[--surface-mid]"
                       >
                         <Edit2 className="h-3 w-3" />
                       </Button>
@@ -364,7 +364,7 @@ export function TriviaAdminPanel({ passcode }: TriviaAdminPanelProps) {
         </div>
 
         {showNewQuestionForm && (
-          <div className="border border-neutral-800 rounded-lg p-4 bg-neutral-900/40">
+          <div className="border border-[--border-color] rounded-lg p-4 bg-[--surface]/40">
             <QuestionForm
               question={{
                 id: 0,
@@ -420,30 +420,30 @@ function LevelForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-neutral-300 mb-1">
+        <label className="block text-sm font-medium text-[--ink-mid] mb-1">
           {t("Level Name", "Nombre del Nivel")}
         </label>
         <input
           type="text"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+          className="w-full rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
           placeholder={language === 'es' ? 'Niños' : 'Kids'}
           required
         />
-        <p className="text-xs text-neutral-500 mt-1">
+        <p className="text-xs text-[--ink-light] mt-1">
           {t("ID will be automatically generated from the name", "El ID se generará automáticamente desde el nombre")}
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-300 mb-1">
+        <label className="block text-sm font-medium text-[--ink-mid] mb-1">
           {t("Description (optional)", "Descripción (opcional)")}
         </label>
         <textarea
           value={formData.description || ''}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+          className="w-full rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
           placeholder={language === 'es' ? 'Para niños de 6-12 años' : 'For children ages 6-12'}
           rows={2}
         />
@@ -451,27 +451,27 @@ function LevelForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
+          <label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Time Limit (seconds)", "Límite de Tiempo (segundos)")}
           </label>
           <input
             type="number"
             value={formData.time_limit}
             onChange={(e) => setFormData({ ...formData, time_limit: parseInt(e.target.value) || 30 })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+            className="w-full rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
             min="5"
             max="120"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
+          <label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Passing Score (%)", "Puntuación para Aprobar (%)")}
           </label>
           <input
             type="number"
             value={formData.passing_score}
             onChange={(e) => setFormData({ ...formData, passing_score: parseInt(e.target.value) || 70 })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+            className="w-full rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
             min="0"
             max="100"
           />
@@ -484,9 +484,9 @@ function LevelForm({
           id="shuffle"
           checked={formData.shuffle_questions}
           onChange={(e) => setFormData({ ...formData, shuffle_questions: e.target.checked })}
-          className="rounded border-neutral-700 bg-neutral-950"
+          className="rounded border-[--border-color] bg-[--surface-mid]"
         />
-        <label htmlFor="shuffle" className="text-sm text-neutral-300">
+        <label htmlFor="shuffle" className="text-sm text-[--ink-mid]">
           {t("Shuffle questions", "Mezclar preguntas")}
         </label>
       </div>
@@ -496,7 +496,7 @@ function LevelForm({
           <Save className="h-4 w-4 mr-1" />
           {t("Save", "Guardar")}
         </Button>
-        <Button type="button" onClick={onCancel} variant="outline" className="border-neutral-700 hover:bg-neutral-800">
+        <Button type="button" onClick={onCancel} variant="outline" className="border-[--border-color] hover:bg-[--surface-mid]">
           <X className="h-4 w-4 mr-1" />
           {t("Cancel", "Cancelar")}
         </Button>
@@ -545,26 +545,26 @@ function QuestionForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
+          <label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Question (English)", "Pregunta (Inglés)")}
           </label>
           <textarea
             value={formData.question_en}
             onChange={(e) => setFormData({ ...formData, question_en: e.target.value })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+            className="w-full rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
             rows={2}
             placeholder="What is the first book of the Bible?"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
+          <label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Question (Spanish)", "Pregunta (Español)")}
           </label>
           <textarea
             value={formData.question_es}
             onChange={(e) => setFormData({ ...formData, question_es: e.target.value })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+            className="w-full rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
             rows={2}
             placeholder="¿Cuál es el primer libro de la Biblia?"
             required
@@ -574,13 +574,13 @@ function QuestionForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
+          <label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Level", "Nivel")}
           </label>
           <select
             value={formData.level_id}
             onChange={(e) => setFormData({ ...formData, level_id: e.target.value })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+            className="w-full rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
           >
             {levels.map((level) => (
               <option key={level.id} value={level.id}>{level.name}</option>
@@ -588,14 +588,14 @@ function QuestionForm({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
+          <label className="block text-sm font-medium text-[--ink-mid] mb-1">
             {t("Category", "Categoría")}
           </label>
           <input
             type="text"
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+            className="w-full rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
             placeholder="Old Testament, New Testament, Jesus"
             required
           />
@@ -603,19 +603,19 @@ function QuestionForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-neutral-300 mb-1">
+        <label className="block text-sm font-medium text-[--ink-mid] mb-1">
           {t("Answer Options (click radio for correct answer)", "Opciones de respuesta (haz clic en el radio para la respuesta correcta)")}
         </label>
         
         {formData.options_en.map((option: string, index: number) => (
           <div key={index} className="space-y-2 mb-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-neutral-400 w-4">{String.fromCharCode(65 + index)}.</span>
+              <span className="text-sm text-[--ink-light] w-4">{String.fromCharCode(65 + index)}.</span>
               <input
                 type="text"
                 value={option}
                 onChange={(e) => updateOption('en', index, e.target.value)}
-                className="flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+                className="flex-1 rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
                 placeholder={`Option ${index + 1} in English`}
                 required
               />
@@ -632,7 +632,7 @@ function QuestionForm({
                 type="text"
                 value={formData.options_es[index]}
                 onChange={(e) => updateOption('es', index, e.target.value)}
-                className="flex-1 rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-white"
+                className="flex-1 rounded border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-sm text-[--ink-dark]"
                 placeholder={`Opción ${index + 1} en español`}
                 required
               />
@@ -646,7 +646,7 @@ function QuestionForm({
           <Save className="h-4 w-4 mr-1" />
           {t("Save", "Guardar")}
         </Button>
-        <Button type="button" onClick={onCancel} variant="outline" className="border-neutral-700 hover:bg-neutral-800">
+        <Button type="button" onClick={onCancel} variant="outline" className="border-[--border-color] hover:bg-[--surface-mid]">
           <X className="h-4 w-4 mr-1" />
           {t("Cancel", "Cancelar")}
         </Button>

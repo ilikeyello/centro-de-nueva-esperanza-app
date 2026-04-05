@@ -332,23 +332,23 @@ export function Media({ onStartMusic }: MediaProps) {
       <section className="space-y-6">
         <div className="grid gap-6 md:grid-cols-3">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-red-400">
+            <div className="flex items-center gap-2 text-[--sage]">
               <Play className="h-5 w-5" />
               <span className="text-sm font-semibold uppercase tracking-[0.2em]">
                 {t("Watch Live", "Ver en Vivo")}
               </span>
             </div>
-            <h1 className="text-3xl font-bold text-neutral-900 sm:text-4xl">
+            <h1 className="text-3xl font-bold text-[--ink-dark] sm:text-4xl">
               {t("Experience CNE Online", "Experimenta CNE en Línea")}
             </h1>
-            <p className="text-neutral-700">
+            <p className="text-[--ink-mid]">
               {t(
                 "Join us for our weekly services and special events. When we go live, the stream will begin automatically.",
                 "Únete a nosotros para nuestros servicios semanales y eventos especiales. Cuando estemos en vivo, la transmisión comenzará automáticamente."
               )}
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-red-600 hover:bg-red-700" asChild>
+              <Button className="bg-[--sage] hover:bg-[--sage-mid]" asChild>
                 <a
                   href="#music"
                   className="flex items-center gap-2"
@@ -363,13 +363,13 @@ export function Media({ onStartMusic }: MediaProps) {
                 </a>
               </Button>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-              <Calendar className="h-5 w-5 text-red-600" />
+            <div className="flex items-center gap-3 rounded-xl border border-[--border-color] bg-[--surface] p-4 shadow-sm">
+              <Calendar className="h-5 w-5 text-[--sage]" />
               <div>
-                <p className="text-sm font-semibold text-neutral-900">
+                <p className="text-sm font-semibold text-[--ink-dark]">
                   {t("Live Sundays at 3:30 PM", "En vivo los domingos a las 3:30 PM")}
                 </p>
-                <p className="text-sm text-neutral-600">
+                <p className="text-sm text-[--ink-mid]">
                   {t(
                     "Arrive a few minutes early to chat and pray together.",
                     "Llega unos minutos antes para conversar y orar juntos."
@@ -378,17 +378,17 @@ export function Media({ onStartMusic }: MediaProps) {
               </div>
             </div>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl md:col-span-2">
+          <div className="overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2">
             <div className="relative aspect-video">
               {!livestreamIsLive && !manualLiveOverride && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-neutral-100 px-6 text-center">
-                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-600">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
                     {livestreamTitle || t("Livestream", "Transmisión en vivo")}
                   </p>
-                  <p className="text-2xl font-bold text-neutral-900 sm:text-3xl">
+                  <p className="text-2xl font-bold text-[--ink-dark] sm:text-3xl">
                     {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
                   </p>
-                  <p className="text-base text-neutral-700">
+                  <p className="text-base text-[--ink-mid]">
                     {t(
                       "The player will appear when we go live.",
                       "El reproductor aparecerá cuando estemos en vivo."
@@ -421,10 +421,10 @@ export function Media({ onStartMusic }: MediaProps) {
 
       <section className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-neutral-900">
+          <h2 className="text-2xl font-bold text-[--ink-dark]">
             {t("Devotionals", "Devocionales")}
           </h2>
-          <p className="text-neutral-600">
+          <p className="text-[--ink-mid]">
             {t(
               "Catch up on previous devotionals and share them with friends.",
               "Ponte al día con los devocionales anteriores y compártelos con amigos."
@@ -435,13 +435,13 @@ export function Media({ onStartMusic }: MediaProps) {
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="border-none bg-transparent shadow-none md:col-span-2">
             <CardHeader>
-              <CardTitle className="text-neutral-900">
+              <CardTitle className="text-[--ink-dark]">
                 {effectiveSelectedSermon
                   ? effectiveSelectedSermon.title
                   : t("No devotional selected", "Ningún devocional seleccionado")}
               </CardTitle>
               {!loadingSermons && effectiveSelectedSermon && effectiveSelectedSermon.description && (
-                <p className="text-sm text-neutral-700 leading-relaxed mt-2">
+                <p className="text-sm text-[--ink-mid] leading-relaxed mt-2">
                   {effectiveSelectedSermon.description}
                 </p>
               )}
@@ -449,7 +449,7 @@ export function Media({ onStartMusic }: MediaProps) {
             <CardContent className="space-y-3">
               <div className="relative aspect-video overflow-hidden rounded-2xl">
                 {loadingSermons && !selectedSermon && (
-                  <div className="flex h-full items-center justify-center text-xs text-neutral-500">
+                  <div className="flex h-full items-center justify-center text-xs text-[--ink-light]">
                     {t("Loading sermons...", "Cargando sermones...")}
                   </div>
                 )}
@@ -463,13 +463,13 @@ export function Media({ onStartMusic }: MediaProps) {
                   />
                 )}
                 {!loadingSermons && !effectiveSelectedSermon && (
-                  <div className="flex h-full items-center justify-center text-xs text-neutral-500">
+                  <div className="flex h-full items-center justify-center text-xs text-[--ink-light]">
                     {t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}
                   </div>
                 )}
               </div>
               {!loadingSermons && effectiveSelectedSermon && (
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-[--ink-light]">
                   {t(
                     "Tap a devotional from the list to watch a different message.",
                     "Toca un devocional de la lista para ver un mensaje diferente."
@@ -479,21 +479,21 @@ export function Media({ onStartMusic }: MediaProps) {
             </CardContent>
           </Card>
 
-          <Card className="border-neutral-200 bg-white">
+          <Card className="border-[--border-color] bg-[--surface]">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-neutral-900">
+              <CardTitle className="text-sm font-semibold text-[--ink-dark]">
                 {t("All Devotionals", "Todos los Devocionales")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-80 space-y-1 overflow-y-auto text-xs">
                 {loadingSermons && (
-                  <p className="text-neutral-500">
+                  <p className="text-[--ink-light]">
                     {t("Loading sermons...", "Cargando sermones...")}
                   </p>
                 )}
                 {!loadingSermons && sermons.length === 0 && (
-                  <p className="text-neutral-500">
+                  <p className="text-[--ink-light]">
                     {t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}
                   </p>
                 )}
@@ -508,12 +508,12 @@ export function Media({ onStartMusic }: MediaProps) {
                             onClick={() => setSelectedSermonId(sermon.id)}
                             className={`flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left transition-colors ${
                               isActive
-                                ? "bg-red-600 text-white"
-                                : "border border-transparent text-black bg-white hover:border-neutral-300 hover:bg-neutral-50"
+                                ? "bg-[--sage] text-white"
+                                : "border border-transparent text-[--ink-dark] bg-[--surface] hover:border-[--border-color] hover:bg-[--surface]"
                             }`}
                           >
                             <span className="truncate text-[0.8rem] font-medium">{sermon.title}</span>
-                            <span className="mt-0.5 text-[0.65rem] text-neutral-600">
+                            <span className="mt-0.5 text-[0.65rem] text-[--ink-mid]">
                               {new Date(sermon.createdAt).toLocaleDateString(
                                 language === "en" ? "en-US" : "es-MX",
                                 {
@@ -537,10 +537,10 @@ export function Media({ onStartMusic }: MediaProps) {
 
       <section id="music" className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-neutral-900">
+          <h2 className="text-2xl font-bold text-[--ink-dark]">
             {t("Music & Worship", "Música y Adoración")}
           </h2>
-          <p className="text-neutral-600">
+          <p className="text-[--ink-mid]">
             {t(
               "Listen to curated worship playlists that we love to sing together.",
               "Escucha listas de reproducción de adoración que nos encanta cantar juntos."
@@ -549,9 +549,9 @@ export function Media({ onStartMusic }: MediaProps) {
         </div>
 
         {playlists.length === 0 && (
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 text-center">
-            <Music className="mx-auto mb-2 h-8 w-8 text-neutral-600" />
-            <p className="text-sm text-neutral-500">
+          <div className="rounded-xl border border-[--border-color] bg-[--surface] p-6 text-center">
+            <Music className="mx-auto mb-2 h-8 w-8 text-[--ink-mid]" />
+            <p className="text-sm text-[--ink-light]">
               {t("No playlists available yet.", "Todavía no hay listas de reproducción disponibles.")}
             </p>
           </div>
@@ -570,17 +570,17 @@ export function Media({ onStartMusic }: MediaProps) {
             return (
               <Card
                 key={playlist.id}
-                className="overflow-hidden border-neutral-200 bg-white transition-colors"
+                className="overflow-hidden border-[--border-color] bg-[--surface] transition-colors"
               >
                 <button
                   type="button"
-                  className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-neutral-50"
+                  className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-[--surface]"
                   onClick={() =>
                     setExpandedPlaylistId(isExpanded ? null : playlist.id)
                   }
                 >
                   <div
-                    className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-lg"
+                    className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[--sage] text-white shadow-lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       playPlaylistByUrl(playlist.url, playlist.title);
@@ -600,28 +600,28 @@ export function Media({ onStartMusic }: MediaProps) {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-neutral-900">
+                    <p className="truncate text-sm font-semibold text-[--ink-dark]">
                       {playlist.title}
                     </p>
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-[--ink-light]">
                       {isThisPlaylistPlaying
                         ? t("Now Playing", "Reproduciendo")
                         : t("YouTube Playlist", "Lista de YouTube")}
                     </p>
                   </div>
                   {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 flex-shrink-0 text-neutral-400" />
+                    <ChevronUp className="h-5 w-5 flex-shrink-0 text-[--ink-light]" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 flex-shrink-0 text-neutral-400" />
+                    <ChevronDown className="h-5 w-5 flex-shrink-0 text-[--ink-light]" />
                   )}
                 </button>
 
                   {isExpanded && (
-                    <div className="border-t border-neutral-200 px-4 pb-4 pt-2">
+                    <div className="border-t border-[--border-color] px-4 pb-4 pt-2">
                     {!isThisPlaylistPlaying && (
                       <button
                         type="button"
-                        className="mb-3 w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                        className="mb-3 w-full rounded-lg bg-[--sage] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[--sage-mid]"
                         onClick={() => {
                           playPlaylistByUrl(playlist.url, playlist.title);
                           if (onStartMusic) onStartMusic();
@@ -646,20 +646,20 @@ export function Media({ onStartMusic }: MediaProps) {
                                 className={cn(
                                   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                                   isActive
-                                    ? "bg-red-600 text-white"
-                                    : "border border-transparent text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900"
+                                    ? "bg-[--sage] text-white"
+                                    : "border border-transparent text-[--ink-mid] hover:bg-[--surface] hover:text-[--ink-dark]"
                                 )}
                               >
-                                <span className="w-6 flex-shrink-0 text-center text-xs text-neutral-500">
+                                <span className="w-6 flex-shrink-0 text-center text-xs text-[--ink-light]">
                                   {isActive && isPlaying ? (
-                                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
+                                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-[--sage] animate-pulse" />
                                   ) : (
                                     idx + 1
                                   )}
                                 </span>
                                 <span className="min-w-0 flex-1 truncate">
                                   {video.loading ? (
-                                    <span className="inline-flex items-center gap-1.5 text-neutral-500">
+                                    <span className="inline-flex items-center gap-1.5 text-[--ink-light]">
                                       <Loader2 className="h-3 w-3 animate-spin" />
                                       {t("Loading...", "Cargando...")}
                                     </span>
@@ -673,7 +673,7 @@ export function Media({ onStartMusic }: MediaProps) {
                         })}
                       </ul>
                     ) : isThisPlaylistPlaying ? (
-                      <div className="flex items-center justify-center gap-2 py-4 text-sm text-neutral-500">
+                      <div className="flex items-center justify-center gap-2 py-4 text-sm text-[--ink-light]">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         {t(
                           "Loading playlist songs...",
@@ -681,7 +681,7 @@ export function Media({ onStartMusic }: MediaProps) {
                         )}
                       </div>
                     ) : (
-                      <p className="py-2 text-center text-xs text-neutral-500">
+                      <p className="py-2 text-center text-xs text-[--ink-light]">
                         {t(
                           "Press play to see all songs",
                           "Presiona reproducir para ver todas las canciones"

@@ -39,9 +39,9 @@ export const NotificationSettings: React.FC = () => {
 
   if (!isSupported) {
     return (
-      <Card className="bg-neutral-900 border-neutral-800">
+      <Card className="bg-[--surface] border-[--border-color]">
         <CardContent className="p-6">
-          <div className="flex items-center gap-3 text-neutral-400">
+          <div className="flex items-center gap-3 text-[--ink-light]">
             <AlertCircle className="h-5 w-5" />
             <span>
               {language === 'es' 
@@ -55,9 +55,9 @@ export const NotificationSettings: React.FC = () => {
   }
 
   return (
-    <Card className="bg-neutral-900 border-neutral-800">
+    <Card className="bg-[--surface] border-[--border-color]">
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
+        <CardTitle className="text-[--ink-dark] flex items-center gap-2">
           <Bell className="h-5 w-5" />
           {t("Notification Settings", "Configuración de Notificaciones")}
         </CardTitle>
@@ -66,10 +66,10 @@ export const NotificationSettings: React.FC = () => {
         {/* Push Notifications Toggle */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <Label className="text-white font-medium">
+            <Label className="text-[--ink-dark] font-medium">
               {t("Push Notifications", "Notificaciones Push")}
             </Label>
-            <p className="text-sm text-neutral-400">
+            <p className="text-sm text-[--ink-light]">
               {language === 'es' 
                 ? 'Recibir notificaciones sobre noticias, anuncios y recordatorios de transmisión en vivo.'
                 : 'Receive notifications about news, announcements, and livestream reminders.'}
@@ -92,14 +92,14 @@ export const NotificationSettings: React.FC = () => {
               {isSubscribed ? (
                 <Bell className="h-4 w-4 text-green-400" />
               ) : (
-                <BellOff className="h-4 w-4 text-neutral-400" />
+                <BellOff className="h-4 w-4 text-[--ink-light]" />
               )}
             </div>
           ) : (
             <Button
               onClick={handleEnableNotifications}
               disabled={isLoading}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-[--sage] hover:bg-[--sage-mid]"
             >
               {isLoading ? (
                 <span>{t("Enabling...", "Activando...")}</span>
@@ -133,28 +133,28 @@ export const NotificationSettings: React.FC = () => {
         {/* Notification Types */}
         {isSubscribed && (
           <div className="space-y-4">
-            <h4 className="text-white font-medium">
+            <h4 className="text-[--ink-dark] font-medium">
               {t("Notification Types", "Tipos de Notificaciones")}
             </h4>
             
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 bg-blue-400 rounded-full"></div>
-                <span className="text-sm text-neutral-300">
+                <span className="text-sm text-[--ink-mid]">
                   {t("News & Updates", "Noticias y Actualizaciones")}
                 </span>
               </div>
               
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 bg-green-400 rounded-full"></div>
-                <span className="text-sm text-neutral-300">
+                <span className="text-sm text-[--ink-mid]">
                   {t("Announcements", "Anuncios")}
                 </span>
               </div>
               
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 bg-red-400 rounded-full"></div>
-                <span className="text-sm text-neutral-300">
+                <span className="text-sm text-[--ink-mid]">
                   {t("Livestream Reminders", "Recordatorios de Transmisión en Vivo")}
                 </span>
               </div>

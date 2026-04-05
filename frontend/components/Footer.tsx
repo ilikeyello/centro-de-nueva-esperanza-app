@@ -75,22 +75,22 @@ export function Footer() {
   const content = footerContent[language];
 
   return (
-    <footer className="bg-warm-cream border-t border-neutral-200 text-neutral-900">
+    <footer className="bg-[--background] border-t border-[--border-color] text-[--ink-dark]">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Church Info */}
           <div className="space-y-4">
-            <h3 className="serif-heading text-xl font-bold text-warm-red">
+            <h3 className="serif-heading text-xl font-bold text-[--sage]">
               {content.churchName}
             </h3>
-            <div className="space-y-4 text-sm text-neutral-600">
+            <div className="space-y-4 text-sm text-[--ink-mid]">
               {content.locations.map((location, index) => (
                 <div key={index} className="space-y-1">
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-neutral-900">{location.name}</p>
-                      <p className="text-neutral-500">{location.address}</p>
+                      <p className="font-semibold text-[--ink-dark]">{location.name}</p>
+                      <p className="text-[--ink-light]">{location.address}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-6">
@@ -101,13 +101,13 @@ export function Footer() {
               ))}
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 flex-shrink-0" />
-                <a href={`tel:${content.phone}`} className="hover:text-warm-red transition-colors">
+                <a href={`tel:${content.phone}`} className="hover:text-[--sage] transition-colors">
                   {content.phone}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 flex-shrink-0" />
-                <a href={`mailto:${content.email}`} className="hover:text-warm-red transition-colors">
+                <a href={`mailto:${content.email}`} className="hover:text-[--sage] transition-colors">
                   {content.email}
                 </a>
               </div>
@@ -116,10 +116,10 @@ export function Footer() {
 
           {/* Service Times - Now integrated with locations */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-warm-red">
+            <h3 className="text-lg font-semibold text-[--sage]">
               {t("Service Times", "Horarios de Servicio")}
             </h3>
-            <div className="space-y-2 text-sm text-neutral-300">
+            <div className="space-y-2 text-sm text-[--ink-mid]">
               {content.locations.map((location, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Clock className="h-4 w-4 flex-shrink-0" />
@@ -129,8 +129,8 @@ export function Footer() {
             </div>
             
             {/* Note about two locations */}
-            <div className="mt-4 p-3 bg-neutral-100 rounded-lg">
-              <p className="text-xs text-neutral-600">
+            <div className="mt-4 p-3 bg-[--sage-light-50] rounded-lg">
+              <p className="text-xs text-[--ink-mid]">
                 {t(
                   "We now have two locations to serve you better!",
                   "¡Ahora tenemos dos ubicaciones para servirte mejor!"
@@ -141,37 +141,37 @@ export function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-warm-red">
+            <h3 className="text-lg font-semibold text-[--sage]">
               {t("Quick Links", "Enlaces Rápidos")}
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#home" className="text-neutral-600 hover:text-warm-red transition-colors">
+                <a href="#home" className="text-[--ink-mid] hover:text-[--sage] transition-colors">
                   {content.quickLinks.home}
                 </a>
               </li>
               <li>
-                <a href="#newHere" className="text-neutral-600 hover:text-warm-red transition-colors">
+                <a href="#newHere" className="text-[--ink-mid] hover:text-[--sage] transition-colors">
                   {content.quickLinks.about}
                 </a>
               </li>
               <li>
-                <a href="#news" className="text-neutral-600 hover:text-warm-red transition-colors">
+                <a href="#news" className="text-[--ink-mid] hover:text-[--sage] transition-colors">
                   {content.quickLinks.events}
                 </a>
               </li>
               <li>
-                <a href="#media" className="text-neutral-600 hover:text-warm-red transition-colors">
+                <a href="#media" className="text-[--ink-mid] hover:text-[--sage] transition-colors">
                   {content.quickLinks.media}
                 </a>
               </li>
               <li>
-                <a href="#donations" className="text-neutral-600 hover:text-warm-red transition-colors">
+                <a href="#donations" className="text-[--ink-mid] hover:text-[--sage] transition-colors">
                   {content.quickLinks.give}
                 </a>
               </li>
               <li>
-                <a href="#contact" className="text-neutral-600 hover:text-warm-red transition-colors">
+                <a href="#contact" className="text-[--ink-mid] hover:text-[--sage] transition-colors">
                   {content.quickLinks.contact}
                 </a>
               </li>
@@ -180,7 +180,7 @@ export function Footer() {
 
           {/* Social Media */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-warm-red">
+            <h3 className="text-lg font-semibold text-[--sage]">
               {content.socialTitle}
             </h3>
             <div className="flex gap-3">
@@ -189,7 +189,7 @@ export function Footer() {
                   href={churchInfo.facebook_page_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors"
                   aria-label="Facebook"
                 >
                   <Facebook className="h-5 w-5" />
@@ -199,7 +199,7 @@ export function Footer() {
                   href="https://facebook.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors"
                   aria-label="Facebook"
                 >
                   <Facebook className="h-5 w-5" />
@@ -209,7 +209,7 @@ export function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
@@ -219,7 +219,7 @@ export function Footer() {
                   href={churchInfo.youtube_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors"
                   aria-label="YouTube"
                 >
                   <Youtube className="h-5 w-5" />
@@ -229,14 +229,14 @@ export function Footer() {
                   href="https://youtube.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red hover:bg-light-warm-red transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors"
                   aria-label="YouTube"
                 >
                   <Youtube className="h-5 w-5" />
                 </a>
               )}
             </div>
-            <p className="text-sm text-neutral-400 mt-4">
+            <p className="text-sm text-[--ink-light] mt-4">
               {t(
                 "Join our online community for daily encouragement and updates.",
                 "Únete a nuestra comunidad en línea para estímulo diario y actualizaciones."
@@ -246,7 +246,7 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 border-t border-neutral-200 pt-8 text-center text-sm text-neutral-500">
+        <div className="mt-12 border-t border-[--border-color] pt-8 text-center text-sm text-[--ink-light]">
           <p>{content.copyright}</p>
         </div>
       </div>

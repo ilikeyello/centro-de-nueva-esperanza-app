@@ -360,7 +360,7 @@ export function TriviaManager() {
               onClick={() => setSelectedLevel(level.id)}
               className={selectedLevel === level.id 
                 ? "bg-red-600 hover:bg-red-700" 
-                : "border-neutral-700 text-white hover:bg-neutral-800"
+                : "border-[--border-color] text-[--ink-dark] hover:bg-[--surface-mid]"
               }
             >
               {level.name}
@@ -370,16 +370,16 @@ export function TriviaManager() {
 
         {/* Level Details */}
         {levels.find(l => l.id === selectedLevel) && (
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
+          <div className="rounded-xl border border-[--border-color] bg-[--surface]/40 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-white">
                   {levels.find(l => l.id === selectedLevel)?.name}
                 </h3>
-                <p className="text-sm text-neutral-400">
+                <p className="text-sm text-[--ink-light]">
                   {levels.find(l => l.id === selectedLevel)?.description}
                 </p>
-                <div className="mt-2 flex gap-4 text-xs text-neutral-500">
+                <div className="mt-2 flex gap-4 text-xs text-[--ink-light]">
                   <span>{t("Target", "Objetivo")}: {levels.find(l => l.id === selectedLevel)?.targetGroup}</span>
                   <span>{t("Time Limit", "Límite de Tiempo")}: {levels.find(l => l.id === selectedLevel)?.timeLimit}s</span>
                   <span>{t("Passing Score", "Puntuación Aprobatoria")}: {levels.find(l => l.id === selectedLevel)?.passingScore}%</span>
@@ -399,7 +399,7 @@ export function TriviaManager() {
                       setIsAddingLevel(true);
                     }
                   }}
-                  className="border-neutral-700 text-white hover:bg-neutral-800"
+                  className="border-[--border-color] text-[--ink-dark] hover:bg-[--surface-mid]"
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
@@ -428,11 +428,11 @@ export function TriviaManager() {
                 id="shuffle-questions"
                 checked={shuffleQuestions}
                 onCheckedChange={(checked) => setShuffleQuestions(checked as boolean)}
-                className="border-neutral-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                className="border-[--border-color] data-[state=checked]:bg-[--sage] data-[state=checked]:border-[--sage]"
               />
               <Label
                 htmlFor="shuffle-questions"
-                className="text-sm text-neutral-300 cursor-pointer"
+                className="text-sm text-[--ink-mid] cursor-pointer"
               >
                 {t("Shuffle Questions", "Barajar Preguntas")}
               </Label>
@@ -463,7 +463,7 @@ export function TriviaManager() {
         console.log('Question modal should be showing, isAdding:', isAdding, 'editingId:', editingId);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="mx-4 max-w-2xl border-neutral-800 bg-neutral-900">
+          <Card className="mx-4 max-w-2xl border-[--border-color] bg-[--surface]">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>
@@ -485,7 +485,7 @@ export function TriviaManager() {
               <Textarea
                 value={formData.question || ""}
                 onChange={(e) => setFormData(prev => ({ ...prev, question: e.target.value }))}
-                className="border-neutral-700 bg-neutral-800 text-white"
+                className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                 placeholder={t("Enter your question in any language", "Ingresa tu pregunta en cualquier idioma")}
               />
             </div>
@@ -496,10 +496,10 @@ export function TriviaManager() {
                 value={formData.category}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
               >
-                <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                <SelectTrigger className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-neutral-700 bg-neutral-800">
+                <SelectContent className="border-[--border-color] bg-[--surface-mid]">
                   {categories.map((category) => (
                     <SelectItem key={category} value={category} className="text-white">
                       {category}
@@ -515,10 +515,10 @@ export function TriviaManager() {
                 value={formData.level}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, level: value }))}
               >
-                <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                <SelectTrigger className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-neutral-700 bg-neutral-800">
+                <SelectContent className="border-[--border-color] bg-[--surface-mid]">
                   {levels.map((level) => (
                     <SelectItem key={level.id} value={level.id} className="text-white">
                       {level.name}
@@ -533,7 +533,7 @@ export function TriviaManager() {
               <Input
                 value={formData.reference || ""}
                 onChange={(e) => setFormData(prev => ({ ...prev, reference: e.target.value }))}
-                className="border-neutral-700 bg-neutral-800 text-white"
+                className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                 placeholder={t("e.g., Genesis 1:1", "ej., Génesis 1:1")}
               />
             </div>
@@ -542,7 +542,7 @@ export function TriviaManager() {
               <Label className="text-white">{t("Answer Options", "Opciones de Respuesta")}</Label>
               {[0, 1, 2, 3].map((index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <span className="text-sm text-neutral-400">{index + 1}.</span>
+                  <span className="text-sm text-[--ink-light]">{index + 1}.</span>
                   <Input
                     value={formData.optionInputs?.[index] || ""}
                     onChange={(e) => {
@@ -550,7 +550,7 @@ export function TriviaManager() {
                       newOptions[index] = e.target.value;
                       setFormData(prev => ({ ...prev, optionInputs: newOptions }));
                     }}
-                    className="border-neutral-700 bg-neutral-800 text-white"
+                    className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                     placeholder={t("Enter option in any language", "Ingresa la opción en cualquier idioma")}
                   />
                 </div>
@@ -563,10 +563,10 @@ export function TriviaManager() {
                 value={formData.correctAnswer?.toString()}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, correctAnswer: parseInt(value) }))}
               >
-                <SelectTrigger className="border-neutral-700 bg-neutral-800 text-white">
+                <SelectTrigger className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-neutral-700 bg-neutral-800">
+                <SelectContent className="border-[--border-color] bg-[--surface-mid]">
                   {[0, 1, 2, 3].map(index => (
                     <SelectItem key={index} value={index.toString()} className="text-white">
                       {t("Option", "Opción")} {index + 1}
@@ -596,7 +596,7 @@ export function TriviaManager() {
         console.log('Level modal should be showing, isAddingLevel:', isAddingLevel, 'editingLevelId:', editingLevelId);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <Card className="mx-4 max-w-2xl border-neutral-800 bg-neutral-900">
+            <Card className="mx-4 max-w-2xl border-[--border-color] bg-[--surface]">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>
@@ -623,7 +623,7 @@ export function TriviaManager() {
                     value={levelFormData.name || ""}
                     onChange={(e) => setLevelFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder={t("e.g., Kids, Youth, Adults", "ej., Niños, Jóvenes, Adultos")}
-                    className="border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                    className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark] placeholder-[--ink-light]"
                   />
                 </div>
 
@@ -635,7 +635,7 @@ export function TriviaManager() {
                     value={levelFormData.description || ""}
                     onChange={(e) => setLevelFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder={t("Describe this level...", "Describe este nivel...")}
-                    className="border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                    className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark] placeholder-[--ink-light]"
                   />
                 </div>
 
@@ -647,7 +647,7 @@ export function TriviaManager() {
                     value={levelFormData.targetGroup || ""}
                     onChange={(e) => setLevelFormData(prev => ({ ...prev, targetGroup: e.target.value }))}
                     placeholder={t("e.g., Children, Teenagers, Adults", "ej., Niños, Adolescentes, Adultos")}
-                    className="border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                    className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark] placeholder-[--ink-light]"
                   />
                 </div>
 
@@ -660,11 +660,11 @@ export function TriviaManager() {
                         ...prev, 
                         timeLimit: checked ? (prev.timeLimit || 30) : 0 
                       }))}
-                      className="border-neutral-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                      className="border-[--border-color] data-[state=checked]:bg-[--sage] data-[state=checked]:border-[--sage]"
                     />
                     <Label
                       htmlFor="enable-timer"
-                      className="text-sm text-neutral-300 cursor-pointer"
+                      className="text-sm text-[--ink-mid] cursor-pointer"
                     >
                       {t("Enable Timer", "Habilitar Temporizador")}
                     </Label>
@@ -682,9 +682,9 @@ export function TriviaManager() {
                         placeholder="30"
                         min="5"
                         max="300"
-                        className="border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                        className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark] placeholder-[--ink-light]"
                       />
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-xs text-[--ink-light]">
                         {t("Set 0 to disable timer", "Establecer 0 para desactivar el temporizador")}
                       </p>
                     </div>
@@ -702,7 +702,7 @@ export function TriviaManager() {
                     placeholder="70"
                     min="0"
                     max="100"
-                    className="border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500"
+                    className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark] placeholder-[--ink-light]"
                   />
                 </div>
 
@@ -711,11 +711,11 @@ export function TriviaManager() {
                     id="shuffle-questions-level"
                     checked={levelFormData.shuffleQuestions || false}
                     onCheckedChange={(checked) => setLevelFormData(prev => ({ ...prev, shuffleQuestions: checked as boolean }))}
-                    className="border-neutral-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                    className="border-[--border-color] data-[state=checked]:bg-[--sage] data-[state=checked]:border-[--sage]"
                   />
                   <Label
                     htmlFor="shuffle-questions-level"
-                    className="text-sm text-neutral-300 cursor-pointer"
+                    className="text-sm text-[--ink-mid] cursor-pointer"
                   >
                     {t("Shuffle Questions", "Barajar Preguntas")}
                   </Label>
@@ -742,16 +742,16 @@ export function TriviaManager() {
 
       <div className="space-y-4">
         {loading ? (
-          <div className="text-center text-neutral-400">
+          <div className="text-center text-[--ink-light]">
             {t("Loading questions...", "Cargando preguntas...")}
           </div>
         ) : questions.length === 0 ? (
-          <div className="text-center text-neutral-400">
+          <div className="text-center text-[--ink-light]">
             {t("No questions yet. Add your first question!", "No hay preguntas aún. ¡Agrega tu primera pregunta!")}
           </div>
         ) : (
           questions.map((question) => (
-            <Card key={question.id} className="border-neutral-800 bg-neutral-900/60">
+            <Card key={question.id} className="border-[--border-color] bg-[--surface]/60">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 space-y-2">
@@ -760,16 +760,16 @@ export function TriviaManager() {
                         {question.category}
                       </span>
                       {question.reference && (
-                        <span className="text-xs text-neutral-400">
+                        <span className="text-xs text-[--ink-light]">
                           {question.reference}
                         </span>
                       )}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-white">{question.questionEn}</p>
-                      <p className="text-sm text-neutral-400">{question.questionEs}</p>
+                      <p className="text-sm text-[--ink-light]">{question.questionEs}</p>
                     </div>
-                    <div className="grid gap-1 text-xs text-neutral-400 md:grid-cols-2">
+                    <div className="grid gap-1 text-xs text-[--ink-light] md:grid-cols-2">
                       <div>
                         <span className="font-medium text-white">EN:</span> {question.options.en.join(" • ")}
                       </div>
@@ -792,7 +792,7 @@ export function TriviaManager() {
                         console.log('Edit button clicked for question:', question);
                         startEdit(question);
                       }}
-                      className="border-neutral-700 text-white hover:bg-neutral-800"
+                      className="border-[--border-color] text-[--ink-dark] hover:bg-[--surface-mid]"
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>

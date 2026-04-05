@@ -431,8 +431,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
   if (loading) {
     return (
       <div className="text-center py-8">
-        <Brain className="h-8 w-8 mx-auto mb-2 animate-pulse text-red-400" />
-        <p className="text-neutral-400">{t("Loading trivia data...", "Cargando datos de trivia...")}</p>
+        <Brain className="h-8 w-8 mx-auto mb-2 animate-pulse text-[--sage]" />
+        <p className="text-[--ink-light]">{t("Loading trivia data...", "Cargando datos de trivia...")}</p>
       </div>
     );
   }
@@ -440,8 +440,8 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Brain className="h-6 w-6 text-red-400" />
+        <h2 className="text-2xl font-bold text-[--ink-dark] flex items-center gap-2">
+          <Brain className="h-6 w-6 text-[--sage]" />
           {t("Trivia Management", "Gestión de Trivia")}
         </h2>
         <div className="flex items-center gap-4">
@@ -454,9 +454,9 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
       </div>
 
       {/* Levels Section */}
-      <Card className="bg-neutral-900 border-neutral-800">
-        <CardHeader className="border-b border-neutral-800">
-          <CardTitle className="text-white flex items-center justify-between">
+      <Card className="bg-[--surface] border-[--border-color]">
+        <CardHeader className="border-b border-[--border-color]">
+          <CardTitle className="text-[--ink-dark] flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span>{t("Levels", "Niveles")}</span>
               {hasChanges() && (
@@ -471,7 +471,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setShowTranslations(!showTranslations)}
-                className={`flex items-center gap-2 text-[0.7rem] uppercase font-bold px-2 h-7 ${showTranslations ? 'text-red-400 bg-red-400/10 border-red-400/20 border' : 'text-neutral-500 border-neutral-800 border'}`}
+                className={`flex items-center gap-2 text-[0.7rem] uppercase font-bold px-2 h-7 ${showTranslations ? 'text-[--sage] bg-red-400/10 border-red-400/20 border' : 'text-[--ink-light] border-[--border-color] border'}`}
               >
                 <Globe className="h-3.5 w-3.5" />
                 {t("Show Spanish", "Mostrar Español")}
@@ -491,7 +491,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                   if (confirmed) loadData();
                 }}
                 disabled={!hasChanges()}
-                className="border-neutral-700 hover:bg-neutral-800 h-9"
+                className="border-[--border-color] hover:bg-[--surface-mid] h-9"
               >
                 <X className="h-4 w-4 mr-2" />
                 {t("Discard", "Descartar")}
@@ -516,7 +516,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                     setExpandedLevels(prev => new Set(prev).add(id));
                   }
                 }}
-                className="bg-red-600 hover:bg-red-700 h-9"
+                className="bg-[--sage] hover:bg-[--sage-mid] h-9"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t("Add Level", "Agregar Nivel")}
@@ -535,22 +535,22 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
               const draft = quickAddQuestions[levelId] || { question_en: '', options_en: ['', '', '', ''], correct_answer: 0 };
               
               return (
-                <div key={levelId} className={`border-b border-neutral-800 last:border-0 ${isNew ? 'bg-red-950/5' : ''}`}>
-                  <div className="p-4 hover:bg-neutral-800/30 transition-colors flex items-center justify-between">
+                <div key={levelId} className={`border-b border-[--border-color] last:border-0 ${isNew ? 'bg-red-950/5' : ''}`}>
+                  <div className="p-4 hover:bg-[--surface-mid]/30 transition-colors flex items-center justify-between">
                     <button
                       type="button"
                       className="flex flex-1 items-center gap-3 text-left group"
                       onClick={() => toggleLevelExpansion(levelId)}
                     >
-                      <div className="text-neutral-500 group-hover:text-white transition-colors">
+                      <div className="text-[--ink-light] group-hover:text-[--ink-dark] transition-colors">
                         {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-white group-hover:text-red-400 transition-colors">{level.name}</h3>
-                          {isNew && <span className="text-[0.6rem] bg-red-600 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter">New</span>}
+                          <h3 className="font-bold text-[--ink-dark] group-hover:text-[--sage] transition-colors">{level.name}</h3>
+                          {isNew && <span className="text-[0.6rem] bg-red-600 text-[--ink-dark] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter">New</span>}
                         </div>
-                        <p className="text-xs text-neutral-500">
+                        <p className="text-xs text-[--ink-light]">
                           {levelQuestions.length} {t("questions", "preguntas")} • {level.time_limit}s • {level.passing_score}% {t("to pass", "para ganar")}
                         </p>
                       </div>
@@ -560,7 +560,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-neutral-500 hover:text-red-400 hover:bg-red-950/30"
+                        className="h-8 w-8 text-[--ink-light] hover:text-[--sage] hover:bg-red-950/30"
                         onClick={(e) => {
                           e.stopPropagation();
                           stageLevelDelete(levelId);
@@ -574,50 +574,50 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                   {isExpanded && (
                     <div className="px-6 pb-6 pt-2 space-y-6">
                       {/* Level Stats Editor */}
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-neutral-950/50 p-4 rounded-lg border border-neutral-800">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[--surface-mid]/50 p-4 rounded-lg border border-[--border-color]">
                         <div className="space-y-1">
-                          <Label className="text-[0.7rem] uppercase font-bold text-neutral-500">{t("Level Name", "Nombre")}</Label>
+                          <Label className="text-[0.7rem] uppercase font-bold text-[--ink-light]">{t("Level Name", "Nombre")}</Label>
                           <Input
                             value={level.name}
                             onChange={e => handleLevelChange(levelId, 'name', e.target.value)}
-                            className="bg-neutral-900 border-neutral-800 text-white h-9"
+                            className="bg-[--surface] border-[--border-color] text-[--ink-dark] h-9"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-[0.7rem] uppercase font-bold text-neutral-500">{t("Time (sec)", "Tiempo (seg)")}</Label>
+                          <Label className="text-[0.7rem] uppercase font-bold text-[--ink-light]">{t("Time (sec)", "Tiempo (seg)")}</Label>
                           <Input
                             type="number"
                             value={level.time_limit || 0}
                             onChange={e => handleLevelChange(levelId, 'time_limit', parseInt(e.target.value) || 0)}
-                            className="bg-neutral-900 border-neutral-800 text-white h-9"
+                            className="bg-[--surface] border-[--border-color] text-[--ink-dark] h-9"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-[0.7rem] uppercase font-bold text-neutral-500">{t("Pass Score %", "Aprobación %")}</Label>
+                          <Label className="text-[0.7rem] uppercase font-bold text-[--ink-light]">{t("Pass Score %", "Aprobación %")}</Label>
                           <Input
                             type="number"
                             value={level.passing_score}
                             onChange={e => handleLevelChange(levelId, 'passing_score', parseInt(e.target.value) || 0)}
-                            className="bg-neutral-900 border-neutral-800 text-white h-9"
+                            className="bg-[--surface] border-[--border-color] text-[--ink-dark] h-9"
                           />
                         </div>
                         <div className="flex flex-col justify-end gap-2 pb-1">
-                          <Label className="text-[0.7rem] uppercase font-bold text-neutral-500 flex items-center gap-2">
+                          <Label className="text-[0.7rem] uppercase font-bold text-[--ink-light] flex items-center gap-2">
                             <input
                               type="checkbox"
                               checked={level.shuffle_questions}
                               onChange={e => handleLevelChange(levelId, 'shuffle_questions', e.target.checked)}
-                              className="rounded border-neutral-800 bg-neutral-900"
+                              className="rounded border-[--border-color] bg-[--surface]"
                             />
                             {t("Shuffle", "Mezclar")}
                           </Label>
                         </div>
                         <div className="md:col-span-4 space-y-1">
-                          <Label className="text-[0.7rem] uppercase font-bold text-neutral-500">{t("Description", "Descripción")}</Label>
+                          <Label className="text-[0.7rem] uppercase font-bold text-[--ink-light]">{t("Description", "Descripción")}</Label>
                           <Input
                             value={level.description || ''}
                             onChange={e => handleLevelChange(levelId, 'description', e.target.value)}
-                            className="bg-neutral-900 border-neutral-800 text-white h-9"
+                            className="bg-[--surface] border-[--border-color] text-[--ink-dark] h-9"
                             placeholder={t("Level description...", "Descripción del nivel...")}
                           />
                         </div>
@@ -625,16 +625,16 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
 
                       {/* Question List */}
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
-                          <h4 className="text-sm font-bold text-neutral-300 flex items-center gap-2">
-                            <Brain className="h-4 w-4 text-red-400" />
+                        <div className="flex items-center justify-between border-b border-[--border-color] pb-2">
+                          <h4 className="text-sm font-bold text-[--ink-mid] flex items-center gap-2">
+                            <Brain className="h-4 w-4 text-[--sage]" />
                             {t("Questions", "Preguntas")}
                           </h4>
                         </div>
                         
                         <div className="space-y-4">
                           {levelQuestions.map((q, qIndex) => (
-                            <div key={q.id} className="relative group/q bg-neutral-900/40 p-4 rounded-lg border border-neutral-800 hover:border-neutral-700 transition-colors">
+                            <div key={q.id} className="relative group/q bg-[--surface]/40 p-4 rounded-lg border border-[--border-color] hover:border-[--border-color] transition-colors">
                               <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 mb-3">
                                       <div className="flex-1 space-y-2">
                                         <div className="grid grid-cols-[1fr_200px] gap-2">
@@ -646,13 +646,13 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                                 handleQuestionChange(q.id, 'question_es', e.target.value);
                                               }
                                             }}
-                                            className="bg-neutral-950 border-neutral-800 text-white font-medium italic h-9"
+                                            className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark] font-medium italic h-9"
                                             placeholder={t("Question text (EN)...", "Texto de la pregunta (ING)...")}
                                           />
                                           <Input
                                             value={q.category || 'General'}
                                             onChange={e => handleQuestionChange(q.id, 'category', e.target.value)}
-                                            className="bg-neutral-950 border-neutral-800 text-neutral-400 font-bold uppercase text-[0.6rem] h-9"
+                                            className="bg-[--surface-mid] border-[--border-color] text-[--ink-light] font-bold uppercase text-[0.6rem] h-9"
                                             placeholder={t("Category...", "Categoría...")}
                                           />
                                         </div>
@@ -661,29 +661,29 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                             <Input
                                               value={q.question_es || ''}
                                               onChange={e => handleQuestionChange(q.id, 'question_es', e.target.value)}
-                                              className="bg-neutral-950/50 border-neutral-800 text-neutral-300 font-medium italic h-8 border-dashed"
+                                              className="bg-[--surface-mid]/50 border-[--border-color] text-[--ink-mid] font-medium italic h-8 border-dashed"
                                               placeholder={t("Spanish translation...", "Traducción al español...")}
                                             />
                                           )}
                                           <Input
                                             value={q.reference || ''}
                                             onChange={e => handleQuestionChange(q.id, 'reference', e.target.value)}
-                                            className="bg-neutral-950 border-neutral-800 text-blue-400/70 text-[0.65rem] h-8 border-dashed"
+                                            className="bg-[--surface-mid] border-[--border-color] text-blue-400/70 text-[0.65rem] h-8 border-dashed"
                                             placeholder={t("Biblical Reference (e.g., John 3:16)...", "Referencia (ej., Juan 3:16)...")}
                                           />
                                         </div>
                                       </div>
                                       <div className="flex flex-col gap-2">
                                         <div className="flex items-center gap-2">
-                                          <Label className="text-[0.6rem] uppercase text-neutral-500 whitespace-nowrap">Level:</Label>
+                                          <Label className="text-[0.6rem] uppercase text-[--ink-light] whitespace-nowrap">Level:</Label>
                                           <Select 
                                             value={q.level_id} 
                                             onValueChange={val => handleQuestionChange(q.id, 'level_id', val)}
                                           >
-                                            <SelectTrigger className="bg-neutral-950 border-neutral-800 h-9 text-[0.65rem] w-28">
+                                            <SelectTrigger className="bg-[--surface-mid] border-[--border-color] h-9 text-[0.65rem] w-28">
                                               <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-neutral-950 border-neutral-800 text-white">
+                                            <SelectContent className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]">
                                               {localLevels.map(l => (
                                                 <SelectItem key={l.id} value={l.id} className="text-xs">{l.name}</SelectItem>
                                               ))}
@@ -698,7 +698,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                           <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-9 w-9 text-neutral-600 hover:text-red-400 opacity-0 group-hover/q:opacity-100 transition-opacity"
+                                            className="h-9 w-9 text-[--ink-light] hover:text-[--sage] opacity-0 group-hover/q:opacity-100 transition-opacity"
                                             onClick={() => stageQuestionDelete(q.id)}
                                           >
                                             <Trash2 className="h-4 w-4" />
@@ -712,13 +712,13 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                   {(q.options_en as string[]).map((opt, oIdx) => (
                                     <div key={oIdx} className="space-y-1">
                                       <div className="flex items-center gap-2">
-                                        <span className={`text-[0.6rem] font-bold w-4 h-4 flex items-center justify-center rounded-sm ${oIdx === 0 ? 'bg-green-600 text-white' : 'bg-neutral-800 text-neutral-500'}`}>
+                                        <span className={`text-[0.6rem] font-bold w-4 h-4 flex items-center justify-center rounded-sm ${oIdx === 0 ? 'bg-green-600 text-[--ink-dark]' : 'bg-[--surface-mid] text-[--ink-light]'}`}>
                                           {String.fromCharCode(65 + oIdx)}
                                         </span>
                                         <Input
                                           value={opt}
                                           onChange={e => handleOptionChange(q.id, 'en', oIdx, e.target.value)}
-                                          className="bg-neutral-950 border-neutral-800 text-xs h-7"
+                                          className="bg-[--surface-mid] border-[--border-color] text-xs h-7"
                                           placeholder={t("Option (EN)", "Opción (ING)")}
                                         />
                                       </div>
@@ -726,7 +726,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                         <Input
                                           value={(q.options_es as string[])[oIdx] || ''}
                                           onChange={e => handleOptionChange(q.id, 'es', oIdx, e.target.value)}
-                                          className="bg-neutral-950/30 border-neutral-800/50 text-[0.65rem] h-6 border-dashed ml-6"
+                                          className="bg-[--surface-mid]/30 border-[--border-color]/50 text-[0.65rem] h-6 border-dashed ml-6"
                                           placeholder={t("Option (ES)", "Opción (ESP)")}
                                         />
                                       )}
@@ -740,7 +740,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
 
                         {/* Quick Add Row */}
                         <div className="bg-red-950/5 border border-dashed border-red-900/30 p-4 rounded-lg space-y-3">
-                          <Label className="text-[0.65rem] font-bold uppercase text-red-400/60 block mb-1">{t("Quickly add new question", "Agregar nueva pregunta rápido")}</Label>
+                          <Label className="text-[0.65rem] font-bold uppercase text-[--sage]/60 block mb-1">{t("Quickly add new question", "Agregar nueva pregunta rápido")}</Label>
                           <div className="flex gap-3">
                             <div className="flex-1 space-y-2">
                               <div className="grid grid-cols-[1fr_200px] gap-2">
@@ -752,14 +752,14 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                       updateQuickAddDraft(levelId, 'question_es', e.target.value);
                                     }
                                   }}
-                                  className="bg-neutral-950 border-neutral-800 text-white font-medium h-9"
+                                  className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark] font-medium h-9"
                                   placeholder={t("New question (EN)...", "Nueva pregunta (ING)...")}
                                   onKeyDown={e => e.key === 'Enter' && addLocalQuestion(levelId)}
                                 />
                                 <Input
                                   value={draft.category || 'General'}
                                   onChange={e => updateQuickAddDraft(levelId, 'category', e.target.value)}
-                                  className="bg-neutral-950 border-neutral-800 text-neutral-400 font-bold uppercase text-[0.6rem] h-9"
+                                  className="bg-[--surface-mid] border-[--border-color] text-[--ink-light] font-bold uppercase text-[0.6rem] h-9"
                                   placeholder={t("Category...", "Categoría...")}
                                 />
                               </div>
@@ -768,14 +768,14 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                   <Input
                                     value={draft.question_es || ''}
                                     onChange={e => updateQuickAddDraft(levelId, 'question_es', e.target.value)}
-                                    className="bg-neutral-950/50 border-neutral-800 text-neutral-300 font-medium italic h-8 border-dashed"
+                                    className="bg-[--surface-mid]/50 border-[--border-color] text-[--ink-mid] font-medium italic h-8 border-dashed"
                                     placeholder={t("Spanish translation...", "Traducción al español...")}
                                   />
                                 )}
                                 <Input
                                   value={draft.reference || ''}
                                   onChange={e => updateQuickAddDraft(levelId, 'reference', e.target.value)}
-                                  className="bg-neutral-950 border-neutral-800 text-blue-400/70 text-[0.65rem] h-8 border-dashed"
+                                  className="bg-[--surface-mid] border-[--border-color] text-blue-400/70 text-[0.65rem] h-8 border-dashed"
                                   placeholder={t("Reference (e.g., Genesis 1:1)...", "Referencia (ej., Génesis 1:1)...")}
                                 />
                               </div>
@@ -783,7 +783,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                             <Button 
                               onClick={() => addLocalQuestion(levelId)}
                               disabled={!draft.question_en}
-                              className="bg-red-600 hover:bg-red-700 h-9"
+                              className="bg-[--sage] hover:bg-[--sage-mid] h-9"
                             >
                               <Plus className="h-4 w-4 mr-2" />
                               {t("Add", "Agregar")}
@@ -793,7 +793,7 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                             {(draft.options_en as string[]).map((opt, oIdx) => (
                               <div key={oIdx} className="space-y-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-[0.6rem] font-bold text-neutral-500">{String.fromCharCode(65 + oIdx)}</span>
+                                  <span className="text-[0.6rem] font-bold text-[--ink-light]">{String.fromCharCode(65 + oIdx)}</span>
                                   {oIdx === 0 && (
                                     <span className="text-[0.55rem] font-bold text-green-500 uppercase">{t("Correct", "Correcto")}</span>
                                   )}
@@ -801,14 +801,14 @@ export function TriviaAdminPanelFinal({ passcode }: TriviaAdminPanelProps) {
                                 <Input
                                   value={opt}
                                   onChange={e => updateQuickAddOption(levelId, 'en', oIdx, e.target.value)}
-                                  className="bg-neutral-950 border-neutral-800 text-xs h-7"
+                                  className="bg-[--surface-mid] border-[--border-color] text-xs h-7"
                                   placeholder={t("Option (EN)", "Opción (ING)")}
                                 />
                                 {showTranslations && (
                                   <Input
                                     value={(draft.options_es as string[])?.[oIdx] || ''}
                                     onChange={e => updateQuickAddOption(levelId, 'es', oIdx, e.target.value)}
-                                    className="bg-neutral-950/30 border-neutral-800/50 text-[0.65rem] h-6 border-dashed"
+                                    className="bg-[--surface-mid]/30 border-[--border-color]/50 text-[0.65rem] h-6 border-dashed"
                                     placeholder={t("Option (ES)", "Opción (ESP)")}
                                   />
                                 )}

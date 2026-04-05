@@ -132,13 +132,13 @@ export default function SimpleTrivia() {
 
   if (!gameStarted) {
     return (
-      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
-        <Card className="w-full max-w-2xl bg-neutral-900 border-neutral-800">
+      <div className="min-h-screen bg-[--background] text-[--ink-dark] p-4 flex items-center justify-center">
+        <Card className="w-full max-w-2xl bg-[--surface] border-[--border-color]">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-red-600">
+            <CardTitle className="text-2xl text-[--sage]">
               {t("Bible Trivia", "Trivia Bíblica")}
             </CardTitle>
-            <p className="text-neutral-400">
+            <p className="text-[--ink-light]">
               {t("Test your Bible knowledge!", "¡Pon a prueba tu conocimiento de la Biblia!")}
             </p>
           </CardHeader>
@@ -149,17 +149,17 @@ export default function SimpleTrivia() {
                 {t("Select Level", "Seleccionar Nivel")}
               </Label>
               <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                <SelectTrigger className="bg-neutral-800 border-neutral-700 text-white">
+                <SelectTrigger className="bg-[--surface-mid] border-[--border-color] text-[--ink-dark]">
                   <SelectValue placeholder={t("Choose a level...", "Elige un nivel...")} />
                 </SelectTrigger>
-                <SelectContent className="bg-neutral-800 border-neutral-700">
+                <SelectContent className="bg-[--surface-mid] border-[--border-color]">
                   {triviaData.levels.map((level) => (
                     <SelectItem key={level.id} value={level.id} className="text-white">
                       <div className="flex flex-col">
                         <span>{language === 'es' && level.name === 'Kids' ? 'Niños' : 
                                language === 'es' && level.name === 'Youth' ? 'Jóvenes' :
                                language === 'es' && level.name === 'Adults' ? 'Adultos' : level.name}</span>
-                        <span className="text-xs text-neutral-400">{level.description}</span>
+                        <span className="text-xs text-[--ink-light]">{level.description}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -184,7 +184,7 @@ export default function SimpleTrivia() {
 
             <Button 
               onClick={startGame} 
-              className="bg-red-600 hover:bg-red-700 text-white px-8 py-3"
+              className="bg-[--sage] hover:bg-[--sage-mid] text-white px-8 py-3"
               disabled={!selectedLevel || shuffledQuestions.length === 0}
             >
               <Play className="mr-2 h-5 w-5" />
@@ -213,8 +213,8 @@ export default function SimpleTrivia() {
     const passed = percentage >= (currentLevel?.passing_score || 70);
     
     return (
-      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
-        <Card className="w-full max-w-2xl bg-neutral-900 border-neutral-800">
+      <div className="min-h-screen bg-[--background] text-[--ink-dark] p-4 flex items-center justify-center">
+        <Card className="w-full max-w-2xl bg-[--surface] border-[--border-color]">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl flex items-center justify-center gap-2">
               <Trophy className={`h-8 w-8 ${passed ? 'text-yellow-400' : 'text-gray-400'}`} />
@@ -225,14 +225,14 @@ export default function SimpleTrivia() {
             <div className={`text-4xl font-bold ${passed ? 'text-green-400' : 'text-red-400'}`}>
               {score} / {shuffledQuestions.length}
             </div>
-            <p className="text-xl text-neutral-300">
+            <p className="text-xl text-[--ink-mid]">
               {t("Correct Answers", "Respuestas Correctas")}
             </p>
             <div className="text-lg">
               <div className={`font-semibold ${passed ? 'text-green-400' : 'text-red-400'}`}>
                 {percentage}%
               </div>
-              <div className="text-sm text-neutral-400">
+              <div className="text-sm text-[--ink-light]">
                 {passed ? 
                   t("You Passed! 🎉", "¡Aprobaste! 🎉") : 
                   t("Try Again!", "¡Inténtalo de nuevo!")
@@ -240,7 +240,7 @@ export default function SimpleTrivia() {
               </div>
             </div>
             <div className="space-y-2">
-              <Button onClick={resetGame} className="bg-red-600 hover:bg-red-700">
+              <Button onClick={resetGame} className="bg-[--sage] hover:bg-[--sage-mid]">
                 <RotateCcw className="mr-2 h-4 w-4" />
                 {t("Play Again", "Jugar de Nuevo")}
               </Button>
@@ -253,8 +253,8 @@ export default function SimpleTrivia() {
 
   if (!currentQuestion) {
     return (
-      <div className="min-h-screen bg-black text-white p-4 flex items-center justify-center">
-        <Card className="w-full max-w-2xl bg-neutral-900 border-neutral-800">
+      <div className="min-h-screen bg-[--background] text-[--ink-dark] p-4 flex items-center justify-center">
+        <Card className="w-full max-w-2xl bg-[--surface] border-[--border-color]">
           <CardContent className="text-center p-8">
             <p className="text-xl">
               {t("Loading question...", "Cargando pregunta...")}
@@ -266,11 +266,11 @@ export default function SimpleTrivia() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
+    <div className="min-h-screen bg-[--background] text-[--ink-dark] p-4">
       <div className="max-w-4xl mx-auto space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={resetGame} className="border-neutral-700 text-white">
+          <Button variant="outline" onClick={resetGame} className="border-[--border-color] text-[--ink-dark]">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t("Exit", "Salir")}
           </Button>
@@ -278,7 +278,7 @@ export default function SimpleTrivia() {
             <div className="text-lg font-semibold">
               {t("Question", "Pregunta")} {currentQuestionIndex + 1} / {shuffledQuestions.length}
             </div>
-            <div className="text-sm text-neutral-400">
+            <div className="text-sm text-[--ink-light]">
               {currentLevel?.name} - {t("Score", "Puntuación")}: {score}
             </div>
           </div>
@@ -288,7 +288,7 @@ export default function SimpleTrivia() {
         </div>
 
         {/* Question Card */}
-        <Card className="bg-neutral-900 border-neutral-800">
+        <Card className="bg-[--surface] border-[--border-color]">
           <CardHeader>
             <CardTitle className="text-xl text-center">
               {language === 'es' && currentQuestion.question_es ? 
@@ -296,7 +296,7 @@ export default function SimpleTrivia() {
                 currentQuestion.question}
             </CardTitle>
             {currentQuestion.reference && (
-              <p className="text-center text-sm text-neutral-400">
+              <p className="text-center text-sm text-[--ink-light]">
                 {currentQuestion.reference}
               </p>
             )}
@@ -319,10 +319,10 @@ export default function SimpleTrivia() {
                     showCorrectAnswer
                       ? 'bg-green-600 hover:bg-green-700 border-green-500'
                       : showWrongAnswer
-                      ? 'bg-red-600 hover:bg-red-700 border-red-500'
+                      ? 'bg-[--sage] hover:bg-[--sage-mid] border-red-500'
                       : isSelected
                       ? 'bg-blue-600 hover:bg-blue-700 border-blue-500'
-                      : 'bg-neutral-800 hover:bg-neutral-700 border-neutral-700'
+                      : 'bg-[--surface-mid] hover:bg-[--surface] border-[--border-color]'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
@@ -330,10 +330,10 @@ export default function SimpleTrivia() {
                       showCorrectAnswer
                         ? 'border-white bg-white text-green-600'
                         : showWrongAnswer
-                        ? 'border-white bg-white text-red-600'
+                        ? 'border-white bg-white text-[--sage]'
                         : isSelected
                         ? 'border-white bg-white text-blue-600'
-                        : 'border-neutral-500'
+                        : 'border-[--ink-light]'
                     }`}>
                       {showCorrectAnswer && <CheckCircle className="h-5 w-5" />}
                       {showWrongAnswer && <XCircle className="h-5 w-5" />}
@@ -350,7 +350,7 @@ export default function SimpleTrivia() {
         {/* Next Button */}
         {showResult && (
           <div className="text-center">
-            <Button onClick={nextQuestion} className="bg-red-600 hover:bg-red-700 px-8">
+            <Button onClick={nextQuestion} className="bg-[--sage] hover:bg-[--sage-mid] px-8">
               {currentQuestionIndex < shuffledQuestions.length - 1
                 ? t("Next Question", "Siguiente Pregunta")
                 : t("See Results", "Ver Resultados")}

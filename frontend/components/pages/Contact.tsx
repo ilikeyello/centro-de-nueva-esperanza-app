@@ -31,46 +31,46 @@ export function Contact({ onNavigate }: ContactProps) {
               variant="ghost"
               size="icon"
               onClick={() => onNavigate("home")}
-              className="text-neutral-700 hover:text-warm-red"
+              className="text-[--ink-mid] hover:text-[--sage]"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <h1 className="serif-heading text-3xl font-bold text-neutral-900">
+          <h1 className="serif-heading text-3xl font-bold text-[--ink-dark]">
             {t("Contact Us", "Contáctanos")}
           </h1>
         </div>
-        <p className="text-neutral-600">
+        <p className="text-[--ink-mid]">
           {t("We'd love to hear from you!", "¡Nos encantaría saber de ti!")}
         </p>
       </div>
 
       <Card className="warm-card">
         <CardHeader>
-          <CardTitle className="serif-heading text-neutral-900">
+          <CardTitle className="serif-heading text-[--ink-dark]">
             {churchInfo.name}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start gap-3">
-            <MapPin className="mt-1 h-5 w-5 text-warm-red" />
+            <MapPin className="mt-1 h-5 w-5 text-[--sage]" />
             <div>
-              <p className="font-semibold text-neutral-900">
+              <p className="font-semibold text-[--ink-dark]">
                 {t("Address", "Dirección")}
               </p>
-              <p className="text-neutral-700">{churchInfo.address}</p>
+              <p className="text-[--ink-mid]">{churchInfo.address}</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <Phone className="mt-1 h-5 w-5 text-warm-red" />
+            <Phone className="mt-1 h-5 w-5 text-[--sage]" />
             <div>
-              <p className="font-semibold text-neutral-900">
+              <p className="font-semibold text-[--ink-dark]">
                 {t("Phone", "Teléfono")}
               </p>
               <a
                 href={`tel:${churchInfo.phone}`}
-                className="text-neutral-700 hover:text-warm-red"
+                className="text-[--ink-mid] hover:text-[--sage]"
               >
                 {churchInfo.phone}
               </a>
@@ -78,14 +78,14 @@ export function Contact({ onNavigate }: ContactProps) {
           </div>
 
           <div className="flex items-start gap-3">
-            <Mail className="mt-1 h-5 w-5 text-warm-red" />
+            <Mail className="mt-1 h-5 w-5 text-[--sage]" />
             <div>
-              <p className="font-semibold text-neutral-900">
+              <p className="font-semibold text-[--ink-dark]">
                 {t("Email", "Correo Electrónico")}
               </p>
               <a
                 href={`mailto:${churchInfo.email}`}
-                className="text-neutral-700 hover:text-warm-red"
+                className="text-[--ink-mid] hover:text-[--sage]"
               >
                 {churchInfo.email}
               </a>
@@ -93,12 +93,12 @@ export function Contact({ onNavigate }: ContactProps) {
           </div>
 
           <div className="flex items-start gap-3">
-            <Clock className="mt-1 h-5 w-5 text-warm-red" />
+            <Clock className="mt-1 h-5 w-5 text-[--sage]" />
             <div>
-              <p className="font-semibold text-neutral-900">
+              <p className="font-semibold text-[--ink-dark]">
                 {t("Service Times", "Horarios de Servicio")}
               </p>
-              <p className="text-neutral-700">
+              <p className="text-[--ink-mid]">
                 {churchInfo.serviceTimes}
               </p>
             </div>

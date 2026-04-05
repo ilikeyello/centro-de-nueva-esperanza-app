@@ -17,6 +17,7 @@ import { NotificationSettings } from "./notifications/NotificationSettings";
 import { PushNotificationPrompt } from "./PushNotificationPrompt";
 import { useNotificationChecker } from "../hooks/useNotificationChecker";
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "../contexts/ThemeContext";
 
 type Page =
   | "home"
@@ -74,30 +75,32 @@ export function AppInner() {
   }, []);
 
   return (
-    <div className="min-h-screen warm-gradient">
-      <Navigation currentPage={currentPage} onNavigate={handleNavigate} />
-      <main className="pb-24 md:pb-20">
-        {currentPage === "home" && <Home onNavigate={handleNavigate} />}
-        {currentPage === "bible" && <Bible onNavigate={handleNavigate} />}
-        {currentPage === "bulletin" && <BulletinBoard onNavigate={handleNavigate} />}
-        {currentPage === "news" && <News />}
-        {currentPage === "donations" && <Donations onNavigate={handleNavigate} />}
-        <div className={currentPage === "media" ? "block" : "hidden"}>
-          <Media />
+    <ThemeProvider>
+      <div className="min-h-screen warm-gradient">
+        <Navigation currentPage={currentPage} onNavigate={handleNavigate} />
+        <main className="pb-24 md:pb-20">
+          {currentPage === "home" && <Home onNavigate={handleNavigate} />}
+          {currentPage === "bible" && <Bible onNavigate={handleNavigate} />}
+          {currentPage === "bulletin" && <BulletinBoard onNavigate={handleNavigate} />}
+          {currentPage === "news" && <News />}
+          {currentPage === "donations" && <Donations onNavigate={handleNavigate} />}
+          <div className={currentPage === "media" ? "block" : "hidden"}>
+            <Media />
+          </div>
+          {currentPage === "adminUpload" && <AdminUpload />}
+          {currentPage === "contact" && <Contact onNavigate={handleNavigate} />}
+          {currentPage === "games" && <Games onNavigate={handleNavigate} />}        
+          {currentPage === "triviaGame" && <TriviaGamePage onNavigate={handleNavigate} />}
+          {currentPage === "wordSearchGame" && <WordSearchGamePage onNavigate={handleNavigate} />}
+          {currentPage === "graveyardShiftGame" && <GraveyardShiftGamePage onNavigate={handleNavigate} />}
+          {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
+          {currentPage === "notifications" && <NotificationSettings />}
+        </main>
+        <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40">
+          <PushNotificationPrompt />
         </div>
-        {currentPage === "adminUpload" && <AdminUpload />}
-        {currentPage === "contact" && <Contact onNavigate={handleNavigate} />}
-        {currentPage === "games" && <Games onNavigate={handleNavigate} />}        
-        {currentPage === "triviaGame" && <TriviaGamePage onNavigate={handleNavigate} />}
-        {currentPage === "wordSearchGame" && <WordSearchGamePage onNavigate={handleNavigate} />}
-        {currentPage === "graveyardShiftGame" && <GraveyardShiftGamePage onNavigate={handleNavigate} />}
-        {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
-        {currentPage === "notifications" && <NotificationSettings />}
-      </main>
-      <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40">
-        <PushNotificationPrompt />
+        <Toaster />
       </div>
-      <Toaster />
-    </div>
+    </ThemeProvider>
   );
 }

@@ -192,13 +192,13 @@ export function AdminUpload() {
   return (
     <div className="container mx-auto max-w-3xl space-y-6 px-4 py-10">
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-red-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[--sage]">
           {t("Admin", "Admin")}
         </p>
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-[--ink-dark]">
           {t("Admin Media & Devotionals", "Admin Medios y Devocionales")}
         </h1>
-        <p className="text-sm text-neutral-400">
+        <p className="text-sm text-[--ink-light]">
           {t(
             "Use this page to manage the YouTube music playlist and devotionals for the site.",
             "Usa esta página para administrar la lista de reproducción de música de YouTube y los devocionales para el sitio."
@@ -206,11 +206,11 @@ export function AdminUpload() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
+      <div className="rounded-2xl border border-[--border-color] bg-[--surface]/40 p-5 text-xs text-[--ink-mid]">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
           {t("Admin Code", "Código de Admin")}
         </p>
-        <p className="mt-1 text-neutral-400">
+        <p className="mt-1 text-[--ink-light]">
           {t(
             "Enter the secret admin code once. It will be used for devotionals.",
             "Ingresa el código secreto de admin una sola vez. Se usará para devocionales."
@@ -222,15 +222,15 @@ export function AdminUpload() {
             placeholder={t("Admin code", "Código de admin")}
             value={uploadPasscode}
             onChange={(e) => setUploadPasscode(e.target.value)}
-            className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500 sm:w-64"
+            className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage] sm:w-64"
           />
-          <p className="text-[0.65rem] text-neutral-500 sm:flex-1">
+          <p className="text-[0.65rem] text-[--ink-light] sm:flex-1">
             {t("Required for all actions on this page.", "Requerido para todas las acciones en esta página.")}
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 text-xs text-neutral-300">
+      <div className="rounded-2xl border border-[--border-color] bg-[--surface]/40 p-5 text-xs text-[--ink-mid]">
         <Tabs defaultValue="media" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="media">{t("Music", "Música")}</TabsTrigger>
@@ -240,10 +240,10 @@ export function AdminUpload() {
           
           <TabsContent value="media" className="space-y-4 mt-4">
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
                 {t("Music Playlist", "Lista de Música")}
               </p>
-              <p className="mt-1 text-neutral-400">
+              <p className="mt-1 text-[--ink-light]">
                 {t(
                   "Set the YouTube playlist used by the Music & Worship section.",
                   "Configura la lista de reproducción de YouTube usada por la sección de Música y Adoración."
@@ -254,20 +254,20 @@ export function AdminUpload() {
                   type="text"
                   value={playlistUrl}
                   onChange={(e) => setPlaylistUrl(e.target.value)}
-                  className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage]"
                   placeholder="https://youtube.com/playlist?list=..."
                 />
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
-                    className="bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700"
+                    className="bg-[--sage] px-3 py-1 text-[0.75rem] font-semibold hover:bg-[--sage-mid]"
                     onClick={handleSavePlaylist}
                   >
                     {t("Save Playlist", "Guardar Lista de Reproducción")}
                   </Button>
                 </div>
                 {playlistStatus && (
-                  <p className="text-[0.7rem] text-neutral-400">{playlistStatus}</p>
+                  <p className="text-[0.7rem] text-[--ink-light]">{playlistStatus}</p>
                 )}
               </div>
             </div>
@@ -275,10 +275,10 @@ export function AdminUpload() {
           
           <TabsContent value="other" className="space-y-4 mt-4">
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
                 {t("Livestream Link", "Enlace de Transmisión en Vivo")}
               </p>
-              <p className="mt-1 text-neutral-400">
+              <p className="mt-1 text-[--ink-light]">
                 {t(
             "Set the YouTube livestream link used by the Watch Live player on the Media page.",
             "Configura el enlace de transmisión en vivo de YouTube usado por el reproductor Ver en Vivo en la página de Medios."
@@ -289,22 +289,22 @@ export function AdminUpload() {
                   type="text"
                   value={localLivestreamUrl}
                   onChange={(e) => setLocalLivestreamUrl(e.target.value)}
-                  className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage]"
                   placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
                 />
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
-                    className="bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700"
+                    className="bg-[--sage] px-3 py-1 text-[0.75rem] font-semibold hover:bg-[--sage-mid]"
                     onClick={handleSaveLivestream}
                   >
                     {t("Save Livestream", "Guardar Transmisión en Vivo")}
                   </Button>
                 </div>
                 {livestreamStatus && (
-                  <p className="text-[0.7rem] text-neutral-400">{livestreamStatus}</p>
+                  <p className="text-[0.7rem] text-[--ink-light]">{livestreamStatus}</p>
                 )}
-                <p className="text-[0.7rem] text-neutral-500">
+                <p className="text-[0.7rem] text-[--ink-light]">
                   {t(
                     "Tip: You can paste a regular YouTube link; we will convert it to the correct embed format.",
                     "Consejo: Puedes pegar un enlace normal de YouTube; lo convertiremos al formato de inserción correcto."
@@ -314,10 +314,10 @@ export function AdminUpload() {
             </div>
             
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-neutral-500">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
                 {t("Devotionals", "Devocionales")}
               </p>
-              <p className="mt-1 text-neutral-400">
+              <p className="mt-1 text-[--ink-light]">
                 {t(
                   "Add or remove YouTube devotional videos shown on the Media page.",
                   "Agrega o elimina videos devocionales de YouTube que se muestran en la página de Medios."
@@ -409,35 +409,35 @@ export function AdminUpload() {
             placeholder={t("Devotional title", "Título del devocional")}
             value={sermonTitle}
             onChange={(e) => setSermonTitle(e.target.value)}
-            className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+            className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage]"
           />
           <input
             type="text"
             placeholder="https://www.youtube.com/watch?v=..."
             value={sermonUrl}
             onChange={(e) => setSermonUrl(e.target.value)}
-            className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[0.7rem] text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+            className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage]"
           />
           <Button
             type="submit"
-            className="mt-1 bg-red-600 px-3 py-1 text-[0.75rem] font-semibold hover:bg-red-700"
+            className="mt-1 bg-[--sage] px-3 py-1 text-[0.75rem] font-semibold hover:bg-[--sage-mid]"
           >
             {t("Save Devotional", "Guardar Devocional")}
           </Button>
         </form>
 
         {sermonStatus && (
-          <p className="mt-2 text-[0.7rem] text-neutral-400">{sermonStatus}</p>
+          <p className="mt-2 text-[0.7rem] text-[--ink-light]">{sermonStatus}</p>
         )}
 
-        <div className="mt-4 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950/40 p-2">
+        <div className="mt-4 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[--border-color] bg-[--surface-mid]/40 p-2">
           {loadingSermons && (
-            <p className="text-[0.7rem] text-neutral-500">
+            <p className="text-[0.7rem] text-[--ink-light]">
               {t("Loading devotionals...", "Cargando devocionales...")}
             </p>
           )}
           {!loadingSermons && sermons.length === 0 && (
-            <p className="text-[0.7rem] text-neutral-500">
+            <p className="text-[0.7rem] text-[--ink-light]">
               {t("No devotionals found.", "No se encontraron devocionales.")}
             </p>
           )}
@@ -446,13 +446,13 @@ export function AdminUpload() {
               {sermons.map((sermon) => (
                 <li
                   key={sermon.id}
-                  className="flex items-center justify-between rounded-md bg-neutral-900/80 px-2 py-1.5"
+                  className="flex items-center justify-between rounded-md bg-[--surface]/80 px-2 py-1.5"
                 >
                   <div className="min-w-0 flex-1 pr-2">
-                    <p className="truncate text-[0.8rem] font-medium text-neutral-100">
+                    <p className="truncate text-[0.8rem] font-medium text-[--ink-dark]">
                       {sermon.title}
                     </p>
-                    <p className="truncate text-[0.65rem] text-neutral-500">
+                    <p className="truncate text-[0.65rem] text-[--ink-light]">
                       {sermon.youtubeUrl}
                     </p>
                   </div>
@@ -536,40 +536,40 @@ export function AdminUpload() {
             <div className="space-y-3">
               <button
                 type="button"
-                className="flex w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-neutral-100 hover:border-red-500"
+                className="flex w-full items-center justify-between rounded-lg border border-[--border-color] bg-[--surface]/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-[--ink-dark] hover:border-[--sage]"
                 onClick={() =>
                   setOpenGameAdmin((prev) => (prev === "trivia" ? null : "trivia"))
                 }
               >
                 <span>{t("Bible Trivia", "Trivia Bíblica")}</span>
                 {openGameAdmin === "trivia" ? (
-                  <ChevronDown className="h-4 w-4 text-neutral-400" />
+                  <ChevronDown className="h-4 w-4 text-[--ink-light]" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                  <ChevronRight className="h-4 w-4 text-[--ink-light]" />
                 )}
               </button>
               {openGameAdmin === "trivia" && (
-                <div className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3">
+                <div className="rounded-lg border border-[--border-color] bg-[--surface-mid]/60 p-3">
                   <TriviaAdminPanelFinal passcode={uploadPasscode} />
                 </div>
               )}
 
               <button
                 type="button"
-                className="mt-2 flex w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-neutral-100 hover:border-red-500"
+                className="mt-2 flex w-full items-center justify-between rounded-lg border border-[--border-color] bg-[--surface]/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-[--ink-dark] hover:border-[--sage]"
                 onClick={() =>
                   setOpenGameAdmin((prev) => (prev === "wordSearch" ? null : "wordSearch"))
                 }
               >
                 <span>{t("Word Search", "Sopa de Letras")}</span>
                 {openGameAdmin === "wordSearch" ? (
-                  <ChevronDown className="h-4 w-4 text-neutral-400" />
+                  <ChevronDown className="h-4 w-4 text-[--ink-light]" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                  <ChevronRight className="h-4 w-4 text-[--ink-light]" />
                 )}
               </button>
               {openGameAdmin === "wordSearch" && (
-                <div className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3">
+                <div className="rounded-lg border border-[--border-color] bg-[--surface-mid]/60 p-3">
                   <WordSearchAdminPanel passcode={uploadPasscode} />
                 </div>
               )}
@@ -578,7 +578,7 @@ export function AdminUpload() {
         </Tabs>
       </div>
 
-      <p className="text-[0.7rem] text-neutral-500">
+      <p className="text-[0.7rem] text-[--ink-light]">
         {t(
           "Tip: Bookmark this URL. It is not linked from the main site.",
           "Consejo: Guarda esta URL en favoritos. No está enlazada desde el sitio principal."

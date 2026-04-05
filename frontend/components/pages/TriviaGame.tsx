@@ -187,8 +187,8 @@ export function TriviaGame() {
   if (loading) {
     return (
       <div className="text-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-        <p className="text-neutral-400 mt-4">{t("Loading...", "Cargando...")}</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[--sage] mx-auto"></div>
+        <p className="text-[--ink-light] mt-4">{t("Loading...", "Cargando...")}</p>
       </div>
     );
   }
@@ -197,11 +197,11 @@ export function TriviaGame() {
     return (
       <div className="space-y-8">
         <div className="text-center space-y-4">
-          <Brain className="h-16 w-16 text-red-500 mx-auto" />
-          <h2 className="text-3xl font-bold text-white">
+          <Brain className="h-16 w-16 text-[--sage] mx-auto" />
+          <h2 className="text-3xl font-bold text-[--ink-dark]">
             {t("Bible Trivia Challenge", "Desafío de Biblia Trivia")}
           </h2>
-          <p className="text-neutral-400 max-w-2xl mx-auto">
+          <p className="text-[--ink-light] max-w-2xl mx-auto">
             {language === 'es' 
               ? 'Pon a prueba tu conocimiento de la Biblia con nuestro divertido juego de trivia. Elige tu nivel y ver cuántas preguntas puedes responder correctamente.'
               : 'Test your Bible knowledge with our fun trivia game. Choose your level and see how many questions you can answer correctly.'
@@ -211,27 +211,27 @@ export function TriviaGame() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {levels.map((level) => (
-            <Card key={level.id} className="bg-neutral-900 border-neutral-800 hover:border-red-500 transition-colors">
+            <Card key={level.id} className="bg-[--surface] border-[--border-color] hover:border-[--sage] transition-colors">
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-xl font-bold text-white">{level.name}</h3>
+                    <h3 className="text-xl font-bold text-[--ink-dark]">{level.name}</h3>
                     {level.description && (
-                      <p className="text-neutral-400 text-sm mt-1">{level.description}</p>
+                      <p className="text-[--ink-light] text-sm mt-1">{level.description}</p>
                     )}
                   </div>
                   
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-neutral-300">
+                    <div className="flex items-center gap-2 text-[--ink-mid]">
                       <Clock className="h-4 w-4" />
                       <span>{level.time_limit}s {t("per question", "por pregunta")}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-neutral-300">
+                    <div className="flex items-center gap-2 text-[--ink-mid]">
                       <Target className="h-4 w-4" />
                       <span>{level.passing_score}% {t("to pass", "para aprobar")}</span>
                     </div>
                     {level.target_group && (
-                      <div className="text-neutral-300">
+                      <div className="text-[--ink-mid]">
                         {t("For", "Para")}: {level.target_group}
                       </div>
                     )}
@@ -239,7 +239,7 @@ export function TriviaGame() {
 
                   <Button 
                     onClick={() => startGame(level)}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full bg-[--sage] hover:bg-[--sage-mid] text-[--ink-dark]"
                   >
                     <Play className="h-4 w-4 mr-2" />
                     {t("Start", "Empezar")}
@@ -263,26 +263,26 @@ export function TriviaGame() {
     return (
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <div className="text-neutral-400">
+          <div className="text-[--ink-light]">
             {t("Question", "Pregunta")} {gameState.currentQuestionIndex + 1} / {gameState.questions.length}
           </div>
-          <div className={`flex items-center gap-2 ${gameState.timeRemaining <= 5 ? 'text-red-500' : 'text-neutral-300'}`}>
+          <div className={`flex items-center gap-2 ${gameState.timeRemaining <= 5 ? 'text-[--sage]' : 'text-[--ink-mid]'}`}>
             <Clock className="h-5 w-5" />
             <span className="font-mono text-lg">{gameState.timeRemaining}s</span>
           </div>
         </div>
 
-        <div className="w-full bg-neutral-800 rounded-full h-2">
+        <div className="w-full bg-[--surface-mid] rounded-full h-2">
           <div 
             className="bg-red-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${((gameState.currentQuestionIndex + 1) / gameState.questions.length) * 100}%` }}
           />
         </div>
 
-        <Card className="bg-neutral-900 border-neutral-800">
+        <Card className="bg-[--surface] border-[--border-color]">
           <CardContent className="p-8">
             <div className="space-y-6">
-              <h3 className="text-2xl font-semibold text-white">{question}</h3>
+              <h3 className="text-2xl font-semibold text-[--ink-dark]">{question}</h3>
               
               <div className="grid gap-3">
                 {options.map((option: string, index: number) => (
@@ -290,7 +290,7 @@ export function TriviaGame() {
                     key={index}
                     onClick={() => handleAnswer(index)}
                     variant="outline"
-                    className="justify-start h-auto p-4 text-left bg-neutral-800 border-neutral-700 hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                    className="justify-start h-auto p-4 text-left bg-[--surface-mid] border-[--border-color] hover:bg-red-600 hover:border-red-600 hover:text-[--ink-dark] transition-all"
                   >
                     <span className="font-medium">{String.fromCharCode(65 + index)}.</span>
                     <span className="ml-3">{option}</span>
@@ -310,22 +310,22 @@ export function TriviaGame() {
 
     return (
       <div className="max-w-2xl mx-auto space-y-6">
-        <Card className="bg-neutral-900 border-neutral-800">
+        <Card className="bg-[--surface] border-[--border-color]">
           <CardContent className="p-8 text-center space-y-6">
             <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center ${
-              passed ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+              passed ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-[--sage]'
             }`}>
               {passed ? <Trophy className="h-10 w-10" /> : <Brain className="h-10 w-10" />}
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-3xl font-bold text-white">
+              <h2 className="text-3xl font-bold text-[--ink-dark]">
                 {passed 
                   ? (language === 'es' ? '¡Felicidades!' : 'Congratulations!')
                   : (language === 'es' ? 'Inténtalo de nuevo' : 'Try Again')
                 }
               </h2>
-              <p className="text-neutral-400">
+              <p className="text-[--ink-light]">
                 {passed
                   ? (language === 'es' 
                       ? `Has aprobado el nivel ${gameState.selectedLevel?.name} con ${percentage}%`
@@ -340,10 +340,10 @@ export function TriviaGame() {
             </div>
 
             <div className="space-y-4">
-              <div className="text-4xl font-bold text-white">
+              <div className="text-4xl font-bold text-[--ink-dark]">
                 {gameState.score} / {gameState.questions.length}
               </div>
-              <div className="text-neutral-300">
+              <div className="text-[--ink-mid]">
                 {t("Correct Answers", "Respuestas Correctas")}
               </div>
             </div>
@@ -351,7 +351,7 @@ export function TriviaGame() {
             <div className="flex gap-4 justify-center">
               <Button 
                 onClick={resetGame}
-                className="bg-white text-black hover:bg-red-600 hover:text-white border border-neutral-300"
+                className="bg-[--surface] text-black hover:bg-[--sage] hover:text-[--ink-dark] border border-[--border-color]"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t("Back to Menu", "Volver al Menú")}
@@ -359,7 +359,7 @@ export function TriviaGame() {
               {!passed && gameState.selectedLevel && (
                 <Button 
                   onClick={() => startGame(gameState.selectedLevel!)}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-[--sage] hover:bg-[--sage-mid] text-[--ink-dark]"
                 >
                   <ChevronRight className="h-4 w-4 mr-2" />
                   {t("Try Again", "Inténtalo de Nuevo")}

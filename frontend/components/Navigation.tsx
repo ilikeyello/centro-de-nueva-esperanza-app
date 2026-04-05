@@ -10,9 +10,12 @@ import {
   Maximize2,
   X,
   BookOpen,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
 interface NavigationProps {
@@ -22,6 +25,7 @@ interface NavigationProps {
 
 export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const { t } = useLanguage();
+  const { isDark, toggleTheme } = useTheme();
   const {
     currentTrack: youtubeTrackUrl,
     currentTrackTitle,
@@ -257,7 +261,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
 
   const titleContent = currentTrackTitle ? (
-    <div className="max-w-full text-[0.7rem] text-neutral-100 marquee-container">
+    <div className="max-w-full text-[0.7rem] text-[--ink-mid] marquee-container">
       {shouldScrollTitle ? (
         <div className="marquee-track">
           <span className="marquee-item">{currentTrackTitle}</span>
@@ -275,10 +279,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-8 w-8 items-center justify-center rounded-full border text-neutral-200 transition-colors",
+        "flex h-8 w-8 items-center justify-center rounded-full border text-[--ink-mid] transition-colors",
         variant === "close"
-          ? "border-neutral-700 bg-neutral-900/90 hover:border-red-500 hover:text-red-400"
-          : "border-neutral-700 bg-neutral-900/90 hover:border-neutral-500 hover:text-neutral-50"
+          ? "border-[--border-color] bg-[--surface]/90 hover:border-[--terra] hover:text-[--terra]"
+          : "border-[--border-color] bg-[--surface]/90 hover:border-[--ink-light] hover:text-[--ink-dark]"
       )}
       aria-label={label}
     >
@@ -289,10 +293,15 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-300 bg-white shadow-lg transition-all duration-300 md:sticky md:top-0 md:border-t-0",
+        "fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-all duration-300 md:sticky md:top-0 md:border-t-0",
+        isDark
+          ? "border-[--border-color] bg-[--surface]"
+          : "border-[--border-color] bg-[--surface]",
         isTransparent
           ? "md:bg-transparent md:border-transparent md:shadow-none"
-          : "md:bg-warm-cream/95 md:backdrop-blur-sm md:border-b md:border-neutral-300 md:shadow-sm"
+          : isDark
+            ? "md:bg-[--background]/95 md:backdrop-blur-sm md:border-b md:border-[--border-color] md:shadow-sm"
+            : "md:bg-[--background]/95 md:backdrop-blur-sm md:border-b md:border-[--border-color] md:shadow-sm"
       )}
     >
       <div
@@ -305,7 +314,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           {youtubeTrackUrl && !isDesktop && (
             <div className="music-player-dark px-3 pt-1.5 md:hidden">
               {isMinimized ? (
-                <div className="flex w-full items-center justify-between rounded-2xl bg-neutral-900 px-3 py-1.5 shadow-md">
+                <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
                   <div className="min-w-0 flex-1 max-w-[60%]">
                     {titleContent}
                   </div>
@@ -320,9 +329,9 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between rounded-t-2xl bg-neutral-900 px-3 py-1.5 shadow-inner">
+                <div className="flex items-center justify-between rounded-t-2xl bg-[--surface] px-3 py-1.5 shadow-inner">
                   <div className="min-w-0 flex-1 pr-2">
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[--ink-light]">
                       {t("Music", "Música")}
                     </span>
                     <div className="mt-0.5">{titleContent}</div>
@@ -345,7 +354,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   "w-full overflow-hidden transition-all",
                   isMinimized
                     ? "h-0 border-0"
-                    : "h-40 rounded-b-2xl border-x border-b border-neutral-800"
+                    : "h-40 rounded-b-2xl border-x border-b border-[--border-color]"
                 )}
                 style={{ backgroundColor: isMinimized ? undefined : "#262626" }}
               >
@@ -357,7 +366,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           {/* ===== DESKTOP MINIMIZED BAR (integrated in navbar) ===== */}
           {youtubeTrackUrl && isDesktop && isMinimized && (
             <div className="music-player-dark hidden md:block px-3 py-1">
-              <div className="flex items-center justify-center gap-3 rounded-xl bg-neutral-900 px-4 py-1.5 shadow-sm">
+              <div className="flex items-center justify-center gap-3 rounded-xl bg-[--surface] px-4 py-1.5 shadow-sm">
                 <div className="min-w-0 max-w-[14rem]">
                   {titleContent}
                 </div>
@@ -387,19 +396,38 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   className={cn(
                     "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-3 py-2 text-[0.8rem] font-medium transition-all md:flex-initial md:flex-row md:gap-2 md:px-4 md:py-2 md:text-sm nav-button",
                     isActive
-                      ? "text-warm-red bg-warm-red/10"
+                      ? "text-[--sage] bg-[--sage-light]"
                       : isTransparent
-                        ? "!text-white hover:text-warm-red hover:bg-warm-red/5"
-                        : "text-neutral-700 hover:text-warm-red hover:bg-warm-red/5"
+                        ? "!text-white hover:text-[--sage] hover:bg-[--sage-light-50]"
+                        : isDark
+                          ? "text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage-light]"
+                          : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage-light-50]"
                   )}
                 >
-                  <Icon className={cn("h-5 w-5 md:h-5 md:w-5", isActive && "text-warm-red", isTransparent && !isActive && "!text-white")} />
-                  <span className={cn("text-xs font-medium whitespace-nowrap md:text-sm", isActive ? "text-warm-red" : isTransparent && "!text-white")}>
+                  <Icon className={cn("h-5 w-5 md:h-5 md:w-5", isActive && "text-[--sage]", isTransparent && !isActive && "!text-white")} />
+                  <span className={cn("text-xs font-medium whitespace-nowrap md:text-sm", isActive ? "text-[--sage]" : isTransparent && "!text-white")}>
                     {t(item.labelEn, item.labelEs)}
                   </span>
                 </button>
               );
             })}
+
+            {/* ===== THEME TOGGLE ===== */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={cn(
+                "flex items-center justify-center rounded-full p-2 transition-all md:ml-2",
+                isTransparent
+                  ? "!text-white hover:bg-white/10"
+                  : isDark
+                    ? "text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage-light]"
+                    : "text-[--ink-light] hover:text-[--sage] hover:bg-[--sage-light-50]"
+              )}
+              aria-label={isDark ? t("Switch to light mode", "Cambiar a modo claro") : t("Switch to dark mode", "Cambiar a modo oscuro")}
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
           </div>
         </div>
       </div>
@@ -413,13 +441,13 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           )}
           style={{ top: desktopPlayerPosition.top, right: desktopPlayerPosition.right }}
         >
-          <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 shadow-xl" style={{ backgroundColor: "#262626" }}>
+          <div className="overflow-hidden rounded-xl border border-[--border-color] bg-[--surface] shadow-xl" style={{ backgroundColor: "#262626" }}>
             <div
               className="flex cursor-move items-center justify-between gap-3 px-3 pt-2"
               onMouseDown={handleDesktopPlayerMouseDown}
             >
               <div className="min-w-0 flex-1">
-                <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[--ink-light]">
                   {t("Music", "Música")}
                 </span>
                 <div className="mt-0.5">{titleContent}</div>

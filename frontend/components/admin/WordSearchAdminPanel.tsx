@@ -215,14 +215,14 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
           {t("Word Search Management", "Gestión de Sopa de Letras")}
         </h2>
         {status && (
-          <div className="px-3 py-1 rounded text-xs bg-neutral-800 text-neutral-200">
+          <div className="px-3 py-1 rounded text-xs bg-[--surface-mid] text-[--ink-mid]">
             {status}
           </div>
         )}
       </div>
 
       {/* Levels Card - refactored: each level row expands to show full editor inline */}
-      <Card className="bg-neutral-900 border-neutral-800">
+      <Card className="bg-[--surface] border-[--border-color]">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
             <span>{t("Levels", "Niveles")}</span>
@@ -236,26 +236,26 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-[0.7rem] text-neutral-400">
+          <p className="text-[0.7rem] text-[--ink-light]">
             {t(
               "Create levels and word lists. The game will auto-generate the puzzles.",
               "Crea niveles y listas de palabras. El juego generará los rompecabezas automáticamente."
             )}
           </p>
           {loading && (
-            <p className="text-[0.7rem] text-neutral-500">
+            <p className="text-[0.7rem] text-[--ink-light]">
               {t("Loading levels...", "Cargando niveles...")}
             </p>
           )}
           {!loading && levels.length === 0 && (
-            <p className="text-[0.7rem] text-neutral-500">
+            <p className="text-[0.7rem] text-[--ink-light]">
               {t("No levels yet. Create one below.", "Aún no hay niveles. Crea uno abajo.")}
             </p>
           )}
           {!loading &&
             levels.map((level) => (
-              <div key={level.id} className="border border-neutral-800 rounded-lg bg-neutral-900/50">
-                <div className="p-4 hover:bg-neutral-800/50 transition-colors">
+              <div key={level.id} className="border border-[--border-color] rounded-lg bg-[--surface]/50">
+                <div className="p-4 hover:bg-[--surface-mid]/50 transition-colors">
                   <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
@@ -265,10 +265,10 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                       {openLevelId === level.id ? (
                         <span className="inline-block w-4 text-red-400">▼</span>
                       ) : (
-                        <span className="inline-block w-4 text-neutral-400">▶</span>
+                        <span className="inline-block w-4 text-[--ink-light]">▶</span>
                       )}
                       <h3 className="font-semibold text-white">{level.name}</h3>
-                      <span className="text-sm text-neutral-400">
+                      <span className="text-sm text-[--ink-light]">
                         ({level.words.length} {t("words", "palabras")})
                       </span>
                     </button>
@@ -276,7 +276,7 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-neutral-400 hover:text-red-400 hover:bg-red-900/30"
+                      className="h-7 w-7 text-[--ink-light] hover:text-[--sage] hover:bg-red-900/30"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteLevel(level.id);
@@ -287,19 +287,19 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                   </div>
                 </div>
                 {openLevelId === level.id && (
-                  <div className="border-t border-neutral-800 p-4 space-y-4">
+                  <div className="border-t border-[--border-color] p-4 space-y-4">
                     {/* Inline full editor for this level */}
                     <div className="grid gap-2 md:grid-cols-2">
                       <div className="space-y-1">
-                        <Label className="text-[0.7rem] text-neutral-400">{t("Name", "Nombre")}</Label>
+                        <Label className="text-[0.7rem] text-[--ink-light]">{t("Name", "Nombre")}</Label>
                         <Input
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                          className="h-7 border-[--border-color] bg-[--surface-mid] text-[0.8rem]"
                         />
                       </div>
                       <div className="flex items-end">
-                        <p className="text-[0.7rem] text-neutral-500">
+                        <p className="text-[0.7rem] text-[--ink-light]">
                           {t(
                             "Grid size is chosen automatically based on your words (max 9x9).",
                             "El tamaño de la cuadrícula se elige automáticamente según tus palabras (máx. 9x9)."
@@ -308,16 +308,16 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[0.7rem] text-neutral-400">{t("Description", "Descripción")}</Label>
+                      <Label className="text-[0.7rem] text-[--ink-light]">{t("Description", "Descripción")}</Label>
                       <Textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                        className="min-h-[60px] border-[--border-color] bg-[--surface-mid] text-[0.8rem]"
                       />
                     </div>
                     <div className="space-y-2 mt-4">
-                      <Label className="text-neutral-300">{t("Words", "Palabras")}</Label>
-                      <p className="text-[0.7rem] text-neutral-500">
+                      <Label className="text-[--ink-mid]">{t("Words", "Palabras")}</Label>
+                      <p className="text-[0.7rem] text-[--ink-light]">
                         {t(
                           "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
                           "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
@@ -326,7 +326,7 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                       <Textarea
                         value={wordsText}
                         onChange={(e) => setWordsText(e.target.value)}
-                        className="min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
+                        className="min-h-[120px] border-[--border-color] bg-[--surface-mid] text-[0.8rem] font-mono"
                       />
                     </div>
                     <Button
@@ -343,19 +343,19 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
 
           {/* New level editor (shown when "New Level" is clicked) */}
           {isCreatingNew && (
-            <div className="border border-neutral-800 rounded-lg bg-neutral-900/50">
+            <div className="border border-[--border-color] rounded-lg bg-[--surface]/50">
               <div className="p-4 space-y-4">
                 <div className="grid gap-2 md:grid-cols-2">
                   <div className="space-y-1">
-                    <Label className="text-[0.7rem] text-neutral-400">{t("Name", "Nombre")}</Label>
+                    <Label className="text-[0.7rem] text-[--ink-light]">{t("Name", "Nombre")}</Label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="h-7 border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                      className="h-7 border-[--border-color] bg-[--surface-mid] text-[0.8rem]"
                     />
                   </div>
                   <div className="flex items-end">
-                    <p className="text-[0.7rem] text-neutral-500">
+                    <p className="text-[0.7rem] text-[--ink-light]">
                       {t(
                         "Grid size is chosen automatically based on your words (max 9x9).",
                         "El tamaño de la cuadrícula se elige automáticamente según tus palabras (máx. 9x9)."
@@ -364,16 +364,16 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[0.7rem] text-neutral-400">{t("Description", "Descripción")}</Label>
+                  <Label className="text-[0.7rem] text-[--ink-light]">{t("Description", "Descripción")}</Label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="min-h-[60px] border-neutral-700 bg-neutral-950 text-[0.8rem]"
+                    className="min-h-[60px] border-[--border-color] bg-[--surface-mid] text-[0.8rem]"
                   />
                 </div>
                 <div className="space-y-2 mt-4">
-                  <Label className="text-neutral-300">{t("Words", "Palabras")}</Label>
-                  <p className="text-[0.7rem] text-neutral-500">
+                  <Label className="text-[--ink-mid]">{t("Words", "Palabras")}</Label>
+                  <p className="text-[0.7rem] text-[--ink-light]">
                     {t(
                       "Enter one word per line. Optionally, use 'ENGLISH|ESPAÑOL' to add both languages.",
                       "Ingresa una palabra por línea. Opcionalmente usa 'ENGLISH|ESPAÑOL' para agregar ambos idiomas."
@@ -382,7 +382,7 @@ export function WordSearchAdminPanel({ passcode }: WordSearchAdminPanelProps) {
                   <Textarea
                     value={wordsText}
                     onChange={(e) => setWordsText(e.target.value)}
-                    className="min-h-[120px] border-neutral-700 bg-neutral-950 text-[0.8rem] font-mono"
+                    className="min-h-[120px] border-[--border-color] bg-[--surface-mid] text-[0.8rem] font-mono"
                   />
                 </div>
                 <Button

@@ -280,17 +280,17 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
                 variant="outline"
                 size="sm"
                 onClick={onBack}
-                className="border-neutral-700 text-white hover:bg-neutral-800"
+                className="border-[--border-color] text-[--ink-dark] hover:bg-[--surface-mid]"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t("Back", "Volver")}
               </Button>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-[--ink-dark]">
                 {t("Bible Trivia Challenge", "Desafío de Trivia Bíblica")}
               </h1>
-              <p className="text-neutral-400">
+              <p className="text-[--ink-light]">
                 {t("Select a level to begin", "Selecciona un nivel para comenzar")}
               </p>
             </div>
@@ -298,7 +298,7 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
 
           {/* Level Selection */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-[--ink-dark]">
               {t("Choose Your Level", "Elige Tu Nivel")}
             </h2>
             
@@ -310,46 +310,46 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
                 return (
                   <div key={level.id} className="space-y-3">
                     <Card 
-                      className={`cursor-pointer border-neutral-800 bg-neutral-900/60 transition-all ${
+                      className={`cursor-pointer border-[--border-color] bg-[--surface]/60 transition-all ${
                         isSelected 
-                          ? 'ring-2 ring-red-600 bg-red-600/10' 
-                          : 'hover:bg-neutral-800'
+                          ? 'ring-2 ring-[--sage] bg-[--sage]/10' 
+                          : 'hover:bg-[--surface-mid]'
                       }`}
                       onClick={() => setSelectedLevel(level.id)}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-white">{level.name}</h3>
-                            <p className="text-sm text-neutral-400">{level.description}</p>
-                            <div className="mt-2 flex gap-4 text-xs text-neutral-500">
+                            <h3 className="text-lg font-semibold text-[--ink-dark]">{level.name}</h3>
+                            <p className="text-sm text-[--ink-light]">{level.description}</p>
+                            <div className="mt-2 flex gap-4 text-xs text-[--ink-light]">
                               <span>{t("Target", "Objetivo")}: {level.targetGroup}</span>
                               <span>{t("Time Limit", "Límite de Tiempo")}: {level.timeLimit && level.timeLimit > 0 ? `${level.timeLimit}s` : t("Disabled", "Desactivado")}</span>
                               <span>{t("Passing Score", "Puntuación Aprobatoria")}: {level.passingScore}%</span>
                             </div>
                             {isSelected && (
-                              <div className="mt-4 pt-4 border-t border-neutral-700">
+                              <div className="mt-4 pt-4 border-t border-[--border-color]">
                                 <div className="flex items-center justify-between">
                                   <div>
-                                    <p className="text-sm text-neutral-400">
+                                    <p className="text-sm text-[--ink-light]">
                                       {questionCount > 0 
                                         ? t(`${questionCount} questions available`, `${questionCount} preguntas disponibles`)
                                         : t("Sample questions will be used", "Se usarán preguntas de ejemplo")
                                       }
                                     </p>
                                     {level.timeLimit && level.timeLimit > 0 ? (
-                                      <p className="text-xs text-neutral-500 mt-1">
+                                      <p className="text-xs text-[--ink-light] mt-1">
                                         {t("Timer", "Temporizador")}: {level.timeLimit}s {t("per question", "por pregunta")}
                                       </p>
                                     ) : (
-                                      <p className="text-xs text-neutral-500 mt-1">
+                                      <p className="text-xs text-[--ink-light] mt-1">
                                         {t("No timer", "Sin temporizador")}
                                       </p>
                                     )}
                                   </div>
                                   <Button
                                     onClick={startGame}
-                                    className="bg-red-600 hover:bg-red-700"
+                                    className="bg-[--sage] hover:bg-[--sage-mid]"
                                     disabled={questionCount === 0}
                                   >
                                     <Play className="mr-2 h-4 w-4" />
@@ -361,8 +361,8 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
                           </div>
                           <div className="ml-4">
                             {isSelected && (
-                              <div className="rounded-full bg-red-600 p-2">
-                                <CheckCircle className="h-5 w-5 text-white" />
+                              <div className="rounded-full bg-[--sage] p-2">
+                                <CheckCircle className="h-5 w-5 text-[--ink-dark]" />
                               </div>
                             )}
                           </div>
@@ -390,22 +390,22 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
 
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card className="mx-auto max-w-md border-neutral-800 bg-neutral-900/60">
+        <Card className="mx-auto max-w-md border-[--border-color] bg-[--surface]/60">
           <CardHeader className="text-center">
             <Trophy className="mx-auto h-16 w-16 text-yellow-400" />
-            <CardTitle className="text-2xl font-bold text-white">
+            <CardTitle className="text-2xl font-bold text-[--ink-dark]">
               {t("Game Complete!", "¡Juego Terminado!")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
-            <div className="text-4xl font-bold text-white">
+            <div className="text-4xl font-bold text-[--ink-dark]">
               {score}/{questions.length}
             </div>
-            <div className="text-lg text-neutral-300">
+            <div className="text-lg text-[--ink-mid]">
               {percentage}% {t("Correct", "Correctas")}
             </div>
-            <p className="text-sm text-neutral-400">{getMessage()}</p>
-            <Button onClick={resetGame} className="w-full bg-red-600 hover:bg-red-700">
+            <p className="text-sm text-[--ink-light]">{getMessage()}</p>
+            <Button onClick={resetGame} className="w-full bg-[--sage] hover:bg-[--sage-mid]">
               <RotateCcw className="mr-2 h-4 w-4" />
               {t("Back to Levels", "Volver a Niveles")}
             </Button>
@@ -426,7 +426,7 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
                 setTimeLeft(0);
                 setTimerActive(false);
               }
-            }} className="w-full bg-neutral-700 hover:bg-neutral-600">
+            }} className="w-full bg-[--surface-mid] hover:bg-[--surface]">
               <RotateCcw className="mr-2 h-4 w-4" />
               {t("Play Again", "Jugar de Nuevo")}
             </Button>
@@ -446,16 +446,16 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
               variant="outline"
               size="sm"
               onClick={resetGame}
-              className="border-neutral-700 text-white hover:bg-neutral-800"
+              className="border-[--border-color] text-[--ink-dark] hover:bg-[--surface-mid]"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t("Back to Levels", "Volver a Niveles")}
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-[--ink-dark]">
                 {t("Bible Trivia Challenge", "Desafío de Trivia Bíblica")}
               </h1>
-              <p className="text-neutral-400">
+              <p className="text-[--ink-light]">
                 {t(`Question ${currentQuestionIndex + 1} of ${questions.length}`, 
                    `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`)}
               </p>
@@ -465,41 +465,41 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
             {/* Timer Display */}
             {timerActive && (
               <div className={`text-right ${
-                timeLeft <= 5 ? 'text-red-400' : 'text-white'
+                timeLeft <= 5 ? 'text-red-400' : 'text-[--ink-dark]'
               }`}>
-                <div className="text-sm text-neutral-400">{t("Time Left", "Tiempo Restante")}</div>
+                <div className="text-sm text-[--ink-light]">{t("Time Left", "Tiempo Restante")}</div>
                 <div className="text-xl font-bold">{timeLeft}s</div>
               </div>
             )}
             <div className="text-right">
-              <div className="text-sm text-neutral-400">{t("Score", "Puntuación")}</div>
-              <div className="text-xl font-bold text-white">{score}</div>
+              <div className="text-sm text-[--ink-light]">{t("Score", "Puntuación")}</div>
+              <div className="text-xl font-bold text-[--ink-dark]">{score}</div>
             </div>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="h-2 w-full rounded-full bg-neutral-800">
+        <div className="h-2 w-full rounded-full bg-[--surface-mid]">
           <div
-            className="h-2 rounded-full bg-red-600 transition-all duration-300"
+            className="h-2 rounded-full bg-[--sage] transition-all duration-300"
             style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
           />
         </div>
 
         {/* Question Card */}
-        <Card className="border-neutral-800 bg-neutral-900/60">
+        <Card className="border-[--border-color] bg-[--surface]/60">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-red-600/20 px-3 py-1 text-xs font-semibold text-red-400">
+              <span className="rounded-full bg-[--sage]/20 px-3 py-1 text-xs font-semibold text-[--sage]">
                 {currentQuestion.category}
               </span>
               {currentQuestion.reference && (
-                <span className="text-xs text-neutral-400">
+                <span className="text-xs text-[--ink-light]">
                   {currentQuestion.reference}
                 </span>
               )}
             </div>
-            <CardTitle className="text-lg font-semibold text-white">
+            <CardTitle className="text-lg font-semibold text-[--ink-dark]">
               {language === "en" ? currentQuestion.questionEn : currentQuestion.questionEs}
             </CardTitle>
           </CardHeader>
@@ -516,14 +516,14 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
                   variant="outline"
                   onClick={() => handleAnswerSelect(index)}
                   disabled={showResult}
-                  className={`w-full justify-start border-neutral-700 text-left transition-all ${
+                  className={`w-full justify-start border-[--border-color] text-left transition-all ${
                     showCorrect
                       ? "border-green-600 bg-green-600/20 text-green-400"
                       : showIncorrect
                       ? "border-red-600 bg-red-600/20 text-red-400"
                       : isSelected
-                      ? "border-red-600 bg-red-600/20 text-white"
-                      : "text-white hover:bg-neutral-800"
+                      ? "border-red-600 bg-red-600/20 text-[--ink-dark]"
+                      : "text-[--ink-dark] hover:bg-[--surface-mid]"
                   }`}
                 >
                   <div className="flex w-full items-center justify-between">
@@ -564,7 +564,7 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
             </div>
             <Button
               onClick={handleNextQuestion}
-              className="w-full bg-red-600 hover:bg-red-700"
+              className="w-full bg-[--sage] hover:bg-[--sage-mid]"
             >
               {currentQuestionIndex < questions.length - 1
                 ? t("Next Question", "Siguiente Pregunta")

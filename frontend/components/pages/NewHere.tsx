@@ -48,19 +48,19 @@ export function NewHere({ onNavigate }: NewHereProps) {
             variant="ghost"
             size="icon"
             onClick={() => onNavigate("home")}
-            className="text-neutral-700 hover:text-warm-red"
+            className="text-[--ink-mid] hover:text-[--sage]"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
         )}
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-warm-red">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage]">
             {t("Plan Your Visit", "Planifica Tu Visita")}
           </p>
-          <h1 className="mt-2 serif-heading text-3xl font-bold text-neutral-900 sm:text-4xl">
+          <h1 className="mt-2 serif-heading text-3xl font-bold text-[--ink-dark] sm:text-4xl">
             {t("New Here?", "¿Eres Nuevo?")}
           </h1>
-          <p className="mt-3 max-w-2xl text-neutral-700 whitespace-pre-wrap">
+          <p className="mt-3 max-w-2xl text-[--ink-mid] whitespace-pre-wrap">
             {churchInfo?.description || t(
               "We can't wait to welcome you. Here's what you can expect when you join us for worship and community.",
               "Estamos emocionados de darte la bienvenida. Esto es lo que puedes esperar cuando te unas a nosotros para adorar y hacer comunidad."
@@ -73,7 +73,7 @@ export function NewHere({ onNavigate }: NewHereProps) {
                   href={churchInfo.facebook_page_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red text-white hover:bg-light-warm-red transition-colors shadow-sm"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors shadow-sm"
                   aria-label="Facebook"
                 >
                   <Facebook className="h-5 w-5" />
@@ -84,7 +84,7 @@ export function NewHere({ onNavigate }: NewHereProps) {
                   href={churchInfo.youtube_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-red text-white hover:bg-light-warm-red transition-colors shadow-sm"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors shadow-sm"
                   aria-label="YouTube"
                 >
                   <Youtube className="h-5 w-5" />
@@ -100,11 +100,11 @@ export function NewHere({ onNavigate }: NewHereProps) {
           const Icon = item.icon;
           return (
             <div key={item.titleEn} className="warm-card p-6">
-              <Icon className="h-7 w-7 text-warm-red" />
-              <h3 className="mt-4 text-lg font-semibold text-neutral-900">
+              <Icon className="h-7 w-7 text-[--sage]" />
+              <h3 className="mt-4 text-lg font-semibold text-[--ink-dark]">
                 {t(item.titleEn, item.titleEs)}
               </h3>
-              <p className="mt-2 text-sm text-neutral-600">
+              <p className="mt-2 text-sm text-[--ink-mid]">
                 {t(item.descriptionEn, item.descriptionEs)}
               </p>
             </div>
@@ -115,28 +115,28 @@ export function NewHere({ onNavigate }: NewHereProps) {
       {/* Locations and Services Section */}
       {churchInfo && (churchInfo.address || churchInfo.service_times) ? (
         <div className="warm-card p-6">
-          <h2 className="serif-heading text-xl font-semibold text-neutral-900 mb-4">
+          <h2 className="serif-heading text-xl font-semibold text-[--ink-dark] mb-4">
             {t("Our Church", "Nuestra Iglesia")}
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {churchInfo.address && (
-              <div className="border-l-4 border-warm-red pl-4">
+              <div className="border-l-4 border-[--sage] pl-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-5 w-5 text-warm-red" />
-                  <h3 className="font-semibold text-neutral-900">{t("Location", "Ubicación")}</h3>
+                  <MapPin className="h-5 w-5 text-[--sage]" />
+                  <h3 className="font-semibold text-[--ink-dark]">{t("Location", "Ubicación")}</h3>
                 </div>
-                <div className="text-sm text-neutral-600">
+                <div className="text-sm text-[--ink-mid]">
                   <p>{churchInfo.address}</p>
                 </div>
               </div>
             )}
             {churchInfo.service_times && (
-              <div className="border-l-4 border-warm-red pl-4">
+              <div className="border-l-4 border-[--sage] pl-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-5 w-5 text-warm-red" />
-                  <h3 className="font-semibold text-neutral-900">{t("Service Times", "Horarios de Servicio")}</h3>
+                  <Clock className="h-5 w-5 text-[--sage]" />
+                  <h3 className="font-semibold text-[--ink-dark]">{t("Service Times", "Horarios de Servicio")}</h3>
                 </div>
-                <div className="text-sm text-neutral-600 whitespace-pre-wrap">
+                <div className="text-sm text-[--ink-mid] whitespace-pre-wrap">
                   <p>{churchInfo.service_times}</p>
                 </div>
               </div>
@@ -145,27 +145,27 @@ export function NewHere({ onNavigate }: NewHereProps) {
         </div>
       ) : (
         <div className="warm-card p-6">
-          <h2 className="serif-heading text-xl font-semibold text-neutral-900 mb-4">
+          <h2 className="serif-heading text-xl font-semibold text-[--ink-dark] mb-4">
             {t("Our Locations", "Nuestras Ubicaciones")}
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="border-l-4 border-warm-red pl-4">
+            <div className="border-l-4 border-[--sage] pl-4">
               <div className="flex items-center gap-2 mb-2">
-                <MapPin className="h-5 w-5 text-warm-red" />
-                <h3 className="font-semibold text-neutral-900">Yuma, Colorado</h3>
+                <MapPin className="h-5 w-5 text-[--sage]" />
+                <h3 className="font-semibold text-[--ink-dark]">Yuma, Colorado</h3>
               </div>
-              <div className="flex items-center gap-2 text-sm text-neutral-600">
-                <Clock className="h-4 w-4 text-warm-red" />
+              <div className="flex items-center gap-2 text-sm text-[--ink-mid]">
+                <Clock className="h-4 w-4 text-[--sage]" />
                 <span>{t("Service at", "Servicio a las")} 3:00 PM</span>
               </div>
             </div>
-            <div className="border-l-4 border-warm-red pl-4">
+            <div className="border-l-4 border-[--sage] pl-4">
               <div className="flex items-center gap-2 mb-2">
-                <MapPin className="h-5 w-5 text-warm-red" />
-                <h3 className="font-semibold text-neutral-900">Holyoke, Colorado</h3>
+                <MapPin className="h-5 w-5 text-[--sage]" />
+                <h3 className="font-semibold text-[--ink-dark]">Holyoke, Colorado</h3>
               </div>
-              <div className="flex items-center gap-2 text-sm text-neutral-600">
-                <Clock className="h-4 w-4 text-warm-red" />
+              <div className="flex items-center gap-2 text-sm text-[--ink-mid]">
+                <Clock className="h-4 w-4 text-[--sage]" />
                 <span>{t("Service at", "Servicio a las")} 7:00 PM</span>
               </div>
             </div>
@@ -174,10 +174,10 @@ export function NewHere({ onNavigate }: NewHereProps) {
       )}
 
       <div className="warm-card p-6">
-        <h2 className="serif-heading text-xl font-semibold text-neutral-900">
+        <h2 className="serif-heading text-xl font-semibold text-[--ink-dark]">
           {t("Have Questions?", "¿Tienes Preguntas?")}
         </h2>
-        <p className="mt-2 text-neutral-700">
+        <p className="mt-2 text-[--ink-mid]">
           {t(
             "Reach out anytime and our team will help you plan your first visit, answer questions about ministries, or get connected.",
             "Comunícate en cualquier momento y nuestro equipo te ayudará a planificar tu primera visita, responder preguntas sobre los ministerios o conectarte."

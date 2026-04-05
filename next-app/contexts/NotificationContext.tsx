@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { createSupabaseServerClient, churchOrgId } from "@/lib/churchEnv";
+import { createSupabaseServerClient } from "@/lib/churchEnv";
+const churchOrgId = process.env.NEXT_PUBLIC_CHURCH_ORG_ID;
 
 interface NotificationContextType {
   isSupported: boolean;

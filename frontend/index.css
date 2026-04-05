@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
 @import "tailwindcss";
 
 @import "tw-animate-css";
@@ -7,7 +9,7 @@
 /* Prose styles for blog content */
 @layer components {
   .prose {
-    @apply text-neutral-700 dark:text-neutral-300 max-w-none;
+    @apply text-[--ink-mid] max-w-none;
   }
   
   .prose h1,
@@ -16,7 +18,7 @@
   .prose h4,
   .prose h5,
   .prose h6 {
-    @apply font-serif text-red-600 dark:text-red-400;
+    @apply font-serif text-[--sage];
   }
   
   .prose h1 {
@@ -36,11 +38,11 @@
   }
   
   .prose a {
-    @apply text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 underline transition-colors;
+    @apply text-[--sage] hover:text-[--sage-mid] underline transition-colors;
   }
   
   .prose strong {
-    @apply font-bold text-neutral-900 dark:text-white;
+    @apply font-bold text-[--ink-dark];
   }
   
   .prose em {
@@ -65,15 +67,15 @@
   }
   
   .prose blockquote {
-    @apply border-l-4 border-red-600 dark:border-red-400 pl-4 italic text-neutral-600 dark:text-neutral-400 my-4;
+    @apply border-l-4 border-[--sage] pl-4 italic text-[--ink-light] my-4;
   }
   
   .prose code {
-    @apply bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded text-sm font-mono;
+    @apply bg-[--surface] px-1 py-0.5 rounded text-sm font-mono;
   }
   
   .prose pre {
-    @apply bg-neutral-100 dark:bg-neutral-800 p-4 rounded-lg overflow-x-auto mb-4;
+    @apply bg-[--surface] p-4 rounded-lg overflow-x-auto mb-4;
   }
   
   .prose pre code {
@@ -85,36 +87,154 @@
   }
   
   .prose hr {
-    @apply border-neutral-300 dark:border-neutral-700 my-6;
+    @apply border-[--border-color] my-6;
   }
 }
 
-/* Church Community Color Palette */
+/* ═══════════════════════════════════════════════════════════════
+   Biophilic "Lume Aesthetic" — Warm Porch (Light) + Forest Night (Dark)
+   Ported from Porch design system
+   ═══════════════════════════════════════════════════════════════ */
+
 :root {
-  --warm-cream: #F9F7F4;
-  --soft-brown: #8B7355;
-  --warm-taupe: #A0926D;
-  --earth-green: #7A8B7A;
-  --warm-red: #C73E1D;
-  --light-warm-red: #E85D4C;
-  --neutral-100: #FAFAF9;
-  --neutral-200: #F5F5F4;
-  --neutral-300: #E7E5E4;
-  --neutral-400: #D6D3D1;
-  --neutral-500: #A8A29E;
-  --neutral-600: #78716C;
-  --neutral-700: #57534E;
-  --neutral-800: #44403C;
-  --neutral-900: #262626;
+  /* ── Backgrounds & Surfaces ── */
+  --background: #FAF9F6;
+  --surface: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --card-fg: #1C1C1A;
+  --card-border: rgba(234, 243, 222, 0.5);
+
+  /* ── Primary Greens (Sage) ── */
+  --sage: #3B6D11;
+  --sage-mid: #639922;
+  --sage-light: #EAF3DE;
+  --sage-light-50: rgba(234, 243, 222, 0.5);
+
+  /* ── Secondary Accent (Terracotta) ── */
+  --terra: #993C1D;
+  --terra-light: #FAECE7;
+
+  /* ── Typography ── */
+  --ink-dark: #1C1C1A;
+  --ink-mid: #5F5E5A;
+  --ink-light: #B4B2A9;
+  --ink-light-60: rgba(180, 178, 169, 0.6);
+
+  /* ── UI ── */
+  --border-color: #E5E4E0;
+  --overlay: rgba(28, 28, 26, 0.4);
+
+  /* ── Tab Bar ── */
+  --tab-bar: rgba(255, 255, 255, 0.85);
+  --tab-bar-border: rgba(255, 255, 255, 0.5);
+
+  /* ── shadcn/ui mapped tokens ── */
+  --radius: 0.625rem;
+  --foreground: var(--ink-dark);
+  --card: var(--card-bg);
+  --card-foreground: var(--card-fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink-dark);
+  --primary: var(--sage);
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5F4F0;
+  --secondary-foreground: var(--ink-dark);
+  --muted: #F5F4F0;
+  --muted-foreground: var(--ink-mid);
+  --accent: var(--sage);
+  --accent-foreground: #FFFFFF;
+  --destructive: var(--terra);
+  --border: var(--border-color);
+  --input: var(--border-color);
+  --ring: var(--sage);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: #FAFAF8;
+  --sidebar-foreground: var(--ink-dark);
+  --sidebar-primary: var(--sage);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F5F4F0;
+  --sidebar-accent-foreground: var(--ink-dark);
+  --sidebar-border: var(--border-color);
+  --sidebar-ring: var(--ink-light);
+
+  /* Legacy aliases for easier migration */
+  --warm-red: var(--sage);
+  --light-warm-red: var(--sage-mid);
+  --warm-cream: var(--background);
 }
 
 .dark {
-  --warm-cream: #262626;
-  --soft-brown: #A0926D;
-  --warm-taupe: #B8A878;
-  --earth-green: #8B9B8B;
-  --warm-red: #E85D4C;
-  --light-warm-red: #F07060;
+  /* ── Backgrounds & Surfaces — Forest Night ── */
+  --background: #0E1A0B;
+  --surface: #162411;
+  --card-bg: #1C2D16;
+  --card-fg: #E8E4D8;
+  --card-border: rgba(58, 80, 42, 0.6);
+
+  /* ── Primary Greens — moonlit ── */
+  --sage: #7EC850;
+  --sage-mid: #5A9A2E;
+  --sage-light: #1E3016;
+  --sage-light-50: rgba(30, 48, 22, 0.5);
+
+  /* ── Secondary Accent — ember glow ── */
+  --terra: #D4703F;
+  --terra-light: #2C1A10;
+
+  /* ── Typography — moonlight tones ── */
+  --ink-dark: #E8E4D8;
+  --ink-mid: #9A9890;
+  --ink-light: #5A5852;
+  --ink-light-60: rgba(90, 88, 82, 0.6);
+
+  /* ── UI ── */
+  --border-color: #2A3D20;
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  /* ── Tab Bar — dark frosted glass ── */
+  --tab-bar: rgba(22, 36, 17, 0.75);
+  --tab-bar-border: rgba(58, 80, 42, 0.5);
+
+  /* ── shadcn/ui remapped ── */
+  --foreground: var(--ink-dark);
+  --card: var(--card-bg);
+  --card-foreground: var(--card-fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink-dark);
+  --primary: var(--sage);
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E3016;
+  --secondary-foreground: var(--ink-dark);
+  --muted: #1E3016;
+  --muted-foreground: var(--ink-mid);
+  --accent: var(--sage);
+  --accent-foreground: #FFFFFF;
+  --destructive: var(--terra);
+  --border: var(--border-color);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: var(--sage);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink-dark);
+  --sidebar-primary: var(--sage);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1E3016;
+  --sidebar-accent-foreground: var(--ink-dark);
+  --sidebar-border: var(--border-color);
+  --sidebar-ring: var(--ink-light);
+
+  /* Legacy aliases */
+  --warm-red: var(--sage);
+  --light-warm-red: var(--sage-mid);
+  --warm-cream: var(--background);
 }
 
 @utility container {
@@ -136,19 +256,19 @@
 /* Hero gradient blend */
 .hero-gradient-blend {
   background: linear-gradient(to top, 
-    #F9F7F4 0%, 
-    rgba(249, 247, 244, 0.95) 12%,
-    rgba(249, 247, 244, 0.85) 20%,
-    rgba(249, 247, 244, 0.7) 28%,
-    rgba(249, 247, 244, 0.5) 36%,
-    rgba(249, 247, 244, 0.3) 44%,
-    rgba(249, 247, 244, 0.15) 52%,
+    var(--background) 0%, 
+    color-mix(in srgb, var(--background) 95%, transparent) 12%,
+    color-mix(in srgb, var(--background) 85%, transparent) 20%,
+    color-mix(in srgb, var(--background) 70%, transparent) 28%,
+    color-mix(in srgb, var(--background) 50%, transparent) 36%,
+    color-mix(in srgb, var(--background) 30%, transparent) 44%,
+    color-mix(in srgb, var(--background) 15%, transparent) 52%,
     transparent 60%
   );
 }
 
 .warm-text-gradient {
-  background: linear-gradient(135deg, var(--warm-red) 0%, var(--soft-brown) 100%);
+  background: linear-gradient(135deg, var(--sage) 0%, var(--terra) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -220,14 +340,12 @@
 
 /* iPhone and large phone specific fixes */
 @media screen and (max-width: 430px) {
-  /* iPhone Pro Max and similar large phones */
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
   
-    
-  /* Hero image improvements - MUCH larger */
+  /* Hero image improvements */
   .hero-image {
     height: 40rem !important;
   }
@@ -259,25 +377,25 @@
 
 /* Warm background gradients */
 .warm-gradient {
-  background: linear-gradient(135deg, #F9F7F4 0%, #F5F5F4 50%, #E7E5E4 100%);
-}
-
-.dark .warm-gradient {
-  background: linear-gradient(135deg, #262626 0%, #1C1C1C 50%, #171717 100%);
+  background: linear-gradient(135deg, var(--background) 0%, color-mix(in srgb, var(--background) 95%, var(--sage-light)) 50%, var(--sage-light) 100%);
 }
 
 /* Card styles for sections */
 .warm-card {
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
+.dark .warm-card {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
 /* Button styles */
 .warm-button-primary {
-  background: var(--warm-red);
-  color: white;
+  background: var(--sage) !important;
+  color: white !important;
   border-radius: 8px;
   font-weight: 600;
   transition: all 0.2s ease;
@@ -285,16 +403,16 @@
 
 @media (hover: hover) {
   .warm-button-primary:hover {
-    background: var(--light-warm-red);
+    background: var(--sage-mid) !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(199, 62, 29, 0.3);
+    box-shadow: 0 4px 12px rgba(59, 109, 17, 0.3);
   }
 }
 
 .warm-button-secondary {
   background: transparent;
-  color: var(--warm-red);
-  border: 2px solid var(--warm-red);
+  color: var(--sage);
+  border: 2px solid var(--sage);
   border-radius: 8px;
   font-weight: 600;
   transition: all 0.2s ease;
@@ -302,42 +420,42 @@
 
 @media (hover: hover) {
   .warm-button-secondary:hover {
-    background: var(--warm-red);
+    background: var(--sage);
     color: white;
     transform: translateY(-1px);
   }
 }
 
-/* Global overrides for consistent warm theme */
+/* Global overrides — map red-* utilities to sage */
 .bg-red-600, .bg-red-700 {
-  background-color: var(--warm-red) !important;
+  background-color: var(--sage) !important;
 }
 
 @media (hover: hover) {
   .hover\:bg-red-600:hover {
-    background-color: var(--warm-red) !important;
+    background-color: var(--sage) !important;
   }
   .hover\:bg-red-700:hover {
-    background-color: var(--light-warm-red) !important;
+    background-color: var(--sage-mid) !important;
   }
 }
 
 .text-red-400, .text-red-500, .text-red-600 {
-  color: var(--warm-red) !important;
+  color: var(--sage) !important;
 }
 
 @media (hover: hover) {
   .hover\:text-red-500:hover {
-    color: var(--warm-red) !important;
+    color: var(--sage) !important;
   }
 }
 
 .border-red-500 {
-  border-color: var(--warm-red) !important;
+  border-color: var(--sage) !important;
 }
 
 .border-l-warm-red {
-  border-left-color: var(--warm-red) !important;
+  border-left-color: var(--sage) !important;
 }
 
 .border-l-transparent {
@@ -345,7 +463,7 @@
 }
 
 .border-b-warm-red {
-  border-bottom-color: var(--warm-red) !important;
+  border-bottom-color: var(--sage) !important;
 }
 
 .border-b-transparent {
@@ -353,36 +471,37 @@
 }
 
 .bg-warm-red {
-  background-color: var(--warm-red) !important;
+  background-color: var(--sage) !important;
 }
 
 .text-warm-red {
-  color: var(--warm-red) !important;
+  color: var(--sage) !important;
 }
 
 @media (hover: hover) {
   .hover\:text-warm-red:hover {
-    color: var(--warm-red) !important;
+    color: var(--sage) !important;
   }
 
   .hover\:bg-warm-red\/5:hover {
-    background-color: rgba(199, 62, 29, 0.05) !important;
+    background-color: rgba(59, 109, 17, 0.05) !important;
   }
 }
 
-/* Dedicated active tab style to ensure overrides work */
+.dark .hover\:bg-warm-red\/5:hover {
+  background-color: rgba(126, 200, 80, 0.08) !important;
+}
+
+/* Active tab style */
 .warm-tab-active {
-  background-color: var(--warm-red) !important;
+  background-color: var(--sage) !important;
   color: white !important;
-  border-bottom-color: var(--warm-red) !important;
+  border-bottom-color: var(--sage) !important;
   border-bottom-width: 4px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
 }
 
-
-
 @media screen and (max-width: 390px) {
-  /* iPhone 12/13/14 and similar */
   .hero-image {
     height: 85vh !important;
   }
@@ -405,91 +524,6 @@
     padding-left: max(env(safe-area-inset-left), 1rem);
     padding-right: max(env(safe-area-inset-right), 1rem);
   }
-}
-
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --accent-300: #8ebdf2;
-  --accent-400: #6ea8eb;
-  --accent-500: #4a90e2;
-  --accent-600: #357ad4;
-  --accent-700: #2c6bc6;
-  --accent-950: #0f2742;
-  --primary: var(--accent-500);
-  --primary-foreground: #f7fbff;
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: var(--accent-500);
-  --accent-foreground: #0b1f33;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: var(--accent-500);
-  --color-red-400: var(--accent-400);
-  --color-red-500: var(--accent-500);
-  --color-red-600: var(--accent-600);
-  --color-red-700: var(--accent-700);
-  --color-red-950: var(--accent-950);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: var(--accent-500);
-  --sidebar-primary-foreground: #f7fbff;
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.269 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: var(--accent-500);
-  --primary-foreground: #f7fbff;
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: var(--accent-500);
-  --accent-foreground: #0b1f33;
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: var(--accent-500);
-  --color-red-400: var(--accent-400);
-  --color-red-500: var(--accent-500);
-  --color-red-600: var(--accent-600);
-  --color-red-700: var(--accent-700);
-  --color-red-950: var(--accent-950);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: var(--accent-500);
-  --sidebar-primary-foreground: #f7fbff;
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.439 0 0);
 }
 
 @theme inline {
@@ -535,8 +569,10 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-black text-foreground;
+    @apply bg-[--background] text-foreground;
     margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -548,9 +584,10 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  background-color: #F9F7F4;
-  color: #1a1a1a;
+  background-color: var(--background);
+  color: var(--ink-dark);
   z-index: 50;
+  transition: background-color 0.3s ease;
 }
 
 .app-splash-logo {
@@ -570,15 +607,15 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: #9ca3af;
+  color: var(--ink-light);
 }
 
 .app-splash-spinner {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 9999px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  border-top-color: #c73e1d;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--sage);
   animation: app-splash-spin 0.9s linear infinite;
 }
 
@@ -588,7 +625,7 @@
   }
 }
 
-/* Music player always stays dark regardless of light-theme overrides */
+/* Music player always stays dark regardless of theme */
 .music-player-dark,
 .music-player-dark * {
   --tw-text-opacity: 1;
@@ -663,4 +700,25 @@
   100% {
     transform: translateX(-50%);
   }
+}
+
+/* ═══ Semantic color utility classes ═══ */
+
+/* Text colors that respond to light/dark mode */
+.text-body {
+  color: var(--ink-dark);
+}
+.text-body-secondary {
+  color: var(--ink-mid);
+}
+.text-body-tertiary {
+  color: var(--ink-light);
+}
+
+/* Background utility */
+.bg-page {
+  background-color: var(--background);
+}
+.bg-surface {
+  background-color: var(--surface);
 }

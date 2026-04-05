@@ -55,11 +55,11 @@ export function BlogPost({
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
-      case 'urgent': return 'border-red-500 bg-red-50 dark:bg-red-950/20';
+      case 'urgent': return 'border-[--terra] bg-[--terra-light] dark:bg-[--terra-light]';
       case 'high': return 'border-orange-500 bg-orange-50 dark:bg-orange-950/20';
       case 'normal': return 'border-blue-500 bg-blue-50 dark:bg-blue-950/20';
       case 'low': return 'border-gray-500 bg-gray-50 dark:bg-gray-950/20';
-      default: return 'border-red-600 bg-white';
+      default: return 'border-[--sage] bg-[--surface]';
     }
   };
 
@@ -74,7 +74,7 @@ export function BlogPost({
     <article className={`border-l-4 ${getPriorityColor(priority)} rounded-r-lg shadow-md overflow-hidden transition-all hover:shadow-lg`}>
       {/* Header Image */}
       {imageUrl && (
-        <div className="aspect-video overflow-hidden bg-neutral-100">
+        <div className="aspect-video overflow-hidden bg-[--surface-mid]">
           <img
             src={imageUrl}
             alt={title}
@@ -86,8 +86,8 @@ export function BlogPost({
       {/* Content */}
       <div className="p-6 md:p-8">
         {/* Meta Information */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 mb-4">
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-600 rounded-full font-medium">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-[--ink-mid] mb-4">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-[--sage-light] text-[--sage] rounded-full font-medium">
             {getTypeLabel()}
           </span>
           
@@ -119,20 +119,20 @@ export function BlogPost({
         </div>
         
         {/* Title */}
-        <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4 serif-heading">
+        <h1 className="text-2xl md:text-3xl font-bold text-[--ink-dark] mb-4 serif-heading">
           {title}
         </h1>
         
         {/* Content */}
         <div 
-          className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-red-600 prose-a:text-red-600 hover:prose-a:text-red-500 prose-strong:text-neutral-900"
+          className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-[--sage] prose-a:text-[--sage] hover:prose-a:text-[--sage-mid] prose-strong:text-[--ink-dark]"
           dangerouslySetInnerHTML={{ __html: content }}
         />
         
         {/* Author */}
         {author && (
-          <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
-            <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+          <div className="mt-6 pt-6 border-t border-[--border-color]">
+            <div className="flex items-center gap-2 text-sm text-[--ink-mid]">
               <User className="h-4 w-4" />
               <span>{t('Posted by', 'Publicado por')} {author}</span>
             </div>

@@ -7,8 +7,8 @@ export function GlobalMusicPlayer() {
   const { t } = useLanguage();
 
   return (
-    <div className="fixed bottom-16 right-4 z-40 hidden w-80 overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/90 shadow-2xl md:block">
-      <div className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400">
+    <div className="fixed bottom-16 right-4 z-40 hidden w-80 overflow-hidden rounded-xl border border-[--border-color] bg-[--surface]/90 shadow-2xl md:block">
+      <div className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[--ink-light]">
         {t("Worship Playlist", "Lista de Adoración")}
       </div>
       <div className="aspect-video w-full">

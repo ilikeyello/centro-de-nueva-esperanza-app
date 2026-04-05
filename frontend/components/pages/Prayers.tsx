@@ -105,60 +105,60 @@ export function Prayers({ onNavigate }: PrayersProps) {
               variant="ghost"
               size="icon"
               onClick={() => onNavigate("home")}
-              className="text-neutral-300 hover:text-white"
+              className="text-[--ink-mid] hover:text-[--ink-dark]"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-[--ink-dark]">
             {t("Prayer Wall", "Muro de Oración")}
           </h1>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-red-600 hover:bg-red-700">
+            <Button className="bg-[--sage] hover:bg-[--sage-mid]">
               <Plus className="mr-2 h-4 w-4" />
               {t("Submit Request", "Enviar Petición")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-neutral-800 bg-neutral-900">
+          <DialogContent className="border-[--border-color] bg-[--surface]">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-[--ink-dark]">
                 {t("Submit Prayer Request", "Enviar Petición de Oración")}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreatePrayer} className="space-y-4">
               <div>
-                <Label htmlFor="title" className="text-neutral-200">
+                <Label htmlFor="title" className="text-[--ink-mid]">
                   {t("Title", "Título")}
                 </Label>
                 <Input
                   id="title"
                   name="title"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="description" className="text-neutral-200">
+                <Label htmlFor="description" className="text-[--ink-mid]">
                   {t("Description", "Descripción")}
                 </Label>
                 <Textarea
                   id="description"
                   name="description"
                   required
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                 />
               </div>
               <div>
-                <Label htmlFor="authorName" className="text-neutral-200">
+                <Label htmlFor="authorName" className="text-[--ink-mid]">
                   {t("Name", "Nombre")}
                 </Label>
                 <Input
                   id="authorName"
                   name="authorName"
                   placeholder={t("Optional if anonymous", "Opcional si es anónimo")}
-                  className="border-neutral-700 bg-neutral-800 text-white"
+                  className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                 />
               </div>
               <div className="flex items-center space-x-2">
@@ -167,11 +167,11 @@ export function Prayers({ onNavigate }: PrayersProps) {
                   checked={isAnonymous}
                   onCheckedChange={(checked) => setIsAnonymous(checked === true)}
                 />
-                <Label htmlFor="anonymous" className="text-sm text-neutral-200">
+                <Label htmlFor="anonymous" className="text-sm text-[--ink-mid]">
                   {t("Submit anonymously", "Enviar de forma anónima")}
                 </Label>
               </div>
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
+              <Button type="submit" className="w-full bg-[--sage] hover:bg-[--sage-mid]">
                 {t("Submit Prayer Request", "Enviar Petición")}
               </Button>
             </form>
@@ -181,12 +181,12 @@ export function Prayers({ onNavigate }: PrayersProps) {
 
       <div className="grid gap-6 md:grid-cols-2">
         {prayersData?.prayers.map((prayer: PrayerRequest) => (
-          <Card key={prayer.id} className="border-neutral-800 bg-neutral-900/50">
+          <Card key={prayer.id} className="border-[--border-color] bg-[--surface]/50">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="text-white">{prayer.title}</CardTitle>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-neutral-400">
+                  <CardTitle className="text-[--ink-dark]">{prayer.title}</CardTitle>
+                  <div className="mt-1 flex items-center gap-2 text-xs text-[--ink-light]">
                     <User className="h-3 w-3" />
                     <span>
                       {prayer.isAnonymous
@@ -201,7 +201,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
                   size="sm"
                   variant="outline"
                   onClick={() => prayMutation.mutate(prayer.id)}
-                  className="border-neutral-700 bg-neutral-800 hover:bg-neutral-700"
+                  className="border-[--border-color] bg-[--surface-mid] hover:bg-[--surface]"
                 >
                   <Heart className="mr-1 h-4 w-4 fill-red-500 text-red-500" />
                   <span>{prayer.prayerCount}</span>
@@ -209,7 +209,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-wrap text-sm text-neutral-300">
+              <p className="whitespace-pre-wrap text-sm text-[--ink-mid]">
                 {prayer.description}
               </p>
             </CardContent>

@@ -418,7 +418,7 @@ export function News() {
         return "border-orange-600 bg-orange-950/30";
       case "normal":
       default:
-        return "border-neutral-700 bg-neutral-900/50";
+        return "border-[--border-color] bg-[--surface]/50";
     }
   };
 
@@ -427,23 +427,23 @@ export function News() {
       <div className="space-y-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">
+            <h1 className="text-3xl font-bold text-[--ink-dark]">
               {activeTab === "announcements"
                 ? t("News & Announcements", "Noticias y Anuncios")
                 : t("Upcoming Events", "Próximos Eventos")}
             </h1>
           </div>
           <div className="flex flex-col items-stretch gap-4 md:flex-row md:items-center">
-            <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 border-neutral-300 bg-neutral-50 p-1 md:w-auto">
+            <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 border-[--border-color] bg-[--surface] p-1 md:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveTab("announcements")}
-                style={activeTab === "announcements" ? { backgroundColor: "#C73E1D", color: "white", borderBottomColor: "#C73E1D" } : {}}
+                style={activeTab === "announcements" ? { backgroundColor: "var(--sage)", color: "white", borderBottomColor: "var(--sage)" } : {}}
                 className={cn(
                   "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
                   activeTab === "announcements"
                     ? "shadow-md"
-                    : "text-neutral-600 hover:text-[#C73E1D] hover:bg-white border-b-transparent"
+                    : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--background] border-b-transparent"
                 )}
               >
                 {t("Announcements", "Anuncios")}
@@ -451,12 +451,12 @@ export function News() {
               <button
                 type="button"
                 onClick={() => setActiveTab("events")}
-                style={activeTab === "events" ? { backgroundColor: "#C73E1D", color: "white", borderBottomColor: "#C73E1D" } : {}}
+                style={activeTab === "events" ? { backgroundColor: "var(--sage)", color: "white", borderBottomColor: "var(--sage)" } : {}}
                 className={cn(
                   "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
                   activeTab === "events"
                     ? "shadow-md"
-                    : "text-neutral-600 hover:text-[#C73E1D] hover:bg-white border-b-transparent"
+                    : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--background] border-b-transparent"
                 )}
               >
                 {t("Events", "Eventos")}
@@ -484,7 +484,7 @@ export function News() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-[--ink-light] hover:bg-[--terra-light] hover:text-[--terra]"
                     onClick={() => {
                       setAnnouncementToDelete(announcement as any);
                       setDeletePasscode("");
@@ -508,12 +508,12 @@ export function News() {
                 }
               }}
             >
-              <DialogContent className="border-neutral-800 bg-neutral-900">
+              <DialogContent className="border-[--border-color] bg-[--surface]">
                 <DialogHeader>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="text-[--ink-dark]">
                     {t("Delete Announcement", "Eliminar Anuncio")}
                   </DialogTitle>
-                  <p className="text-sm text-neutral-400">
+                  <p className="text-sm text-[--ink-light]">
                     {t(
                       "Enter the passcode to permanently delete this announcement.",
                       "Ingresa el código para eliminar este anuncio permanentemente."
@@ -522,7 +522,7 @@ export function News() {
                 </DialogHeader>
                 <form onSubmit={handleDeleteAnnouncement} className="space-y-4">
                   <div>
-                    <Label htmlFor="deletePasscode" className="text-neutral-200">
+                    <Label htmlFor="deletePasscode" className="text-[--ink-mid]">
                       {t("Passcode", "Código")}
                     </Label>
                     <Input
@@ -531,7 +531,7 @@ export function News() {
                       value={deletePasscode}
                       onChange={(event) => setDeletePasscode(event.target.value)}
                       required
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                     />
                   </div>
                   <div className="flex justify-end gap-2">
@@ -543,13 +543,13 @@ export function News() {
                         setAnnouncementToDelete(null);
                         setDeletePasscode("");
                       }}
-                      className="border-neutral-700 bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
+                      className="border-[--border-color] bg-[--surface] text-[--ink-mid] hover:bg-[--surface-mid]"
                     >
                       {t("Cancel", "Cancelar")}
                     </Button>
                     <Button
                       type="submit"
-                      className="bg-red-600 hover:bg-red-700"
+                      className="bg-[--sage] text-[--ink-dark] hover:bg-[--sage-mid]"
                       disabled={deleteAnnouncement.isPending || deletePasscode.trim().length === 0}
                     >
                       {deleteAnnouncement.isPending ? t("Deleting...", "Eliminando...") : t("Delete", "Eliminar")}
@@ -586,8 +586,8 @@ export function News() {
                       disabled={rsvpedEventIds.has(eventItem.id)}
                       className={cn(
                         rsvpedEventIds.has(eventItem.id)
-                          ? "bg-neutral-800 text-neutral-300 hover:bg-neutral-800"
-                          : "bg-red-600 hover:bg-red-700"
+                          ? "bg-[--surface-mid] text-[--ink-mid] hover:bg-[--surface-mid]"
+                          : "bg-[--sage] hover:bg-[--sage-mid]"
                       )}
                     >
                       {rsvpedEventIds.has(eventItem.id)
@@ -597,7 +597,7 @@ export function News() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-neutral-400 hover:bg-red-950/40 hover:text-red-400"
+                      className="text-[--ink-light] hover:bg-[--terra-light] hover:text-[--terra]"
                       onClick={() => {
                         setEventToDelete(eventItem as any);
                         setEventDeletePasscode("");
@@ -613,21 +613,21 @@ export function News() {
             </div>
 
             {upcomingEvents.length === 0 && (
-              <p className="text-sm text-neutral-400">
+              <p className="text-sm text-[--ink-light]">
                 {t("No upcoming events yet. Create one to get started!", "No hay eventos próximos. ¡Crea uno para comenzar!")}
               </p>
             )}
 
             <Dialog open={rsvpDialogOpen} onOpenChange={setRsvpDialogOpen}>
-              <DialogContent className="border-neutral-800 bg-neutral-900">
+              <DialogContent className="border-[--border-color] bg-[--surface]">
                 <DialogHeader>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="text-[--ink-dark]">
                     {t("RSVP for Event", "Confirmar Asistencia al Evento")}
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleRsvp} className="space-y-4">
                   <div>
-                    <Label htmlFor="attendee-name" className="text-neutral-200">
+                    <Label htmlFor="attendee-name" className="text-[--ink-mid]">
                       {t("Your name", "Tu nombre")}
                     </Label>
                     <Input
@@ -635,11 +635,11 @@ export function News() {
                       value={rsvpName}
                       onChange={(event) => setRsvpName(event.target.value)}
                       placeholder={t("Optional", "Opcional")}
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="attendees" className="text-neutral-200">
+                    <Label htmlFor="attendees" className="text-[--ink-mid]">
                       {t("Number of Attendees", "Número de Asistentes")}
                     </Label>
                     <Input
@@ -649,10 +649,10 @@ export function News() {
                       min="1"
                       defaultValue="1"
                       required
-                      className="border-neutral-700 bg-neutral-800 text-white"
+                      className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
+                  <Button type="submit" className="w-full bg-[--sage] text-[--ink-dark] hover:bg-[--sage-mid]">
                     {t("Confirm RSVP", "Confirmar Asistencia")}
                   </Button>
                 </form>
@@ -672,12 +672,12 @@ export function News() {
           }
         }}
       >
-        <DialogContent className="border-neutral-800 bg-neutral-900">
+        <DialogContent className="border-[--border-color] bg-[--surface]">
           <DialogHeader>
-            <DialogTitle className="text-white">
+            <DialogTitle className="text-[--ink-dark]">
               {t("Delete Event", "Eliminar Evento")}
             </DialogTitle>
-            <p className="text-sm text-neutral-400">
+            <p className="text-sm text-[--ink-light]">
               {t(
                 "Enter the passcode to permanently delete this event.",
                 "Ingresa el código para eliminar este evento permanentemente."
@@ -686,7 +686,7 @@ export function News() {
           </DialogHeader>
           <form onSubmit={handleDeleteEvent} className="space-y-4">
             <div>
-              <Label htmlFor="eventDeletePasscode" className="text-neutral-200">
+              <Label htmlFor="eventDeletePasscode" className="text-[--ink-mid]">
                 {t("Passcode", "Código")}
               </Label>
               <Input
@@ -695,7 +695,7 @@ export function News() {
                 value={eventDeletePasscode}
                 onChange={(event) => setEventDeletePasscode(event.target.value)}
                 required
-                className="border-neutral-700 bg-neutral-800 text-white"
+                className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -707,13 +707,13 @@ export function News() {
                   setEventToDelete(null);
                   setEventDeletePasscode("");
                 }}
-                className="border-neutral-700 bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
+                className="border-[--border-color] bg-[--surface] text-[--ink-mid] hover:bg-[--surface-mid]"
               >
                 {t("Cancel", "Cancelar")}
               </Button>
               <Button
                 type="submit"
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-[--sage] text-[--ink-dark] hover:bg-[--sage-mid]"
                 disabled={deleteEvent.isPending || eventDeletePasscode.trim().length === 0}
               >
                 {deleteEvent.isPending ? t("Deleting...", "Eliminando...") : t("Delete", "Eliminar")}

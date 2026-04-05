@@ -6,15 +6,15 @@ export function Header() {
   const { language, toggleLanguage, t } = useLanguage();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-warm-cream/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-[--border-color] bg-[--background]/95 backdrop-blur">
       <div className="container mx-auto flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-warm-red">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]">
             <span className="text-xl font-extrabold text-white">CNE</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-neutral-900">CNE</h1>
-            <p className="text-xs text-neutral-600">
+            <h1 className="text-xl font-bold text-[--ink-dark]">CNE</h1>
+            <p className="text-xs text-[--ink-mid]">
               {t("Center of New Hope", "Centro de Nueva Esperanza")}
             </p>
           </div>
@@ -23,7 +23,7 @@ export function Header() {
           variant="outline"
           size="sm"
           onClick={toggleLanguage}
-          className="gap-2 border-neutral-700 bg-neutral-900 hover:bg-neutral-800"
+          className="gap-2 border-[--border-color] bg-[--surface] hover:bg-[--surface-mid]"
         >
           <Languages className="h-4 w-4" />
           <span className="font-semibold">{language === "en" ? "ES" : "EN"}</span>
