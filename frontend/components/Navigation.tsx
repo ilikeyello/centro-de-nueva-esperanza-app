@@ -288,22 +288,20 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   return (
     <nav
+      style={!isDesktop ? { marginBottom: "max(calc(env(safe-area-inset-bottom) + 8px), 12px)" } : undefined}
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300",
-        "mx-3 mb-3 rounded-2xl",
-        "backdrop-blur-md bg-[--tab-bar] border border-[--tab-bar-border]",
-        "shadow-[0_8px_32px_rgba(0,0,0,0.15),0_2px_8px_rgba(0,0,0,0.08)]",
-        "md:mx-0 md:mb-0 md:rounded-none md:sticky md:bottom-auto md:top-0",
+        "mx-3 rounded-[2rem]",
+        "backdrop-blur-xl bg-[--tab-bar] border border-[--tab-bar-border]",
+        "shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
+        "md:mx-0 md:rounded-none md:sticky md:bottom-auto md:top-0",
         "md:border-0 md:shadow-none md:backdrop-blur-none",
         isTransparent
           ? "md:bg-transparent"
           : "md:bg-[--background]/95 md:backdrop-blur-sm md:border-b md:border-[--border-color] md:shadow-sm"
       )}
     >
-      <div
-        className={cn("container mx-auto py-0")}
-        style={{ paddingBottom: "max(env(safe-area-inset-bottom) - 20px, 2px)" }}
-      >
+      <div className={cn("container mx-auto py-0")}>
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
 
           {/* ===== MOBILE PLAYER (above nav tabs) ===== */}
@@ -381,7 +379,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           )}
 
           {/* ===== NAV TABS ===== */}
-          <div className="flex w-full items-center justify-between gap-1 px-3 py-2 md:justify-center md:gap-2">
+          <div className="flex w-full items-center justify-between gap-1 px-3 py-3 md:justify-center md:gap-2 md:py-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPage === item.id;
@@ -390,16 +388,24 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
                   className={cn(
-                    "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-lg px-3 py-2 text-[0.8rem] font-medium transition-all md:flex-initial md:flex-row md:gap-2 md:px-4 md:py-2 md:text-sm nav-button",
+                    "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-xl px-2 py-2 text-[0.8rem] font-medium transition-all nav-button",
+                    "md:flex-initial md:flex-row md:gap-2 md:px-4 md:py-2 md:rounded-lg md:text-sm",
                     isActive
-                      ? "text-[--sage] bg-[--sage-light]"
-                      : isTransparent
-                        ? "!text-white hover:text-[--sage] hover:bg-[--sage-light-50]"
-                        : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage-light]"
+                      ? cn(
+                          "text-[#7EC850] bg-white/15",
+                          "md:text-[--sage] md:bg-[--sage-light]",
+                          isTransparent && "md:!text-white md:bg-white/20"
+                        )
+                      : cn(
+                          "text-white/70 hover:text-white hover:bg-white/10",
+                          isTransparent
+                            ? "md:!text-white md:hover:bg-white/10"
+                            : "md:text-[--ink-mid] md:hover:text-[--sage] md:hover:bg-[--sage-light]"
+                        )
                   )}
                 >
-                  <Icon className={cn("h-5 w-5 md:h-5 md:w-5", isActive && "text-[--sage]", isTransparent && !isActive && "!text-white")} />
-                  <span className={cn("text-xs font-medium whitespace-nowrap md:text-sm", isActive ? "text-[--sage]" : isTransparent && "!text-white")}>
+                  <Icon className="h-5 w-5" />
+                  <span className="text-xs font-medium whitespace-nowrap md:text-sm">
                     {t(item.labelEn, item.labelEs)}
                   </span>
                 </button>

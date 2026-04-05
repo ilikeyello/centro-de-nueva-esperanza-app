@@ -128,8 +128,8 @@
   --surface-mid: #F0EEE8;
 
   /* ── Tab Bar ── */
-  --tab-bar: rgba(255, 255, 255, 0.85);
-  --tab-bar-border: rgba(229, 228, 224, 0.8);
+  --tab-bar: rgba(12, 22, 8, 0.87);
+  --tab-bar-border: rgba(255, 255, 255, 0.12);
 
   /* ── shadcn/ui mapped tokens ── */
   --radius: 0.625rem;
@@ -202,8 +202,8 @@
   --surface-mid: #1C2D16;
 
   /* ── Tab Bar — dark frosted glass ── */
-  --tab-bar: rgba(22, 36, 17, 0.82);
-  --tab-bar-border: rgba(58, 80, 42, 0.6);
+  --tab-bar: rgba(8, 16, 5, 0.90);
+  --tab-bar-border: rgba(255, 255, 255, 0.10);
 
   /* ── shadcn/ui remapped ── */
   --foreground: var(--ink-dark);

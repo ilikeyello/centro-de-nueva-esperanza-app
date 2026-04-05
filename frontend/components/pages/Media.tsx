@@ -508,12 +508,12 @@ export function Media({ onStartMusic }: MediaProps) {
                             onClick={() => setSelectedSermonId(sermon.id)}
                             className={`flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left transition-colors ${
                               isActive
-                                ? "bg-[--sage] text-white"
+                                ? "bg-[--sage] text-[--background]"
                                 : "border border-transparent text-[--ink-dark] bg-[--surface] hover:border-[--border-color] hover:bg-[--surface]"
                             }`}
                           >
                             <span className="truncate text-[0.8rem] font-medium">{sermon.title}</span>
-                            <span className="mt-0.5 text-[0.65rem] text-[--ink-mid]">
+                            <span className={`mt-0.5 text-[0.65rem] ${isActive ? "opacity-70" : "text-[--ink-mid]"}`}>
                               {new Date(sermon.createdAt).toLocaleDateString(
                                 language === "en" ? "en-US" : "es-MX",
                                 {
@@ -646,7 +646,7 @@ export function Media({ onStartMusic }: MediaProps) {
                                 className={cn(
                                   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                                   isActive
-                                    ? "bg-[--sage] text-white"
+                                    ? "bg-[--sage] text-[--background]"
                                     : "border border-transparent text-[--ink-mid] hover:bg-[--surface] hover:text-[--ink-dark]"
                                 )}
                               >
