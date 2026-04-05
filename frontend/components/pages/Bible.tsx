@@ -705,7 +705,7 @@ export function Bible({ onNavigate }: BibleProps) {
             <button
               type="button"
               disabled={loading}
-              className="text-center px-3 py-2 rounded-md hover:bg-[--surface-mid] transition-colors disabled:opacity-50"
+              className="text-center px-3 py-2 rounded-md bg-[--surface] border border-[--border-color] hover:bg-[--surface-mid] transition-colors disabled:opacity-50"
             >
               <h2 className="serif-heading text-xl font-semibold text-[--ink-dark]">
                 {getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0])} {selectedChapter}
