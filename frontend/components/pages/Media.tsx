@@ -508,7 +508,7 @@ export function Media({ onStartMusic }: MediaProps) {
                             onClick={() => setSelectedSermonId(sermon.id)}
                             className={`flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left transition-colors ${
                               isActive
-                                ? "bg-[--sage] text-[--background]"
+                                ? "bg-[--sage] text-[--background] border-l-2 border-[--sage-mid] shadow-sm"
                                 : "border border-transparent text-[--ink-dark] bg-[--surface] hover:border-[--border-color] hover:bg-[--surface]"
                             }`}
                           >
@@ -646,7 +646,7 @@ export function Media({ onStartMusic }: MediaProps) {
                                 className={cn(
                                   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                                   isActive
-                                    ? "bg-[--sage] text-[--background]"
+                                    ? "bg-[--sage] text-[--background] border-l-2 border-[--sage-mid] shadow-sm"
                                     : "border border-transparent text-[--ink-mid] hover:bg-[--surface] hover:text-[--ink-dark]"
                                 )}
                               >
