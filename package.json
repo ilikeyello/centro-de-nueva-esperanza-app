@@ -2,7 +2,7 @@
   "name": "leap-app",
   "version": "1.0.0",
   "type": "module",
-  "packageManager": "bun@1.1.30",
+  "packageManager": "bun@1.3.2",
   "workspaces": [
     "frontend",
     "next-app"
