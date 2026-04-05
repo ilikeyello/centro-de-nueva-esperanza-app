@@ -10,12 +10,9 @@ import {
   Maximize2,
   X,
   BookOpen,
-  Sun,
-  Moon,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
-import { useTheme } from "../contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
 interface NavigationProps {
@@ -25,7 +22,6 @@ interface NavigationProps {
 
 export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const { t } = useLanguage();
-  const { isDark, toggleTheme } = useTheme();
   const {
     currentTrack: youtubeTrackUrl,
     currentTrackTitle,
@@ -293,15 +289,15 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg transition-all duration-300 md:sticky md:top-0 md:border-t-0",
-        isDark
-          ? "border-[--border-color] bg-[--surface]"
-          : "border-[--border-color] bg-[--surface]",
+        "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300",
+        "mx-3 mb-3 rounded-2xl",
+        "backdrop-blur-md bg-[--tab-bar] border border-[--tab-bar-border]",
+        "shadow-[0_8px_32px_rgba(0,0,0,0.15),0_2px_8px_rgba(0,0,0,0.08)]",
+        "md:mx-0 md:mb-0 md:rounded-none md:sticky md:bottom-auto md:top-0",
+        "md:border-0 md:shadow-none md:backdrop-blur-none",
         isTransparent
-          ? "md:bg-transparent md:border-transparent md:shadow-none"
-          : isDark
-            ? "md:bg-[--background]/95 md:backdrop-blur-sm md:border-b md:border-[--border-color] md:shadow-sm"
-            : "md:bg-[--background]/95 md:backdrop-blur-sm md:border-b md:border-[--border-color] md:shadow-sm"
+          ? "md:bg-transparent"
+          : "md:bg-[--background]/95 md:backdrop-blur-sm md:border-b md:border-[--border-color] md:shadow-sm"
       )}
     >
       <div
@@ -399,9 +395,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                       ? "text-[--sage] bg-[--sage-light]"
                       : isTransparent
                         ? "!text-white hover:text-[--sage] hover:bg-[--sage-light-50]"
-                        : isDark
-                          ? "text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage-light]"
-                          : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage-light-50]"
+                        : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage-light]"
                   )}
                 >
                   <Icon className={cn("h-5 w-5 md:h-5 md:w-5", isActive && "text-[--sage]", isTransparent && !isActive && "!text-white")} />
@@ -412,22 +406,6 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
               );
             })}
 
-            {/* ===== THEME TOGGLE ===== */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className={cn(
-                "flex items-center justify-center rounded-full p-2 transition-all md:ml-2",
-                isTransparent
-                  ? "!text-white hover:bg-white/10"
-                  : isDark
-                    ? "text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage-light]"
-                    : "text-[--ink-light] hover:text-[--sage] hover:bg-[--sage-light-50]"
-              )}
-              aria-label={isDark ? t("Switch to light mode", "Cambiar a modo claro") : t("Switch to dark mode", "Cambiar a modo oscuro")}
-            >
-              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
           </div>
         </div>
       </div>

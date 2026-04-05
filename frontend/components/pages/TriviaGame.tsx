@@ -239,7 +239,7 @@ export function TriviaGame() {
 
                   <Button 
                     onClick={() => startGame(level)}
-                    className="w-full bg-[--sage] hover:bg-[--sage-mid] text-[--ink-dark]"
+                    className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white"
                   >
                     <Play className="h-4 w-4 mr-2" />
                     {t("Start", "Empezar")}
@@ -290,7 +290,7 @@ export function TriviaGame() {
                     key={index}
                     onClick={() => handleAnswer(index)}
                     variant="outline"
-                    className="justify-start h-auto p-4 text-left bg-[--surface-mid] border-[--border-color] hover:bg-red-600 hover:border-red-600 hover:text-[--ink-dark] transition-all"
+                    className="justify-start h-auto p-4 text-left bg-[--surface-mid] text-[--ink-dark] border-[--border-color] hover:bg-[--sage] hover:border-[--sage] hover:text-white transition-all"
                   >
                     <span className="font-medium">{String.fromCharCode(65 + index)}.</span>
                     <span className="ml-3">{option}</span>
