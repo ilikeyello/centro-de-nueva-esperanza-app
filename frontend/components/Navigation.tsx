@@ -404,8 +404,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                         )
                   )}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="text-xs font-medium whitespace-nowrap md:text-sm">
+                  <Icon className="h-5 w-5 [text-shadow:0_1px_4px_rgba(0,0,0,0.3)] md:[text-shadow:none]" />
+                  <span className="text-xs font-medium whitespace-nowrap md:text-sm [text-shadow:0_1px_4px_rgba(0,0,0,0.3)] md:[text-shadow:none]">
                     {t(item.labelEn, item.labelEs)}
                   </span>
                 </button>
