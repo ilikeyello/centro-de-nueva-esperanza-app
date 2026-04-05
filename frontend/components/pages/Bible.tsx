@@ -848,7 +848,7 @@ export function Bible({ onNavigate }: BibleProps) {
                   {verse.number}
                 </span>
                 <p className="text-[--ink-dark] leading-relaxed flex-1 text-lg font-serif">
-                  {verse.text}
+                  {verse.text.replace(/¶/g, '')}
                 </p>
               </div>
             ))}

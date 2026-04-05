@@ -397,7 +397,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                           isTransparent && "md:!text-white md:bg-white/20"
                         )
                       : cn(
-                          "text-white/70 hover:text-white hover:bg-white/10",
+                          "text-[#2C3E2C]/90 hover:text-[#2C3E2C] hover:bg-white/10",
                           isTransparent
                             ? "md:!text-white md:hover:bg-white/10"
                             : "md:text-[--ink-mid] md:hover:text-[--sage] md:hover:bg-[--sage-light]"
