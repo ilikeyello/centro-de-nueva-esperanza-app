@@ -288,19 +288,19 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   return (
     <nav
-      style={!isDesktop ? { marginBottom: "max(calc(env(safe-area-inset-bottom) + 8px), 12px)" } : undefined}
-      className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300",
-        "mx-3 rounded-[2rem]",
-        "backdrop-blur-xl bg-[--tab-bar] border border-[--tab-bar-border]",
-        "shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
-        "md:mx-0 md:rounded-none md:sticky md:bottom-auto md:top-0",
-        "md:border-0 md:shadow-none md:backdrop-blur-none",
-        isTransparent
-          ? "md:bg-transparent"
-          : "md:bg-[--background]/95 md:backdrop-blur-sm md:border-b md:border-[--border-color] md:shadow-sm"
-      )}
-    >
+  style={!isDesktop ? { marginBottom: "max(calc(env(safe-area-inset-bottom) + 8px), 12px)" } : undefined}
+  className={cn(
+    "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300",
+    "mx-3 rounded-[2rem]",
+    "bg-[--surface] border border-[--border-color]",
+    "shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
+    "md:mx-0 md:rounded-none md:sticky md:bottom-auto md:top-0",
+    "md:border-0 md:shadow-none",
+    isTransparent
+      ? "md:bg-transparent"
+      : "md:bg-[--surface]"
+  )}
+>
       <div className={cn("container mx-auto py-0")}>
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
 
@@ -392,20 +392,20 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     "md:flex-initial md:flex-row md:gap-2 md:px-4 md:py-2 md:rounded-lg md:text-sm",
                     isActive
                       ? cn(
-                          "text-[#7EC850] bg-white/15",
+                          "text-[--sage] bg-[--surface-mid]",
                           "md:text-[--sage] md:bg-[--sage-light]",
                           isTransparent && "md:!text-white md:bg-white/20"
                         )
                       : cn(
-                          "text-[#2C3E2C]/90 hover:text-[#2C3E2C] hover:bg-white/10",
+                          "text-[--ink-mid] hover:text-[--ink-dark] hover:bg-[--surface-mid]",
                           isTransparent
                             ? "md:!text-white md:hover:bg-white/10"
                             : "md:text-[--ink-mid] md:hover:text-[--sage] md:hover:bg-[--sage-light]"
                         )
                   )}
                 >
-                  <Icon className="h-5 w-5 [text-shadow:0_1px_4px_rgba(0,0,0,0.3)] md:[text-shadow:none]" />
-                  <span className="text-xs font-medium whitespace-nowrap md:text-sm [text-shadow:0_1px_4px_rgba(0,0,0,0.3)] md:[text-shadow:none]">
+                  <Icon className="h-5 w-5" />
+                  <span className="text-xs font-medium whitespace-nowrap md:text-sm">
                     {t(item.labelEn, item.labelEs)}
                   </span>
                 </button>
