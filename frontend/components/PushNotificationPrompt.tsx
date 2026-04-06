@@ -67,19 +67,19 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
   };
 
   return (
-    <Card className={`bg-blue-50 border-blue-200 ${className}`}>
+    <Card className={`bg-[--sage-light] border-[--border-color] ${className}`}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm text-blue-800 flex items-center gap-2">
+        <CardTitle className="text-sm text-[--sage] flex items-center gap-2">
           <Bell className="h-4 w-4" />
           Stay Updated
         </CardTitle>
-        <CardDescription className="text-xs text-blue-600">
+        <CardDescription className="text-xs text-[--ink-mid]">
           Get notified about new announcements and when livestream starts
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
         {error && (
-          <div className="flex items-center gap-2 mb-3 p-2 bg-red-50 rounded text-red-700 text-xs">
+          <div className="flex items-center gap-2 mb-3 p-2 bg-[--terra-light] rounded text-[--terra] text-xs">
             <AlertCircle className="h-3 w-3" />
             <span>{error}</span>
           </div>
@@ -89,7 +89,7 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
             size="sm"
             onClick={handleSubscribe}
             disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-[--sage] hover:bg-[--sage-mid] text-white"
           >
             {isLoading ? (
               <>
@@ -107,7 +107,7 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
             variant="ghost"
             size="sm"
             onClick={handleDismiss}
-            className="text-blue-600 hover:bg-blue-100"
+            className="text-[--sage] hover:bg-[--sage-light]"
           >
             Maybe Later
           </Button>

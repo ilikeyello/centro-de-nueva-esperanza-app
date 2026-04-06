@@ -115,13 +115,13 @@ export const NotificationSettings: React.FC = () => {
 
         {/* Permission Status */}
         {permission === 'denied' && (
-          <div className="flex items-center gap-3 p-3 bg-red-900/20 border border-red-800 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-red-400" />
+          <div className="flex items-center gap-3 p-3 bg-[--terra-light] border border-[--terra]/30 rounded-lg">
+            <AlertCircle className="h-5 w-5 text-[--terra]" />
             <div className="flex-1">
-              <p className="text-sm text-red-400 font-medium">
+              <p className="text-sm text-[--terra] font-medium">
                 {t("Notifications Blocked", "Notificaciones Bloqueadas")}
               </p>
-              <p className="text-xs text-red-300 mt-1">
+              <p className="text-xs text-[--ink-mid] mt-1">
                 {language === 'es'
                   ? 'Las notificaciones están bloqueadas. Por favor, actívalas en la configuración de tu navegador.'
                   : 'Notifications are blocked. Please enable them in your browser settings.'}
@@ -139,7 +139,7 @@ export const NotificationSettings: React.FC = () => {
             
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="h-2 w-2 bg-blue-400 rounded-full"></div>
+                <div className="h-2 w-2 bg-[--sage] rounded-full"></div>
                 <span className="text-sm text-[--ink-mid]">
                   {t("News & Updates", "Noticias y Actualizaciones")}
                 </span>
@@ -153,7 +153,7 @@ export const NotificationSettings: React.FC = () => {
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="h-2 w-2 bg-red-400 rounded-full"></div>
+                <div className="h-2 w-2 bg-[--terra] rounded-full"></div>
                 <span className="text-sm text-[--ink-mid]">
                   {t("Livestream Reminders", "Recordatorios de Transmisión en Vivo")}
                 </span>
@@ -163,13 +163,13 @@ export const NotificationSettings: React.FC = () => {
         )}
 
         {/* PWA Info */}
-        <div className="flex items-center gap-3 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
-          <Smartphone className="h-5 w-5 text-blue-400" />
+        <div className="flex items-center gap-3 p-3 bg-[--sage-light] border border-[--border-color] rounded-lg">
+          <Smartphone className="h-5 w-5 text-[--sage]" />
           <div className="flex-1">
-            <p className="text-sm text-blue-400 font-medium">
+            <p className="text-sm text-[--sage] font-medium">
               {t("Install as App", "Instalar como Aplicación")}
             </p>
-            <p className="text-xs text-blue-300 mt-1">
+            <p className="text-xs text-[--ink-mid] mt-1">
               {language === 'es'
                 ? 'Para la mejor experiencia, instala esta aplicación en tu pantalla de inicio.'
                 : 'For the best experience, install this app on your home screen.'}

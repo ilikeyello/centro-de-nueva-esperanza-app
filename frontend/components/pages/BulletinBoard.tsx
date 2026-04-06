@@ -375,7 +375,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
               style={activeTab === "community" ? { backgroundColor: "var(--sage)", color: "white", borderBottomColor: "var(--sage)" } : {}}
               className={cn(
                 "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
-                activeTab === "community" ? "shadow-md" : "text-[--ink-mid] hover:text-[#C73E1D] hover:bg-[--surface] border-b-transparent"
+                activeTab === "community" ? "shadow-md" : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--surface] border-b-transparent"
               )}
             >
               {t("Community", "Comunidad")}
@@ -386,7 +386,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
               style={activeTab === "prayers" ? { backgroundColor: "var(--sage)", color: "white", borderBottomColor: "var(--sage)" } : {}}
               className={cn(
                 "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
-                activeTab === "prayers" ? "shadow-md" : "text-[--ink-mid] hover:text-[#C73E1D] hover:bg-[--surface] border-b-transparent"
+                activeTab === "prayers" ? "shadow-md" : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--surface] border-b-transparent"
               )}
             >
               {t("Prayer Requests", "Peticiones de Oración")}
@@ -522,8 +522,8 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="rounded-xl border border-[--border-color] bg-[--surface] px-3 py-2">
-                              <p className="text-xs font-semibold text-black">{comment.authorName}</p>
-                              <p className="text-sm text-black">{comment.content}</p>
+                              <p className="text-xs font-semibold text-[--ink-dark]">{comment.authorName}</p>
+                              <p className="text-sm text-[--ink-mid]">{comment.content}</p>
                             </div>
                             <p className="mt-0.5 pl-3 text-[0.65rem] text-[--ink-light]">{formatDate(comment.createdAt)}</p>
                           </div>

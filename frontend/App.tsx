@@ -32,7 +32,7 @@ export default function App() {
             <div className="relative">
               <AppInner />
               {showSplash && (
-                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F9F7F4]">
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[--background]">
                   <img
                     src="./cne_logo_transparent.png"
                     alt="Centro de Nueva Esperanza"
