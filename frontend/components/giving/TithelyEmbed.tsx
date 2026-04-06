@@ -19,11 +19,11 @@ export function TithelyEmbed({ embedCode, fullScreen = false }: TithelyEmbedProp
       // Transform into a full-height direct-embed iframe for the "In-App" Look
       // Adding theme=light to ensure it matches the warm cream branding
       containerRef.current.innerHTML = `
-        <div style="width: 100%; position: relative; height: flex; min-height: ${fullScreen ? '85vh' : '700px'};">
+        <div style="width: 100%; position: relative; height: flex; min-height: ${fullScreen ? '1200px' : '700px'};">
           <iframe 
             src="https://give.tithe.ly/?formId=${formId}&theme=light" 
             width="100%" 
-            style="border:none; border-radius: ${fullScreen ? '0' : '12px'}; min-height: ${fullScreen ? '85vh' : '800px'}; box-shadow: ${fullScreen ? 'none' : '0 4px 6px -1px rgb(0 0 0 / 0.1)'}; background-color: transparent;" 
+            style="border:none; border-radius: ${fullScreen ? '0' : '12px'}; min-height: ${fullScreen ? '1200px' : '800px'}; box-shadow: ${fullScreen ? 'none' : '0 4px 6px -1px rgb(0 0 0 / 0.1)'}; background-color: transparent;" 
             allow="payment"
             title="Tithely Giving Form"
           ></iframe>
@@ -73,7 +73,7 @@ export function TithelyEmbed({ embedCode, fullScreen = false }: TithelyEmbedProp
       ref={containerRef} 
       className={
         fullScreen 
-          ? "tithely-container w-full min-h-[85vh] md:-mt-4 flex bg-transparent" 
+          ? "tithely-container w-full min-h-[1200px] md:-mt-4 flex bg-transparent" 
           : "tithely-container flex flex-col items-center justify-center w-full min-h-[850px] bg-[--background] rounded-2xl p-0 md:p-4 shadow-xl border border-[--border-color]"
       }
     />
