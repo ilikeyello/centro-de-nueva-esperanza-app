@@ -315,37 +315,72 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
 
           {/* ===== MOBILE LIVESTREAM PIP (above nav tabs) ===== */}
-          {livestreamIsLive && !isDesktop && isLivestreamPipMinimized && !isLivestreamPipDismissed && (
+          {livestreamIsLive && !isDesktop && !isLivestreamPipDismissed && (
             <div className="music-player-dark px-3 pt-1.5 md:hidden">
-              <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
-                <div className="flex items-center gap-2 mr-2">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
-                    {t("Live", "En Vivo")}
-                  </span>
+              {isLivestreamPipMinimized ? (
+                <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
+                  <div className="flex items-center gap-2 mr-2">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                    <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
+                      {t("Live", "En Vivo")}
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1 truncate text-xs font-medium text-[--ink-dark]">
+                    {livestreamTitle || t("CNE Live Stream", "Transmisión CNE")}
+                  </div>
+                  <div className="ml-2 flex flex-shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setLivestreamPipMinimized(false)}
+                      className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-[--ink-mid] transition-all hover:bg-[--surface-mid] hover:text-[--ink-dark] shadow-sm"
+                      aria-label={t("Expand", "Expandir")}
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLivestreamPipDismissed(true)}
+                      className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-red-500 transition-all hover:bg-red-500/10 shadow-sm"
+                      aria-label={t("Close", "Cerrar")}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1 truncate text-xs font-medium text-[--ink-dark]">
-                  {livestreamTitle || t("CNE Live Stream", "Transmisión CNE")}
-                </div>
-                <div className="ml-2 flex flex-shrink-0 items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setLivestreamPipMinimized(false)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-[--ink-mid] transition-all hover:bg-[--surface-mid] hover:text-[--ink-dark] shadow-sm"
-                    aria-label={t("Expand", "Expandir")}
-                  >
-                    <Maximize2 className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLivestreamPipDismissed(true)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-red-500 transition-all hover:bg-red-500/10 shadow-sm"
-                    aria-label={t("Close", "Cerrar")}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between rounded-t-2xl bg-[--surface] px-3 py-1.5 shadow-inner">
+                    <div className="min-w-0 flex-1 pr-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                        <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
+                          {t("Live Now", "En Vivo")}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setLivestreamPipMinimized(true)}
+                        className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
+                        aria-label={t("Minimize", "Minimizar")}
+                      >
+                        <Minimize2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLivestreamPipDismissed(true)}
+                        className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
+                        aria-label={t("Close", "Cerrar")}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  {/* Expanded placeholder. Media.tsx iframe sits identically on top of this! */}
+                  <div className="w-full h-40 rounded-b-2xl border-x border-b border-[--border-color] bg-[#262626] transition-all" />
+                </>
+              )}
             </div>
           )}
 
@@ -459,7 +494,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           )}
 
           {/* ===== NAV TABS ===== */}
-          <div className="flex w-full items-center justify-between gap-1 px-3 py-3 md:justify-center md:gap-2 md:py-2">
+          <div id="mobile-nav-tabs" className="flex w-full items-center justify-between gap-1 px-3 py-3 md:justify-center md:gap-2 md:py-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPage === item.id;

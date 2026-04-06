@@ -484,10 +484,10 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               isMediaPage
                 ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2 relative"
                 : cn(
-                    "music-player-dark fixed z-50 overflow-hidden shadow-2xl border border-[--border-color]",
+                    "music-player-dark fixed z-50 overflow-hidden",
                     isDesktop
-                      ? "bottom-24 right-4 rounded-xl origin-bottom-right"
-                      : "left-3 right-3 rounded-b-2xl rounded-t-2xl border-b-0 origin-bottom"
+                      ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
+                      : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
                   ),
               (!isMediaPage && isPipMinimized) && "opacity-0 pointer-events-none invisible"
             )}
@@ -501,9 +501,9 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               className={cn(
                 "flex items-center justify-between border-b border-[--border-color] px-3 py-2", 
                 isDesktop && "cursor-move",
-                isMediaPage && "hidden"
+                (isMediaPage || !isDesktop) && "hidden"
               )}
-              style={!isMediaPage ? { backgroundColor: "var(--surface)" } : {}}
+              style={(!isMediaPage && isDesktop) ? { backgroundColor: "var(--surface)" } : {}}
               onMouseDown={handleDragStart}
             >
               <div className="flex items-center gap-2">
@@ -531,7 +531,14 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                 </button>
               </div>
             </div>
-            <div className={cn("relative", isMediaPage ? "aspect-video" : "aspect-video w-full", (!isMediaPage && isPipMinimized) && "h-0 border-0 overflow-hidden opacity-0 pointer-events-none")}>
+            <div className={cn(
+              "relative bg-black transition-all", 
+              isMediaPage ? "aspect-video" : cn(
+                "w-full overflow-hidden",
+                isDesktop ? "aspect-video" : "h-40"
+              ), 
+              (!isMediaPage && isPipMinimized) && "h-0 border-0 overflow-hidden opacity-0 pointer-events-none"
+            )}>
               <div className={cn(
                 "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
                 (!livestreamIsLive && !manualLiveOverride && isMediaPage) ? "" : "hidden"
