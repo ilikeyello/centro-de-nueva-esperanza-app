@@ -37,8 +37,6 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
-  const [isPipDismissed, setIsPipDismissed] = useState(false);
-  const [isPipMinimized, setIsPipMinimized] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [desktopPipPosition, setDesktopPipPosition] = useState({ x: 0, y: 0 });
   const [dragState, setDragState] = useState<{
@@ -60,6 +58,12 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     livestreamUrl,
     livestreamTitle,
     livestreamIsLive,
+    isLivestreamPipMinimized: isPipMinimized,
+    setLivestreamPipMinimized: setIsPipMinimized,
+    hasInteractedWithLivestream,
+    setHasInteractedWithLivestream,
+    isLivestreamPipDismissed: isPipDismissed,
+    setLivestreamPipDismissed: setIsPipDismissed,
   } = usePlayer();
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
@@ -384,8 +388,21 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     }
   }, [isMediaPage]);
 
+  // Track user interaction into the iframe using standard blur tracking
+  useEffect(() => {
+    const handleBlur = () => {
+      setTimeout(() => {
+        if (document.activeElement?.id === "cne-livestream-player") {
+          setHasInteractedWithLivestream(true);
+        }
+      }, 0);
+    };
+    window.addEventListener("blur", handleBlur);
+    return () => window.removeEventListener("blur", handleBlur);
+  }, [setHasInteractedWithLivestream]);
+
   // If not Media Page, and stream is not active or PIP is dismissed, don't render the invisible container
-  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || isPipDismissed)) {
+  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !hasInteractedWithLivestream || isPipDismissed)) {
     return null;
   }
 
@@ -444,7 +461,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
             className={cn(
             isMediaPage
               ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2"
-              : "music-player-dark fixed bottom-24 right-4 z-50 overflow-hidden rounded-xl border border-[--border-color] shadow-2xl transition-all duration-300 transform origin-bottom-right"
+              : "music-player-dark fixed bottom-24 right-4 z-50 overflow-hidden rounded-xl border border-[--border-color] shadow-2xl transition-all duration-300 transform origin-bottom-right",
+            (!isMediaPage && isDesktop && isPipMinimized) && "opacity-0 pointer-events-none invisible"
             )}
             style={isMediaPage ? {} : {
                transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
@@ -453,10 +471,11 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           >
             <div 
               className={cn(
-                "flex items-center justify-between border-b border-[--border-color] bg-[--surface] px-3 py-2", 
+                "flex items-center justify-between border-b border-[--border-color] px-3 py-2", 
                 isDesktop && "cursor-move",
                 isMediaPage && "hidden"
               )}
+              style={!isMediaPage ? { backgroundColor: "var(--surface)" } : {}}
               onMouseDown={handleDragStart}
             >
               <div className="flex items-center gap-2">

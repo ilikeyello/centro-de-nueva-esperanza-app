@@ -111,6 +111,12 @@ interface PlayerContextType {
   closePlayer: () => void;
   setPlaylistUrl: (url: string) => void;
   setLivestreamUrl: (url: string) => void;
+  isLivestreamPipMinimized: boolean;
+  setLivestreamPipMinimized: (val: boolean) => void;
+  hasInteractedWithLivestream: boolean;
+  setHasInteractedWithLivestream: (val: boolean) => void;
+  isLivestreamPipDismissed: boolean;
+  setLivestreamPipDismissed: (val: boolean) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -154,6 +160,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [livestreamTitle, setLivestreamTitle] = useState<string | null>(null);
   const [livestreamScheduledStart, setLivestreamScheduledStart] = useState<string | null>(null);
   const [livestreamIsLive, setLivestreamIsLive] = useState<boolean>(false);
+  
+  const [isLivestreamPipMinimized, setLivestreamPipMinimized] = useState<boolean>(false);
+  const [hasInteractedWithLivestream, setHasInteractedWithLivestream] = useState<boolean>(false);
+  const [isLivestreamPipDismissed, setLivestreamPipDismissed] = useState<boolean>(false);
 
   // Load livestream URL from main site Supabase on mount (only once)
   useEffect(() => {
@@ -469,6 +479,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         closePlayer,
         setPlaylistUrl,
         setLivestreamUrl,
+        isLivestreamPipMinimized,
+        setLivestreamPipMinimized,
+        hasInteractedWithLivestream,
+        setHasInteractedWithLivestream,
+        isLivestreamPipDismissed,
+        setLivestreamPipDismissed,
       }}
     >
       {children}

@@ -35,6 +35,12 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     youtubePlayerRef,
     setCurrentPlaylistVideoIds,
     setCurrentPlaylistActiveIndex,
+    livestreamIsLive,
+    isLivestreamPipMinimized,
+    setLivestreamPipMinimized,
+    isLivestreamPipDismissed,
+    setLivestreamPipDismissed,
+    livestreamTitle,
   } = usePlayer();
 
   const playerRef = youtubePlayerRef;
@@ -377,6 +383,41 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-3.5 w-3.5" />)}
                   {playerControlBtn(toggleMinimize, t("Expand", "Expandir"), <Maximize2 className="h-3.5 w-3.5" />)}
                   {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===== DESKTOP MINIMIZED LIVESTREAM BAR (integrated in navbar) ===== */}
+          {livestreamIsLive && isDesktop && isLivestreamPipMinimized && !isLivestreamPipDismissed && (
+            <div className="music-player-dark hidden md:block px-3 py-1 ml-auto">
+              <div className="flex items-center justify-center gap-3 rounded-xl bg-[--surface] px-4 py-1.5 shadow-sm border border-[--border-color]">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
+                    {t("Live Now", "En Vivo")}
+                  </span>
+                </div>
+                <div className="min-w-0 max-w-[14rem] truncate text-xs font-medium text-[--ink-dark]">
+                  {livestreamTitle || t("CNE Live Stream", "Transmisión CNE")}
+                </div>
+                <div className="flex items-center gap-1.5 border-l border-[--border-color] pl-3 ml-1">
+                  <button
+                    type="button"
+                    onClick={() => setLivestreamPipMinimized(false)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-[--ink-mid] transition-all hover:bg-[--surface-mid] hover:text-[--ink-dark] shadow-sm"
+                    aria-label={t("Expand", "Expandir")}
+                  >
+                    <Maximize2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLivestreamPipDismissed(true)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-red-500 transition-all hover:bg-red-500/10 shadow-sm"
+                    aria-label={t("Close", "Cerrar")}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
