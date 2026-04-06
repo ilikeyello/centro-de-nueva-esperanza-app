@@ -197,7 +197,7 @@ export function Home({ onNavigate }: HomeProps) {
             <Button
               variant="outline"
               onClick={() => onNavigate("media")}
-              className="border-white bg-white/20 backdrop-blur-sm px-8 py-4 text-lg text-white hover:bg-white hover:text-[--ink-dark] shadow-md border-0"
+              className="border-white bg-white/20 backdrop-blur-sm px-8 py-4 text-lg text-white hover:bg-white hover:text-black shadow-md border-0"
             >
               {t("Watch Live", "Ver en Vivo")}
             </Button>

@@ -85,9 +85,7 @@ export function AppInner() {
           {currentPage === "bulletin" && <BulletinBoard onNavigate={handleNavigate} />}
           {currentPage === "news" && <News />}
           {currentPage === "donations" && <Donations onNavigate={handleNavigate} />}
-          <div className={currentPage === "media" ? "block" : "hidden"}>
-            <Media />
-          </div>
+          <Media isMediaPage={currentPage === "media"} />
           {currentPage === "adminUpload" && <AdminUpload />}
           {currentPage === "contact" && <Contact onNavigate={handleNavigate} />}
           {currentPage === "games" && <Games onNavigate={handleNavigate} />}        

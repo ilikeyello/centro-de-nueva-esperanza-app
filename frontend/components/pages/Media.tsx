@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Calendar, ChevronDown, ChevronUp, Loader2, Music, Pause, Play } from "lucide-react";
+import { Calendar, ChevronDown, ChevronUp, Loader2, Music, Pause, Play, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { useBackend } from "../../hooks/useBackend";
@@ -28,14 +28,16 @@ interface SermonItem {
 
 interface MediaProps {
   onStartMusic?: () => void;
+  isMediaPage?: boolean;
 }
 
-export function Media({ onStartMusic }: MediaProps) {
+export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   const { language, t } = useLanguage();
   const backend = useBackend();
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
+  const [isPipDismissed, setIsPipDismissed] = useState(false);
   const {
     playPlaylistByUrl,
     playlists,
@@ -327,11 +329,23 @@ export function Media({ onStartMusic }: MediaProps) {
     };
   }, [livestreamUrl]);
 
+  // Reset PIP dismissal if returning to Media page
+  useEffect(() => {
+    if (isMediaPage) {
+      setIsPipDismissed(false);
+    }
+  }, [isMediaPage]);
+
+  // If not Media Page, and stream is not active or PIP is dismissed, don't render the invisible container
+  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !isStreamPlaying || isPipDismissed)) {
+    return null;
+  }
+
   return (
-    <div className="container mx-auto space-y-10 px-4 py-8">
-      <section className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="space-y-4">
+    <div className={cn("mx-auto py-8 relative space-y-10", isMediaPage ? "container px-4" : "")}>
+      <section className={cn(isMediaPage ? "space-y-6" : "")}>
+        <div className={cn(isMediaPage ? "grid gap-6 md:grid-cols-3" : "")}>
+          <div className={cn("space-y-4", !isMediaPage && "hidden")}>
             <div className="flex items-center gap-2 text-[--sage]">
               <Play className="h-5 w-5" />
               <span className="text-sm font-semibold uppercase tracking-[0.2em]">
@@ -378,9 +392,31 @@ export function Media({ onStartMusic }: MediaProps) {
               </div>
             </div>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2">
-            <div className="relative aspect-video">
-              {!livestreamIsLive && !manualLiveOverride && (
+          <div className={cn(
+            isMediaPage
+              ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2"
+              : "music-player-dark fixed bottom-24 right-4 z-50 w-72 md:w-80 overflow-hidden rounded-xl border border-[--border-color] shadow-2xl transition-all duration-300 transform scale-100 origin-bottom-right"
+          )}>
+            {!isMediaPage && (
+              <div className="flex items-center justify-between border-b border-[--border-color] bg-[--surface] px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
+                    {t("Live Now", "En Vivo")}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPipDismissed(true)}
+                  className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+            <div className={cn("relative", isMediaPage ? "aspect-video" : "aspect-video w-full")}>
+              {!livestreamIsLive && !manualLiveOverride && isMediaPage && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center">
                   <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
                     {livestreamTitle || t("Livestream", "Transmisión en vivo")}
@@ -419,7 +455,7 @@ export function Media({ onStartMusic }: MediaProps) {
         </div>
       </section>
 
-      <section className="space-y-6">
+      <section className={cn("space-y-6", !isMediaPage && "hidden")}>
         <div>
           <h2 className="text-2xl font-bold text-[--ink-dark]">
             {t("Devotionals", "Devocionales")}
@@ -539,7 +575,7 @@ export function Media({ onStartMusic }: MediaProps) {
         </div>
       </section>
 
-      <section id="music" className="space-y-6">
+      <section id="music" className={cn("space-y-6", !isMediaPage && "hidden")}>
         <div>
           <h2 className="text-2xl font-bold text-[--ink-dark]">
             {t("Music & Worship", "Música y Adoración")}
