@@ -18,6 +18,7 @@ import { PushNotificationPrompt } from "./PushNotificationPrompt";
 import { useNotificationChecker } from "../hooks/useNotificationChecker";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 
 type Page =
   | "home"
@@ -78,7 +79,7 @@ export function AppInner() {
     <ThemeProvider>
       <div className="min-h-screen warm-gradient">
         <Navigation currentPage={currentPage} onNavigate={handleNavigate} />
-        <main className="pb-24 md:pb-20">
+        <main className={cn("pb-24 md:pb-20", currentPage !== "home" && "md:pt-20")}>
           {currentPage === "home" && <Home onNavigate={handleNavigate} />}
           {currentPage === "bible" && <Bible onNavigate={handleNavigate} />}
           {currentPage === "bulletin" && <BulletinBoard onNavigate={handleNavigate} />}
