@@ -292,10 +292,11 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   className={cn(
     "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300",
     "mx-3 rounded-[2rem]",
-    "bg-surface border border-border-color",
     "shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
     "md:mx-0 md:rounded-none md:sticky md:bottom-auto md:top-0",
-    "md:border-0 md:border-b md:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+    isTransparent 
+      ? "bg-surface border border-border-color md:bg-transparent md:border-transparent md:shadow-none"
+      : "bg-surface border border-border-color md:border-0 md:border-b md:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
   )}
 >
       <div className={cn("container mx-auto py-0")}>
@@ -389,13 +390,15 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     "md:flex-initial md:flex-row md:gap-2 md:px-4 md:py-2 md:rounded-lg md:text-sm",
                     isActive
                       ? cn(
-                          "text-[--sage] bg-[--surface-mid]",
-                          "md:text-[--sage] md:bg-[--sage-light]"
+                          "text-sage bg-sage/10",
+                          "md:text-sage md:bg-sage/15"
                         )
                       : cn(
-                          "text-[--ink-mid] hover:text-[--ink-dark] hover:bg-[--surface-mid]",
-                          "md:text-[--ink-mid] md:hover:text-[--sage] md:hover:bg-[--sage-light]"
-                        )
+                          "text-ink-mid hover:text-ink-dark hover:bg-surface-mid",
+                          "md:text-ink-mid md:hover:text-sage md:hover:bg-sage-light"
+                        ),
+                    isTransparent && isActive && "md:text-white md:bg-white/20",
+                    isTransparent && !isActive && "md:text-white/80 md:hover:bg-white/10 md:hover:text-white"
                   )}
                 >
                   <Icon className="h-5 w-5" />

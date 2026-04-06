@@ -21,8 +21,8 @@ export function Donations({ onNavigate }: DonationsProps) {
   const hasEmbed = Boolean(churchInfo?.tithely_embed);
 
   return (
-    <div className={`container mx-auto space-y-6 px-4 py-8 ${hasEmbed ? 'max-w-4xl' : 'max-w-2xl'}`}>
-      <div className="flex flex-col gap-3 text-center sm:text-left">
+    <div className={hasEmbed ? "w-full h-full flex flex-col" : "container mx-auto space-y-6 px-4 py-8 max-w-2xl"}>
+      <div className={`flex flex-col gap-3 text-center sm:text-left ${hasEmbed ? "px-4 py-4" : ""}`}>
         <div className="flex items-center gap-3">
           {onNavigate && (
             <Button
@@ -34,39 +34,41 @@ export function Donations({ onNavigate }: DonationsProps) {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <h1 className="serif-heading text-3xl font-bold text-[--ink-dark]">
-            {t("Give to Our Church", "Dar a Nuestra Iglesia")}
-          </h1>
-        </div>
-        <p className="text-[--ink-mid]">
-          {t(
-            "Your generosity helps us serve our community and spread God's love",
-            "Tu generosidad nos ayuda a servir a nuestra comunidad y difundir el amor de Dios"
+          {!hasEmbed && (
+            <h1 className="serif-heading text-3xl font-bold text-[--ink-dark]">
+              {t("Give to Our Church", "Dar a Nuestra Iglesia")}
+            </h1>
           )}
-        </p>
+          {hasEmbed && (
+            <h1 className="serif-heading text-xl font-bold text-[--ink-dark]">
+              {t("Give", "Dar")}
+            </h1>
+          )}
+        </div>
+        {!hasEmbed && (
+          <p className="text-[--ink-mid]">
+            {t(
+              "Your generosity helps us serve our community and spread God's love",
+              "Tu generosidad nos ayuda a servir a nuestra comunidad y difundir el amor de Dios"
+            )}
+          </p>
+        )}
       </div>
 
       {churchInfo?.tithely_embed || churchInfo?.tithely_url ? (
-        <Card className="bg-[--surface] border-[--sage-mid]/50 shadow-md">
-          <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-4">
-            <div className="h-16 w-16 bg-[--sage-light] rounded-full flex items-center justify-center mb-2">
-              <Heart className="h-8 w-8 text-[--sage]" />
-            </div>
-            <h2 className="serif-heading text-2xl font-bold text-[--ink-dark]">
-              {t("Donate via Tithe.ly", "Donar a través de Tithe.ly")}
-            </h2>
-            <p className="text-[--ink-mid] max-w-md">
-              {t(
-                "We have partnered with Tithe.ly to make giving secure and easy.",
-                "Nos hemos asociado con Tithe.ly para que ofrendar sea seguro y fácil."
-              )}
-            </p>
-            
-            {churchInfo?.tithely_embed ? (
-              <div className="w-full mt-4 flex justify-center">
-                <TithelyEmbed embedCode={churchInfo.tithely_embed} />
+        hasEmbed ? (
+          <div className="flex-[1_1_100%] w-full relative">
+            <TithelyEmbed embedCode={churchInfo.tithely_embed!} fullScreen={true} />
+          </div>
+        ) : (
+          <Card className="bg-surface border-border-color mt-8">
+            <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-4">
+              <div className="h-16 w-16 bg-sage-light rounded-full flex items-center justify-center mb-2">
+                <Heart className="h-8 w-8 text-sage" />
               </div>
-            ) : (
+              <h2 className="serif-heading text-2xl font-bold text-ink-dark">
+                {t("Donate via Tithe.ly", "Donar a través de Tithe.ly")}
+              </h2>
               <Button
                 className="bg-[--sage] hover:bg-[--sage-mid] text-white w-full sm:w-auto px-10 py-7 mt-6 text-lg tracking-wide rounded-xl shadow-md transition-transform hover:scale-105 flex items-center gap-3"
                 onClick={() => window.open(churchInfo!.tithely_url!, "_blank")}
@@ -74,9 +76,9 @@ export function Donations({ onNavigate }: DonationsProps) {
                 <span>{t("Give with Tithe.ly", "Dar con Tithe.ly")}</span>
                 <ExternalLink className="h-5 w-5" />
               </Button>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )
       ) : (
         <Card className="bg-[--surface] border-[--border-color] mt-8">
           <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-4">

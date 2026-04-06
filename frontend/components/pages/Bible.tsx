@@ -705,7 +705,7 @@ export function Bible({ onNavigate }: BibleProps) {
             <button
               type="button"
               disabled={loading}
-              className="text-center px-3 py-2 rounded-md bg-[--surface] border border-[--border-color] hover:bg-[--surface-mid] transition-colors disabled:opacity-50"
+              className="text-center px-3 py-2 rounded-md bg-surface border border-border-color hover:bg-surface-mid transition-colors disabled:opacity-50"
             >
               <h2 className="serif-heading text-xl font-semibold text-[--ink-dark]">
                 {getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0])} {selectedChapter}
@@ -720,7 +720,7 @@ export function Bible({ onNavigate }: BibleProps) {
               </p>
             </button>
           </DialogTrigger>
-          <DialogContent className="border-[--border-color] bg-[--surface] text-[--ink-dark]">
+          <DialogContent className="border-border-color bg-surface text-[--ink-dark]">
             <DialogHeader>
               <DialogTitle className="serif-heading text-[--ink-dark]">{t("Select passage", "Seleccionar pasaje")}</DialogTitle>
             </DialogHeader>
@@ -732,12 +732,12 @@ export function Bible({ onNavigate }: BibleProps) {
                   onValueChange={setPendingVersion}
                   disabled={versionsLoading}
                 >
-                  <SelectTrigger className="w-full border-[--border-color] bg-[--surface] text-[--ink-dark]">
+                  <SelectTrigger className="w-full border-border-color bg-surface text-[--ink-dark]">
                     <SelectValue placeholder={t("Version", "Versión")} />
                   </SelectTrigger>
-                  <SelectContent className="border-[--border-color] bg-[--surface]">
+                  <SelectContent className="border-border-color bg-surface">
                     {displayVersions.map((version) => (
-                      <SelectItem key={version.id} value={version.id} className="text-[--ink-dark] focus:bg-[--surface-mid] focus:text-[--ink-dark]">
+                      <SelectItem key={version.id} value={version.id} className="text-[--ink-dark] focus:bg-surface-mid focus:text-[--ink-dark]">
                         {version.name} ({version.abbreviation})
                       </SelectItem>
                     ))}
@@ -752,20 +752,20 @@ export function Bible({ onNavigate }: BibleProps) {
                   }}
                   disabled={booksLoading}
                 >
-                  <SelectTrigger className="w-full border-[--border-color] bg-[--surface] text-[--ink-dark]">
+                  <SelectTrigger className="w-full border-border-color bg-surface text-[--ink-dark]">
                     <SelectValue placeholder={t("Book", "Libro")} />
                   </SelectTrigger>
-                  <SelectContent className="border-[--border-color] bg-[--surface] max-h-60">
+                  <SelectContent className="border-border-color bg-surface max-h-60">
                     <div className="p-2">
                       <div className="text-xs font-semibold text-[--ink-light] mb-2">{t("Old Testament", "Antiguo Testamento")}</div>
                       {displayBooks.filter(book => book.testament === "OT").map((book) => (
-                        <SelectItem key={book.id} value={book.id} className="text-[--ink-dark] focus:bg-[--surface-mid] focus:text-[--ink-dark]">
+                        <SelectItem key={book.id} value={book.id} className="text-[--ink-dark] focus:bg-surface-mid focus:text-[--ink-dark]">
                           {getLocalizedNameForVersion(book, pendingVersion)}
                         </SelectItem>
                       ))}
                       <div className="text-xs font-semibold text-[--ink-light] mb-2 mt-4">{t("New Testament", "Nuevo Testamento")}</div>
                       {displayBooks.filter(book => book.testament === "NT").map((book) => (
-                        <SelectItem key={book.id} value={book.id} className="text-[--ink-dark] focus:bg-[--surface-mid] focus:text-[--ink-dark]">
+                        <SelectItem key={book.id} value={book.id} className="text-[--ink-dark] focus:bg-surface-mid focus:text-[--ink-dark]">
                           {getLocalizedNameForVersion(book, pendingVersion)}
                         </SelectItem>
                       ))}
@@ -779,12 +779,12 @@ export function Bible({ onNavigate }: BibleProps) {
                     setPendingChapter(parseInt(value));
                   }}
                 >
-                  <SelectTrigger className="w-full border-[--border-color] bg-[--surface] text-[--ink-dark]">
+                  <SelectTrigger className="w-full border-border-color bg-surface text-[--ink-dark]">
                     <SelectValue placeholder={t("Chapter", "Capítulo")} />
                   </SelectTrigger>
-                  <SelectContent className="border-[--border-color] bg-[--surface] max-h-60">
+                  <SelectContent className="border-border-color bg-surface max-h-60">
                     {pendingChapters.map((chapter) => (
-                      <SelectItem key={chapter} value={chapter.toString()} className="text-[--ink-dark] focus:bg-[--surface-mid] focus:text-[--ink-dark]">
+                      <SelectItem key={chapter} value={chapter.toString()} className="text-[--ink-dark] focus:bg-surface-mid focus:text-[--ink-dark]">
                         {t("Chapter", "Capítulo")} {chapter}
                       </SelectItem>
                     ))}
