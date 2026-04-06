@@ -85,7 +85,7 @@ export function AppInner() {
           {currentPage === "bulletin" && <BulletinBoard onNavigate={handleNavigate} />}
           {currentPage === "news" && <News />}
           {currentPage === "donations" && <Donations onNavigate={handleNavigate} />}
-          <Media isMediaPage={currentPage === "media"} />
+          <Media key="media-player-root" isMediaPage={currentPage === "media"} />
           {currentPage === "adminUpload" && <AdminUpload />}
           {currentPage === "contact" && <Contact onNavigate={handleNavigate} />}
           {currentPage === "games" && <Games onNavigate={handleNavigate} />}        

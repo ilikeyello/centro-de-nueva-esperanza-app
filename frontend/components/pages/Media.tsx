@@ -385,7 +385,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   }, [isMediaPage]);
 
   // If not Media Page, and stream is not active or PIP is dismissed, don't render the invisible container
-  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !isStreamPlaying || isPipDismissed)) {
+  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || isPipDismissed)) {
     return null;
   }
 
@@ -447,7 +447,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               : "music-player-dark fixed bottom-24 right-4 z-50 overflow-hidden rounded-xl border border-[--border-color] shadow-2xl transition-all duration-300 transform origin-bottom-right"
             )}
             style={isMediaPage ? {} : {
-               transform: isDesktop && desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0 ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
+               transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
                width: isPipMinimized ? "18rem" : (isDesktop ? "20rem" : "18rem"),
             }}
           >
@@ -484,7 +484,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                 </button>
               </div>
             </div>
-            <div className={cn("relative", isMediaPage ? "aspect-video" : "aspect-video w-full", (!isMediaPage && isPipMinimized) && "h-0 border-0 hidden")}>
+            <div className={cn("relative", isMediaPage ? "aspect-video" : "aspect-video w-full", (!isMediaPage && isPipMinimized) && "h-0 border-0 overflow-hidden opacity-0 pointer-events-none")}>
               <div className={cn(
                 "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
                 (!livestreamIsLive && !manualLiveOverride && isMediaPage) ? "" : "hidden"
