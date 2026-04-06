@@ -314,7 +314,42 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       <div className={cn("container mx-auto py-0")}>
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
 
-          {/* ===== MOBILE PLAYER (above nav tabs) ===== */}
+          {/* ===== MOBILE LIVESTREAM PIP (above nav tabs) ===== */}
+          {livestreamIsLive && !isDesktop && isLivestreamPipMinimized && !isLivestreamPipDismissed && (
+            <div className="music-player-dark px-3 pt-1.5 md:hidden">
+              <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
+                <div className="flex items-center gap-2 mr-2">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
+                    {t("Live", "En Vivo")}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1 truncate text-xs font-medium text-[--ink-dark]">
+                  {livestreamTitle || t("CNE Live Stream", "Transmisión CNE")}
+                </div>
+                <div className="ml-2 flex flex-shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setLivestreamPipMinimized(false)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-[--ink-mid] transition-all hover:bg-[--surface-mid] hover:text-[--ink-dark] shadow-sm"
+                    aria-label={t("Expand", "Expandir")}
+                  >
+                    <Maximize2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLivestreamPipDismissed(true)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-red-500 transition-all hover:bg-red-500/10 shadow-sm"
+                    aria-label={t("Close", "Cerrar")}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===== MOBILE MUSIC PLAYER (above nav tabs) ===== */}
           {youtubeTrackUrl && !isDesktop && (
             <div className="music-player-dark px-3 pt-1.5 md:hidden">
               {isMinimized ? (
