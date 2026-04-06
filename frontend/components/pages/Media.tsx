@@ -243,7 +243,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       // Handle YouTube live channel embed URLs
       if (u.pathname.includes('/embed/live_stream') && u.searchParams.get('channel')) {
         const channelId = u.searchParams.get('channel');
-        const result = `https://www.youtube.com/embed/live_stream?channel=${channelId}`;
+        const result = `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1&playsinline=1`;
         console.log('getEmbedUrl output (channel live):', result);
         return result;
       }
@@ -262,9 +262,9 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
         if (channelId) {
           // Try multiple channel live stream formats
           const formats = [
-            `https://www.youtube.com/embed/live_stream?channel=${channelId}`,
-            `https://www.youtube.com/embed/${channelId}?live=1`,
-            `https://www.youtube.com/embed/live_stream?channel=${channelId}`
+            `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1&playsinline=1`,
+            `https://www.youtube.com/embed/${channelId}?live=1&enablejsapi=1&playsinline=1`,
+            `https://www.youtube.com/embed/live_stream?channel=${channelId}&enablejsapi=1&playsinline=1`
           ];
           
           console.log('getEmbedUrl output (channel live formats):', formats[0]);
@@ -385,7 +385,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   }, [isMediaPage]);
 
   // If not Media Page, and stream is not active or PIP is dismissed, don't render the invisible container
-  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !isStreamPlaying || isPipDismissed)) {
+  if (!isMediaPage && (!isStreamPlaying || isPipDismissed)) {
     return null;
   }
 
