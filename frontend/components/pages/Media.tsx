@@ -452,54 +452,57 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                width: isPipMinimized ? "18rem" : (isDesktop ? "20rem" : "18rem"),
             }}
           >
-            {!isMediaPage && (
-              <div 
-                className={cn("flex items-center justify-between border-b border-[--border-color] bg-[--surface] px-3 py-2", isDesktop && "cursor-move")}
-                onMouseDown={handleDragStart}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
-                    {t("Live Now", "En Vivo")}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setIsPipMinimized(!isPipMinimized)}
-                    className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
-                    aria-label={isPipMinimized ? "Expand" : "Minimize"}
-                  >
-                    {isPipMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsPipDismissed(true)}
-                    className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
-                    aria-label="Close"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className={cn("relative", isMediaPage ? "aspect-video" : "aspect-video w-full", (!isMediaPage && isPipMinimized) && "h-0 border-0 hidden")}>
-              {!livestreamIsLive && !manualLiveOverride && isMediaPage && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center">
-                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
-                    {livestreamTitle || t("Livestream", "Transmisión en vivo")}
-                  </p>
-                  <p className="text-2xl font-bold text-[--ink-dark] sm:text-3xl">
-                    {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
-                  </p>
-                  <p className="text-base text-[--ink-mid]">
-                    {t(
-                      "The player will appear when we go live.",
-                      "El reproductor aparecerá cuando estemos en vivo."
-                    )}
-                  </p>
-                </div>
+            <div 
+              className={cn(
+                "flex items-center justify-between border-b border-[--border-color] bg-[--surface] px-3 py-2", 
+                isDesktop && "cursor-move",
+                isMediaPage && "hidden"
               )}
+              onMouseDown={handleDragStart}
+            >
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
+                  {t("Live Now", "En Vivo")}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setIsPipMinimized(!isPipMinimized)}
+                  className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
+                  aria-label={isPipMinimized ? "Expand" : "Minimize"}
+                >
+                  {isPipMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPipDismissed(true)}
+                  className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <div className={cn("relative", isMediaPage ? "aspect-video" : "aspect-video w-full", (!isMediaPage && isPipMinimized) && "h-0 border-0 hidden")}>
+              <div className={cn(
+                "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
+                (!livestreamIsLive && !manualLiveOverride && isMediaPage) ? "" : "hidden"
+              )}>
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
+                  {livestreamTitle || t("Livestream", "Transmisión en vivo")}
+                </p>
+                <p className="text-2xl font-bold text-[--ink-dark] sm:text-3xl">
+                  {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
+                </p>
+                <p className="text-base text-[--ink-mid]">
+                  {t(
+                    "The player will appear when we go live.",
+                    "El reproductor aparecerá cuando estemos en vivo."
+                  )}
+                </p>
+              </div>
 
               {(livestreamIsLive || manualLiveOverride) && (
                 <iframe
