@@ -508,9 +508,10 @@ export function Media({ onStartMusic }: MediaProps) {
                             onClick={() => setSelectedSermonId(sermon.id)}
                             className={`flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left transition-colors ${
                               isActive
-                                ? "bg-[--sage] text-[--background] border-l-2 border-[--sage-mid] shadow-sm"
-                                : "border border-transparent text-[--ink-dark] bg-[--surface] hover:border-[--border-color] hover:bg-[--surface]"
+                                ? "text-[--background] border-l-2 border-[--sage-mid] shadow-sm"
+                                : "border border-transparent text-[--ink-dark] hover:border-[--border-color]"
                             }`}
+                            style={{ backgroundColor: isActive ? "var(--sage)" : "var(--surface)" }}
                           >
                             <span className="truncate text-[0.8rem] font-medium">{sermon.title}</span>
                             <span className={`mt-0.5 text-[0.65rem] ${isActive ? "opacity-70" : "text-[--ink-mid]"}`}>
@@ -643,12 +644,12 @@ export function Media({ onStartMusic }: MediaProps) {
                               <button
                                 type="button"
                                 onClick={() => playVideoAtIndex(idx)}
-                                className={cn(
-                                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                                   isActive
-                                    ? "bg-[--sage] text-[--background] border-l-2 border-[--sage-mid] shadow-sm"
-                                    : "border border-transparent text-[--ink-mid] hover:bg-[--surface] hover:text-[--ink-dark]"
-                                )}
+                                    ? "text-[--background] border-l-2 border-[--sage-mid] shadow-sm"
+                                    : "border border-transparent text-[--ink-mid] hover:text-[--ink-dark]"
+                                }`}
+                                style={{ backgroundColor: isActive ? "var(--sage)" : "transparent" }}
                               >
                                 <span className="w-6 flex-shrink-0 text-center text-xs text-[--ink-light]">
                                   {isActive && isPlaying ? (

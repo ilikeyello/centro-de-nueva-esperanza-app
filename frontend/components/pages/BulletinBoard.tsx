@@ -578,13 +578,12 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
 
             <Dialog open={postDialogOpen} onOpenChange={setPostDialogOpen}>
               <DialogTrigger asChild>
-                <Button
-                  size="icon"
-                  className="fixed bottom-32 right-6 z-50 h-14 w-14 rounded-full bg-[--sage] text-white shadow-xl transition-transform hover:scale-105 hover:bg-[--sage-mid] focus-visible:ring-2 focus-visible:ring-[--sage-light] md:bottom-20 md:right-12 "
+                <button
+                  className="fixed bottom-32 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[--sage] text-white shadow-xl transition-transform hover:scale-105 hover:bg-[--sage-mid] focus-visible:ring-2 focus-visible:ring-[--sage-light] md:bottom-20 md:right-12"
                   aria-label={t("Create a new community post", "Crear una nueva publicación comunitaria")}
                 >
                   <Plus className="h-6 w-6" />
-                </Button>
+                </button>
               </DialogTrigger>
               <DialogContent className="warm-card">
                 <DialogHeader>
@@ -708,13 +707,12 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
 
             <Dialog open={prayerDialogOpen} onOpenChange={setPrayerDialogOpen}>
               <DialogTrigger asChild>
-                <Button
-                  size="icon"
-                  className="fixed bottom-32 right-6 z-50 h-14 w-14 rounded-full bg-[--sage] text-white shadow-xl transition-transform hover:scale-105 hover:bg-[--sage-mid] focus-visible:ring-2 focus-visible:ring-[--sage-light] md:bottom-20 md:right-12 "
+                <button
+                  className="fixed bottom-32 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[--sage] text-white shadow-xl transition-transform hover:scale-105 hover:bg-[--sage-mid] focus-visible:ring-2 focus-visible:ring-[--sage-light] md:bottom-20 md:right-12"
                   aria-label={t("Share a new prayer request", "Compartir una nueva petición de oración")}
                 >
                   <Plus className="h-6 w-6" />
-                </Button>
+                </button>
               </DialogTrigger>
               <DialogContent className="warm-card">
                 <DialogHeader>
