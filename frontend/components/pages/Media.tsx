@@ -65,6 +65,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     setHasInteractedWithLivestream,
     isLivestreamPipDismissed: isPipDismissed,
     setLivestreamPipDismissed: setIsPipDismissed,
+    isLivestreamPlaying,
+    setIsLivestreamPlaying,
   } = usePlayer();
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
@@ -167,10 +169,14 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
             
             if (event.data === YT.PlayerState.PLAYING) {
               setIsStreamPlaying(true);
+              setIsLivestreamPlaying(true);
               setIsActuallyLive(true);
-            } else if (event.data === YT.PlayerState.ENDED) {
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
               setIsStreamPlaying(false);
-              setIsActuallyLive(false);
+              setIsLivestreamPlaying(false);
+              if (event.data === YT.PlayerState.ENDED) {
+                setIsActuallyLive(false);
+              }
             } else if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.CUED) {
               // Check if it's actually live when buffering/cued
               checkIfLive();
@@ -423,7 +429,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   }, [setHasInteractedWithLivestream]);
 
   // If not Media Page, and stream is not active or PIP is dismissed, don't render the invisible container
-  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !hasInteractedWithLivestream || isPipDismissed)) {
+  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !hasInteractedWithLivestream || isPipDismissed || !isLivestreamPlaying)) {
     return null;
   }
 
