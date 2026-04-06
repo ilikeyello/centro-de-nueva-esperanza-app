@@ -292,13 +292,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   className={cn(
     "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300",
     "mx-3 rounded-[2rem]",
-    "bg-[--tab-bar] border border-[--tab-bar-border]",
+    "bg-surface border border-border-color",
     "shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
     "md:mx-0 md:rounded-none md:sticky md:bottom-auto md:top-0",
-    "md:border-0 md:border-b md:shadow-none",
-    isTransparent
-      ? "md:bg-transparent md:border-b-transparent"
-      : "md:bg-[--surface] md:border-b-[--border-color] md:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+    "md:border-0 md:border-b md:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
   )}
 >
       <div className={cn("container mx-auto py-0")}>
@@ -393,14 +390,11 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     isActive
                       ? cn(
                           "text-[--sage] bg-[--surface-mid]",
-                          "md:text-[--sage] md:bg-[--sage-light]",
-                          isTransparent && "md:!text-white md:bg-white/20"
+                          "md:text-[--sage] md:bg-[--sage-light]"
                         )
                       : cn(
                           "text-[--ink-mid] hover:text-[--ink-dark] hover:bg-[--surface-mid]",
-                          isTransparent
-                            ? "md:!text-white md:hover:bg-white/10"
-                            : "md:text-[--ink-mid] md:hover:text-[--sage] md:hover:bg-[--sage-light]"
+                          "md:text-[--ink-mid] md:hover:text-[--sage] md:hover:bg-[--sage-light]"
                         )
                   )}
                 >
