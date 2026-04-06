@@ -508,10 +508,13 @@ export function Media({ onStartMusic }: MediaProps) {
                             onClick={() => setSelectedSermonId(sermon.id)}
                             className={`flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left transition-colors ${
                               isActive
-                                ? "text-[--background] border-l-2 border-[--sage-mid] shadow-sm"
+                                ? "border-l-2 border-[--sage-mid] shadow-sm"
                                 : "border border-transparent text-[--ink-dark] hover:border-[--border-color]"
                             }`}
-                            style={{ backgroundColor: isActive ? "var(--sage)" : "var(--surface)" }}
+                            style={{ 
+                              backgroundColor: isActive ? "var(--sage)" : "var(--surface)",
+                              color: isActive ? "var(--background)" : "inherit"
+                            }}
                           >
                             <span className="truncate text-[0.8rem] font-medium">{sermon.title}</span>
                             <span className={`mt-0.5 text-[0.65rem] ${isActive ? "opacity-70" : "text-[--ink-mid]"}`}>
@@ -646,10 +649,13 @@ export function Media({ onStartMusic }: MediaProps) {
                                 onClick={() => playVideoAtIndex(idx)}
                                 className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                                   isActive
-                                    ? "text-[--background] border-l-2 border-[--sage-mid] shadow-sm"
+                                    ? "border-l-2 border-[--sage-mid] shadow-sm"
                                     : "border border-transparent text-[--ink-mid] hover:text-[--ink-dark]"
                                 }`}
-                                style={{ backgroundColor: isActive ? "var(--sage)" : "transparent" }}
+                                style={{ 
+                                  backgroundColor: isActive ? "var(--sage)" : "transparent",
+                                  color: isActive ? "var(--background)" : "inherit"
+                                }}
                               >
                                 <span className="w-6 flex-shrink-0 text-center text-xs text-[--ink-light]">
                                   {isActive && isPlaying ? (

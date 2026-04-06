@@ -116,7 +116,7 @@ export function Prayers({ onNavigate }: PrayersProps) {
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <button className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md bg-[--sage] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[--sage-mid] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+            <button style={{ backgroundColor: 'var(--sage)', color: 'white' }} className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
               <Plus className="mr-2 h-4 w-4" />
               {t("Submit Request", "Enviar Petición")}
             </button>
