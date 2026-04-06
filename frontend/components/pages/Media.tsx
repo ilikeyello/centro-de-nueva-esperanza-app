@@ -38,6 +38,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [mobilePipBottom, setMobilePipBottom] = useState(96);
   const [desktopPipPosition, setDesktopPipPosition] = useState({ x: 0, y: 0 });
   const [dragState, setDragState] = useState<{
     startX: number;
@@ -325,6 +326,26 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
   // (Removed autoplay attempt tied to legacy window calculation)
 
+  // Track Mobile Nav Tabs offset to align PIP accurately above navbar
+  useEffect(() => {
+    if (isDesktop || isMediaPage) return;
+
+    const updatePosition = () => {
+      const tabs = document.getElementById("mobile-nav-tabs");
+      if (tabs) {
+         const rect = tabs.getBoundingClientRect();
+         const distFromBottom = window.innerHeight - rect.top;
+         setMobilePipBottom(distFromBottom);
+      }
+    };
+    
+    // Initial and periodic (just in case layout shifts)
+    updatePosition();
+    setTimeout(updatePosition, 100);
+    window.addEventListener("resize", updatePosition);
+    return () => window.removeEventListener("resize", updatePosition);
+  }, [isDesktop, isMediaPage]);
+
   // Create hidden div for YouTube player detection
   useEffect(() => {
     if (!livestreamUrl) return;
@@ -459,14 +480,21 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           </div>
           <div 
             className={cn(
-            isMediaPage
-              ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2"
-              : "music-player-dark fixed bottom-24 right-4 z-50 overflow-hidden rounded-xl border border-[--border-color] shadow-2xl transition-all duration-300 transform origin-bottom-right",
-            (!isMediaPage && isPipMinimized) && "opacity-0 pointer-events-none invisible"
+              "transition-all duration-300 transform",
+              isMediaPage
+                ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2 relative"
+                : cn(
+                    "music-player-dark fixed z-50 overflow-hidden shadow-2xl border border-[--border-color]",
+                    isDesktop
+                      ? "bottom-24 right-4 rounded-xl origin-bottom-right"
+                      : "left-3 right-3 rounded-b-2xl rounded-t-2xl border-b-0 origin-bottom"
+                  ),
+              (!isMediaPage && isPipMinimized) && "opacity-0 pointer-events-none invisible"
             )}
             style={isMediaPage ? {} : {
                transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
-               width: isPipMinimized ? "18rem" : (isDesktop ? "20rem" : "18rem"),
+               width: isPipMinimized ? "18rem" : (isDesktop ? "20rem" : "auto"),
+               bottom: !isDesktop ? `${mobilePipBottom + 4}px` : undefined,
             }}
           >
             <div 
