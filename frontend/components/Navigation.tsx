@@ -295,8 +295,8 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     "shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
     "md:mx-0 md:rounded-none md:fixed md:bottom-auto md:top-0 md:w-full",
     isTransparent 
-      ? "bg-surface border border-border-color md:bg-transparent md:border-transparent md:shadow-none"
-      : "bg-surface border border-border-color md:border-0 md:border-b md:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+      ? "bg-[--surface] border border-[--border-color] md:bg-transparent md:border-transparent md:shadow-none"
+      : "bg-[--surface] border border-[--border-color] md:border-0 md:border-b md:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
   )}
 >
       <div className={cn("container mx-auto py-0")}>
