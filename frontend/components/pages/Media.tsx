@@ -196,6 +196,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               setIsStreamPlaying(true);
               setIsLivestreamPlaying(true);
               setIsActuallyLive(true);
+              setHasInteractedWithLivestream(true);
             } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
               const now = Date.now();
               const timeSincePageChange = now - lastPageChangeRef.current;
@@ -461,18 +462,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     wasMediaPageRef.current = isMediaPage;
   }, [isMediaPage, hasInteractedWithLivestream, setIsPipDismissed, setIsLivestreamTransitioning]);
 
-  // Track user interaction into the iframe using standard blur tracking
-  useEffect(() => {
-    const handleBlur = () => {
-      setTimeout(() => {
-        if (document.activeElement?.id === "cne-livestream-player") {
-          setHasInteractedWithLivestream(true);
-        }
-      }, 0);
-    };
-    window.addEventListener("blur", handleBlur);
-    return () => window.removeEventListener("blur", handleBlur);
-  }, [setHasInteractedWithLivestream]);
+  // Interaction is now tracked strictly by the PLAYING status in onStateChange
+  // to ensure the PIP only pops out if the user has actually started the stream.
 
   // If not Media Page, and stream is not active or PIP is dismissed, don't render the invisible container
   if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !hasInteractedWithLivestream || isPipDismissed)) {
@@ -575,7 +566,10 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsPipDismissed(true)}
+                  onClick={() => {
+                    setIsPipDismissed(true);
+                    setHasInteractedWithLivestream(false);
+                  }}
                   className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
                   aria-label="Close"
                 >

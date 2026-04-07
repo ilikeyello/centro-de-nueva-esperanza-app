@@ -42,6 +42,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     setLivestreamPipDismissed,
     livestreamTitle,
     hasInteractedWithLivestream,
+    setHasInteractedWithLivestream,
     isLivestreamPlaying,
     isLivestreamTransitioning,
   } = usePlayer();
@@ -372,7 +373,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setLivestreamPipDismissed(true)}
+                        onClick={() => {
+                          setLivestreamPipDismissed(true);
+                          setHasInteractedWithLivestream(false);
+                        }}
                         className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
                         aria-label={t("Close", "Cerrar")}
                       >
