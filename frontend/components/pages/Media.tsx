@@ -47,6 +47,11 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     startOffsetY: number;
   } | null>(null);
 
+  const lastPageChangeRef = useRef<number>(Date.now());
+  useEffect(() => {
+    lastPageChangeRef.current = Date.now();
+  }, [isMediaPage]);
+
   const {
     playPlaylistByUrl,
     playlists,
@@ -172,6 +177,15 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               setIsLivestreamPlaying(true);
               setIsActuallyLive(true);
             } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+              const now = Date.now();
+              const timeSincePageChange = now - lastPageChangeRef.current;
+              
+              // Only process pause state if it didn't happen right during/after a page transition (to avoid flicker)
+              if (event.data === YT.PlayerState.PAUSED && timeSincePageChange < 1500) {
+                console.log('Ignoring pause event during page transition debounce');
+                return;
+              }
+
               setIsStreamPlaying(false);
               setIsLivestreamPlaying(false);
               if (event.data === YT.PlayerState.ENDED) {
