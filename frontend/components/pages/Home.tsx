@@ -181,7 +181,7 @@ export function Home({ onNavigate }: HomeProps) {
           <h2 className="mt-2 serif-heading hero-title text-4xl font-bold text-white sm:text-5xl md:text-6xl drop-shadow-2xl">
             {t("Center of New Hope", "Centro de Nueva Esperanza")}
           </h2>
-          <p className="mt-6 max-w-3xl hero-subtitle text-lg text-[--ink-mid] md:text-xl drop-shadow-lg">
+          <p className="mt-6 max-w-3xl hero-subtitle text-lg text-white/90 md:text-xl drop-shadow-lg">
             {t(
               "A welcoming family of believers seeking Jesus together, serving our neighbors, and sharing His hope in practical ways.",
               "Una familia acogedora de creyentes buscando a Jesús juntos, sirviendo a nuestros vecinos y compartiendo Su esperanza de manera práctica."
@@ -197,7 +197,7 @@ export function Home({ onNavigate }: HomeProps) {
             <Button
               variant="outline"
               onClick={() => onNavigate("media")}
-              className="border-white bg-white/20 backdrop-blur-sm px-8 py-4 text-lg text-white hover:bg-white hover:text-black shadow-md border-0"
+              className="border-white/30 bg-black/40 backdrop-blur-sm px-8 py-4 text-lg text-white hover:bg-black/60 hover:text-white shadow-md"
             >
               {t("Watch Live", "Ver en Vivo")}
             </Button>

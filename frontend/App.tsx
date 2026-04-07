@@ -9,18 +9,25 @@ const queryClient = new QueryClient();
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [splashFading, setSplashFading] = useState(false);
 
   useEffect(() => {
     // Remove static HTML splash from index.html once React mounts
     const staticSplash = document.getElementById("static-splash");
     if (staticSplash) staticSplash.remove();
 
-    const timeout = window.setTimeout(() => {
-      setShowSplash(false);
+    // Begin fade-out after 800ms, then fully remove after the 400ms transition
+    const fadeTimeout = window.setTimeout(() => {
+      setSplashFading(true);
     }, 800);
 
+    const removeTimeout = window.setTimeout(() => {
+      setShowSplash(false);
+    }, 1200);
+
     return () => {
-      window.clearTimeout(timeout);
+      window.clearTimeout(fadeTimeout);
+      window.clearTimeout(removeTimeout);
     };
   }, []);
 
@@ -32,7 +39,7 @@ export default function App() {
             <div className="relative">
               <AppInner />
               {showSplash && (
-                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[--background]">
+                <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[--background] transition-opacity duration-400 ${splashFading ? 'opacity-0' : 'opacity-100'}`}>
                   <img
                     src="./cne_logo_transparent.png"
                     alt="Centro de Nueva Esperanza"
