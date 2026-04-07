@@ -343,7 +343,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setLivestreamPipDismissed(true)}
+                      onClick={() => {
+                        setLivestreamPipDismissed(true);
+                        setHasInteractedWithLivestream(false);
+                      }}
                       className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-red-500 transition-all hover:bg-red-500/10 shadow-sm"
                       aria-label={t("Close", "Cerrar")}
                     >
@@ -489,7 +492,10 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setLivestreamPipDismissed(true)}
+                    onClick={() => {
+                      setLivestreamPipDismissed(true);
+                      setHasInteractedWithLivestream(false);
+                    }}
                     className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-red-500 transition-all hover:bg-red-500/10 shadow-sm"
                     aria-label={t("Close", "Cerrar")}
                   >
