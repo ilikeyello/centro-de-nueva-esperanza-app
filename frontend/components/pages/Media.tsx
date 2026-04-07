@@ -75,6 +75,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     setIsLivestreamPlaying,
     isLivestreamTransitioning,
     setIsLivestreamTransitioning,
+    shouldShowLivestreamPip,
   } = usePlayer();
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
@@ -447,8 +448,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   useEffect(() => {
     if (isMediaPage) {
       setIsPipDismissed(false);
-    } else if (wasMediaPageRef.current && !isMediaPage && hasInteractedWithLivestream) {
-      // We JUST left the media page and we were watching/interacting with the stream
+    } else if (wasMediaPageRef.current && !isMediaPage && hasInteractedWithLivestream && isLivestreamPlaying) {
+      // We JUST left the media page and it was actually playing/streaming
       console.log('Tabbing away from media page (detected via ref): Setting global transition buffer');
       setIsLivestreamTransitioning(true);
       const timer = setTimeout(() => {
@@ -460,13 +461,13 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     
     // Always update the ref after the logic runs
     wasMediaPageRef.current = isMediaPage;
-  }, [isMediaPage, hasInteractedWithLivestream, setIsPipDismissed, setIsLivestreamTransitioning]);
+  }, [isMediaPage, hasInteractedWithLivestream, isLivestreamPlaying, setIsPipDismissed, setIsLivestreamTransitioning]);
 
   // Interaction is now tracked strictly by the PLAYING status in onStateChange
   // to ensure the PIP only pops out if the user has actually started the stream.
 
-  // If not Media Page, and stream is not active or PIP is dismissed, don't render the invisible container
-  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !hasInteractedWithLivestream || isPipDismissed)) {
+  // If not Media Page and shouldn't show PIP, don't render the invisible container
+  if (!isMediaPage && !shouldShowLivestreamPip) {
     return null;
   }
 
@@ -532,7 +533,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                       ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
                       : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
                   ),
-              (!isMediaPage && (isPipMinimized || (!isLivestreamPlaying && !isLivestreamTransitioning))) && "opacity-0 pointer-events-none invisible"
+              (!isMediaPage && !shouldShowLivestreamPip) && "opacity-0 pointer-events-none invisible"
             )}
             style={isMediaPage ? {} : {
                transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,

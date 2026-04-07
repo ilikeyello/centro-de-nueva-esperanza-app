@@ -121,6 +121,7 @@ interface PlayerContextType {
   setIsLivestreamPlaying: (val: boolean) => void;
   isLivestreamTransitioning: boolean;
   setIsLivestreamTransitioning: (val: boolean) => void;
+  shouldShowLivestreamPip: boolean;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -442,10 +443,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const setLivestreamUrl = (url: string) => {
     const trimmed = url.trim();
-    // Allow empty URLs - don't fallback to default
     setLivestreamUrlState(trimmed);
-    // Manual set does not assert live state; will be refreshed by polling
   };
+
+  // Derived state to determine if the livestream PIP container should be visible overall.
+  // It is visible if we are NOT on the media page and (it's playing OR we are buffering a transition).
+  const shouldShowLivestreamPip = (livestreamIsLive || hasInteractedWithLivestream) && 
+    (isLivestreamPlaying || isLivestreamTransitioning) && 
+    !isLivestreamPipDismissed;
 
   return (
     <PlayerContext.Provider
@@ -495,6 +500,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setIsLivestreamPlaying,
         isLivestreamTransitioning,
         setIsLivestreamTransitioning,
+        shouldShowLivestreamPip,
       }}
     >
       {children}
