@@ -39,7 +39,10 @@ export default function App() {
             <div className="relative">
               <AppInner />
               {showSplash && (
-                <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[--background] transition-opacity duration-400 ${splashFading ? 'opacity-0' : 'opacity-100'}`}>
+                <div
+                  className="fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-400"
+                  style={{ backgroundColor: 'var(--background)', opacity: splashFading ? 0 : 1 }}
+                >
                   <img
                     src="./cne_logo_transparent.png"
                     alt="Centro de Nueva Esperanza"
