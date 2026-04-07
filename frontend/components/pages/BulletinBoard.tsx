@@ -461,7 +461,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
             </section>
 
             <Dialog open={commentDialogPostId !== null} onOpenChange={(open) => { if (!open) setCommentDialogPostId(null); }}>
-              <DialogContent className="flex max-h-[85vh] flex-col border-[--border-color] bg-[--surface] text-[--ink-dark] sm:max-w-lg shadow-2xl">
+              <DialogContent className="warm-card flex max-h-[85vh] flex-col text-[--ink-dark] sm:max-w-lg shadow-2xl">
                 {commentDialogPost && (
                   <>
                     <DialogHeader className="shrink-0 border-b border-[--border-color] pb-4">
