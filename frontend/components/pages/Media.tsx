@@ -429,7 +429,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   }, [setHasInteractedWithLivestream]);
 
   // If not Media Page, and stream is not active or PIP is dismissed, don't render the invisible container
-  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !hasInteractedWithLivestream || isPipDismissed || !isLivestreamPlaying)) {
+  if (!isMediaPage && (!(livestreamIsLive || manualLiveOverride) || !hasInteractedWithLivestream || isPipDismissed)) {
     return null;
   }
 
@@ -495,7 +495,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                       ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
                       : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
                   ),
-              (!isMediaPage && isPipMinimized) && "opacity-0 pointer-events-none invisible"
+              (!isMediaPage && (isPipMinimized || !isLivestreamPlaying)) && "opacity-0 pointer-events-none invisible"
             )}
             style={isMediaPage ? {} : {
                transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
