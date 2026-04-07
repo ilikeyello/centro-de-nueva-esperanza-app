@@ -72,6 +72,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     setLivestreamPipDismissed: setIsPipDismissed,
     isLivestreamPlaying,
     setIsLivestreamPlaying,
+    isLivestreamTransitioning,
+    setIsLivestreamTransitioning,
   } = usePlayer();
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
@@ -165,7 +167,24 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
             checkIfLive();
             // Check periodically for live status
             if (checkInterval) clearInterval(checkInterval);
-            checkInterval = setInterval(checkIfLive, 10000); // Check every 10 seconds
+            checkInterval = setInterval(() => {
+              checkIfLive();
+              
+              // Also sync playback state manually to avoid event flakiness
+              if (playerRef.current && typeof playerRef.current.getPlayerState === "function") {
+                try {
+                  const state = playerRef.current.getPlayerState();
+                  const isPlayingState = state === (w.YT?.PlayerState?.PLAYING ?? 1);
+                  if (isPlayingState !== isLivestreamPlaying) {
+                    console.log('Manually syncing playback state from polling:', isPlayingState);
+                    setIsLivestreamPlaying(isPlayingState);
+                    setIsStreamPlaying(isPlayingState);
+                  }
+                } catch (e) {
+                  // Ignore player errors during polling
+                }
+              }
+            }, 5000); // Check status every 5 seconds
           },
           onStateChange: (event: any) => {
             const YT = w.YT;
@@ -426,8 +445,17 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   useEffect(() => {
     if (isMediaPage) {
       setIsPipDismissed(false);
+    } else if (hasInteractedWithLivestream && isLivestreamPlaying) {
+      // Tabbing away: set global transition buffer to handle YT API flakiness
+      console.log('Tabbing away from media page: Setting global transition buffer');
+      setIsLivestreamTransitioning(true);
+      const timer = setTimeout(() => {
+        console.log('Transition buffer complete');
+        setIsLivestreamTransitioning(false);
+      }, 4000); // 4 seconds buffer
+      return () => clearTimeout(timer);
     }
-  }, [isMediaPage]);
+  }, [isMediaPage, hasInteractedWithLivestream, isLivestreamPlaying, setIsPipDismissed, setIsLivestreamTransitioning]);
 
   // Track user interaction into the iframe using standard blur tracking
   useEffect(() => {
@@ -509,7 +537,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                       ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
                       : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
                   ),
-              (!isMediaPage && (isPipMinimized || !isLivestreamPlaying)) && "opacity-0 pointer-events-none invisible"
+              (!isMediaPage && (isPipMinimized || (!isLivestreamPlaying && !isLivestreamTransitioning))) && "opacity-0 pointer-events-none invisible"
             )}
             style={isMediaPage ? {} : {
                transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,

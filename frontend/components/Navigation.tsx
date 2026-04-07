@@ -43,6 +43,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
     livestreamTitle,
     hasInteractedWithLivestream,
     isLivestreamPlaying,
+    isLivestreamTransitioning,
   } = usePlayer();
 
   const playerRef = youtubePlayerRef;
@@ -317,7 +318,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
 
           {/* ===== MOBILE LIVESTREAM PIP (above nav tabs) ===== */}
-          {livestreamIsLive && currentPage !== "media" && !isDesktop && !isLivestreamPipDismissed && hasInteractedWithLivestream && isLivestreamPlaying && (
+          {livestreamIsLive && currentPage !== "media" && !isDesktop && !isLivestreamPipDismissed && hasInteractedWithLivestream && (isLivestreamPlaying || isLivestreamTransitioning) && (
             <div className="music-player-dark px-3 pt-1.5 md:hidden">
               {isLivestreamPipMinimized ? (
                 <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
@@ -461,7 +462,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           )}
 
           {/* ===== DESKTOP MINIMIZED LIVESTREAM BAR (integrated in navbar) ===== */}
-          {livestreamIsLive && currentPage !== "media" && isDesktop && isLivestreamPipMinimized && !isLivestreamPipDismissed && hasInteractedWithLivestream && isLivestreamPlaying && (
+          {livestreamIsLive && currentPage !== "media" && isDesktop && isLivestreamPipMinimized && !isLivestreamPipDismissed && hasInteractedWithLivestream && (isLivestreamPlaying || isLivestreamTransitioning) && (
             <div className="music-player-dark hidden md:block px-3 py-1 ml-auto">
               <div className="flex items-center justify-center gap-3 rounded-xl bg-[--surface] px-4 py-1.5 shadow-sm border border-[--border-color]">
                 <div className="flex items-center gap-2">
