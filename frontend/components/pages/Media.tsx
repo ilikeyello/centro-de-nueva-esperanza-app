@@ -47,6 +47,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     startOffsetY: number;
   } | null>(null);
 
+  const wasMediaPageRef = useRef<boolean>(isMediaPage);
   const lastPageChangeRef = useRef<number>(Date.now());
   useEffect(() => {
     lastPageChangeRef.current = Date.now();
@@ -441,13 +442,13 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     });
   };
 
-  // Reset PIP dismissal if returning to Media page
+  // Reset PIP dismissal if returning to Media page & handle transition buffer when leaving
   useEffect(() => {
     if (isMediaPage) {
       setIsPipDismissed(false);
-    } else if (hasInteractedWithLivestream && isLivestreamPlaying) {
-      // Tabbing away: set global transition buffer to handle YT API flakiness
-      console.log('Tabbing away from media page: Setting global transition buffer');
+    } else if (wasMediaPageRef.current && !isMediaPage && hasInteractedWithLivestream) {
+      // We JUST left the media page and we were watching/interacting with the stream
+      console.log('Tabbing away from media page (detected via ref): Setting global transition buffer');
       setIsLivestreamTransitioning(true);
       const timer = setTimeout(() => {
         console.log('Transition buffer complete');
@@ -455,7 +456,10 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       }, 4000); // 4 seconds buffer
       return () => clearTimeout(timer);
     }
-  }, [isMediaPage, hasInteractedWithLivestream, isLivestreamPlaying, setIsPipDismissed, setIsLivestreamTransitioning]);
+    
+    // Always update the ref after the logic runs
+    wasMediaPageRef.current = isMediaPage;
+  }, [isMediaPage, hasInteractedWithLivestream, setIsPipDismissed, setIsLivestreamTransitioning]);
 
   // Track user interaction into the iframe using standard blur tracking
   useEffect(() => {
