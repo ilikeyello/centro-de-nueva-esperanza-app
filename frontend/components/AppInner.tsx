@@ -80,12 +80,12 @@ export function AppInner() {
       <div className="min-h-screen warm-gradient">
         <Navigation currentPage={currentPage} onNavigate={handleNavigate} />
         <main className={cn("pb-24 md:pb-20", currentPage !== "home" && "md:pt-20")}>
+          <Media key="media-player-root" isMediaPage={currentPage === "media"} />
           {currentPage === "home" && <Home onNavigate={handleNavigate} />}
           {currentPage === "bible" && <Bible onNavigate={handleNavigate} />}
           {currentPage === "bulletin" && <BulletinBoard onNavigate={handleNavigate} />}
           {currentPage === "news" && <News />}
           {currentPage === "donations" && <Donations onNavigate={handleNavigate} />}
-          <Media key="media-player-root" isMediaPage={currentPage === "media"} />
           {currentPage === "adminUpload" && <AdminUpload />}
           {currentPage === "contact" && <Contact onNavigate={handleNavigate} />}
           {currentPage === "games" && <Games onNavigate={handleNavigate} />}        
