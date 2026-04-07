@@ -212,6 +212,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               setIsLivestreamPlaying(false);
               if (event.data === YT.PlayerState.ENDED) {
                 setIsActuallyLive(false);
+                setHasInteractedWithLivestream(false);
               }
             } else if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.CUED) {
               // Check if it's actually live when buffering/cued

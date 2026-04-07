@@ -447,10 +447,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   // Derived state to determine if the livestream PIP container should be visible overall.
-  // It is visible if we are NOT on the media page and (it's playing OR we are buffering a transition).
-  const shouldShowLivestreamPip = (livestreamIsLive || hasInteractedWithLivestream) && 
-    (isLivestreamPlaying || isLivestreamTransitioning) && 
-    !isLivestreamPipDismissed;
+  // Show PIP whenever the user has played the stream and hasn't dismissed it.
+  // We intentionally do NOT gate on isLivestreamPlaying because YouTube fires
+  // spurious PAUSED events when the iframe repositions during page transitions.
+  const shouldShowLivestreamPip = hasInteractedWithLivestream && !isLivestreamPipDismissed;
 
   return (
     <PlayerContext.Provider
