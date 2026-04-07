@@ -490,7 +490,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               isMediaPage
                 ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2 relative"
                 : cn(
-                    "music-player-dark fixed z-50 overflow-hidden",
+                    "music-player-dark fixed z-[60] overflow-hidden",
                     isDesktop
                       ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
                       : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
@@ -499,7 +499,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
             )}
             style={isMediaPage ? {} : {
                transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
-               width: isPipMinimized ? "18rem" : (isDesktop ? "20rem" : "auto"),
+               width: isPipMinimized ? "18rem" : (isDesktop ? "20rem" : undefined),
                bottom: !isDesktop ? `${mobilePipBottom + 4}px` : undefined,
             }}
           >
