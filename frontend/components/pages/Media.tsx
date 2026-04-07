@@ -444,24 +444,15 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     });
   };
 
-  // Reset PIP dismissal if returning to Media page & handle transition buffer when leaving
+  // Reset PIP dismissal if returning to Media page
   useEffect(() => {
     if (isMediaPage) {
       setIsPipDismissed(false);
-    } else if (wasMediaPageRef.current && !isMediaPage && hasInteractedWithLivestream && isLivestreamPlaying) {
-      // We JUST left the media page and it was actually playing/streaming
-      console.log('Tabbing away from media page (detected via ref): Setting global transition buffer');
-      setIsLivestreamTransitioning(true);
-      const timer = setTimeout(() => {
-        console.log('Transition buffer complete');
-        setIsLivestreamTransitioning(false);
-      }, 4000); // 4 seconds buffer
-      return () => clearTimeout(timer);
     }
     
     // Always update the ref after the logic runs
     wasMediaPageRef.current = isMediaPage;
-  }, [isMediaPage, hasInteractedWithLivestream, isLivestreamPlaying, setIsPipDismissed, setIsLivestreamTransitioning]);
+  }, [isMediaPage, setIsPipDismissed]);
 
   // Interaction is now tracked strictly by the PLAYING status in onStateChange
   // to ensure the PIP only pops out if the user has actually started the stream.
@@ -482,7 +473,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           isMediaPage
             ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl relative aspect-video"
             : cn(
-                "music-player-dark fixed z-[60] overflow-hidden",
+                "music-player-dark fixed z-[60] overflow-hidden pointer-events-auto",
                 isDesktop
                   ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
                   : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"

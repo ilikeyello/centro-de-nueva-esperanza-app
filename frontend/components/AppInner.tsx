@@ -19,6 +19,8 @@ import { useNotificationChecker } from "../hooks/useNotificationChecker";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { usePlayer } from "../contexts/PlayerContext";
+
 
 type Page =
   | "home"
@@ -39,7 +41,19 @@ type Page =
 export function AppInner() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
 
+  const { isLivestreamPlaying, setIsLivestreamTransitioning } = usePlayer();
+
   const handleNavigate = (page: string) => {
+    // If we are currently on the media page and moving away while the stream is playing,
+    // trigger the transition buffer INSTANTLY before the state update.
+    if (currentPage === "media" && page !== "media" && isLivestreamPlaying) {
+      console.log('AppInner: Triggering instant transition buffer for PIP');
+      setIsLivestreamTransitioning(true);
+      setTimeout(() => {
+        setIsLivestreamTransitioning(false);
+      }, 4000);
+    }
+
     setCurrentPage(page as Page);
     // Instant scroll to top (no animation)
     window.scrollTo(0, 0);
