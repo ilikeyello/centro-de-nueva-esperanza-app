@@ -161,8 +161,30 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       const existing = document.getElementById("cne-livestream-player");
       if (!existing) return;
 
-      console.log('Creating new player for URL:', livestreamUrl);
+      let videoId = '';
+      try {
+        const embedUrl = new URL(livestreamUrl);
+        const pathParts = embedUrl.pathname.split('/').filter(Boolean);
+        if (pathParts[0] === 'embed' && pathParts[1]) {
+          videoId = pathParts[1];
+        }
+      } catch {}
+
+      if (!videoId) {
+        console.warn('Could not extract video ID from livestream URL:', livestreamUrl);
+        return;
+      }
+
+      console.log('Creating new player for URL:', livestreamUrl, 'videoId:', videoId);
       playerRef.current = new w.YT.Player("cne-livestream-player", {
+        videoId,
+        playerVars: {
+          enablejsapi: 1,
+          playsinline: 1,
+          controls: 1,
+          modestbranding: 1,
+          origin: window.location.origin,
+        },
         events: {
           onReady: (event: any) => {
             console.log('Livestream player ready');
