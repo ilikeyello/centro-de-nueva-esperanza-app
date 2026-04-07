@@ -466,15 +466,104 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   // Interaction is now tracked strictly by the PLAYING status in onStateChange
   // to ensure the PIP only pops out if the user has actually started the stream.
 
-  // If not Media Page and shouldn't show PIP, don't render the invisible container
-  if (!isMediaPage && !shouldShowLivestreamPip) {
-    return null;
-  }
+  // Ghost Mode: We NEVER return null here. 
+  // If we return null, the component unmounts and the YouTube iframe dies.
+  // Visibility is handled by CSS classes on the wrappers below.
+
 
   return (
-    <div className={cn("mx-auto py-8 relative space-y-10", isMediaPage ? "container px-4" : "")}>
-      <section className={cn(isMediaPage ? "space-y-6" : "")}>
-        <div className={cn(isMediaPage ? "grid gap-6 md:grid-cols-3" : "")}>
+    <div className={cn(
+      isMediaPage ? "mx-auto py-8 container px-4 space-y-10 relative" : "fixed inset-0 pointer-events-none z-[60]"
+    )}>
+      {/* 1. PERSISTENT PLAYER BOX (Strategically isolated for DOM stability) */}
+      <div 
+        className={cn(
+          "transition-all duration-300 transform",
+          isMediaPage
+            ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl relative aspect-video"
+            : cn(
+                "music-player-dark fixed z-[60] overflow-hidden",
+                isDesktop
+                  ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
+                  : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
+              ),
+          (!isMediaPage && !shouldShowLivestreamPip) && "opacity-0 pointer-events-none invisible"
+        )}
+        style={isMediaPage ? {} : {
+           transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
+           width: isPipMinimized ? "18rem" : (isDesktop ? "20rem" : undefined),
+           bottom: !isDesktop ? `${mobilePipBottom + 4}px` : undefined,
+        }}
+      >
+        <div 
+          className={cn(
+            "flex items-center justify-between border-b border-[--border-color] px-3 py-2", 
+            isDesktop && "cursor-move",
+            (isMediaPage || !isDesktop) && "hidden"
+          )}
+          style={(!isMediaPage && isDesktop) ? { backgroundColor: "var(--surface)" } : {}}
+          onMouseDown={handleDragStart}
+        >
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+            <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
+              {t("Live Now", "En Vivo")}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setIsPipMinimized(!isPipMinimized)}
+              className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
+              aria-label={isPipMinimized ? "Expand" : "Minimize"}
+            >
+              {isPipMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPipDismissed(true);
+                setHasInteractedWithLivestream(false);
+              }}
+              className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        <div className={cn(
+          "relative bg-black transition-all h-full w-full", 
+          isMediaPage ? "aspect-video" : cn(
+            "w-full overflow-hidden",
+            isDesktop ? "aspect-video" : "h-40"
+          ), 
+          (!isMediaPage && isPipMinimized) && "h-0 border-0 overflow-hidden opacity-0 pointer-events-none"
+        )}>
+          <div className={cn(
+            "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
+            (!livestreamIsLive && !manualLiveOverride && isMediaPage) ? "" : "hidden"
+          )}>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
+              {livestreamTitle || t("Livestream", "Transmisión en vivo")}
+            </p>
+            <p className="text-2xl font-bold text-[--ink-dark] sm:text-3xl">
+              {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
+            </p>
+          </div>
+          <div 
+            id="cne-livestream-player" 
+            className={cn(
+               "h-full w-full",
+               (!livestreamIsLive && !manualLiveOverride && isMediaPage) && "invisible"
+            )}
+          />
+        </div>
+      </div>
+
+      {/* 2. THE PAGE CONTENT BOX (Hidden when tabbing out) */}
+      <section className={cn(isMediaPage ? "space-y-6" : "hidden")}>
+        <div className={cn(isMediaPage ? "grid gap-6 md:grid-cols-3" : "hidden")}>
           <div className={cn("space-y-4", !isMediaPage && "hidden")}>
             <div className="flex items-center gap-2 text-[--sage]">
               <Play className="h-5 w-5" />
@@ -522,107 +611,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               </div>
             </div>
           </div>
-          <div 
-            className={cn(
-              "transition-all duration-300 transform",
-              isMediaPage
-                ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl md:col-span-2 relative"
-                : cn(
-                    "music-player-dark fixed z-[60] overflow-hidden",
-                    isDesktop
-                      ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
-                      : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
-                  ),
-              (!isMediaPage && !shouldShowLivestreamPip) && "opacity-0 pointer-events-none invisible"
-            )}
-            style={isMediaPage ? {} : {
-               transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
-               width: isPipMinimized ? "18rem" : (isDesktop ? "20rem" : undefined),
-               bottom: !isDesktop ? `${mobilePipBottom + 4}px` : undefined,
-            }}
-          >
-            <div 
-              className={cn(
-                "flex items-center justify-between border-b border-[--border-color] px-3 py-2", 
-                isDesktop && "cursor-move",
-                (isMediaPage || !isDesktop) && "hidden"
-              )}
-              style={(!isMediaPage && isDesktop) ? { backgroundColor: "var(--surface)" } : {}}
-              onMouseDown={handleDragStart}
-            >
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
-                  {t("Live Now", "En Vivo")}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setIsPipMinimized(!isPipMinimized)}
-                  className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
-                  aria-label={isPipMinimized ? "Expand" : "Minimize"}
-                >
-                  {isPipMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsPipDismissed(true);
-                    setHasInteractedWithLivestream(false);
-                  }}
-                  className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
-                  aria-label="Close"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            <div className={cn(
-              "relative bg-black transition-all", 
-              isMediaPage ? "aspect-video" : cn(
-                "w-full overflow-hidden",
-                isDesktop ? "aspect-video" : "h-40"
-              ), 
-              (!isMediaPage && isPipMinimized) && "h-0 border-0 overflow-hidden opacity-0 pointer-events-none"
-            )}>
-              <div className={cn(
-                "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
-                (!livestreamIsLive && !manualLiveOverride && isMediaPage) ? "" : "hidden"
-              )}>
-                <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
-                  {livestreamTitle || t("Livestream", "Transmisión en vivo")}
-                </p>
-                <p className="text-2xl font-bold text-[--ink-dark] sm:text-3xl">
-                  {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
-                </p>
-                <p className="text-base text-[--ink-mid]">
-                  {t(
-                    "The player will appear when we go live.",
-                    "El reproductor aparecerá cuando estemos en vivo."
-                  )}
-                </p>
-              </div>
 
-              {(livestreamIsLive || manualLiveOverride) && (
-                <iframe
-                  key={getEmbedUrl(livestreamUrl)}
-                  id="cne-livestream-player"
-                  src={getEmbedUrl(livestreamUrl)}
-                  title={livestreamTitle || t("CNE Live Stream", "Transmisión en Vivo de CNE")}
-                  className="absolute inset-0 h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  onLoad={() => {
-                    console.log('Livestream iframe loaded with src:', getEmbedUrl(livestreamUrl));
-                  }}
-                  onError={() => {
-                    console.error('Livestream iframe failed to load with src:', getEmbedUrl(livestreamUrl));
-                  }}
-                />
-              )}
-            </div>
-          </div>
         </div>
       </section>
 
