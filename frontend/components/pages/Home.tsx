@@ -83,8 +83,8 @@ export function Home({ onNavigate }: HomeProps) {
   const quickActions = [
     {
       icon: DollarSign,
-      labelEn: "Give Now",
-      labelEs: "Dar Ahora",
+      labelEn: "Support Our Ministry",
+      labelEs: "Apoyar el Ministerio",
       page: "donations",
       color: "bg-green-600 hover:bg-green-700",
     },
