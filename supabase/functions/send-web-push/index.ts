@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     const vapidPublic  = Deno.env.get('VAPID_PUBLIC_KEY')  || '';
     const vapidPrivate = Deno.env.get('VAPID_PRIVATE_KEY') || '';
-    const vapidSubject = Deno.env.get('VAPID_SUBJECT')     || 'mailto:admin@example.com';
+    const vapidSubject = Deno.env.get('VAPID_SUBJECT')     || 'mailto:contact@emanuelavina.com';
 
     webpush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
 

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase-client';
 
-const VAPID_PUBLIC_KEY = 'BFu6P2hNff03H5fYkekEuF3HW9d-vetEXxfV5ggOC2DAqXpEcNGCAl9-qIbMAaciFi7uqsheYvIE1vvXgXE1sDg';
+const VAPID_PUBLIC_KEY = 'BPN5mWTGsO6cIeUR5lFxRceFRXE_4eTu3U7qqGvq-OZN9crDCIA8yCVaP8IuLiEuly8qkEW5w07ru2T1JRmNsRs';
 
 interface NotificationContextType {
   isSupported: boolean;
