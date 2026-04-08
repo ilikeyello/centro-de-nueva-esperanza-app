@@ -15,7 +15,7 @@ export function Games({ onNavigate }: { onNavigate?: (page: string) => void }) {
             variant="ghost"
             size="sm"
             onClick={() => onNavigate?.("home")}
-            className="text-[--ink-mid] hover:text-[--sage] hover:bg-[--sage]/10 p-2"
+            className="text-[--ink-dark] hover:text-[--sage] hover:bg-[--sage]/10 p-2"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

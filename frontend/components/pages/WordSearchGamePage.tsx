@@ -341,7 +341,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       <Button
         onClick={() => onNavigate?.("games")}
         variant="outline"
-        className="bg-[--surface] text-black hover:bg-[--sage] hover:text-white border border-[--border-color] mb-4"
+        className="bg-[--surface] text-[--ink-dark] hover:bg-[--sage] hover:text-white border border-[--border-color] mb-4"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         {t("Back to Games", "Volver a Juegos")}
@@ -394,10 +394,10 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                   </div>
                   <Button
                     onClick={() => handleSelectLevel(level.id)}
-                    className="mt-2 sm:mt-0 sm:w-auto w-full bg-[--sage] hover:bg-[--sage-mid]"
+                    className="sm:mt-0 sm:w-auto w-full bg-[--sage] hover:bg-[--sage-mid] text-white"
                     disabled={loadingPuzzle}
                   >
-                    <Play className="h-4 w-4 mr-2" />
+                    <Play className="h-4 w-4" />
                     {t("Play", "Jugar")}
                   </Button>
                 </CardContent>
@@ -426,7 +426,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         <Button
           onClick={resetPuzzleState}
           variant="outline"
-          className="bg-[--surface] text-black hover:bg-[--sage] hover:text-white border border-[--border-color] h-8 text-xs"
+          className="bg-[--surface] text-[--ink-dark] hover:bg-[--sage] hover:text-white border border-[--border-color] h-8 text-xs"
         >
           <ArrowLeft className="h-3 w-3 mr-1" />
           {t("Levels", "Niveles")}

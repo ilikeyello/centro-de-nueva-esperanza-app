@@ -74,6 +74,10 @@
         padding-right: env(safe-area-inset-right);
         background-color: inherit;
       }
+
+      .dark .app-splash-logo {
+        filter: brightness(0) invert(1);
+      }
     </style>
     <script>
       // Apply .dark class immediately so CSS variables resolve before first paint
@@ -86,7 +90,7 @@
     <div id="root">
       <!-- Static splash shown instantly while JS loads -->
       <div id="static-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;background-color:var(--background);z-index:9999">
-        <img src="./cne_logo_transparent.png" alt="CNE Logo" width="180" height="180" style="width:180px;height:auto" />
+        <img src="./cne_logo_transparent.png" alt="CNE Logo" width="180" height="180" class="app-splash-logo" style="width:180px;height:auto" />
         <div style="width:2.5rem;height:2.5rem;border-radius:9999px;border:2px solid rgba(0,0,0,0.1);border-top-color:#c73e1d;animation:splash-spin .9s linear infinite"></div>
       </div>
       <style>@keyframes splash-spin{to{transform:rotate(360deg)}}</style>

@@ -461,7 +461,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
             </section>
 
             <Dialog open={commentDialogPostId !== null} onOpenChange={(open) => { if (!open) setCommentDialogPostId(null); }}>
-              <DialogContent className="warm-card flex max-h-[85vh] flex-col text-[--ink-dark] sm:max-w-lg shadow-2xl">
+              <DialogContent showCloseButton={false} className="warm-card flex max-h-[85vh] flex-col text-[--ink-dark] sm:max-w-lg shadow-2xl">
                 {commentDialogPost && (
                   <>
                     <DialogHeader className="shrink-0 border-b border-[--border-color] pb-4">
@@ -688,7 +688,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                           )}
                         >
                           {prayed
-                            ? `✓ ${t("Prayed", "Orado")}`
+                            ? `🙏 ${t("Thank You for Praying", "Gracias por Orar")}`
                             : activePrayerId === prayer.id
                             ? t("Recording...", "Registrando...")
                             : `🙏 ${t("I Prayed", "Oré")}`}

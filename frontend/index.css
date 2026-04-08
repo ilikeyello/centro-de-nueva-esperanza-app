@@ -621,6 +621,10 @@
   display: block;
 }
 
+.dark .app-splash-logo {
+  filter: brightness(0) invert(1);
+}
+
 .app-splash-title {
   font-size: 1.5rem;
   font-weight: 700;
