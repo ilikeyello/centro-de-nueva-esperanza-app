@@ -595,7 +595,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               )}
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-[--sage] hover:bg-[--sage-mid]" asChild>
+              <Button asChild>
                 <a
                   href="#music"
                   className="flex items-center gap-2"
@@ -794,7 +794,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                   }
                 >
                   <div
-                    className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[--sage] text-white shadow-lg"
+                    className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-white shadow-lg"
+                    style={{ backgroundColor: 'var(--sage)' }}
                     onClick={(e) => {
                       e.stopPropagation();
                       playPlaylistByUrl(playlist.url, playlist.title);
@@ -835,7 +836,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                     {!isThisPlaylistPlaying && (
                       <button
                         type="button"
-                        className="mb-3 w-full rounded-lg bg-[--sage] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[--sage-mid]"
+                        className="mb-3 w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
+                        style={{ backgroundColor: 'var(--sage)' }}
                         onClick={() => {
                           playPlaylistByUrl(playlist.url, playlist.title);
                           if (onStartMusic) onStartMusic();

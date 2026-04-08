@@ -559,7 +559,6 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                             "border-[--border-color] text-sm placeholder:text-[--ink-light]",
                             isCommenting ? "bg-[--surface] text-[--ink-dark]" : "bg-[--surface-mid] text-[--ink-dark]"
                           )}
-                          readOnly={!isCommenting}
                         />
                       </div>
                       <Button
@@ -684,8 +683,9 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                           disabled={prayed || activePrayerId === prayer.id}
                           className={cn(
                             "w-full",
-                            prayed ? "bg-[--surface-mid] text-[--ink-light]" : "bg-[--sage] hover:bg-[--sage-mid]"
+                            prayed && "bg-[--surface-mid] text-[--ink-light]"
                           )}
+                          style={!prayed ? { backgroundColor: 'var(--sage)' } : undefined}
                         >
                           {prayed
                             ? `🙏 ${t("Thank You for Praying", "Gracias por Orar")}`
