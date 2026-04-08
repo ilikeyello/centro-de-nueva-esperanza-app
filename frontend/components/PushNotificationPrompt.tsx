@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Bell, BellOff, Loader2, AlertCircle } from 'lucide-react';
+import { Bell, Loader2, AlertCircle } from 'lucide-react';
 
 interface PushNotificationPromptProps {
   className?: string;
@@ -40,14 +40,7 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
     return null;
   }
 
-  // Only show inside PWA installs, not regular browser tab
-  const isPWA =
-    typeof window !== 'undefined' &&
-    (window.matchMedia('(display-mode: standalone)').matches ||
-      window.matchMedia('(display-mode: minimal-ui)').matches ||
-      (window.navigator as any).standalone === true);
-
-  if (!isPWA || dismissed) {
+  if (dismissed) {
     return null;
   }
 

@@ -96,7 +96,7 @@ serve(async (req) => {
         } else {
           failureCount++;
           console.error(`Failed to send to ${subscription.endpoint}: ${response.status}`);
-          
+
           // If subscription is invalid (410 Gone), remove it from database
           if (response.status === 410) {
             await supabaseClient
@@ -139,7 +139,7 @@ async function sendWebPush(
 ): Promise<Response> {
   // Import web-push functionality
   const webpush = await import("https://esm.sh/web-push@3.6.6");
-  
+
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 
   try {

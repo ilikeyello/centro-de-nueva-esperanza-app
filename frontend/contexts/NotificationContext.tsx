@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../supabase-client';
+
+const VAPID_PUBLIC_KEY = 'BFu6P2hNff03H5fYkekEuF3HW9d-vetEXxfV5ggOC2DAqXpEcNGCAl9-qIbMAaciFi7uqsheYvIE1vvXgXE1sDg';
 
 interface NotificationContextType {
   isSupported: boolean;
@@ -20,6 +23,17 @@ export const useNotifications = () => {
   return context;
 };
 
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -27,36 +41,23 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
-    // Check if push notifications are supported
-    const checkSupport = () => {
-      const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-      setIsSupported(supported);
-      
-      if (supported) {
-        // Get current permission
-        setPermission(Notification.permission);
-        
-        // Check existing subscription
-        navigator.serviceWorker.ready.then(registration => {
-          return registration.pushManager.getSubscription();
-        }).then(sub => {
+    const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    setIsSupported(supported);
+
+    if (supported) {
+      setPermission(Notification.permission);
+      navigator.serviceWorker.ready
+        .then(reg => reg.pushManager.getSubscription())
+        .then(sub => {
           setSubscription(sub);
           setIsSubscribed(!!sub);
-        }).catch(error => {
-          console.error('Error checking subscription:', error);
-        });
-      }
-    };
-
-    checkSupport();
+        })
+        .catch(err => console.error('Error checking subscription:', err));
+    }
   }, []);
 
   const requestPermission = async (): Promise<boolean> => {
-    if (!isSupported) {
-      console.warn('Push notifications not supported');
-      return false;
-    }
-
+    if (!isSupported) return false;
     try {
       const result = await Notification.requestPermission();
       setPermission(result);
@@ -68,26 +69,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const subscribeToNotifications = async (): Promise<PushSubscription | null> => {
-    if (!isSupported || permission !== 'granted') {
-      console.warn('Permission not granted or not supported');
-      return null;
-    }
+    if (!isSupported || permission !== 'granted') return null;
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      
-      // Subscribe to push notifications
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array('BFV4AsnDQ4zCK3JwckjWV63mVnsHKbsg5N7mVSv3V0zEtXrpaItfSLj40jiIAIh2hhyONV74l_D1a8qzwR0AD0E') as any
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
       setSubscription(sub);
       setIsSubscribed(true);
-
-      // Send subscription to backend
-      await sendSubscriptionToBackend(sub);
-
+      await saveSubscriptionToSupabase(sub);
       return sub;
     } catch (error) {
       console.error('Error subscribing to notifications:', error);
@@ -96,105 +89,64 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const unsubscribeFromNotifications = async (): Promise<void> => {
-    if (!subscription) {
-      return;
-    }
-
+    if (!subscription) return;
     try {
       await subscription.unsubscribe();
+      await supabase.from('push_subscriptions').delete().eq('endpoint', subscription.endpoint);
       setSubscription(null);
       setIsSubscribed(false);
-
-      // Remove subscription from backend
-      await removeSubscriptionFromBackend(subscription);
     } catch (error) {
       console.error('Error unsubscribing from notifications:', error);
     }
   };
 
-  const sendSubscriptionToBackend = async (subscription: PushSubscription) => {
+  const saveSubscriptionToSupabase = async (sub: PushSubscription) => {
     try {
+      const p256dhKey = sub.getKey('p256dh');
+      const authKey = sub.getKey('auth');
+      const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
+
       let language: string | undefined;
       try {
-        if (typeof window !== 'undefined') {
-          const stored = window.localStorage.getItem('cne_language');
-          if (stored === 'en' || stored === 'es') language = stored;
-        }
-      } catch {
-        // ignore storage errors
-      }
+        const stored = window.localStorage.getItem('cne_language');
+        if (stored === 'en' || stored === 'es') language = stored;
+      } catch { /* ignore */ }
 
-      const response = await fetch('https://prod-cne-sh82.encr.app/notifications/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          endpoint: subscription.endpoint,
-          keys: {
-            p256dh: subscription.getKey('p256dh') ? btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')!))) : '',
-            auth: subscription.getKey('auth') ? btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')!))) : ''
-          },
-          language
-        })
-      });
+      let clientUserId: string | null = null;
+      try {
+        clientUserId = window.localStorage.getItem('cne-user-id');
+      } catch { /* ignore */ }
 
-      if (!response.ok) {
-        throw new Error('Failed to save subscription');
-      }
+      const subscriptionData = {
+        org_id: orgId,
+        endpoint: sub.endpoint,
+        p256dh: p256dhKey ? btoa(String.fromCharCode(...new Uint8Array(p256dhKey))) : '',
+        auth: authKey ? btoa(String.fromCharCode(...new Uint8Array(authKey))) : '',
+        user_agent: navigator.userAgent,
+        language: language || 'en',
+        client_user_id: clientUserId,
+      };
+
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .upsert(subscriptionData, { onConflict: 'endpoint' });
+
+      if (error) console.error('Error saving subscription to Supabase:', error);
     } catch (error) {
-      console.error('Error sending subscription to backend:', error);
+      console.error('Error in saveSubscriptionToSupabase:', error);
     }
-  };
-
-  const removeSubscriptionFromBackend = async (subscription: PushSubscription) => {
-    try {
-      const response = await fetch('https://prod-cne-sh82.encr.app/notifications/unsubscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          endpoint: subscription.endpoint
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to remove subscription');
-      }
-    } catch (error) {
-      console.error('Error removing subscription from backend:', error);
-    }
-  };
-
-  // Helper function to convert VAPID key
-  function urlBase64ToUint8Array(base64String: string): Uint8Array {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  }
-
-  const value: NotificationContextType = {
-    isSupported,
-    permission,
-    subscription,
-    requestPermission,
-    subscribeToNotifications,
-    unsubscribeFromNotifications,
-    isSubscribed
   };
 
   return (
-    <NotificationContext.Provider value={value}>
+    <NotificationContext.Provider value={{
+      isSupported,
+      permission,
+      subscription,
+      requestPermission,
+      subscribeToNotifications,
+      unsubscribeFromNotifications,
+      isSubscribed,
+    }}>
       {children}
     </NotificationContext.Provider>
   );

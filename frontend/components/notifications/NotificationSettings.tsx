@@ -44,8 +44,8 @@ export const NotificationSettings: React.FC = () => {
           <div className="flex items-center gap-3 text-[--ink-light]">
             <AlertCircle className="h-5 w-5" />
             <span>
-              {language === 'es' 
-                ? 'Las notificaciones push no son compatibles con este navegador.' 
+              {language === 'es'
+                ? 'Las notificaciones push no son compatibles con este navegador.'
                 : 'Push notifications are not supported on this browser.'}
             </span>
           </div>
@@ -70,12 +70,12 @@ export const NotificationSettings: React.FC = () => {
               {t("Push Notifications", "Notificaciones Push")}
             </Label>
             <p className="text-sm text-[--ink-light]">
-              {language === 'es' 
+              {language === 'es'
                 ? 'Recibir notificaciones sobre noticias, anuncios y recordatorios de transmisión en vivo.'
                 : 'Receive notifications about news, announcements, and livestream reminders.'}
             </p>
           </div>
-          
+
           {permission === 'granted' ? (
             <div className="flex items-center gap-2">
               <Switch
@@ -136,7 +136,7 @@ export const NotificationSettings: React.FC = () => {
             <h4 className="text-[--ink-dark] font-medium">
               {t("Notification Types", "Tipos de Notificaciones")}
             </h4>
-            
+
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 bg-[--sage] rounded-full"></div>
@@ -144,14 +144,14 @@ export const NotificationSettings: React.FC = () => {
                   {t("News & Updates", "Noticias y Actualizaciones")}
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 bg-green-400 rounded-full"></div>
                 <span className="text-sm text-[--ink-mid]">
                   {t("Announcements", "Anuncios")}
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 bg-[--terra] rounded-full"></div>
                 <span className="text-sm text-[--ink-mid]">

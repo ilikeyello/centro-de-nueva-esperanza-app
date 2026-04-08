@@ -160,16 +160,16 @@ self.addEventListener('notificationclick', event => {
   // Route based on notification type so taps go to the right page
   switch (data.type) {
     case 'announcement':
-      // Open News page, Announcements tab
       targetUrl = baseUrl + '#news-announcements';
       break;
     case 'event':
-      // Open News page, Events tab
       targetUrl = baseUrl + '#news-events';
       break;
     case 'livestream':
-      // Open Media/Live page
       targetUrl = baseUrl + '#media';
+      break;
+    case 'bulletin':
+      targetUrl = baseUrl + '#bulletin';
       break;
     default:
       targetUrl = baseUrl;
