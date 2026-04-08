@@ -379,7 +379,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                 key={level.id}
                 className="warm-card hover:border-[--sage] transition-all cursor-pointer"
               >
-                <CardContent className="p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <CardContent className="p-5 flex flex-row items-center justify-between gap-3">
                   <div className="space-y-1">
                     <h3 className="text-lg font-semibold text-[--ink-dark]">{language === 'es' ? level.name_es : level.name_en}</h3>
                     {(level.description_en || level.description_es) && (
@@ -394,7 +394,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                   </div>
                   <Button
                     onClick={() => handleSelectLevel(level.id)}
-                    className="sm:mt-0 sm:w-auto w-full bg-[--sage] hover:bg-[--sage-mid] text-white"
+                    className="flex-shrink-0"
                     disabled={loadingPuzzle}
                   >
                     <Play className="h-4 w-4" />

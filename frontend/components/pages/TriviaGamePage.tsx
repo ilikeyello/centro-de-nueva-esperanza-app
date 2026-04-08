@@ -350,7 +350,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
         {/* Back Button */}
         <Button 
           onClick={() => onNavigate?.("games")}
-          className="mb-6 bg-[--surface] text-black hover:bg-[--sage] hover:text-white border border-[--border-color]"
+          className="mb-6 bg-[--surface] text-[--ink-dark] hover:bg-[--sage] hover:text-white border border-[--border-color]"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t("Back to Games", "Volver a Juegos")}
@@ -453,7 +453,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
         <div className="flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between">
           <Button 
             onClick={resetGame}
-            className="bg-[--surface] text-black hover:bg-[--sage] hover:text-white border border-[--border-color] h-8 text-xs"
+            className="bg-[--surface] text-[--ink-dark] hover:bg-[--sage] hover:text-white border border-[--border-color] h-8 text-xs"
           >
             <ArrowLeft className="h-3 w-3 mr-1" />
             {t("Levels", "Niveles")}
@@ -579,7 +579,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t("Restart", "Reiniciar")}
               </Button>
-              <Button onClick={resetGame} className="bg-[--surface] text-black hover:bg-[--sage] hover:text-white border border-[--border-color]">
+              <Button onClick={resetGame} className="bg-[--surface] text-[--ink-dark] hover:bg-[--sage] hover:text-white border border-[--border-color]">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t("Back to Levels", "Volver a Niveles")}
               </Button>
