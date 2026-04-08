@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { Calendar, DollarSign, Gamepad2, MapPin, Megaphone, MessageCircle, Languages, Clock, Users, Car } from "lucide-react";
+import { Calendar, DollarSign, Gamepad2, MapPin, Megaphone, Languages, Clock, Users, Car } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,13 +94,6 @@ export function Home({ onNavigate }: HomeProps) {
       labelEs: "Ponerse en Contacto",
       page: "contact",
       color: "bg-blue-600 hover:bg-blue-700",
-    },
-    {
-      icon: MessageCircle,
-      labelEn: "Community Bulletin",
-      labelEs: "Tablón Comunitario",
-      page: "bulletin",
-      color: "bg-purple-600 hover:bg-purple-700",
     },
     {
       icon: Gamepad2,
@@ -264,6 +257,71 @@ export function Home({ onNavigate }: HomeProps) {
           </div>
         </section>
 
+        <div className="space-y-6">
+          <h2 className="serif-heading text-3xl font-bold text-[--ink-dark]">
+            {t("Quick Actions", "Acciones Rápidas")}
+          </h2>
+          <div className="grid gap-6 md:grid-cols-4">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              
+              if (action.isExternal) {
+                return (
+                  <a
+                    key={action.page}
+                    href={action.page}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="warm-card group p-6 text-left transition-all hover:scale-105"
+                  >
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
+                      <Icon className="h-6 w-6 text-[--sage]" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
+                      {t(action.labelEn, action.labelEs)}
+                    </h3>
+                    <p className="text-sm text-[--ink-mid]">
+                      {t(
+                        "Access the church admin dashboard",
+                        "Acceder al panel de administración de la iglesia"
+                      )}
+                    </p>
+                  </a>
+                );
+              }
+
+              return (
+                <button
+                  key={action.page}
+                  onClick={() => onNavigate(action.page)}
+                  className="warm-card group p-6 text-left transition-all hover:scale-105"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
+                    <Icon className="h-6 w-6 text-[--sage]" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
+                    {t(action.labelEn, action.labelEs)}
+                  </h3>
+                  <p className="text-sm text-[--ink-mid]">
+                    {action.page === "contact" && t(
+                      "Get in touch with our team",
+                      "Ponte en contacto con nuestro equipo"
+                    )}
+                    {action.page === "donations" && t(
+                      "Support our ministry",
+                      "Apoya nuestro ministerio"
+                    )}
+                    {action.page === "games" && t(
+                      "Faith-filled fun for the family",
+                      "Diversión con fe para la familia"
+                    )}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <section className="space-y-6">
           <h2 className="serif-heading text-3xl font-bold text-[--ink-dark]">
             {t("Who We Are", "Quiénes Somos")}
@@ -402,74 +460,6 @@ export function Home({ onNavigate }: HomeProps) {
           )}
         </section>
 
-        <div className="space-y-6">
-          <h2 className="serif-heading text-3xl font-bold text-[--ink-dark]">
-            {t("Quick Actions", "Acciones Rápidas")}
-          </h2>
-          <div className="grid gap-6 md:grid-cols-4 lg:grid-cols-5">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              
-              if (action.isExternal) {
-                return (
-                  <a
-                    key={action.page}
-                    href={action.page}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="warm-card group p-6 text-left transition-all hover:scale-105"
-                  >
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
-                      <Icon className="h-6 w-6 text-[--sage]" />
-                    </div>
-                    <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
-                      {t(action.labelEn, action.labelEs)}
-                    </h3>
-                    <p className="text-sm text-[--ink-mid]">
-                      {t(
-                        "Access the church admin dashboard",
-                        "Acceder al panel de administración de la iglesia"
-                      )}
-                    </p>
-                  </a>
-                );
-              }
-
-              return (
-                <button
-                  key={action.page}
-                  onClick={() => onNavigate(action.page)}
-                  className="warm-card group p-6 text-left transition-all hover:scale-105"
-                >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
-                    <Icon className="h-6 w-6 text-[--sage]" />
-                  </div>
-                  <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
-                    {t(action.labelEn, action.labelEs)}
-                  </h3>
-                  <p className="text-sm text-[--ink-mid]">
-                    {action.page === "contact" && t(
-                      "Get in touch with our team",
-                      "Ponte en contacto con nuestro equipo"
-                    )}
-                    {action.page === "bulletin" && t(
-                      "Community updates and requests",
-                      "Actualizaciones y peticiones de la comunidad"
-                    )}
-                    {action.page === "donations" && t(
-                      "Support our ministry",
-                      "Apoya nuestro ministerio"
-                    )}
-                    {action.page === "games" && t(
-                      "Faith-filled fun for the family",
-                      "Diversión con fe para la familia"
-                    )}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         <section className="warm-card p-8">
           <h2 className="mb-6 serif-heading text-3xl font-bold text-[--ink-dark]">

@@ -566,7 +566,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                         type="submit"
                         size="icon"
                         disabled={commentMutation.isPending || !(commentForms[`post-${commentDialogPost.id}`]?.content || "").trim()}
-                        className="mb-0.5 h-10 w-10 shrink-0 rounded-full bg-[--sage] hover:bg-[--sage-mid]"
+                        className="mb-0.5 h-10 w-10 shrink-0 rounded-full"
                       >
                         <Send className="h-4 w-4" />
                       </Button>
@@ -631,7 +631,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                     <Button
                       type="button"
                       onClick={() => onNavigate?.("contact")}
-                      className="mt-3 bg-[--sage] hover:bg-[--sage-mid] text-sm text-white"
+                      className="mt-3 text-sm"
                       size="sm"
                     >
                       <Mail className="mr-2 h-4 w-4" />
@@ -718,7 +718,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
               </DialogTrigger>
               <DialogContent className="warm-card">
                 <DialogHeader>
-                  <DialogTitle className="serif-heading text-[--ink-dark]">
+                  <DialogTitle className="serif-heading text-[--ink-dark] pr-8">
                     {t("Share Prayer Request", "Compartir Petición de Oración")}
                   </DialogTitle>
                 </DialogHeader>
