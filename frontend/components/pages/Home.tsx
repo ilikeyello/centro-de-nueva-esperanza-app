@@ -168,7 +168,7 @@ export function Home({ onNavigate }: HomeProps) {
           </div>
           
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding translate-y-0 md:translate-y-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage] drop-shadow-lg">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white drop-shadow-lg">
             {t("Welcome to", "Bienvenidos a")}
           </p>
           <h2 className="mt-2 serif-heading hero-title text-4xl font-bold text-white sm:text-5xl md:text-6xl drop-shadow-2xl">

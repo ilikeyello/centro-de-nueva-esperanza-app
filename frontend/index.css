@@ -432,6 +432,27 @@
   }
 }
 
+/* Notification prompt card — solid opaque background so it's never see-through */
+.notification-prompt-card {
+  background-color: var(--sage-light) !important;
+}
+
+.dark .notification-prompt-card {
+  background-color: var(--card-bg) !important;
+}
+
+/* Social icon buttons — reliable sage background that works in all modes */
+.sage-icon-btn {
+  background-color: var(--sage) !important;
+  color: white !important;
+}
+
+@media (hover: hover) {
+  .sage-icon-btn:hover {
+    background-color: var(--sage-mid) !important;
+  }
+}
+
 /* Global overrides — map red-* utilities to sage */
 .bg-red-600, .bg-red-700 {
   background-color: var(--sage) !important;

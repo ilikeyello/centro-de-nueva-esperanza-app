@@ -85,7 +85,7 @@ export function Contact({ onNavigate }: ContactProps) {
               </p>
               <a
                 href={`mailto:${churchInfo.email}`}
-                className="text-[--ink-mid] hover:text-[--sage]"
+                className="text-[--ink-mid] hover:text-[--sage] break-all"
               >
                 {churchInfo.email}
               </a>

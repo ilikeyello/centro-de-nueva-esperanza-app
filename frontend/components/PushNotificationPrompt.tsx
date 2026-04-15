@@ -60,7 +60,7 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
   };
 
   return (
-    <Card className={`bg-[--sage-light] border-[--border-color] ${className}`}>
+    <Card className={`notification-prompt-card border-[--border-color] shadow-2xl ${className}`}>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm text-[--sage] flex items-center gap-2">
           <Bell className="h-4 w-4" />

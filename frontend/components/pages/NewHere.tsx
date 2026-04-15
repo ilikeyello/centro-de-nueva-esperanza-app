@@ -73,7 +73,7 @@ export function NewHere({ onNavigate }: NewHereProps) {
                   href={churchInfo.facebook_page_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors shadow-sm"
+                  className="sage-icon-btn flex h-10 w-10 items-center justify-center rounded-full transition-colors shadow-sm"
                   aria-label="Facebook"
                 >
                   <Facebook className="h-5 w-5" />
@@ -84,7 +84,7 @@ export function NewHere({ onNavigate }: NewHereProps) {
                   href={churchInfo.youtube_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[--sage] text-white hover:bg-[--sage-mid] transition-colors shadow-sm"
+                  className="sage-icon-btn flex h-10 w-10 items-center justify-center rounded-full transition-colors shadow-sm"
                   aria-label="YouTube"
                 >
                   <Youtube className="h-5 w-5" />
