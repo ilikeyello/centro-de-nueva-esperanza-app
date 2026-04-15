@@ -16,6 +16,11 @@ function getUrlForType(type: string): string {
   }
 }
 
+interface LocalizedContent {
+  en: { title: string; body: string };
+  es: { title: string; body: string };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -32,8 +37,7 @@ serve(async (req) => {
 
     console.log("auto-notify received:", { type, table, record });
 
-    let notificationTitle = "";
-    let notificationBody = "";
+    let content: LocalizedContent | null = null;
     let notificationType = "";
     let orgId = "";
     // When set, only the subscriber whose client_user_id matches is notified
@@ -42,22 +46,39 @@ serve(async (req) => {
     if (type === "INSERT") {
       if (table === "announcements") {
         orgId = record.organization_id;
-        notificationTitle = "New Announcement / Nuevo Anuncio";
-        notificationBody = record.title_en || record.title_es || "New Announcement";
         notificationType = "announcement";
+        content = {
+          en: {
+            title: "New Announcement",
+            body: record.title_en || record.title_es || "New Announcement",
+          },
+          es: {
+            title: "Nuevo Anuncio",
+            body: record.title_es || record.title_en || "Nuevo Anuncio",
+          },
+        };
 
       } else if (table === "events") {
         orgId = record.organization_id;
-        const eventDate = new Date(record.event_date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
-        notificationTitle = "New Event / Nuevo Evento";
-        notificationBody = `${record.title_en || record.title_es} — ${eventDate}`;
         notificationType = "event";
+        const eventDateEn = new Date(record.event_date).toLocaleDateString("en-US", {
+          month: "short", day: "numeric",
+        });
+        const eventDateEs = new Date(record.event_date).toLocaleDateString("es-ES", {
+          month: "short", day: "numeric",
+        });
+        content = {
+          en: {
+            title: "New Event",
+            body: `${record.title_en || record.title_es} — ${eventDateEn}`,
+          },
+          es: {
+            title: "Nuevo Evento",
+            body: `${record.title_es || record.title_en} — ${eventDateEs}`,
+          },
+        };
 
       } else if (table === "bulletin_comments") {
-        // Fetch the original post to get its author and org
         const { data: post } = await supabase
           .from("bulletin_posts")
           .select("author_id, title, organization_id")
@@ -80,11 +101,19 @@ serve(async (req) => {
         }
 
         orgId = post.organization_id;
-        notificationTitle = "New Reply to Your Post";
-        notificationBody = `${record.author_name || "Someone"} replied to "${post.title}"`;
         notificationType = "bulletin";
-        // Only notify the post author's device(s)
         targetClientUserId = post.author_id ?? null;
+        const commenter = record.author_name || "Someone";
+        content = {
+          en: {
+            title: "New Reply to Your Post",
+            body: `${commenter} replied to "${post.title}"`,
+          },
+          es: {
+            title: "Nueva Respuesta a Tu Publicación",
+            body: `${commenter} respondió a "${post.title}"`,
+          },
+        };
       }
 
     } else if (type === "UPDATE") {
@@ -93,9 +122,17 @@ serve(async (req) => {
         const isNowLive = record.is_live === true;
         if (isNowLive && !wasLive) {
           orgId = record.organization_id;
-          notificationTitle = "We're Live! / ¡Estamos en Vivo!";
-          notificationBody = record.title || "Join us for our live service";
           notificationType = "livestream";
+          content = {
+            en: {
+              title: "We're Live!",
+              body: record.title || "Join us for our live service",
+            },
+            es: {
+              title: "¡Estamos en Vivo!",
+              body: record.title || "Únete a nuestro servicio en vivo",
+            },
+          };
         } else {
           return new Response(JSON.stringify({ message: "Skipped: not a going-live transition" }), {
             status: 200,
@@ -105,17 +142,17 @@ serve(async (req) => {
       }
     }
 
-    if (!orgId || !notificationTitle) {
+    if (!orgId || !content) {
       return new Response(JSON.stringify({ message: "No notification needed for this event" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Build subscription query
+    // Fetch subscriptions including each device's language preference
     let query = supabase
       .from("push_subscriptions")
-      .select("endpoint, p256dh, auth")
+      .select("endpoint, p256dh, auth, language")
       .eq("org_id", orgId);
 
     if (targetClientUserId) {
@@ -148,21 +185,25 @@ serve(async (req) => {
     const webpush = await import("https://esm.sh/web-push@3.6.6");
     webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 
-    const notificationPayload = JSON.stringify({
-      title: notificationTitle,
-      body:  notificationBody,
-      icon:  "/icon-192x192.png",
-      badge: "/icon-192x192.png",
-      data: {
-        type: notificationType,
-        url:  getUrlForType(notificationType),
-      },
-    });
-
     let successCount = 0;
     let failureCount = 0;
 
     for (const sub of subscriptions) {
+      // Pick the localized content based on the subscriber's saved language preference
+      const lang: "en" | "es" = sub.language === "es" ? "es" : "en";
+      const localized = content[lang];
+
+      const notificationPayload = JSON.stringify({
+        title: localized.title,
+        body:  localized.body,
+        icon:  "/icon-192x192.png",
+        badge: "/icon-192x192.png",
+        data: {
+          type: notificationType,
+          url:  getUrlForType(notificationType),
+        },
+      });
+
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },

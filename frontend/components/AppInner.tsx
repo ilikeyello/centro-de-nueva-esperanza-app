@@ -71,7 +71,7 @@ export function AppInner() {
   // Initialize notification checker for PWA push notifications
   useNotificationChecker(5); // Check every 5 minutes
 
-  // Allow direct navigation to the hidden admin upload page via URL hash.
+  // Allow direct navigation via URL hash (used by notification deep links on cold launch).
   useEffect(() => {
     const hash = window.location.hash;
     const path = window.location.pathname;
@@ -81,12 +81,36 @@ export function AppInner() {
     } else if (path === "/trivia-game" || hash === "#trivia-game") {
       setCurrentPage("triviaGame");
     } else if (hash === "#media") {
-      // Open Media (livestream) page from notification
       setCurrentPage("media");
     } else if (hash === "#news" || hash === "#news-announcements" || hash === "#news-events") {
-      // Open News page from notification; tab selection is handled inside News.tsx
+      // Tab selection is handled inside News.tsx by reading the hash
       setCurrentPage("news");
+    } else if (hash === "#bulletin") {
+      setCurrentPage("bulletin");
     }
+  }, []);
+
+  // Handle navigate messages from the service worker (notification clicks when app is already open).
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type !== "NAVIGATE") return;
+      const hash: string = event.data.hash ?? "";
+      if (hash === "#news-announcements" || hash === "#news" || hash === "#news-events") {
+        window.location.hash = hash; // let News.tsx pick the right tab
+        setCurrentPage("news");
+      } else if (hash === "#media") {
+        setCurrentPage("media");
+      } else if (hash === "#bulletin") {
+        setCurrentPage("bulletin");
+      } else if (hash === "#admin-upload") {
+        setCurrentPage("adminUpload");
+      }
+    };
+
+    navigator.serviceWorker.addEventListener("message", handleMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", handleMessage);
   }, []);
 
   return (

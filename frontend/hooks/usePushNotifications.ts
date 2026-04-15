@@ -231,6 +231,28 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
     }
   };
 
+  // Keep the stored language preference in sync when the user switches languages
+  useEffect(() => {
+    if (!isSubscribed) return;
+
+    const syncLanguage = async () => {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (!subscription) return;
+
+        await supabase
+          .from('push_subscriptions')
+          .update({ language })
+          .eq('endpoint', subscription.endpoint);
+      } catch (err) {
+        console.error('Failed to sync language preference:', err);
+      }
+    };
+
+    void syncLanguage();
+  }, [language, isSubscribed]);
+
   const unsubscribe = async () => {
     if (!isSupported || !isSubscribed) {
       return;

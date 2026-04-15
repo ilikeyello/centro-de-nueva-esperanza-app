@@ -149,41 +149,36 @@ self.addEventListener('push', event => {
 // Notification click event
 self.addEventListener('notificationclick', event => {
   console.log('Notification click received.');
-  
+
   event.notification.close();
 
-  const baseUrl = self.location.origin + '/';
+  if (event.action === 'close') return;
+
   const data = (event.notification && event.notification.data) || {};
 
-  let targetUrl = baseUrl;
-
-  // Route based on notification type so taps go to the right page
+  let hash = '';
   switch (data.type) {
-    case 'announcement':
-      targetUrl = baseUrl + '#news-announcements';
-      break;
-    case 'event':
-      targetUrl = baseUrl + '#news-events';
-      break;
-    case 'livestream':
-      targetUrl = baseUrl + '#media';
-      break;
-    case 'bulletin':
-      targetUrl = baseUrl + '#bulletin';
-      break;
-    default:
-      targetUrl = baseUrl;
-      break;
+    case 'announcement': hash = '#news-announcements'; break;
+    case 'event':        hash = '#news-events';        break;
+    case 'livestream':   hash = '#media';              break;
+    case 'bulletin':     hash = '#bulletin';           break;
+    default:             hash = '';                    break;
   }
 
-  if (event.action === 'close') {
-    // Just close the notification
-    event.notification.close();
-    return;
-  }
+  const targetUrl = self.location.origin + '/' + hash;
 
   event.waitUntil(
-    clients.openWindow(targetUrl)
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+          // App is already open — send a navigate message so it reacts without a full reload
+          client.postMessage({ type: 'NAVIGATE', hash });
+          return client.focus();
+        }
+      }
+      // No existing window — open fresh at the correct hash URL
+      return clients.openWindow(targetUrl);
+    })
   );
 });
 
