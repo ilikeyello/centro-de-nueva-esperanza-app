@@ -71,32 +71,67 @@ export function AppInner() {
   // Initialize notification checker for PWA push notifications
   useNotificationChecker(5); // Check every 5 minutes
 
-  // Allow direct navigation via URL hash (used by notification deep links on cold launch).
+  // Cold-launch deep link routing.
+  // Checks the Cache Storage first (written by the SW's notificationclick handler before
+  // opening the app) because the manifest start_url:"/" causes iOS and some Android builds
+  // to open the PWA at "/" regardless of the URL passed to openWindow(), silently dropping
+  // the hash. Falls back to window.location.hash for browsers that do preserve it.
   useEffect(() => {
-    const hash = window.location.hash;
-    const path = window.location.pathname;
+    const applyHash = (hash: string) => {
+      const path = window.location.pathname;
+      if (hash === "#admin-upload") {
+        setCurrentPage("adminUpload");
+      } else if (path === "/trivia-game" || hash === "#trivia-game") {
+        setCurrentPage("triviaGame");
+      } else if (hash === "#media") {
+        setCurrentPage("media");
+      } else if (hash === "#news" || hash === "#news-announcements" || hash === "#news-events") {
+        if (hash) window.location.hash = hash; // let News.tsx pick the right tab
+        setCurrentPage("news");
+      } else if (hash === "#bulletin") {
+        setCurrentPage("bulletin");
+      }
+    };
 
-    if (hash === "#admin-upload") {
-      setCurrentPage("adminUpload");
-    } else if (path === "/trivia-game" || hash === "#trivia-game") {
-      setCurrentPage("triviaGame");
-    } else if (hash === "#media") {
-      setCurrentPage("media");
-    } else if (hash === "#news" || hash === "#news-announcements" || hash === "#news-events") {
-      // Tab selection is handled inside News.tsx by reading the hash
-      setCurrentPage("news");
-    } else if (hash === "#bulletin") {
-      setCurrentPage("bulletin");
-    }
+    const init = async () => {
+      // 1. Try Cache Storage (most reliable across platforms)
+      if ("caches" in window) {
+        try {
+          const cache = await caches.open("cne-nav-intent");
+          const response = await cache.match("/notification-nav");
+          if (response) {
+            const hash = (await response.text()).trim();
+            await cache.delete("/notification-nav");
+            if (hash) {
+              applyHash(hash);
+              return;
+            }
+          }
+        } catch { /* cache unavailable, fall through */ }
+      }
+      // 2. Fall back to URL hash
+      const hash = window.location.hash;
+      if (hash) applyHash(hash);
+    };
+
+    void init();
   }, []);
 
-  // Handle navigate messages from the service worker (notification clicks when app is already open).
+  // Handle NAVIGATE messages from the service worker (app was already open when notification was tapped).
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type !== "NAVIGATE") return;
       const hash: string = event.data.hash ?? "";
+
+      // Clear the cache entry so it doesn't fire again on the next cold launch
+      if ("caches" in window) {
+        caches.open("cne-nav-intent")
+          .then(cache => cache.delete("/notification-nav"))
+          .catch(() => {});
+      }
+
       if (hash === "#news-announcements" || hash === "#news" || hash === "#news-events") {
         window.location.hash = hash; // let News.tsx pick the right tab
         setCurrentPage("news");

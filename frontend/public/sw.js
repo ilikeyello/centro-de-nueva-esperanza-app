@@ -167,19 +167,33 @@ self.addEventListener('notificationclick', event => {
 
   const targetUrl = self.location.origin + '/' + hash;
 
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      for (const client of clientList) {
-        if (client.url.startsWith(self.location.origin) && 'focus' in client) {
-          // App is already open — send a navigate message so it reacts without a full reload
-          client.postMessage({ type: 'NAVIGATE', hash });
-          return client.focus();
-        }
+  event.waitUntil((async () => {
+    // Persist the nav target in Cache Storage so AppInner can read it on launch.
+    // This is necessary because the manifest's start_url:"/" causes many platforms
+    // (especially iOS) to open the PWA at "/" regardless of the URL passed to
+    // openWindow(), silently dropping the hash.
+    if (hash) {
+      try {
+        const cache = await caches.open('cne-nav-intent');
+        await cache.put('/notification-nav', new Response(hash, {
+          headers: { 'Content-Type': 'text/plain' }
+        }));
+      } catch (e) {
+        console.warn('Could not write nav intent to cache:', e);
       }
-      // No existing window — open fresh at the correct hash URL
-      return clients.openWindow(targetUrl);
-    })
-  );
+    }
+
+    const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of clientList) {
+      if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+        // App is already open — message it directly and bring it to focus
+        client.postMessage({ type: 'NAVIGATE', hash });
+        return client.focus();
+      }
+    }
+    // No existing window — open the app (cache handles hash even if URL is stripped)
+    return clients.openWindow(targetUrl);
+  })());
 });
 
 // Notification close event
