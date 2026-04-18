@@ -169,7 +169,10 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
           ].sort(() => Math.random() - 0.5); // Randomize directions
 
           let placed = false;
-          for (let attempt = 0; attempt < 100 && !placed; attempt++) {
+          // Substantially increase the number of attempts from 100 to 5000 
+          // to give the algorithm enough time to find a valid intersecting match or empty slot
+          // for dense levels with 15+ words.
+          for (let attempt = 0; attempt < 5000 && !placed; attempt++) {
             const direction = directions[attempt % directions.length];
             const startRow = Math.floor(Math.random() * level.rows);
             const startCol = Math.floor(Math.random() * level.cols);
@@ -182,6 +185,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
               for (let i = 0; i < word.length; i++) {
                 const r = startRow + direction.dr * i;
                 const c = startCol + direction.dc * i;
+                // Allow overlapping if the letter is the exact same.
                 if (gridChars[r][c] !== '_' && gridChars[r][c] !== word[i]) {
                   canPlace = false;
                   break;
