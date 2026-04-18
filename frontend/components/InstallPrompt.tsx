@@ -21,6 +21,47 @@ function isInStandaloneMode() {
 const STORAGE_KEY = 'cne-install-dismissed';
 const COOLDOWN_DAYS = 7;
 
+function isSpanish() {
+  const lang = (navigator.language || '').toLowerCase();
+  return lang.startsWith('es');
+}
+
+const STRINGS = {
+  es: {
+    sheetTitle: 'Agregar a la pantalla de inicio',
+    sheetSubtitle: 'Sigue estos pasos en Safari',
+    dismiss: 'Entendido',
+    steps: [
+      { text: <>Toca los <strong style={{ color: '#fff' }}>tres puntos</strong> (•••) en la esquina inferior derecha de Safari</> },
+      { text: <>Toca <strong style={{ color: '#fff' }}>"Compartir"</strong> en el menú que aparece</> },
+      { text: <>Toca <strong style={{ color: '#fff' }}>"Ver más"</strong> (círculo con flecha ↓) en la hoja de compartir</> },
+      { text: <>Toca <strong style={{ color: '#fff' }}>"Agregar a inicio"</strong> en la lista</> },
+      { text: <>Toca <strong style={{ color: '#007AFF' }}>"Agregar"</strong> en la esquina superior derecha para confirmar</> },
+    ],
+    // Labels shown inside the icons
+    shareLabel: 'Compartir',
+    viewMoreLabel: 'Ver más',
+    addToHomeLabel: 'Agregar a inicio',
+    addLabel: 'Agregar',
+  },
+  en: {
+    sheetTitle: 'Add to Home Screen',
+    sheetSubtitle: 'Follow these steps in Safari',
+    dismiss: 'Got it',
+    steps: [
+      { text: <>Tap the <strong style={{ color: '#fff' }}>three dots</strong> (•••) in the bottom-right corner of Safari</> },
+      { text: <>Tap <strong style={{ color: '#fff' }}>"Share"</strong> in the menu that appears</> },
+      { text: <>Tap <strong style={{ color: '#fff' }}>"View More"</strong> (circle with ↓ arrow) in the share sheet</> },
+      { text: <>Tap <strong style={{ color: '#fff' }}>"Add to Home Screen"</strong> in the list</> },
+      { text: <>Tap <strong style={{ color: '#007AFF' }}>"Add"</strong> in the top-right corner to confirm</> },
+    ],
+    shareLabel: 'Share',
+    viewMoreLabel: 'View More',
+    addToHomeLabel: 'Add to Home Screen',
+    addLabel: 'Add',
+  },
+};
+
 // Step 1: Three-dots button (Safari toolbar)
 function ThreeDotsIcon() {
   return (
@@ -68,7 +109,7 @@ function AddToHomeRowIcon() {
 }
 
 // Step 5: Blue "Add" pill button
-function AddPillIcon() {
+function AddPillIcon({ label }: { label: string }) {
   return (
     <span style={{
       display: 'inline-flex',
@@ -82,43 +123,23 @@ function AddPillIcon() {
       fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
       flexShrink: 0,
     }}>
-      Add
+      {label}
     </span>
   );
 }
 
-const IOS_STEPS = [
-  {
-    icon: <ThreeDotsIcon />,
-    label: 'Paso 1',
-    text: <>Toca los <strong style={{ color: '#fff' }}>tres puntos</strong> (•••) en la esquina inferior derecha de Safari</>,
-  },
-  {
-    icon: <ShareRowIcon />,
-    label: 'Paso 2',
-    text: <>Toca <strong style={{ color: '#fff' }}>"Share"</strong> en el menú que aparece</>,
-  },
-  {
-    icon: <ViewMoreIcon />,
-    label: 'Paso 3',
-    text: <>Toca el botón <strong style={{ color: '#fff' }}>"View More"</strong> (círculo con flecha ↓) en la hoja de compartir</>,
-  },
-  {
-    icon: <AddToHomeRowIcon />,
-    label: 'Paso 4',
-    text: <>Toca <strong style={{ color: '#fff' }}>"Add to Home Screen"</strong> en la lista</>,
-  },
-  {
-    icon: <AddPillIcon />,
-    label: 'Paso 5',
-    text: <>Toca <strong style={{ color: '#007AFF' }}>"Add"</strong> en la esquina superior derecha para confirmar</>,
-  },
-];
+function IOSInstructions({ strings }: { strings: typeof STRINGS['es'] }) {
+  const icons = [
+    <ThreeDotsIcon />,
+    <ShareRowIcon />,
+    <ViewMoreIcon />,
+    <AddToHomeRowIcon />,
+    <AddPillIcon label={strings.addLabel} />,
+  ];
 
-function IOSInstructions() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {IOS_STEPS.map((step, i) => (
+      {strings.steps.map((step, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Step badge */}
           <div style={{
@@ -137,7 +158,7 @@ function IOSInstructions() {
             {i + 1}
           </div>
           {/* Icon */}
-          <div style={{ flexShrink: 0 }}>{step.icon}</div>
+          <div style={{ flexShrink: 0 }}>{icons[i]}</div>
           {/* Text */}
           <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.4', color: '#aeaeb2' }}>
             {step.text}
@@ -205,6 +226,7 @@ export function InstallPrompt() {
 
   // ── iOS: bottom sheet with exact step-by-step instructions ──
   if (isIos) {
+    const strings = isSpanish() ? STRINGS.es : STRINGS.en;
     return (
       <>
         {/* Backdrop */}
@@ -244,10 +266,10 @@ export function InstallPrompt() {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
               <h2 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700, color: '#fff' }}>
-                Agregar a la pantalla de inicio
+                {strings.sheetTitle}
               </h2>
               <p style={{ margin: 0, fontSize: '13px', color: '#aeaeb2' }}>
-                Sigue estos pasos en Safari
+                {strings.sheetSubtitle}
               </p>
             </div>
             <button
@@ -270,7 +292,7 @@ export function InstallPrompt() {
             </button>
           </div>
 
-          <IOSInstructions />
+          <IOSInstructions strings={strings} />
 
           <button
             onClick={dismiss}
@@ -288,7 +310,7 @@ export function InstallPrompt() {
               fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
             }}
           >
-            Entendido
+            {strings.dismiss}
           </button>
         </div>
       </>
