@@ -9,7 +9,9 @@ export const metadata: Metadata = {
     "A calm, welcoming church experience built with accessible design and Supabase-powered content.",
   icons: {
     icon: "/favicon.ico",
+    apple: "/icon-192x192.png",
   },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
