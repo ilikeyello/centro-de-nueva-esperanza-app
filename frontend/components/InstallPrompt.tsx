@@ -29,10 +29,8 @@ export function InstallPrompt() {
   const [isIos, setIsIos] = useState(false);
 
   useEffect(() => {
-    // Don't show if already installed as PWA
     if (isInStandaloneMode()) return;
 
-    // Don't show if user dismissed recently
     const dismissedAt = localStorage.getItem(STORAGE_KEY);
     if (dismissedAt) {
       const daysSince = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
@@ -71,6 +69,17 @@ export function InstallPrompt() {
     }
   }
 
+  async function handleIOSShare() {
+    try {
+      await navigator.share({
+        title: 'Centro de Nueva Esperanza',
+        url: window.location.href,
+      });
+    } catch {
+      // User cancelled or share not supported — do nothing
+    }
+  }
+
   if (!show) return null;
 
   return (
@@ -78,29 +87,33 @@ export function InstallPrompt() {
       <CardHeader className="pb-3">
         <CardTitle className="text-sm text-[--sage] flex items-center gap-2">
           <PlusSquare className="h-4 w-4" />
-          Add to Home Screen
+          Agregar a la pantalla de inicio
         </CardTitle>
         <CardDescription className="text-xs text-[--ink-mid]">
-          {isIos ? (
-            <>
-              Tap <Share className="inline h-3 w-3 mb-0.5 mx-0.5" /> then{' '}
-              <strong>&ldquo;Add to Home Screen&rdquo;</strong> for a faster, full-screen experience.
-            </>
-          ) : (
-            'Install the app for a faster, full-screen experience.'
-          )}
+          {isIos
+            ? 'Instala la app para una experiencia más rápida y en pantalla completa.'
+            : 'Instala la app para una experiencia más rápida y en pantalla completa.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex gap-2">
-          {!isIos && (
+          {isIos ? (
+            <Button
+              size="sm"
+              onClick={handleIOSShare}
+              className="bg-[--sage] hover:bg-[--sage-mid] text-white"
+            >
+              <Share className="h-4 w-4 mr-2" />
+              Compartir / Agregar
+            </Button>
+          ) : (
             <Button
               size="sm"
               onClick={handleInstall}
               className="bg-[--sage] hover:bg-[--sage-mid] text-white"
             >
               <PlusSquare className="h-4 w-4 mr-2" />
-              Install
+              Instalar
             </Button>
           )}
           <Button
@@ -109,7 +122,7 @@ export function InstallPrompt() {
             onClick={dismiss}
             className="text-[--sage] hover:bg-[--sage-light]"
           >
-            {isIos ? 'Got it' : 'Maybe Later'}
+            Ahora no
           </Button>
         </div>
       </CardContent>
