@@ -490,9 +490,13 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       isMediaPage ? "mx-auto py-8 container px-4 space-y-10 relative" : "fixed inset-0 pointer-events-none z-[60]"
     )}>
       {/* 1. PERSISTENT PLAYER BOX (Strategically isolated for DOM stability) */}
-      <div 
+      <div
         className={cn(
-          "transition-all duration-300 transform",
+          "transform",
+          // Only animate when the PIP is actually supposed to be visible.
+          // If nothing is playing and the user tabs away, skip the transition so
+          // the div doesn't flash as a floating overlay for 300 ms before hiding.
+          (isMediaPage || shouldShowLivestreamPip) && "transition-all duration-300",
           isMediaPage
             ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl relative aspect-video"
             : cn(
