@@ -15,6 +15,7 @@ import { AdminUpload } from "./pages/AdminUpload";
 import { Bible } from "./pages/Bible";
 import { NotificationSettings } from "./notifications/NotificationSettings";
 import { PushNotificationPrompt } from "./PushNotificationPrompt";
+import { InstallPrompt } from "./InstallPrompt";
 import { useNotificationChecker } from "../hooks/useNotificationChecker";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../contexts/ThemeContext";
@@ -168,7 +169,8 @@ export function AppInner() {
           {currentPage === "newHere" && <NewHere onNavigate={handleNavigate} />}
           {currentPage === "notifications" && <NotificationSettings />}
         </main>
-        <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-[60]">
+        <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-[60] flex flex-col gap-2">
+          <InstallPrompt />
           <PushNotificationPrompt />
         </div>
         <Toaster />
