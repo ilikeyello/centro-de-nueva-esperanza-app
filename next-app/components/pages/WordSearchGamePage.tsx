@@ -118,21 +118,117 @@ export function WordSearchGamePage() {
       setSelectedStart(null);
       setFoundSegments([]);
 
-      const langParam = language === "es" ? "es" : "en";
-      const res = await fetch(`${base}/games/wordsearch/puzzle/${encodeURIComponent(levelId)}?lang=${langParam}`, {
-        cache: "no-store",
-      });
+      const level = levels.find(l => l.id === levelId);
+      if (!level) throw new Error("Level not found");
 
-      const data: PuzzleResult = await res.json();
-
-      if (!res.ok || data.error || !data.level || !data.grid || !data.words) {
-        throw new Error(data.error || "Failed to load puzzle");
+      const rawWords = (language === "es" 
+        ? level.words?.map(w => w.word_es || w.word_en)
+        : level.words?.map(w => w.word_en)
+      ) || [];
+      const validWords = rawWords.filter((w): w is string => !!w && w.length > 0);
+      
+      if (validWords.length === 0) {
+        throw new Error("No words available in this level yet.");
       }
 
-      setPuzzle(data);
+      // Sort words by length descending (longest first helps pack them deeply)
+      validWords.sort((a, b) => b.length - a.length);
+
+      let currentRows = level.rows;
+      let currentCols = level.cols;
+      let placedWords: string[] = [];
+      let finalGrid: string[][] = [];
+
+      let successfullyBuilt = false;
+      
+      // Dynamic grid expansion loop. Try up to 15 times to expand the grid until it fits all words.
+      for (let expansionAttempt = 0; expansionAttempt < 15 && !successfullyBuilt; expansionAttempt++) {
+        placedWords = [];
+        const gridChars: string[][] = Array(currentRows).fill(null).map(() => Array(currentCols).fill('_'));
+        
+        let allWordsPlaced = true;
+
+        for (const word of validWords) {
+          const directions = [
+            { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: -1, dc: 1 },
+            { dr: 0, dc: -1 }, { dr: -1, dc: 0 }, { dr: -1, dc: -1 }, { dr: 1, dc: -1 },
+          ].sort(() => Math.random() - 0.5);
+
+          let placed = false;
+          // Substantial attempt per word to ensure perfect overlap alignment
+          for (let attempt = 0; attempt < 5000 && !placed; attempt++) {
+            const direction = directions[attempt % directions.length];
+            const startRow = Math.floor(Math.random() * currentRows);
+            const startCol = Math.floor(Math.random() * currentCols);
+
+            const endRow = startRow + direction.dr * (word.length - 1);
+            const endCol = startCol + direction.dc * (word.length - 1);
+
+            if (endRow >= 0 && endRow < currentRows && endCol >= 0 && endCol < currentCols) {
+              let canPlace = true;
+              for (let i = 0; i < word.length; i++) {
+                const r = startRow + direction.dr * i;
+                const c = startCol + direction.dc * i;
+                if (gridChars[r][c] !== '_' && gridChars[r][c] !== word[i]) {
+                  canPlace = false;
+                  break;
+                }
+              }
+
+              if (canPlace) {
+                for (let i = 0; i < word.length; i++) {
+                  const r = startRow + direction.dr * i;
+                  const c = startCol + direction.dc * i;
+                  gridChars[r][c] = word[i];
+                }
+                placed = true;
+                placedWords.push(word);
+              }
+            }
+          }
+
+          if (!placed) {
+            allWordsPlaced = false;
+            break; // Failed to place this word. 
+          }
+        }
+
+        if (allWordsPlaced) {
+          successfullyBuilt = true;
+          finalGrid = gridChars;
+        } else {
+          // Dynamically expand grid to accommodate dense / 15-word puzzles in 7x7 boundaries
+          currentRows++;
+          currentCols++;
+        }
+      }
+
+      if (!successfullyBuilt) {
+         throw new Error("Could not fit all words even after heavily expanding the grid!");
+      }
+
+      const grid = finalGrid.map(row => 
+        row.map(char => 
+          char === '_' ? String.fromCharCode(65 + Math.floor(Math.random() * 26)) : char
+        ).join('')
+      );
+
+      const generatedPuzzle: PuzzleResult = {
+        level: {
+          id: level.id,
+          name: level.name,
+          description: level.description,
+          rows: currentRows,
+          cols: currentCols
+        },
+        words: placedWords,
+        grid: grid
+      };
+
+      setPuzzle(generatedPuzzle);
       snapToTop();
-    } catch {
-      setError(t("Failed to load puzzle.", "Error al cargar el rompecabezas."));
+    } catch (err: any) {
+      setError(err?.message || t("Failed to load puzzle.", "Error al cargar el rompecabezas."));
     } finally {
       setLoadingPuzzle(false);
     }

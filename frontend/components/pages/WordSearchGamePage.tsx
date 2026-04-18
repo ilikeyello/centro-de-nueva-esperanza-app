@@ -154,38 +154,45 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         throw new Error("No words available in this level yet.");
       }
         
-        // 1. Initialize grid with placeholders
-        const gridChars: string[][] = Array(level.rows).fill(null).map(() => Array(level.cols).fill('_'));
+      // Sort words by length descending to place longest words first (heuristic for denser fitting)
+      validWords.sort((a, b) => b!.length - a!.length);
 
-        // 2. Place words with conflict checking
-        const placedWords: string[] = [];
+      let currentRows = level.rows;
+      let currentCols = level.cols;
+      let placedWords: string[] = [];
+      let finalGrid: string[][] = [];
+
+      let successfullyBuilt = false;
+      
+      // Dynamic grid expansion loop. Try up to 15 times to expand the grid.
+      for (let expansionAttempt = 0; expansionAttempt < 15 && !successfullyBuilt; expansionAttempt++) {
+        placedWords = [];
+        const gridChars: string[][] = Array(currentRows).fill(null).map(() => Array(currentCols).fill('_'));
         
-        words.forEach((word) => {
-          if (!word) return;
+        let allWordsPlaced = true;
+
+        for (const word of validWords) {
+          if (!word) continue;
 
           const directions = [
             { dr: 0, dc: 1 }, { dr: 1, dc: 0 }, { dr: 1, dc: 1 }, { dr: -1, dc: 1 },
             { dr: 0, dc: -1 }, { dr: -1, dc: 0 }, { dr: -1, dc: -1 }, { dr: 1, dc: -1 },
-          ].sort(() => Math.random() - 0.5); // Randomize directions
+          ].sort(() => Math.random() - 0.5);
 
           let placed = false;
-          // Substantially increase the number of attempts from 100 to 5000 
-          // to give the algorithm enough time to find a valid intersecting match or empty slot
-          // for dense levels with 15+ words.
           for (let attempt = 0; attempt < 5000 && !placed; attempt++) {
             const direction = directions[attempt % directions.length];
-            const startRow = Math.floor(Math.random() * level.rows);
-            const startCol = Math.floor(Math.random() * level.cols);
+            const startRow = Math.floor(Math.random() * currentRows);
+            const startCol = Math.floor(Math.random() * currentCols);
 
             const endRow = startRow + direction.dr * (word.length - 1);
             const endCol = startCol + direction.dc * (word.length - 1);
 
-            if (endRow >= 0 && endRow < level.rows && endCol >= 0 && endCol < level.cols) {
+            if (endRow >= 0 && endRow < currentRows && endCol >= 0 && endCol < currentCols) {
               let canPlace = true;
               for (let i = 0; i < word.length; i++) {
                 const r = startRow + direction.dr * i;
                 const c = startCol + direction.dc * i;
-                // Allow overlapping if the letter is the exact same.
                 if (gridChars[r][c] !== '_' && gridChars[r][c] !== word[i]) {
                   canPlace = false;
                   break;
@@ -203,30 +210,48 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
               }
             }
           }
-        });
 
-        // 3. Fill remaining placeholders with random letters
-        const grid = gridChars.map(row => 
-          row.map(char => 
-            char === '_' ? String.fromCharCode(65 + Math.floor(Math.random() * 26)) : char
-          ).join('')
-        );
-        
-        
-        const generatedPuzzle: PuzzleResult = {
-          level: {
-            id: level.id,
-            name: language === 'es' ? level.name_es : level.name_en,
-            description: language === 'es' ? level.description_es : level.description_en,
-            rows: level.rows,
-            cols: level.cols
-          },
-          words: placedWords,
-          grid: grid
-        };
-        
-        setPuzzle(generatedPuzzle);
-        snapToTop();
+          if (!placed) {
+            allWordsPlaced = false;
+            break; // Stop attempting other words in this grid size, it failed.
+          }
+        }
+
+        if (allWordsPlaced) {
+          successfullyBuilt = true;
+          finalGrid = gridChars;
+        } else {
+          // If we couldn't place all words, expand the grid size by 1 horizontally and vertically
+          currentRows++;
+          currentCols++;
+        }
+      }
+
+      if (!successfullyBuilt) {
+         throw new Error("Could not fit all words even after expanding the grid! Grid is too small.");
+      }
+
+      // Fill remaining placeholders
+      const grid = finalGrid.map(row => 
+        row.map(char => 
+          char === '_' ? String.fromCharCode(65 + Math.floor(Math.random() * 26)) : char
+        ).join('')
+      );
+      
+      const generatedPuzzle: PuzzleResult = {
+        level: {
+          id: level.id,
+          name: language === 'es' ? level.name_es : level.name_en,
+          description: language === 'es' ? level.description_es : level.description_en,
+          rows: currentRows,
+          cols: currentCols
+        },
+        words: placedWords,
+        grid: grid
+      };
+      
+      setPuzzle(generatedPuzzle);
+      snapToTop();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("Failed to load puzzle.", "Error al cargar el rompecabezas."));
     } finally {
