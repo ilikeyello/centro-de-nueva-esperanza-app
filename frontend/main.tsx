@@ -3,6 +3,18 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
+// Capture the install prompt before React mounts — the event fires early
+// and a useEffect listener would miss it.
+declare global {
+  interface Window {
+    __installPromptEvent?: Event;
+  }
+}
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  window.__installPromptEvent = e;
+});
+
 // Scroll to top on page load
 if (typeof window !== 'undefined') {
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });

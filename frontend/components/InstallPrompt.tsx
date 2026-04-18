@@ -29,8 +29,10 @@ export function InstallPrompt() {
   const [isIos, setIsIos] = useState(false);
 
   useEffect(() => {
+    // Don't show if already installed as PWA
     if (isInStandaloneMode()) return;
 
+    // Don't show if user dismissed recently
     const dismissedAt = localStorage.getItem(STORAGE_KEY);
     if (dismissedAt) {
       const daysSince = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
@@ -43,6 +45,15 @@ export function InstallPrompt() {
       return;
     }
 
+    // Pick up the event captured globally before React mounted
+    const captured = window.__installPromptEvent as BeforeInstallPromptEvent | undefined;
+    if (captured) {
+      setDeferredPrompt(captured);
+      setShow(true);
+      return;
+    }
+
+    // Fallback: listen in case the event fires after mount
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -90,9 +101,7 @@ export function InstallPrompt() {
           Agregar a la pantalla de inicio
         </CardTitle>
         <CardDescription className="text-xs text-[--ink-mid]">
-          {isIos
-            ? 'Instala la app para una experiencia más rápida y en pantalla completa.'
-            : 'Instala la app para una experiencia más rápida y en pantalla completa.'}
+          Instala la app para una experiencia más rápida y en pantalla completa.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
