@@ -480,16 +480,16 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row gap-4 px-3 pb-3 min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row gap-3 px-3 pb-3 min-h-0 overflow-hidden">
         {/* Grid Area */}
-        <div className="flex-1 flex items-center justify-center min-h-0 relative">
-          <div className="relative w-full max-w-[90vw] md:max-w-md mx-auto" style={{ aspectRatio: '1/1' }}>
-            <div className="absolute inset-0 w-full h-full">
+        <div className="flex-[2] flex items-center justify-center min-h-0 relative min-w-0 shrink">
+          <div className="relative w-full aspect-square mx-auto max-w-[min(100%,70vh)] max-h-[100%]">
+            <div className="absolute inset-0 aspect-square">
               <div
-                className="absolute inset-0 grid rounded-lg z-10"
+                className="absolute inset-0 grid rounded-lg z-10 p-1"
                 style={{
-                  gridTemplateColumns: `repeat(${puzzle.level.cols}, 1fr)`,
-                  gridTemplateRows: `repeat(${puzzle.level.rows}, 1fr)`,
+                  gridTemplateColumns: `repeat(${puzzle.level.cols}, minmax(0, 1fr))`,
+                  gridTemplateRows: `repeat(${puzzle.level.rows}, minmax(0, 1fr))`,
                   width: '100%',
                   height: '100%'
                 }}
@@ -508,13 +508,14 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                         key={key}
                         type="button"
                         onClick={() => toggleCellSelection(r, c)}
-                        className={`relative flex w-full h-full items-center justify-center text-[clamp(8px,4vw,18px)] font-bold transition-colors ${
+                        className={`relative flex w-full h-full items-center justify-center font-bold transition-colors overflow-hidden ${
                           isSelectedStart
                             ? "border border-green-600 rounded-sm text-white bg-green-100"
                             : "text-[--ink-mid] bg-transparent hover:bg-black/5 rounded-sm"
-                        }`}
+                        } ${isFound ? "text-green-800" : ""}`}
+                        style={{ fontSize: `min(${100 / Math.max(puzzle.level.cols, puzzle.level.rows)}cqw, 20px)` }}
                       >
-                        <span className="relative z-10">{ch}</span>
+                        <span className="relative z-10 w-full text-center leading-none" style={{ fontSize: `clamp(8px, ${60 / Math.max(puzzle.level.cols, puzzle.level.rows)}vw, 24px)` }}>{ch}</span>
                       </button>
                     );
                   })
@@ -549,7 +550,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         </div>
 
         {/* Word List Area */}
-        <div className="w-full md:w-48 flex flex-col min-h-0">
+        <div className="flex-[1] md:w-48 flex flex-col min-h-[min(25vh,200px)] min-h-0 mt-0">
           <h2 className="text-[10px] font-semibold text-[--ink-light] flex items-center gap-2 mb-0.5 uppercase tracking-widest flex-shrink-0">
             <Sparkles className="h-3 w-3" />
             {t("Words", "Palabras")}

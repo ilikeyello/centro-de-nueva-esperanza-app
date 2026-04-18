@@ -423,9 +423,9 @@ export function WordSearchGamePage() {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row gap-0 px-3 pb-3 min-h-0 overflow-hidden">
-        <div className="flex-shrink-0 flex items-center justify-center min-h-0 relative">
-          <div className="relative w-full aspect-square mx-auto max-w-[min(100%,100vh-250px)]">
+      <div className="flex-1 flex flex-col md:flex-row gap-3 px-3 pb-3 min-h-0 overflow-hidden">
+        <div className="flex-[2] flex items-center justify-center min-h-0 relative min-w-0 shrink">
+          <div className="relative w-full aspect-square mx-auto max-w-[min(100%,70vh)] max-h-[100%]">
             <div className="absolute inset-0 aspect-square">
               <svg
                 className="absolute inset-0 z-0 h-full w-full pointer-events-none rounded-lg bg-neutral-900 p-1"
@@ -468,15 +468,16 @@ export function WordSearchGamePage() {
                         key={key}
                         type="button"
                         onClick={() => toggleCellSelection(r, c)}
-                        className={`relative flex w-full h-full items-center justify-center text-[min(3vw,14px)] font-bold transition-colors ${
+                        className={`relative flex w-full h-full items-center justify-center font-bold transition-colors overflow-hidden ${
                           isFound
                             ? "text-white"
                             : isSelectedStart
                             ? "border border-green-400 rounded-sm text-white bg-green-400/20"
                             : "text-neutral-300 hover:text-white"
                         }`}
+                        style={{ fontSize: `min(${100 / Math.max(puzzle.level.cols, puzzle.level.rows)}cqw, 20px)` }}
                       >
-                        <span className="relative z-10">{ch}</span>
+                        <span className="relative z-10 w-full text-center leading-none" style={{ fontSize: `clamp(8px, ${60 / Math.max(puzzle.level.cols, puzzle.level.rows)}vw, 24px)` }}>{ch}</span>
                       </button>
                     );
                   })
@@ -486,7 +487,7 @@ export function WordSearchGamePage() {
           </div>
         </div>
 
-        <div className="flex-1 md:w-48 flex flex-col min-h-0 mt-0">
+        <div className="flex-[1] md:w-48 flex flex-col min-h-[min(25vh,200px)] min-h-0 mt-0">
           <h2 className="text-[10px] font-semibold text-neutral-500 flex items-center gap-2 mb-0.5 uppercase tracking-widest flex-shrink-0">
             <Sparkles className="h-3 w-3" />
             {t("Words", "Palabras")}
