@@ -512,7 +512,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                           isSelectedStart
                             ? "border border-green-600 rounded-sm text-white bg-green-100"
                             : "text-[--ink-mid] bg-transparent hover:bg-black/5 rounded-sm"
-                        } ${isFound ? "text-green-800" : ""}`}
+                        }`}
                         style={{ fontSize: `min(${100 / Math.max(puzzle.level.cols, puzzle.level.rows)}cqw, 20px)` }}
                       >
                         <span className="relative z-10 w-full text-center leading-none" style={{ fontSize: `clamp(8px, ${60 / Math.max(puzzle.level.cols, puzzle.level.rows)}vw, 24px)` }}>{ch}</span>
