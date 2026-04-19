@@ -223,7 +223,7 @@ export function Events() {
                   className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
-              <Button type="submit" className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white">
+              <Button type="submit" className="w-full warm-button-primary border-2 border-[--sage] !text-white">
                 {t("Create Event", "Crear Evento")}
               </Button>
             </form>
@@ -246,7 +246,7 @@ export function Events() {
               <div className="space-y-2 text-sm text-[--ink-mid]">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-[--sage]" />
-                  <span>{new Date(event.eventDate).toLocaleString()}</span>
+                  <span>{new Date(event.eventDate).toLocaleString(language === "en" ? "en-US" : "es-ES", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-[--sage]" />
@@ -267,7 +267,7 @@ export function Events() {
                   setSelectedEvent(event as any);
                   setShowRsvpDialog(true);
                 }}
-                className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white"
+                className="w-full warm-button-primary border-2 border-[--sage] !text-white"
               >
                 {t("RSVP", "Confirmar Asistencia")}
               </Button>
@@ -298,7 +298,7 @@ export function Events() {
                 className="border-[--border-color] bg-surface text-[--ink-dark]"
               />
             </div>
-            <Button type="submit" className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white">
+            <Button type="submit" className="w-full warm-button-primary border-2 border-[--sage] !text-white">
               {t("Confirm RSVP", "Confirmar Asistencia")}
             </Button>
           </form>

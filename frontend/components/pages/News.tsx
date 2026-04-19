@@ -481,19 +481,6 @@ export function News() {
                     type="announcement"
                     priority={announcement.priority}
                   />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-[--ink-light] hover:bg-[--terra-light] hover:text-[--terra]"
-                    onClick={() => {
-                      setAnnouncementToDelete(announcement as any);
-                      setDeletePasscode("");
-                      setDeleteDialogOpen(true);
-                    }}
-                    aria-label={t("Delete announcement", "Eliminar anuncio")}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </div>
               ))}
             </div>
@@ -586,26 +573,13 @@ export function News() {
                           disabled={rsvpedEventIds.has(eventItem.id)}
                           className={cn(
                             rsvpedEventIds.has(eventItem.id)
-                              ? "bg-[--surface-mid] text-[--ink-mid] hover:bg-[--surface-mid]"
-                              : "bg-[--sage] hover:bg-[--sage-mid] text-white"
+                              ? "bg-[--surface-mid] text-[--ink-mid] hover:bg-[--surface-mid] border-2 border-[--surface-mid]"
+                              : "warm-button-primary border-2 border-[--sage] !text-white"
                           )}
                         >
                           {rsvpedEventIds.has(eventItem.id)
                             ? t("You're attending", "Ya confirmaste")
                             : t("RSVP", "Confirmar Asistencia")}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-[--ink-light] hover:bg-[--terra-light] hover:text-[--terra]"
-                          onClick={() => {
-                            setEventToDelete(eventItem as any);
-                            setEventDeletePasscode("");
-                            setEventDeleteDialogOpen(true);
-                          }}
-                          aria-label={t("Delete event", "Eliminar evento")}
-                        >
-                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </>
                     }
@@ -654,7 +628,7 @@ export function News() {
                       className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-[--sage] text-[--ink-dark] hover:bg-[--sage-mid]">
+                  <Button type="submit" className="w-full warm-button-primary border-2 border-[--sage] !text-white">
                     {t("Confirm RSVP", "Confirmar Asistencia")}
                   </Button>
                 </form>

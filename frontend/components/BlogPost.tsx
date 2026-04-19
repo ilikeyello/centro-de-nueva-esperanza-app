@@ -50,7 +50,8 @@ export function BlogPost({
         month: 'long', 
         day: 'numeric',
         hour: eventDate ? '2-digit' : undefined,
-        minute: eventDate ? '2-digit' : undefined
+        minute: eventDate ? '2-digit' : undefined,
+        hour12: true
       }
     );
   };
