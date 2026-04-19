@@ -418,7 +418,7 @@ export function News() {
         return "border-orange-600 bg-orange-950/30";
       case "normal":
       default:
-        return "border-[--border-color] bg-[--surface]/50";
+        return "border-[--border-color] bg-surface/50";
     }
   };
 
@@ -434,7 +434,7 @@ export function News() {
             </h1>
           </div>
           <div className="flex flex-col items-stretch gap-4 md:flex-row md:items-center">
-            <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 border-[--border-color] bg-[--surface] p-1 md:w-auto">
+            <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 border-[--border-color] bg-surface p-1 md:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveTab("announcements")}
@@ -508,7 +508,7 @@ export function News() {
                 }
               }}
             >
-              <DialogContent className="border-[--border-color] bg-[--surface]">
+              <DialogContent className="border-[--border-color] bg-surface">
                 <DialogHeader>
                   <DialogTitle className="text-[--ink-dark]">
                     {t("Delete Announcement", "Eliminar Anuncio")}
@@ -543,7 +543,7 @@ export function News() {
                         setAnnouncementToDelete(null);
                         setDeletePasscode("");
                       }}
-                      className="border-[--border-color] bg-[--surface] text-[--ink-mid] hover:bg-[--surface-mid]"
+                      className="border-[--border-color] bg-surface text-[--ink-mid] hover:bg-[--surface-mid]"
                     >
                       {t("Cancel", "Cancelar")}
                     </Button>
@@ -576,38 +576,40 @@ export function News() {
                     eventDate={eventItem.eventDate}
                     maxAttendees={eventItem.maxAttendees || 0}
                     rsvpCount={eventItem.rsvpCount || 0}
+                    actions={
+                      <>
+                        <Button
+                          onClick={() => {
+                            setSelectedEvent(eventItem as any);
+                            setRsvpDialogOpen(true);
+                          }}
+                          disabled={rsvpedEventIds.has(eventItem.id)}
+                          className={cn(
+                            rsvpedEventIds.has(eventItem.id)
+                              ? "bg-[--surface-mid] text-[--ink-mid] hover:bg-[--surface-mid]"
+                              : "bg-[--sage] hover:bg-[--sage-mid] text-white"
+                          )}
+                        >
+                          {rsvpedEventIds.has(eventItem.id)
+                            ? t("You're attending", "Ya confirmaste")
+                            : t("RSVP", "Confirmar Asistencia")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-[--ink-light] hover:bg-[--terra-light] hover:text-[--terra]"
+                          onClick={() => {
+                            setEventToDelete(eventItem as any);
+                            setEventDeletePasscode("");
+                            setEventDeleteDialogOpen(true);
+                          }}
+                          aria-label={t("Delete event", "Eliminar evento")}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    }
                   />
-                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      onClick={() => {
-                        setSelectedEvent(eventItem as any);
-                        setRsvpDialogOpen(true);
-                      }}
-                      disabled={rsvpedEventIds.has(eventItem.id)}
-                      className={cn(
-                        rsvpedEventIds.has(eventItem.id)
-                          ? "bg-[--surface-mid] text-[--ink-mid] hover:bg-[--surface-mid]"
-                          : "bg-[--sage] hover:bg-[--sage-mid]"
-                      )}
-                    >
-                      {rsvpedEventIds.has(eventItem.id)
-                        ? t("You're attending", "Ya confirmaste")
-                        : t("RSVP", "Confirmar Asistencia")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-[--ink-light] hover:bg-[--terra-light] hover:text-[--terra]"
-                      onClick={() => {
-                        setEventToDelete(eventItem as any);
-                        setEventDeletePasscode("");
-                        setEventDeleteDialogOpen(true);
-                      }}
-                      aria-label={t("Delete event", "Eliminar evento")}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
               ))}
             </div>
@@ -619,7 +621,7 @@ export function News() {
             )}
 
             <Dialog open={rsvpDialogOpen} onOpenChange={setRsvpDialogOpen}>
-              <DialogContent className="border-[--border-color] bg-[--surface]">
+              <DialogContent className="border-[--border-color] bg-surface">
                 <DialogHeader>
                   <DialogTitle className="text-[--ink-dark]">
                     {t("RSVP for Event", "Confirmar Asistencia al Evento")}
@@ -672,7 +674,7 @@ export function News() {
           }
         }}
       >
-        <DialogContent className="border-[--border-color] bg-[--surface]">
+        <DialogContent className="border-[--border-color] bg-surface">
           <DialogHeader>
             <DialogTitle className="text-[--ink-dark]">
               {t("Delete Event", "Eliminar Evento")}
@@ -707,7 +709,7 @@ export function News() {
                   setEventToDelete(null);
                   setEventDeletePasscode("");
                 }}
-                className="border-[--border-color] bg-[--surface] text-[--ink-mid] hover:bg-[--surface-mid]"
+                className="border-[--border-color] bg-surface text-[--ink-mid] hover:bg-[--surface-mid]"
               >
                 {t("Cancel", "Cancelar")}
               </Button>

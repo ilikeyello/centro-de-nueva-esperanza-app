@@ -16,6 +16,7 @@ interface BlogPostProps {
   eventDate?: string;
   maxAttendees?: number;
   rsvpCount?: number;
+  actions?: React.ReactNode;
 }
 
 export function BlogPost({
@@ -33,6 +34,7 @@ export function BlogPost({
   eventDate,
   maxAttendees,
   rsvpCount,
+  actions,
 }: BlogPostProps) {
   const { language, t } = useLanguage();
   
@@ -112,10 +114,12 @@ export function BlogPost({
             </div>
           )}
           
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <time dateTime={date}>{formatDate(date)}</time>
-          </div>
+          {type !== 'event' && (
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              <time dateTime={date}>{formatDate(date)}</time>
+            </div>
+          )}
         </div>
         
         {/* Title */}
@@ -136,6 +140,13 @@ export function BlogPost({
               <User className="h-4 w-4" />
               <span>{t('Posted by', 'Publicado por')} {author}</span>
             </div>
+          </div>
+        )}
+        
+        {/* Actions slot at the bottom */}
+        {actions && (
+          <div className="mt-6 pt-6 border-t border-[--border-color] flex justify-end gap-2">
+            {actions}
           </div>
         )}
       </div>

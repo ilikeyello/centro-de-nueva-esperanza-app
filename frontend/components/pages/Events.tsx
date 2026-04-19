@@ -4,7 +4,7 @@ import { Calendar, MapPin, Users, Plus, X } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
 import type { Event } from "../../hooks/useBackend";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -126,7 +126,7 @@ export function Events() {
               {t("Create Event", "Crear Evento")}
             </button>
           </DialogTrigger>
-          <DialogContent className="border-[--border-color] bg-[--surface] shadow-2xl">
+          <DialogContent className="border-[--border-color] bg-surface shadow-2xl">
             <DialogHeader>
               <DialogTitle className="text-[--ink-dark]">
                 {t("Create New Event", "Crear Nuevo Evento")}
@@ -141,7 +141,7 @@ export function Events() {
                   id="titleEn"
                   name="titleEn"
                   required
-                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                  className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
               <div>
@@ -152,7 +152,7 @@ export function Events() {
                   id="titleEs"
                   name="titleEs"
                   required
-                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                  className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
               <div>
@@ -162,7 +162,7 @@ export function Events() {
                 <Textarea
                   id="descriptionEn"
                   name="descriptionEn"
-                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                  className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
               <div>
@@ -172,7 +172,7 @@ export function Events() {
                 <Textarea
                   id="descriptionEs"
                   name="descriptionEs"
-                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                  className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
               <div>
@@ -184,7 +184,7 @@ export function Events() {
                   name="eventDate"
                   type="datetime-local"
                   required
-                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                  className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
               <div>
@@ -195,7 +195,7 @@ export function Events() {
                   id="location"
                   name="location"
                   required
-                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                  className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
               <div>
@@ -207,7 +207,7 @@ export function Events() {
                   name="maxAttendees"
                   type="number"
                   min="1"
-                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                  className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
               <div>
@@ -220,7 +220,7 @@ export function Events() {
                   type="password"
                   required
                   placeholder={t("Enter a passcode for editing/deleting", "Ingrese una contraseña para editar/eliminar")}
-                  className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                  className="border-[--border-color] bg-surface text-[--ink-dark]"
                 />
               </div>
               <Button type="submit" className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white">
@@ -233,7 +233,7 @@ export function Events() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {eventsData?.events.map((event: Event) => (
-          <Card key={event.id} className="border-[--border-color] bg-[--surface] shadow-sm">
+          <Card key={event.id} className="border-[--border-color] bg-surface shadow-sm">
             <CardHeader>
               <CardTitle className="text-[--ink-dark]">
                 {language === "en" ? event.titleEn : event.titleEs}
@@ -260,22 +260,24 @@ export function Events() {
                   </span>
                 </div>
               </div>
+            </CardContent>
+            <CardFooter className="pt-0">
               <Button
                 onClick={() => {
                   setSelectedEvent(event as any);
                   setShowRsvpDialog(true);
                 }}
-                className="w-full bg-[--sage] hover:bg-[--sage-mid]"
+                className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white"
               >
                 {t("RSVP", "Confirmar Asistencia")}
               </Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         ))}
       </div>
 
       <Dialog open={showRsvpDialog} onOpenChange={setShowRsvpDialog}>
-        <DialogContent className="border-[--border-color] bg-[--surface] shadow-2xl">
+        <DialogContent className="border-[--border-color] bg-surface shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-[--ink-dark]">
               {t("RSVP for Event", "Confirmar Asistencia al Evento")}
@@ -293,7 +295,7 @@ export function Events() {
                 min="1"
                 defaultValue="1"
                 required
-                className="border-[--border-color] bg-[--surface] text-[--ink-dark]"
+                className="border-[--border-color] bg-surface text-[--ink-dark]"
               />
             </div>
             <Button type="submit" className="w-full bg-[--sage] hover:bg-[--sage-mid] text-white">
