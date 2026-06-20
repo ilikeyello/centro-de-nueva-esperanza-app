@@ -1,12 +1,13 @@
 import { Calendar, MapPin, Clock, User, Users } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-// Rich-text editors inject a default near-black inline `color` on body text
-// (e.g. `color: rgba(33,41,50,…)`). Inline colors override the theme, so in
-// dark mode that text stays dark and unreadable. Strip inline colors that are
-// effectively grayscale (the editor's default black/white/gray) so the text
-// follows the `.prose` theme color and flips with light/dark mode. Saturated
-// colors are intentional highlights and are left untouched.
+// Rich-text editors (and pasted content from Word/Docs) inject inline `color`
+// on body text — e.g. a near-black `rgba(33,41,50,…)` or a dark brand color
+// like `rgb(17,32,60)`. Inline colors override the theme, so in dark mode that
+// text stays dark and unreadable. Strip inline colors that are either grayscale
+// (the editor's default black/white/gray) OR simply dark (pasted body text),
+// so the text follows the `.prose` theme color and flips with light/dark mode.
+// Only bright, intentional highlight colors are left untouched.
 function neutralizeDefaultTextColors(html: string): string {
   const parseRgb = (value: string): [number, number, number] | null => {
     const v = value.trim().toLowerCase();
@@ -31,8 +32,12 @@ function neutralizeDefaultTextColors(html: string): string {
     if (!rgb) return match; // keep unknown / named colors
     const [r, g, b] = rgb;
     const saturation = Math.max(r, g, b) - Math.min(r, g, b);
-    // Low saturation == grayscale → drop so the theme color applies.
-    return saturation < 40 ? prefix : match;
+    // Perceived luminance (0–255, Rec. 601).
+    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    // Drop the inline color (so the theme color applies) when it's grayscale
+    // OR dark — both are unreadable on the dark-mode background. Bright,
+    // intentional highlight colors stay.
+    return saturation < 40 || luminance < 80 ? prefix : match;
   });
 }
 
