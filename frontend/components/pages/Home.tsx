@@ -274,12 +274,6 @@ export function Home({ onNavigate }: HomeProps) {
                     </div>
                   )}
                 </div>
-                <p className="mt-3 text-sm text-[--ink-mid] line-clamp-3">
-                  {t(
-                    nextEvent.descriptionEn?.replace(/<[^>]*>?/gm, '') ?? "Join us as we gather together.",
-                    nextEvent.descriptionEs?.replace(/<[^>]*>?/gm, '') ?? "Únete a nosotros mientras nos reunimos."
-                  )}
-                </p>
                 <Button
                   onClick={() => {
                     if (typeof window !== "undefined") {
