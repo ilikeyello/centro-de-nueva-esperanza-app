@@ -89,8 +89,55 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static splash shown instantly while JS loads -->
+      <div id="static-splash">
+        <img src="/cne_logo_transparent.png" alt="Centro de Nueva Esperanza" />
+        <div class="spinner"></div>
+      </div>
+      <style>
+        #static-splash {
+          position: fixed;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 1.5rem;
+          background-color: #FFFFFF;
+          z-index: 9999;
+        }
+        #static-splash img {
+          width: 180px;
+          height: auto;
+          max-width: 80%;
+        }
+        #static-splash .spinner {
+          width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 9999px;
+          border: 2.5px solid rgba(0, 0, 0, 0.05);
+          border-top-color: #3B6D11;
+          animation: splash-spin .9s linear infinite;
+        }
+        @keyframes splash-spin {
+          to { transform: rotate(360deg); }
+        }
+        .dark #static-splash {
+          background-color: #0E1A0B;
+        }
+        .dark #static-splash img {
+          filter: brightness(0) invert(1);
+        }
+        .dark #static-splash .spinner {
+          border: 2.5px solid rgba(255, 255, 255, 0.1);
+          border-top-color: #7EC850;
+        }
+      </style>
+    </div>
     <script>
+      // Safety: remove static splash after 5s even if React fails to mount
+      setTimeout(function(){var s=document.getElementById('static-splash');if(s)s.remove();},5000);
       // Force new service worker to activate immediately
       if('serviceWorker' in navigator){navigator.serviceWorker.getRegistration().then(function(r){if(r&&r.waiting)r.waiting.postMessage({type:'SKIP_WAITING'})});}
     </script>

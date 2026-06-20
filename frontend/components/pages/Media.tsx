@@ -8,17 +8,6 @@ import { useBackend } from "../../hooks/useBackend";
 import { cn } from "@/lib/utils";
 import { YouTubePlayer, extractYouTubeVideoId } from "../YouTubePlayer";
 
-// YouTube livestream detection
-let youtubeAPIReady = false;
-let liveCheckInterval: NodeJS.Timeout | null = null;
-
-declare global {
-  interface Window {
-    onYouTubeIframeAPIReady: () => void;
-    YT: any;
-  }
-}
-
 interface SermonItem {
   id: number;
   title: string;
@@ -72,15 +61,28 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     setHasInteractedWithLivestream,
     isLivestreamPipDismissed: isPipDismissed,
     setLivestreamPipDismissed: setIsPipDismissed,
-    isLivestreamPlaying,
     setIsLivestreamPlaying,
     shouldShowLivestreamPip,
   } = usePlayer();
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
-  const [isStreamPlaying, setIsStreamPlaying] = useState(false);
-  const [isActuallyLive, setIsActuallyLive] = useState(false);
-  const [manualLiveOverride] = useState(false);
-  const playerRef = useRef<any | null>(null);
+
+  // Build a static iframe URL for the livestream. We deliberately skip the
+  // YouTube IFrame JS API here: the API auto-injects `origin=<window.origin>`
+  // into the embed URL, and inside Capacitor that becomes `capacitor://localhost`,
+  // which YouTube rejects for *live* embeds with "Video unavailable. Watch on
+  // YouTube." A plain iframe on youtube-nocookie.com works in WKWebView.
+  const livestreamEmbedSrc = useMemo(() => {
+    if (!livestreamUrl) return "";
+    try {
+      const u = new URL(livestreamUrl);
+      const parts = u.pathname.split("/").filter(Boolean);
+      const videoId = parts[0] === "embed" ? parts[1] : "";
+      if (!videoId) return "";
+      return `https://www.youtube-nocookie.com/embed/${videoId}?playsinline=1&controls=1&modestbranding=1&rel=0`;
+    } catch {
+      return "";
+    }
+  }, [livestreamUrl]);
 
   useEffect(() => {
     const loadSermons = async () => {
@@ -109,153 +111,30 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     loadSermons();
   }, [backend]);
 
+  // Detect first interaction with the livestream iframe so the PIP can pop out
+  // on navigation. Clicks inside an iframe steal focus from the parent window,
+  // which fires `window.blur` — a reliable proxy for "user tapped play".
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!livestreamUrl) return;
+    if (!livestreamIsLive || !livestreamEmbedSrc) return;
+    if (hasInteractedWithLivestream) return;
 
-    const w = window as any;
-    let cancelled = false;
-    let checkInterval: NodeJS.Timeout | null = null;
-
-    const checkIfLive = () => {
-      if (!playerRef.current) return;
-
-      try {
-        const player = playerRef.current;
-        const duration = player.getDuration();
-        const videoData = player.getVideoData();
-
-        // Only consider it live if duration is 0 or NaN (the most reliable indicator).
-        const hasValidVideo = videoData && videoData.video_id;
-        const isLiveDuration = duration === 0 || isNaN(duration);
-
-        setIsActuallyLive(Boolean(hasValidVideo && isLiveDuration));
-      } catch (error) {
-        console.error('Error checking if live:', error);
-        setIsActuallyLive(false);
+    const handleBlur = () => {
+      if (document.activeElement?.tagName === "IFRAME") {
+        setHasInteractedWithLivestream(true);
+        setIsLivestreamPlaying(true);
       }
     };
 
-    const createPlayer = () => {
-      if (cancelled) return;
-      if (!w.YT || !w.YT.Player) return;
-
-      if (playerRef.current && typeof playerRef.current.destroy === "function") {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-
-      const existing = document.getElementById("cne-livestream-player");
-      if (!existing) return;
-
-      let videoId = '';
-      try {
-        const embedUrl = new URL(livestreamUrl);
-        const pathParts = embedUrl.pathname.split('/').filter(Boolean);
-        if (pathParts[0] === 'embed' && pathParts[1]) {
-          videoId = pathParts[1];
-        }
-      } catch {}
-
-      if (!videoId) {
-        console.warn('Could not extract video ID from livestream URL:', livestreamUrl);
-        return;
-      }
-
-      playerRef.current = new w.YT.Player("cne-livestream-player", {
-        videoId,
-        playerVars: {
-          enablejsapi: 1,
-          playsinline: 1,
-          controls: 1,
-          modestbranding: 1,
-          origin: window.location.origin,
-        },
-        events: {
-          onReady: () => {
-            checkIfLive();
-            if (checkInterval) clearInterval(checkInterval);
-            checkInterval = setInterval(() => {
-              checkIfLive();
-
-              // Sync playback state manually to avoid event flakiness.
-              if (playerRef.current && typeof playerRef.current.getPlayerState === "function") {
-                try {
-                  const state = playerRef.current.getPlayerState();
-                  const isPlayingState = state === (w.YT?.PlayerState?.PLAYING ?? 1);
-                  if (isPlayingState !== isLivestreamPlaying) {
-                    setIsLivestreamPlaying(isPlayingState);
-                    setIsStreamPlaying(isPlayingState);
-                  }
-                } catch {
-                  // Ignore player errors during polling.
-                }
-              }
-            }, 5000);
-          },
-          onStateChange: (event: any) => {
-            const YT = w.YT;
-            if (!YT || !YT.PlayerState) return;
-
-            if (event.data === YT.PlayerState.PLAYING) {
-              setIsStreamPlaying(true);
-              setIsLivestreamPlaying(true);
-              setIsActuallyLive(true);
-              setHasInteractedWithLivestream(true);
-            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-              const timeSincePageChange = Date.now() - lastPageChangeRef.current;
-              // Ignore pause blips right around a page transition.
-              if (event.data === YT.PlayerState.PAUSED && timeSincePageChange < 1500) {
-                return;
-              }
-
-              setIsStreamPlaying(false);
-              setIsLivestreamPlaying(false);
-              if (event.data === YT.PlayerState.ENDED) {
-                setIsActuallyLive(false);
-                setHasInteractedWithLivestream(false);
-              }
-            } else if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.CUED) {
-              checkIfLive();
-            }
-          },
-          onError: (event: any) => {
-            console.error('Player error:', event.data);
-            setIsActuallyLive(false);
-          },
-        },
-      });
-    };
-
-    if (w.YT && w.YT.Player) {
-      createPlayer();
-    } else {
-      const prevReady = w.onYouTubeIframeAPIReady;
-      w.onYouTubeIframeAPIReady = () => {
-        if (typeof prevReady === "function") prevReady();
-        createPlayer();
-      };
-
-      const existingScript = document.querySelector(
-        "script[src='https://www.youtube.com/iframe_api']"
-      );
-      if (!existingScript) {
-        const tag = document.createElement("script");
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.body.appendChild(tag);
-      }
-    }
-
-    return () => {
-      cancelled = true;
-      if (checkInterval) clearInterval(checkInterval);
-      if (playerRef.current && typeof playerRef.current.destroy === "function") {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [livestreamUrl]);
+    window.addEventListener("blur", handleBlur);
+    return () => window.removeEventListener("blur", handleBlur);
+  }, [
+    livestreamIsLive,
+    livestreamEmbedSrc,
+    hasInteractedWithLivestream,
+    setHasInteractedWithLivestream,
+    setIsLivestreamPlaying,
+  ]);
 
   const selectedSermon = useMemo(() => {
     if (!Array.isArray(sermons) || sermons.length === 0) return null;
@@ -398,24 +277,6 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     };
   }, [isDesktop, isMediaPage, isPipMinimized]);
 
-  // Create hidden div for YouTube player detection
-  useEffect(() => {
-    if (!livestreamUrl) return;
-
-    // Create hidden div for YouTube player
-    const detectorDiv = document.createElement('div');
-    detectorDiv.id = 'youtube-livestream-detector';
-    detectorDiv.style.display = 'none';
-    document.body.appendChild(detectorDiv);
-
-    return () => {
-      const existingDiv = document.getElementById('youtube-livestream-detector');
-      if (existingDiv) {
-        existingDiv.remove();
-      }
-    };
-  }, [livestreamUrl]);
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     const updateIsDesktop = () => setIsDesktop(window.innerWidth >= 768);
@@ -550,7 +411,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
         )}>
           <div className={cn(
             "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
-            (!livestreamIsLive && !manualLiveOverride && isMediaPage) ? "" : "hidden"
+            (!livestreamIsLive && isMediaPage) ? "" : "hidden"
           )}>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
               {livestreamTitle || t("Livestream", "Transmisión en vivo")}
@@ -562,13 +423,23 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           {/* Stable-height stage: stays sized even while the box above clips to 0
               on minimize, so the iframe is never resized (which would blank it). */}
           <div className={cn("w-full gpu-layer", isMediaPage || isDesktop ? "h-full" : "h-40")}>
-            <div
-              id="cne-livestream-player"
-              className={cn(
-                 "h-full w-full",
-                 (!livestreamIsLive && !manualLiveOverride && isMediaPage) && "invisible"
-              )}
-            />
+            {livestreamEmbedSrc && (
+              <iframe
+                id="cne-livestream-player"
+                src={livestreamEmbedSrc}
+                title={livestreamTitle || "Livestream"}
+                className={cn(
+                  "h-full w-full border-0",
+                  (!livestreamIsLive && isMediaPage) && "invisible"
+                )}
+                // Hide the `capacitor://localhost` referer from YouTube so the
+                // HTML5 player doesn't trip "error 153" (invalid embed origin)
+                // on live broadcasts in WKWebView.
+                referrerPolicy="no-referrer"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            )}
           </div>
         </div>
       </div>
