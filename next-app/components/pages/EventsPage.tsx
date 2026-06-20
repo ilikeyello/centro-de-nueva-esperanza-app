@@ -132,11 +132,13 @@ export function EventsPage() {
             className="rounded-xl border border-neutral-800 bg-neutral-900 overflow-hidden"
           >
             {event.image_url && (
-              <img
-                src={event.image_url}
-                alt={event.title_en || event.title_es}
-                className="max-h-96 w-full object-contain"
-              />
+              <div className="aspect-video overflow-hidden bg-neutral-950/60">
+                <img
+                  src={event.image_url}
+                  alt={event.title_en || event.title_es}
+                  className="h-full w-full object-contain"
+                />
+              </div>
             )}
 
             {/* Event header */}

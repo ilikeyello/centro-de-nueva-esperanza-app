@@ -110,11 +110,11 @@ export function BlogPost({
 
       {/* Header Image */}
       {imageUrl && (
-        <div className="overflow-hidden bg-[--surface-mid]">
+        <div className="aspect-video overflow-hidden bg-[--surface-mid]">
           <img
             src={imageUrl}
             alt={title}
-            className="w-full max-h-[28rem] object-contain"
+            className="w-full h-full object-contain"
           />
         </div>
       )}

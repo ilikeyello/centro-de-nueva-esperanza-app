@@ -507,11 +507,11 @@ export function NewsPage() {
                 </CardHeader>
                 <CardContent>
                   {announcement.imageUrl && (
-                    <div className="mb-3 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
+                    <div className="mb-3 aspect-video overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
                       <img
                         src={announcement.imageUrl}
                         alt={language === "en" ? announcement.titleEn : announcement.titleEs}
-                        className="max-h-96 w-full object-contain"
+                        className="h-full w-full object-contain"
                       />
                     </div>
                   )}
@@ -596,11 +596,11 @@ export function NewsPage() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {eventItem.imageUrl && (
-                        <div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
+                        <div className="aspect-video overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
                           <img
                             src={eventItem.imageUrl}
                             alt={language === "en" ? eventItem.titleEn : eventItem.titleEs}
-                            className="max-h-96 w-full object-contain"
+                            className="h-full w-full object-contain"
                           />
                         </div>
                       )}
