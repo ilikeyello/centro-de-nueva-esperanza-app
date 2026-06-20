@@ -13,7 +13,12 @@ const config: CapacitorConfig = {
       enabled: true,
     },
     SplashScreen: {
-      launchShowDuration: 0,
+      // NOTE: must be > 0. The native iOS plugin treats 0 as "skip showing the
+      // splash entirely" (regardless of launchAutoHide) — this value is only
+      // ever used as that show/no-show gate here, since launchAutoHide:false
+      // means hide() is called manually (in App.tsx) and this duration is
+      // never used as an actual auto-hide timer.
+      launchShowDuration: 3000,
       launchAutoHide: false,
       backgroundColor: '#EAF3DE',
       androidSplashResourceName: 'splash',
