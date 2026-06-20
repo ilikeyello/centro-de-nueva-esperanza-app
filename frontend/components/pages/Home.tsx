@@ -248,6 +248,15 @@ export function Home({ onNavigate }: HomeProps) {
               </div>
             ) : nextEvent ? (
               <>
+                {nextEvent.imageUrl && (
+                  <div className="mt-3 aspect-video overflow-hidden rounded-xl bg-[--surface-mid]">
+                    <img
+                      src={nextEvent.imageUrl}
+                      alt={t(nextEvent.titleEn, nextEvent.titleEs)}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                )}
                 <h3 className="mt-2 serif-heading text-xl font-bold text-[--ink-dark]">
                   {t(nextEvent.titleEn, nextEvent.titleEs)}
                 </h3>
