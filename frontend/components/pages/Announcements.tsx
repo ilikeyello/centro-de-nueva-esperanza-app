@@ -4,7 +4,6 @@ import { Megaphone, Plus, AlertCircle, Info, AlertTriangle, Bell } from "lucide-
 import { useBackend } from "../../hooks/useBackend";
 import type { Announcement } from "../../hooks/useBackend";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { cn } from "@/lib/utils";
 
 export function Announcements() {
   const backend = useBackend();
@@ -86,15 +84,6 @@ export function Announcements() {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "border-[--terra] bg-[--terra-light]";
-      case "normal":
-      default:
-        return "border-[--border-color] bg-[--surface]";
-    }
-  };
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-8">
@@ -209,24 +198,27 @@ export function Announcements() {
 
       <div className="space-y-4">
         {announcementsData?.announcements.map((announcement: Announcement) => (
-          <Card
+          <div
             key={announcement.id}
-            className={cn("border-2", getPriorityColor(announcement.priority))}
+            className="warm-card rounded-2xl"
+            style={{ border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.07)" }}
           >
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="flex items-center gap-2 text-[--ink-dark]">
-                    {getPriorityIcon(announcement.priority)}
-                    {language === "en" ? announcement.titleEn : announcement.titleEs}
-                  </CardTitle>
-                  <p className="mt-1 text-xs text-[--ink-light]">
-                    {new Date(announcement.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
+            {/* Urgent accent bar */}
+            {announcement.priority === "urgent" && (
+              <div className="h-1 w-full rounded-t-2xl" style={{ backgroundColor: "var(--terra)" }} />
+            )}
+            {/* Header */}
+            <div className="px-5 pt-5 pb-3">
+              <div className="flex items-center gap-2 font-semibold text-[--ink-dark]">
+                {getPriorityIcon(announcement.priority)}
+                {language === "en" ? announcement.titleEn : announcement.titleEs}
               </div>
-            </CardHeader>
-            <CardContent>
+              <p className="mt-1 text-xs text-[--ink-light]">
+                {new Date(announcement.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+            {/* Content */}
+            <div className="px-5 pb-5">
               {announcement.imageUrl && (
                 <div className="mb-3 overflow-hidden rounded-lg border border-[--border-color] bg-[--surface-mid]">
                   <img
@@ -239,8 +231,8 @@ export function Announcements() {
               <p className="whitespace-pre-wrap text-[--ink-mid]">
                 {language === "en" ? announcement.contentEn : announcement.contentEs}
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
     </div>

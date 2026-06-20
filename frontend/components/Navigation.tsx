@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Home,
   Megaphone,
@@ -18,9 +18,13 @@ import { cn } from "@/lib/utils";
 interface NavigationProps {
   currentPage: string;
   onNavigate: (page: string) => void;
+  swipePageIndex?: number;   // index of current page in the swipe order (-1 if not in order)
+  swipePageCount?: number;   // total number of swipeable pages
+  /** The active page's scroll container — used for expand/collapse behavior. */
+  scrollContainer?: HTMLElement | null;
 }
 
-export function Navigation({ currentPage, onNavigate }: NavigationProps) {
+export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipePageCount = 5, scrollContainer }: NavigationProps) {
   const { t } = useLanguage();
   const {
     currentTrack: youtubeTrackUrl,
@@ -46,10 +50,96 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   const playerRef = youtubePlayerRef;
   const [playerReady, setPlayerReady] = useState(false);
+  const [playerActuallyPlaying, setPlayerActuallyPlaying] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const lastLayoutIsDesktopRef = useRef<boolean | null>(null);
   const lastPlaylistIdsRef = useRef<string>("");
+  // Captured at touchStart — lets onClick know whether the nav was compact when
+  // the finger came down, so we can block navigation and just expand instead.
+  const wasExpandedAtTouchRef = useRef(true);
+  // Mirror of forceExpanded for the passive scroll handler (avoids stale closure).
+  // Initialized to false; the sync effect below keeps it current.
+  const forceExpandedRef = useRef(false);
+  // Set true for a short window after page navigation so the programmatic
+  // scroll-to-saved-position doesn't trigger nav expansion.
+  const justNavigatedRef = useRef(false);
+
+  // ── Auto-hide nav: compact (icons only) vs expanded (icons + labels) ──────
+  const [navExpanded, setNavExpanded] = useState(true);
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Music player is open AND not minimized → always keep nav expanded
+  const isMusicPlayerOpen = !!youtubeTrackUrl && !isMinimized;
+  const isLivestreamOpen  = shouldShowLivestreamPip && !isLivestreamPipMinimized;
+  const forceExpanded     = isMusicPlayerOpen || isLivestreamOpen;
+
+  const scheduleCollapse = useCallback(() => {
+    if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
+    collapseTimerRef.current = setTimeout(() => {
+      if (!forceExpanded) setNavExpanded(false);
+    }, 3000);
+  }, [forceExpanded]);
+
+  const expandNav = useCallback(() => {
+    setNavExpanded(true);
+    scheduleCollapse();
+  }, [scheduleCollapse]);
+
+  // Force expanded when player is open; schedule collapse when player is minimized/closed
+  const prevForceExpandedRef = useRef(false);
+  useEffect(() => {
+    if (forceExpanded) {
+      setNavExpanded(true);
+      if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
+      prevForceExpandedRef.current = true;
+    } else if (prevForceExpandedRef.current) {
+      // Player just minimized or closed — start the collapse countdown
+      prevForceExpandedRef.current = false;
+      scheduleCollapse();
+    }
+  }, [forceExpanded, scheduleCollapse]);
+
+  // Kick off the initial collapse timer on mount
+  useEffect(() => {
+    scheduleCollapse();
+    return () => { if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep forceExpandedRef in sync so the passive scroll handler can read it.
+  useEffect(() => { forceExpandedRef.current = forceExpanded; }, [forceExpanded]);
+
+  // After a page change, ignore scroll events for 400 ms so the programmatic
+  // scroll-to-saved-position doesn't expand the nav.
+  useEffect(() => {
+    justNavigatedRef.current = true;
+    const t = setTimeout(() => { justNavigatedRef.current = false; }, 400);
+    return () => clearTimeout(t);
+  }, [currentPage]);
+
+  // Scroll-up → expand; scroll-down → collapse immediately.
+  // Listens to the active page's scroll container (per-page pager)
+  // or falls back to window scroll.
+  useEffect(() => {
+    if (isDesktop) return;
+    const target = scrollContainer ?? null;
+    if (!target) return;
+    let lastY = target.scrollTop;
+    const onScroll = () => {
+      const y = target.scrollTop;
+      if (y < lastY - 4 && !justNavigatedRef.current) {
+        expandNav();
+      } else if (y > lastY + 8 && !forceExpandedRef.current) {
+        // Scrolling down — shrink right away, cancel any pending timer.
+        if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
+        setNavExpanded(false);
+      }
+      lastY = y;
+    };
+    target.addEventListener("scroll", onScroll, { passive: true });
+    return () => target.removeEventListener("scroll", onScroll);
+  }, [isDesktop, expandNav, scrollContainer]);
 
   const [desktopPlayerPosition, setDesktopPlayerPosition] = useState({ top: 160, right: 16 });
   const [dragState, setDragState] = useState<{
@@ -86,13 +176,17 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
   };
 
   useEffect(() => {
+    const target = scrollContainer ?? null;
+    const getScrollY = () => target ? target.scrollTop : 0;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(getScrollY() > 20);
     };
     handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    if (target) {
+      target.addEventListener("scroll", handleScroll, { passive: true });
+      return () => target.removeEventListener("scroll", handleScroll);
+    }
+  }, [scrollContainer]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -136,9 +230,12 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       }
       playerRef.current = null;
       setPlayerReady(false);
+      setPlayerActuallyPlaying(false);
       lastPlaylistIdsRef.current = "";
       return;
     }
+    // Reset playing state when track URL changes
+    setPlayerActuallyPlaying(false);
 
     if (layoutChanged && playerRef.current && typeof playerRef.current.destroy === "function") {
       try { playerRef.current.destroy(); } catch {}
@@ -153,6 +250,7 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
       if (!container) return;
 
       playerRef.current = new w.YT.Player("global-music-player", {
+        host: "https://www.youtube-nocookie.com",
         height: "100%",
         width: "100%",
         playerVars: {
@@ -163,9 +261,18 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
         },
         events: {
           onReady: () => setPlayerReady(true),
+          onError: () => {
+            // Video unavailable / embedding disabled — skip to next automatically
+            playNextInQueue();
+            // Still mark as "playing" so overlay clears and doesn't get stuck
+            setPlayerActuallyPlaying(true);
+          },
           onStateChange: (event: any) => {
             const YT = w.YT;
             if (!YT || !YT.PlayerState) return;
+            if (event.data === YT.PlayerState.PLAYING) {
+              setPlayerActuallyPlaying(true);
+            }
             if (event.data === YT.PlayerState.ENDED) {
               playNextInQueue();
             }
@@ -295,28 +402,45 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
   return (
     <nav
-      style={Object.assign(
-        !isDesktop ? { marginBottom: "max(calc(env(safe-area-inset-bottom) + 8px), 12px)" } : {},
-        { 
-          backgroundColor: (isTransparent && isDesktop) ? "transparent" : "var(--surface)",
-          borderColor: (isTransparent && isDesktop) ? "transparent" : "var(--border-color)",
-        }
-      )}
+      onTouchStart={!isDesktop ? () => {
+        // Capture expanded state BEFORE expandNav() so button onClick can see it.
+        wasExpandedAtTouchRef.current = navExpanded;
+        expandNav();
+      } : undefined}
+      style={{
+        ...(!isDesktop ? {
+          bottom: "max(calc(env(safe-area-inset-bottom) + 8px), 12px)",
+          // Always centred — only width animates, so the spring easing is clean
+          left: '50%',
+          right: 'auto',
+          // translateZ(0) pre-promotes the nav to its own GPU compositor layer so that
+          // transforms applied to sibling <main> during swipe don't cause the YouTube
+          // iframe inside this fixed nav to go blank/grey (iOS Safari compositor bug).
+          transform: 'translateX(-50%) translateZ(0)',
+          width: navExpanded ? 'calc(100% - 24px)' : '230px',
+          // Spring cubic-bezier: slight overshoot → bouncy/bubbly feel
+          transition: 'width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease',
+        } : {}),
+        backgroundColor: (isTransparent && isDesktop) ? "transparent" : "var(--surface)",
+        borderColor: (isTransparent && isDesktop) ? "transparent" : "var(--border-color)",
+      }}
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300",
-        "mx-3 rounded-[2rem]",
-        "border shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
-        "md:mx-0 md:rounded-none md:fixed md:bottom-auto md:top-0 md:w-full",
-        isTransparent 
+        "fixed bottom-0 z-50",
+        "rounded-[2rem] border shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
+        "md:left-0 md:right-0 md:mx-0 md:rounded-none md:bottom-auto md:top-0 md:w-full md:transition-all md:duration-300",
+        isTransparent
           ? "md:border-t-0 md:border-x-0 md:border-b-transparent md:shadow-none"
           : "md:border-t-0 md:border-x-0 md:border-b md:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
       )}
     >
-      <div className={cn("container mx-auto py-0")}>
+      <div
+        className={cn("container mx-auto py-0")}
+        style={!isDesktop && !navExpanded ? { paddingLeft: 0, paddingRight: 0 } : undefined}
+      >
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
 
           {/* ===== MOBILE LIVESTREAM PIP (above nav tabs) ===== */}
-          {currentPage !== "media" && !isDesktop && shouldShowLivestreamPip && (
+          {currentPage !== "media" && !isDesktop && shouldShowLivestreamPip && (navExpanded || isLivestreamOpen) && (
             <div className="music-player-dark px-3 pt-1.5 md:hidden">
               {isLivestreamPipMinimized ? (
                 <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
@@ -393,8 +517,16 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
 
           {/* ===== MOBILE MUSIC PLAYER (above nav tabs) ===== */}
           {youtubeTrackUrl && !isDesktop && (
-            <div className="music-player-dark px-3 pt-1.5 md:hidden">
-              {isMinimized ? (
+            <div className={cn(
+              "music-player-dark px-3 md:hidden",
+              // Top padding only when the bar UI is visible; when minimized + the
+              // nav is compact the bar is hidden and the clipped iframe is 0-height.
+              (navExpanded || !isMinimized) && "pt-1.5"
+            )}>
+              {/* Bar UI — hidden when minimized AND the nav is compact, leaving only
+                  the pulsing red dot on the Media icon. The iframe below stays
+                  mounted regardless so the music never stops. */}
+              {(navExpanded || !isMinimized) && (isMinimized ? (
                 <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
                   <div className="min-w-0 flex-1 max-w-[60%]">
                     {titleContent}
@@ -428,18 +560,31 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                     {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-4 w-4" />, "close")}
                   </div>
                 </div>
-              )}
-              {/* Player iframe — always in DOM so music keeps playing when minimized */}
+              ))}
+              {/* Player iframe — always in DOM so music keeps playing when minimized.
+                  Minimize CLIPS this box to 0; the stable-height stage inside keeps
+                  the iframe sized so it isn't resized (resize-to-0 blanks it grey in
+                  WKWebView). */}
               <div
                 className={cn(
-                  "w-full overflow-hidden transition-all",
+                  "relative w-full overflow-hidden transition-all gpu-layer",
                   isMinimized
                     ? "h-0 border-0"
                     : "h-40 rounded-b-2xl border-x border-b border-[--border-color]"
                 )}
                 style={{ backgroundColor: isMinimized ? undefined : "#262626" }}
               >
-                <div id="global-music-player" className="h-full w-full" />
+                <div className="relative h-40 w-full gpu-layer">
+                  {/* Loading overlay — shows only until the player is ready.
+                      Using playerReady (not playerActuallyPlaying) so the overlay clears
+                      once YouTube initializes, even if autoplay is blocked on iOS. */}
+                  {!playerReady && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#262626]">
+                      <div className="h-6 w-6 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+                    </div>
+                  )}
+                  <div id="global-music-player" className="h-full w-full" />
+                </div>
               </div>
             </div>
           )}
@@ -504,38 +649,97 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
           )}
 
           {/* ===== NAV TABS ===== */}
-          <div id="mobile-nav-tabs" className="flex w-full items-center justify-between gap-1 px-3 py-3 md:justify-center md:gap-2 md:py-2">
+          <div
+            id="mobile-nav-tabs"
+            className="relative flex w-full items-center justify-between md:justify-center md:gap-2 md:py-2"
+            style={{
+              padding: isDesktop ? undefined : navExpanded ? '8px 12px' : '5px 4px',
+              transition: 'padding 0.25s ease',
+            }}
+          >
+            {/* Sliding active-tab background pill — animates between tabs */}
+            {!isDesktop && swipePageIndex >= 0 && (() => {
+              // Horizontal padding of the tabs row changes between expanded/compact modes.
+              // The pill must sit inside the padding, not over it.
+              const padH = navExpanded ? 12 : 4;
+              return (
+                <div
+                  data-swipe-pill
+                  className="pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full bg-sage/10"
+                  style={{
+                    width: `calc((100% - ${padH * 2}px) / ${swipePageCount})`,
+                    left: `calc(${padH}px + ${swipePageIndex} * (100% - ${padH * 2}px) / ${swipePageCount})`,
+                    height: 'calc(100% - 12px)',
+                    transition: 'left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.25s ease',
+                  }}
+                />
+              );
+            })()}
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPage === item.id;
+              const compact = !isDesktop && !navExpanded;
               return (
                 <button
                   key={item.id}
-                  onClick={() => onNavigate(item.id)}
+                  onClick={() => {
+                    // If the nav was compact when this touch started, the tap's
+                    // purpose was to expand — don't also navigate.
+                    if (!isDesktop && !wasExpandedAtTouchRef.current) {
+                      wasExpandedAtTouchRef.current = true; // reset for next tap
+                      return;
+                    }
+                    onNavigate(item.id);
+                  }}
                   className={cn(
-                    "flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-xl px-2 py-2 text-[0.8rem] font-medium transition-all nav-button",
-                    "md:flex-initial md:flex-row md:gap-2 md:px-4 md:py-2 md:rounded-lg md:text-sm",
-                    isActive
-                      ? cn(
-                          "text-sage bg-sage/10",
-                          "md:text-sage md:bg-sage/15"
-                        )
-                      : cn(
-                          "text-ink-mid hover:text-ink-dark hover:bg-surface-mid",
-                          "md:text-ink-mid md:hover:text-sage md:hover:bg-sage-light"
-                        ),
-                    isTransparent && isActive && "md:text-white md:bg-white/20",
-                    isTransparent && !isActive && "md:text-white/80 md:hover:bg-white/10 md:hover:text-white"
+                    "flex min-w-0 flex-1 items-center justify-center transition-all duration-250 nav-button",
+                    "md:flex-initial md:rounded-lg md:text-sm"
                   )}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="text-xs font-medium whitespace-nowrap md:text-sm">
-                    {t(item.labelEn, item.labelEs)}
-                  </span>
+                  {/* Inner pill — this carries the active highlight so it stays tight around the icon */}
+                  <div
+                    className={cn(
+                      "relative flex flex-col items-center justify-center rounded-xl transition-all duration-250",
+                      "md:flex-row md:gap-2 md:px-4 md:py-2",
+                      // On mobile the sliding indicator div handles the background;
+                      // individual bg only needed on desktop
+                      isActive
+                        ? cn("text-sage", "md:bg-sage/15")
+                        : cn("text-ink-mid", "md:hover:text-sage md:hover:bg-sage-light"),
+                      isTransparent && isActive && "md:text-white md:bg-white/20",
+                      isTransparent && !isActive && "md:text-white/80"
+                    )}
+                    style={{
+                      padding: isDesktop ? undefined : compact ? '5px 7px' : '6px 12px',
+                      gap: isDesktop ? undefined : compact ? '0px' : '4px',
+                      transition: 'padding 0.25s ease, gap 0.25s ease',
+                    }}
+                  >
+                    <div className="relative">
+                      <Icon className={cn("flex-shrink-0 transition-all duration-250", compact ? "h-[18px] w-[18px]" : "h-5 w-5")} />
+                      {/* Red dot on Media icon when miniplayer is active but hidden */}
+                      {item.id === 'media' && compact && (
+                        (!!youtubeTrackUrl && isMinimized) ||
+                        (shouldShowLivestreamPip && isLivestreamPipMinimized)
+                      ) && (
+                        <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_4px_rgba(239,68,68,0.9)]" />
+                      )}
+                    </div>
+                    <span
+                      className="text-xs font-medium whitespace-nowrap overflow-hidden transition-all duration-250"
+                      style={{
+                        maxHeight: compact ? '0px' : '20px',
+                        maxWidth: compact ? '0px' : '80px',
+                        opacity: compact ? 0 : 1,
+                      }}
+                    >
+                      {t(item.labelEn, item.labelEs)}
+                    </span>
+                  </div>
                 </button>
+
               );
             })}
-
           </div>
         </div>
       </div>
@@ -571,7 +775,12 @@ export function Navigation({ currentPage, onNavigate }: NavigationProps) {
                 {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
               </div>
             </div>
-            <div className="mt-2 aspect-video w-full overflow-hidden">
+            <div className="mt-2 aspect-video w-full overflow-hidden relative gpu-layer">
+              {!playerActuallyPlaying && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#262626]">
+                  <div className="h-6 w-6 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+                </div>
+              )}
               <div id="global-music-player" className="h-full w-full" />
             </div>
           </div>

@@ -15,6 +15,7 @@ export function useBackend() {
 export type {
   Sermon,
   Event,
+  RsvpField,
   Announcement,
   PrayerRequest,
   BulletinPost,

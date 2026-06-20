@@ -1,6 +1,41 @@
 import { Calendar, MapPin, Clock, User, Users } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
+// Rich-text editors inject a default near-black inline `color` on body text
+// (e.g. `color: rgba(33,41,50,…)`). Inline colors override the theme, so in
+// dark mode that text stays dark and unreadable. Strip inline colors that are
+// effectively grayscale (the editor's default black/white/gray) so the text
+// follows the `.prose` theme color and flips with light/dark mode. Saturated
+// colors are intentional highlights and are left untouched.
+function neutralizeDefaultTextColors(html: string): string {
+  const parseRgb = (value: string): [number, number, number] | null => {
+    const v = value.trim().toLowerCase();
+    if (v === 'black') return [0, 0, 0];
+    if (v === 'white') return [255, 255, 255];
+    const hex = v.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/);
+    if (hex) {
+      let h = hex[1];
+      if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    }
+    if (v.startsWith('rgb')) {
+      const nums = v.match(/\d+(\.\d+)?/g);
+      if (nums && nums.length >= 3) return [Number(nums[0]), Number(nums[1]), Number(nums[2])];
+    }
+    return null;
+  };
+
+  // The leading delimiter group keeps this from matching `background-color`.
+  return html.replace(/(^|[;\s"'{])color\s*:\s*([^;"']+)/gi, (match, prefix: string, colorValue: string) => {
+    const rgb = parseRgb(colorValue);
+    if (!rgb) return match; // keep unknown / named colors
+    const [r, g, b] = rgb;
+    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+    // Low saturation == grayscale → drop so the theme color applies.
+    return saturation < 40 ? prefix : match;
+  });
+}
+
 interface BlogPostProps {
   id: number;
   titleEn: string;
@@ -56,16 +91,6 @@ export function BlogPost({
     );
   };
 
-  const getPriorityColor = (priority?: string) => {
-    switch (priority) {
-      case 'urgent': return 'border-[--terra] bg-[--terra-light] dark:bg-[--terra-light]';
-      case 'high': return 'border-orange-500 bg-orange-50 dark:bg-orange-950/20';
-      case 'normal': return 'border-blue-500 bg-blue-50 dark:bg-blue-950/20';
-      case 'low': return 'border-gray-500 bg-gray-50 dark:bg-gray-950/20';
-      default: return 'border-[--sage] bg-[--surface]';
-    }
-  };
-
   const getTypeLabel = () => {
     if (type === 'event') {
       return t('Event', 'Evento');
@@ -74,7 +99,15 @@ export function BlogPost({
   };
 
   return (
-    <article className={`border-l-4 ${getPriorityColor(priority)} rounded-r-lg shadow-md overflow-hidden transition-all hover:shadow-lg`}>
+    <article
+      className="warm-card rounded-2xl overflow-hidden transition-all hover:shadow-lg"
+      style={{ border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.07)" }}
+    >
+      {/* Urgent accent bar */}
+      {priority === 'urgent' && (
+        <div className="h-1 w-full" style={{ backgroundColor: "var(--terra)" }} />
+      )}
+
       {/* Header Image */}
       {imageUrl && (
         <div className="aspect-video overflow-hidden bg-[--surface-mid]">
@@ -85,7 +118,7 @@ export function BlogPost({
           />
         </div>
       )}
-      
+
       {/* Content */}
       <div className="p-6 md:p-8">
         {/* Meta Information */}
@@ -131,7 +164,7 @@ export function BlogPost({
         {/* Content */}
         <div 
           className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-[--sage] prose-a:text-[--sage] hover:prose-a:text-[--sage-mid] prose-strong:text-[--ink-dark]"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: neutralizeDefaultTextColors(content) }}
         />
         
         {/* Author */}

@@ -84,7 +84,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
     try {
       setLoadingLevels(true);
       setError(null);
-      
+
       const { data, error } = await supabase
         .from('word_search_levels')
         .select('*, word_search_words(id, word_en, word_es)')
@@ -92,12 +92,12 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       const formattedData = data?.map(d => ({
         ...d,
         words: d.word_search_words || []
       })) || [];
-      
+
       setLevels(formattedData);
     } catch (err) {
       console.error(err);
@@ -144,16 +144,16 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       if (!level) throw new Error("Level not found");
 
       // Use the local algorithmic matrix generator with Supabase words
-      const words = (language === "es" 
+      const words = (language === "es"
         ? level.words?.map(w => w.word_es || w.word_en)
         : level.words?.map(w => w.word_en)
       ) || [];
       const validWords = words.filter(w => w && w.length > 0);
-      
+
       if (validWords.length === 0) {
         throw new Error("No words available in this level yet.");
       }
-        
+
       // Sort words by length descending to place longest words first (heuristic for denser fitting)
       validWords.sort((a, b) => b!.length - a!.length);
 
@@ -163,12 +163,12 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       let finalGrid: string[][] = [];
 
       let successfullyBuilt = false;
-      
+
       // Dynamic grid expansion loop. Try up to 15 times to expand the grid.
       for (let expansionAttempt = 0; expansionAttempt < 15 && !successfullyBuilt; expansionAttempt++) {
         placedWords = [];
         const gridChars: string[][] = Array(currentRows).fill(null).map(() => Array(currentCols).fill('_'));
-        
+
         let allWordsPlaced = true;
 
         for (const word of validWords) {
@@ -228,16 +228,16 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
       }
 
       if (!successfullyBuilt) {
-         throw new Error("Could not fit all words even after expanding the grid! Grid is too small.");
+        throw new Error("Could not fit all words even after expanding the grid! Grid is too small.");
       }
 
       // Fill remaining placeholders
-      const grid = finalGrid.map(row => 
-        row.map(char => 
+      const grid = finalGrid.map(row =>
+        row.map(char =>
           char === '_' ? String.fromCharCode(65 + Math.floor(Math.random() * 26)) : char
         ).join('')
       );
-      
+
       const generatedPuzzle: PuzzleResult = {
         level: {
           id: level.id,
@@ -249,7 +249,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         words: placedWords,
         grid: grid
       };
-      
+
       setPuzzle(generatedPuzzle);
       snapToTop();
     } catch (err) {
@@ -447,7 +447,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
   // Found word segments are now rendered via a unified SVG overlay,
   // ensuring continuous lines and perfect alignment.
 
-  
+
   return (
     <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-[--background] overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header - Condensed - Moved higher */}
@@ -508,11 +508,10 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                         key={key}
                         type="button"
                         onClick={() => toggleCellSelection(r, c)}
-                        className={`relative flex w-full h-full items-center justify-center font-bold transition-colors overflow-hidden ${
-                          isSelectedStart
+                        className={`relative flex w-full h-full items-center justify-center font-bold transition-colors overflow-hidden ${isSelectedStart
                             ? "border border-green-600 rounded-sm text-white bg-green-100"
                             : "text-[--ink-mid] bg-transparent hover:bg-black/5 rounded-sm"
-                        }`}
+                          }`}
                         style={{ fontSize: `min(${100 / Math.max(puzzle.level.cols, puzzle.level.rows)}cqw, 20px)` }}
                       >
                         <span className="relative z-10 w-full text-center leading-none" style={{ fontSize: `clamp(8px, ${60 / Math.max(puzzle.level.cols, puzzle.level.rows)}vw, 24px)` }}>{ch}</span>
@@ -521,7 +520,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                   })
                 )}
               </div>
-              
+
               {/* SVG Overlay for Found Words - on top */}
               <svg
                 className="absolute inset-0 z-20 h-full w-full pointer-events-none"
@@ -563,14 +562,12 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                 return (
                   <div
                     key={upper}
-                    className={`flex items-center gap-1.5 p-1 rounded transition-colors ${
-                      isFound ? "bg-green-100 text-green-800" : "text-[--ink-mid]"
-                    }`}
+                    className={`flex items-center gap-1.5 p-1 rounded transition-colors ${isFound ? "bg-green-100 text-green-800" : "text-[--ink-mid]"
+                      }`}
                   >
                     <div
-                      className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${
-                        isFound ? "bg-green-600" : "bg-[--ink-light]"
-                      }`}
+                      className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isFound ? "bg-green-600" : "bg-[--ink-light]"
+                        }`}
                     />
                     <span className={`truncate tracking-tight ${isFound ? "line-through opacity-50" : ""}`}>{upper}</span>
                   </div>

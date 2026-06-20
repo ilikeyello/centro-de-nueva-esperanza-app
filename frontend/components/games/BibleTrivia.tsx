@@ -349,7 +349,7 @@ export function BibleTrivia({ onBack }: { onBack?: () => void }) {
                                   </div>
                                   <Button
                                     onClick={startGame}
-                                    className="bg-[--sage] hover:bg-[--sage-mid]"
+                                    className="bg-[--sage] hover:bg-[--sage-mid] text-white"
                                     disabled={questionCount === 0}
                                   >
                                     <Play className="mr-2 h-4 w-4" />

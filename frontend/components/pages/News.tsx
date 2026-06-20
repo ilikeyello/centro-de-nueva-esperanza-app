@@ -14,42 +14,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { BlogPost } from "../BlogPost";
-
-const API_BASE =
-  import.meta.env.VITE_CLIENT_TARGET ??
-  (import.meta.env.DEV ? "http://localhost:4000" : "https://prod-cne-sh82.encr.app");
+import { RsvpCustomFields, firstMissingRequired, type RsvpResponses } from "../RsvpCustomFields";
 
 const RSVP_PARTICIPANT_ID_KEY = "cne-event-participant-id";
 const RSVP_EVENTS_KEY = "cne-rsvped-event-ids";
 const RSVP_NAME_KEY = "cne-rsvp-name";
 const NEWS_DEFAULT_TAB_KEY = "cne-news-default-tab";
-
-const postEventRsvp = async (data: {
-  eventId: number;
-  attendees: number;
-  participantId?: string | null;
-  name?: string | null;
-}) => {
-  const response = await fetch(`${API_BASE}/events/${data.eventId}/rsvp`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({
-      attendees: data.attendees,
-      participantId: data.participantId ?? null,
-      name: data.name ?? null,
-    }),
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to submit RSVP");
-  }
-
-  return response.json();
-};
 
 export function News() {
   const backend = useBackend();
@@ -78,6 +48,7 @@ export function News() {
   const [rsvpParticipantId, setRsvpParticipantId] = useState<string | null>(null);
   const [rsvpedEventIds, setRsvpedEventIds] = useState<Set<number>>(() => new Set());
   const [rsvpName, setRsvpName] = useState("");
+  const [rsvpResponses, setRsvpResponses] = useState<RsvpResponses>({});
   const [activeTab, setActiveTab] = useState<"announcements" | "events">(() => {
     if (typeof window !== "undefined") {
       const hash = window.location.hash;
@@ -129,6 +100,20 @@ export function News() {
     }
 
     window.localStorage.removeItem(NEWS_DEFAULT_TAB_KEY);
+  }, []);
+
+  // The News page is always mounted (horizontal pager), so the initial-state
+  // tab selection above only runs at app startup. Listen for a runtime request
+  // (e.g. the "See Details" button on Home) to switch tabs after mount.
+  useEffect(() => {
+    const handleSetTab: EventListener = (event) => {
+      const detail = (event as unknown as CustomEvent<string>).detail;
+      if (detail === "events" || detail === "announcements") {
+        setActiveTab(detail);
+      }
+    };
+    window.addEventListener("cne-set-news-tab", handleSetTab);
+    return () => window.removeEventListener("cne-set-news-tab", handleSetTab);
   }, []);
 
   const ensureParticipantId = () => {
@@ -286,7 +271,20 @@ export function News() {
   });
 
   const rsvpForEvent = useMutation({
-    mutationFn: postEventRsvp,
+    mutationFn: (data: {
+      eventId: number;
+      attendees: number;
+      participantId?: string | null;
+      name?: string | null;
+      responses?: RsvpResponses;
+    }) =>
+      backend.createRsvp({
+        eventId: data.eventId,
+        userName: data.name,
+        attendees: data.attendees,
+        userId: data.participantId,
+        responses: data.responses,
+      }),
     onSuccess: (_, variables) => {
       setRsvpedEventIds((previous) => {
         const updated = new Set(previous);
@@ -382,11 +380,24 @@ export function News() {
     e.preventDefault();
     if (!selectedEvent) return;
     const formData = new FormData(e.currentTarget);
+
+    const fields = selectedEvent.rsvpFields ?? [];
+    const missing = firstMissingRequired(fields, rsvpResponses);
+    if (missing) {
+      toast({
+        title: t("Missing information", "Falta información"),
+        description: t(`Please answer: ${missing}`, `Por favor responde: ${missing}`),
+        variant: "destructive",
+      });
+      return;
+    }
+
     rsvpForEvent.mutate({
       eventId: selectedEvent.id,
       attendees: parseInt(formData.get("attendees") as string) || 1,
       participantId: ensureParticipantId(),
       name: rsvpName.trim().length > 0 ? rsvpName.trim() : null,
+      responses: rsvpResponses,
     });
   };
 
@@ -557,6 +568,7 @@ export function News() {
                     titleEs={eventItem.titleEs}
                     contentEn={eventItem.descriptionEn || ''}
                     contentEs={eventItem.descriptionEs || ''}
+                    imageUrl={eventItem.imageUrl}
                     date={eventItem.createdAt}
                     location={eventItem.location}
                     type="event"
@@ -568,6 +580,7 @@ export function News() {
                         <Button
                           onClick={() => {
                             setSelectedEvent(eventItem as any);
+                            setRsvpResponses({});
                             setRsvpDialogOpen(true);
                           }}
                           disabled={rsvpedEventIds.has(eventItem.id)}
@@ -628,6 +641,13 @@ export function News() {
                       className="border-[--border-color] bg-[--surface-mid] text-[--ink-dark]"
                     />
                   </div>
+                  <RsvpCustomFields
+                    fields={selectedEvent?.rsvpFields ?? []}
+                    values={rsvpResponses}
+                    onChange={(key, value) =>
+                      setRsvpResponses((prev) => ({ ...prev, [key]: value }))
+                    }
+                  />
                   <Button type="submit" className="w-full warm-button-primary border-2 border-[--sage] !text-white">
                     {t("Confirm RSVP", "Confirmar Asistencia")}
                   </Button>

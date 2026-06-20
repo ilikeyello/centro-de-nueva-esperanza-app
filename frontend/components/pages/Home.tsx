@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { Calendar, DollarSign, Gamepad2, MapPin, Megaphone, Languages, Clock, Users, Car } from "lucide-react";
+import { Calendar, Gamepad2, Heart, MapPin, Megaphone, Languages, Clock, Users } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,11 +83,12 @@ export function Home({ onNavigate }: HomeProps) {
 
   const quickActions = [
     {
-      icon: DollarSign,
+      icon: Heart,
       labelEn: "Support Our Ministry",
       labelEs: "Apoyar el Ministerio",
       page: "donations",
       color: "bg-green-600 hover:bg-green-700",
+      iconClassName: "h-5 w-5 text-[--sage] translate-y-1",
     },
     {
       icon: Megaphone,
@@ -156,7 +157,7 @@ export function Home({ onNavigate }: HomeProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[--sage]/10 via-transparent to-transparent" />
         <div className="absolute inset-0 hero-gradient-blend md:bg-gradient-to-b md:from-black/20 md:via-black/40 md:to-black/60" />
-        <div className="absolute top-20 right-4 md:top-24 z-20">
+        <div className="absolute top-[calc(env(safe-area-inset-top)+56px)] right-4 md:top-24 z-20">
             <button
               type="button"
               onClick={toggleLanguage}
@@ -198,129 +199,202 @@ export function Home({ onNavigate }: HomeProps) {
           </div>
         </div>
       </section>
-      <div className="container mx-auto space-y-12 px-4">
-        {/* What to Expect Section */}
-        <section className="warm-card p-8">
-          <h2 className="mb-6 serif-heading text-3xl font-bold text-[--ink-dark]">
-            {t("What to Expect", "Qué Esperar")}
-          </h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[--sage]/10">
-                <Users className="h-8 w-8 text-[--sage]" />
+      <div className="container mx-auto space-y-10 px-4 -mt-16 relative z-10">
+        {/* Top row: Upcoming Event first in DOM (top on mobile), right column on desktop */}
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Upcoming Event — first in DOM so it's top on mobile; col 3 on desktop */}
+          <section className="warm-card p-6 lg:col-start-3 lg:row-start-1">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage]">
+              {t("Upcoming Event", "Próximo Evento")}
+            </p>
+            {eventsLoading ? (
+              <div className="mt-4 h-24 animate-pulse rounded-xl bg-[--surface-mid]/50" />
+            ) : eventsError ? (
+              <div className="mt-4">
+                <h3 className="text-xl font-semibold text-[--ink-dark]">
+                  {t("Join Us This Sunday!", "¡Únete a Nosotros Este Domingo!")}
+                </h3>
+                <p className="mt-2 text-[--ink-mid]">
+                  {t(
+                    "We gather every week to worship, learn, and grow together.",
+                    "Nos reunimos cada semana para adorar, aprender y crecer juntos."
+                  )}
+                </p>
+                <div className="mt-4 flex flex-col gap-2 text-sm text-[--ink-mid]">
+                  {churchInfo?.address && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-[--sage]" />
+                      <span>{churchInfo.address}</span>
+                    </div>
+                  )}
+                  {churchInfo?.service_times ? (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-[--sage]" />
+                      <span>{churchInfo.service_times}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-[--sage]" />
+                        <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-[--sage]" />
+                        <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-[--ink-dark]">
-                {t("Friendly People", "Gente Amigable")}
-              </h3>
-              <p className="text-[--ink-mid]">
-                {t(
-                  "Join our warm and welcoming community. Come as you are!",
-                  "Únete a nuestra comunidad cálida y acogedora. ¡Ven como estás!"
-                )}
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[--sage]/10">
-                <Clock className="h-8 w-8 text-[--sage]" />
+            ) : nextEvent ? (
+              <>
+                <h3 className="mt-2 serif-heading text-xl font-bold text-[--ink-dark]">
+                  {t(nextEvent.titleEn, nextEvent.titleEs)}
+                </h3>
+                <div className="mt-3 flex flex-col gap-2 text-sm text-[--ink-mid]">
+                  {formattedDate && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-[--sage]" />
+                      <span>{formattedDate}</span>
+                    </div>
+                  )}
+                  {nextEvent.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-[--sage]" />
+                      <span>{nextEvent.location}</span>
+                    </div>
+                  )}
+                </div>
+                <p className="mt-3 text-sm text-[--ink-mid] line-clamp-3">
+                  {t(
+                    nextEvent.descriptionEn?.replace(/<[^>]*>?/gm, '') ?? "Join us as we gather together.",
+                    nextEvent.descriptionEs?.replace(/<[^>]*>?/gm, '') ?? "Únete a nosotros mientras nos reunimos."
+                  )}
+                </p>
+                <Button
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      // News is always mounted, so ask it to switch to the
+                      // events tab via a runtime event (localStorage is only
+                      // read at app startup).
+                      window.localStorage.setItem(NEWS_DEFAULT_TAB_KEY, "events");
+                      window.dispatchEvent(
+                        new CustomEvent("cne-set-news-tab", { detail: "events" })
+                      );
+                    }
+                    onNavigate("news");
+                  }}
+                  className="warm-button-primary mt-4 w-full px-4 py-2"
+                >
+                  {t("See Details", "Ver detalles")}
+                </Button>
+              </>
+            ) : (
+              <div className="mt-4">
+                <h3 className="text-xl font-semibold text-[--ink-dark]">
+                  {t("Join Us This Sunday!", "¡Únete a Nosotros Este Domingo!")}
+                </h3>
+                <p className="mt-2 text-[--ink-mid]">
+                  {t(
+                    "We gather every week to worship, learn, and grow together.",
+                    "Nos reunimos cada semana para adorar, aprender y crecer juntos."
+                  )}
+                </p>
+                <div className="mt-4 flex flex-col gap-2 text-sm text-[--ink-mid]">
+                  {churchInfo?.address && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-[--sage]" />
+                      <span>{churchInfo.address}</span>
+                    </div>
+                  )}
+                  {churchInfo?.service_times ? (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-[--sage]" />
+                      <span>{churchInfo.service_times}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-[--sage]" />
+                        <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-[--sage]" />
+                        <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-[--ink-dark]">
-                {t("One Hour Service", "Servicio de Una Hora")}
-              </h3>
-              <p className="text-[--ink-mid]">
-                {t(
-                  "Our services last about 60 minutes with worship and a relevant message.",
-                  "Nuestros servicios duran aproximadamente 60 minutos con adoración y un mensaje relevante."
-                )}
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[--sage]/10">
-                <Car className="h-8 w-8 text-[--sage]" />
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-[--ink-dark]">
-                {t("Easy Parking", "Estacionamiento Fácil")}
-              </h3>
-              <p className="text-[--ink-mid]">
-                {t(
-                  "Plenty of free parking spaces available right at the entrance.",
-                  "Amplios espacios de estacionamiento gratuitos disponibles en la entrada."
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="mt-8 text-center">
-            <Button
-              onClick={() => onNavigate("newHere")}
-              className="warm-button-secondary px-6 py-3"
-            >
-              {t("Learn More About Us", "Conoce Más Sobre Nosotros")}
-            </Button>
-          </div>
-        </section>
+            )}
+          </section>
 
-        <div className="space-y-6">
-          <h2 className="serif-heading text-3xl font-bold text-[--ink-dark]">
-            {t("Quick Actions", "Acciones Rápidas")}
-          </h2>
-          <div className="grid gap-6 md:grid-cols-4">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              
-              if (action.isExternal) {
+          {/* Quick Actions — cols 1–2 on desktop, second on mobile */}
+          <div className="space-y-6 lg:col-start-1 lg:col-span-2 lg:row-start-1">
+            <h2 className="serif-heading text-3xl font-bold text-[--ink-dark]">
+              {t("Quick Actions", "Acciones Rápidas")}
+            </h2>
+            <div className="grid gap-4 grid-cols-2">
+              {quickActions.map((action) => {
+                const Icon = action.icon;
+
+                if (action.isExternal) {
+                  return (
+                    <a
+                      key={action.page}
+                      href={action.page}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="warm-card group p-6 text-left transition-all hover:scale-105"
+                    >
+                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
+                        <Icon className={action.iconClassName ?? "h-6 w-6 text-[--sage]"} />
+                      </div>
+                      <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
+                        {t(action.labelEn, action.labelEs)}
+                      </h3>
+                      <p className="text-sm text-[--ink-mid]">
+                        {t(
+                          "Access the church admin dashboard",
+                          "Acceder al panel de administración de la iglesia"
+                        )}
+                      </p>
+                    </a>
+                  );
+                }
+
                 return (
-                  <a
+                  <button
                     key={action.page}
-                    href={action.page}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={() => onNavigate(action.page)}
                     className="warm-card group p-6 text-left transition-all hover:scale-105"
                   >
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
-                      <Icon className="h-6 w-6 text-[--sage]" />
+                      <Icon className={action.iconClassName ?? "h-6 w-6 text-[--sage]"} />
                     </div>
                     <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
                       {t(action.labelEn, action.labelEs)}
                     </h3>
                     <p className="text-sm text-[--ink-mid]">
-                      {t(
-                        "Access the church admin dashboard",
-                        "Acceder al panel de administración de la iglesia"
+                      {action.page === "contact" && t(
+                        "Get in touch with our team",
+                        "Ponte en contacto con nuestro equipo"
+                      )}
+                      {action.page === "donations" && t(
+                        "Support our ministry",
+                        "Apoya nuestro ministerio"
+                      )}
+                      {action.page === "games" && t(
+                        "Faith-filled fun for the family",
+                        "Diversión con fe para la familia"
                       )}
                     </p>
-                  </a>
+                  </button>
                 );
-              }
-
-              return (
-                <button
-                  key={action.page}
-                  onClick={() => onNavigate(action.page)}
-                  className="warm-card group p-6 text-left transition-all hover:scale-105"
-                >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
-                    <Icon className="h-6 w-6 text-[--sage]" />
-                  </div>
-                  <h3 className="mb-2 text-lg font-semibold text-[--ink-dark]">
-                    {t(action.labelEn, action.labelEs)}
-                  </h3>
-                  <p className="text-sm text-[--ink-mid]">
-                    {action.page === "contact" && t(
-                      "Get in touch with our team",
-                      "Ponte en contacto con nuestro equipo"
-                    )}
-                    {action.page === "donations" && t(
-                      "Support our ministry",
-                      "Apoya nuestro ministerio"
-                    )}
-                    {action.page === "games" && t(
-                      "Faith-filled fun for the family",
-                      "Diversión con fe para la familia"
-                    )}
-                  </p>
-                </button>
-              );
-            })}
+              })}
+            </div>
           </div>
+
         </div>
 
         <section className="space-y-6">
@@ -339,126 +413,6 @@ export function Home({ onNavigate }: HomeProps) {
           >
             {t("New Here?", "¿Nuevo Aquí?")}
           </Button>
-        </section>
-
-        <section className="warm-card p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage]">
-            {t("Upcoming Event", "Próximo Evento")}
-          </p>
-          {eventsLoading ? (
-            <div className="mt-4 h-24 animate-pulse rounded-xl bg-[--surface-mid]/50" />
-          ) : eventsError ? (
-            <div className="mt-6 rounded-xl bg-[--surface] p-6 border border-[--border-color]">
-              <h3 className="text-xl font-semibold text-[--ink-dark]">
-                {t("Join Us This Sunday!", "¡Únete a Nosotros Este Domingo!")}
-              </h3>
-              <p className="mt-2 text-[--ink-mid]">
-                {t(
-                  "We gather every week to worship, learn, and grow together.",
-                  "Nos reunimos cada semana para adorar, aprender y crecer juntos."
-                )}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-[--ink-mid]">
-                {churchInfo?.address && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[--sage]" />
-                    <span>{churchInfo.address}</span>
-                  </div>
-                )}
-                {churchInfo?.service_times ? (
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-[--sage]" />
-                    <span>{churchInfo.service_times}</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-[--sage]" />
-                      <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-[--sage]" />
-                      <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          ) : nextEvent ? (
-            <>
-              <h3 className="mt-2 serif-heading text-2xl font-bold text-[--ink-dark]">
-                {t(nextEvent.titleEn, nextEvent.titleEs)}
-              </h3>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-[--ink-mid]">
-                {formattedDate && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-[--sage]" />
-                    <span>{formattedDate}</span>
-                  </div>
-                )}
-                {nextEvent.location && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[--sage]" />
-                    <span>{nextEvent.location}</span>
-                  </div>
-                )}
-              </div>
-              <p className="mt-4 text-[--ink-mid]">
-                {t(
-                  nextEvent.descriptionEn?.replace(/<[^>]*>?/gm, '') ?? "Join us as we gather together.",
-                  nextEvent.descriptionEs?.replace(/<[^>]*>?/gm, '') ?? "Únete a nosotros mientras nos reunimos."
-                )}
-              </p>
-              <Button
-                onClick={() => {
-                  if (typeof window !== "undefined") {
-                    window.localStorage.setItem(NEWS_DEFAULT_TAB_KEY, "events");
-                  }
-                  onNavigate("news");
-                }}
-                className="warm-button-primary mt-6 px-6 py-3"
-              >
-                {t("See Details", "Ver detalles")}
-              </Button>
-            </>
-          ) : (
-            <div className="mt-6 rounded-xl bg-[--surface] p-6 border border-[--border-color]">
-              <h3 className="text-xl font-semibold text-[--ink-dark]">
-                {t("Join Us This Sunday!", "¡Únete a Nosotros Este Domingo!")}
-              </h3>
-              <p className="mt-2 text-[--ink-mid]">
-                {t(
-                  "We gather every week to worship, learn, and grow together.",
-                  "Nos reunimos cada semana para adorar, aprender y crecer juntos."
-                )}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-[--ink-mid]">
-                {churchInfo?.address && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[--sage]" />
-                    <span>{churchInfo.address}</span>
-                  </div>
-                )}
-                {churchInfo?.service_times ? (
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-[--sage]" />
-                    <span>{churchInfo.service_times}</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-[--sage]" />
-                      <span>{t("Yuma at", "Yuma a las")} {serviceTimes[language].yuma}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-[--sage]" />
-                      <span>{t("Holyoke at", "Holyoke a las")} {serviceTimes[language].holyoke}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
         </section>
 
 

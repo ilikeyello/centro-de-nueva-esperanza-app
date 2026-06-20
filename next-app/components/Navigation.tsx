@@ -13,6 +13,7 @@ import {
   Minimize2,
   Maximize2,
   BookOpen,
+  CalendarDays,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePlayer } from "@/contexts/PlayerContext";
@@ -26,6 +27,7 @@ function pageFromPath(pathname: string): string {
   if (pathname.startsWith("/news")) return "news";
   if (pathname.startsWith("/bulletin")) return "bulletin";
   if (pathname.startsWith("/games")) return "games";
+  if (pathname.startsWith("/events")) return "events";
   return "home";
 }
 
@@ -43,6 +45,8 @@ function pathFromPage(page: string): string {
       return "/bulletin";
     case "games":
       return "/games";
+    case "events":
+      return "/events";
     default:
       return "/";
   }
@@ -319,6 +323,7 @@ export function Navigation() {
     { id: "media", icon: Play, labelEn: "Media", labelEs: "Medios" },
     { id: "news", icon: Megaphone, labelEn: "News", labelEs: "Noticias" },
     { id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" },
+    { id: "events", icon: CalendarDays, labelEn: "Events", labelEs: "Eventos" },
     { id: "games", icon: Gamepad2, labelEn: "Games", labelEs: "Juegos" },
   ];
 

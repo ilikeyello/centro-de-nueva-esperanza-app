@@ -595,6 +595,15 @@ export function NewsPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
+                      {eventItem.imageUrl && (
+                        <div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/60">
+                          <img
+                            src={eventItem.imageUrl}
+                            alt={language === "en" ? eventItem.titleEn : eventItem.titleEs}
+                            className="max-h-64 w-full object-cover"
+                          />
+                        </div>
+                      )}
                       {(language === "en" ? eventItem.descriptionEn : eventItem.descriptionEs) && (
                         <p className="text-neutral-300 whitespace-pre-wrap">
                           {language === "en" ? eventItem.descriptionEn : eventItem.descriptionEs}

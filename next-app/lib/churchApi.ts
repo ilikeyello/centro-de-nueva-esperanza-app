@@ -36,6 +36,7 @@ export interface Event {
   eventDate: string;
   location: string;
   maxAttendees: number | null;
+  imageUrl: string | null;
   createdAt: string;
   createdBy: string;
   rsvpCount: number;
@@ -178,6 +179,7 @@ class ChurchApiService {
         eventDate: e.event_date,
         location: e.location,
         maxAttendees: e.max_attendees,
+        imageUrl: e.image_url ?? null,
         createdAt: e.created_at,
         createdBy: e.created_by,
         rsvpCount: e.event_rsvps?.[0]?.count || 0,

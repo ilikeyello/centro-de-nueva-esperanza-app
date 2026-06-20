@@ -674,6 +674,15 @@
   }
 }
 
+/* Promote an element to its own GPU compositor layer.
+   Keeps YouTube iframes from blanking to grey when an ancestor is transformed
+   during a page swipe (iOS WKWebView compositor bug). Same trick the nav uses. */
+.gpu-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
 /* Music player always stays dark regardless of theme */
 .music-player-dark,
 .music-player-dark * {

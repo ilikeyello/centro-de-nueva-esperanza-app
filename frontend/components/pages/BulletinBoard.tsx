@@ -374,7 +374,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
               onClick={() => setActiveTab("community")}
               style={activeTab === "community" ? { backgroundColor: "var(--sage)", color: "white", borderBottomColor: "var(--sage)" } : {}}
               className={cn(
-                "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
+                "flex-1 h-10 flex items-center justify-center whitespace-nowrap rounded-md px-2 sm:px-4 text-xs sm:text-sm font-semibold transition-all text-center border-b-4",
                 activeTab === "community" ? "shadow-md" : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--surface] border-b-transparent"
               )}
             >
@@ -385,7 +385,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
               onClick={() => setActiveTab("prayers")}
               style={activeTab === "prayers" ? { backgroundColor: "var(--sage)", color: "white", borderBottomColor: "var(--sage)" } : {}}
               className={cn(
-                "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
+                "flex-1 h-10 flex items-center justify-center whitespace-nowrap rounded-md px-2 sm:px-4 text-xs sm:text-sm font-semibold transition-all text-center border-b-4",
                 activeTab === "prayers" ? "shadow-md" : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--surface] border-b-transparent"
               )}
             >

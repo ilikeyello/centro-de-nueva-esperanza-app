@@ -1,7 +1,7 @@
 import { useLanguage } from "../contexts/LanguageContext";
 
 const playlistUrl =
-  "https://www.youtube.com/embed/videoseries?si=g3eYWy0W6k0dxGAf&list=PLiMbwlK6tmAPdaksYbeLA1Ri11doloNiX&playsinline=1&controls=1&modestbranding=1";
+  "https://www.youtube-nocookie.com/embed/videoseries?si=g3eYWy0W6k0dxGAf&list=PLiMbwlK6tmAPdaksYbeLA1Ri11doloNiX&playsinline=1&controls=1&modestbranding=1&rel=0";
 
 export function GlobalMusicPlayer() {
   const { t } = useLanguage();

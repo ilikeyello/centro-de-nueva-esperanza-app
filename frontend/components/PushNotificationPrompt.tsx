@@ -1,62 +1,68 @@
 import { useState, useEffect } from 'react';
-import { usePushNotifications } from '../hooks/usePushNotifications';
+import { Capacitor } from '@capacitor/core';
+import { useNotifications } from '../contexts/NotificationContext';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Bell, Loader2, AlertCircle } from 'lucide-react';
+import { Bell, Loader2 } from 'lucide-react';
 
 interface PushNotificationPromptProps {
   className?: string;
 }
 
 export const PushNotificationPrompt = ({ className }: PushNotificationPromptProps) => {
+  const isNative = Capacitor.isNativePlatform();
+
   const [dismissed, setDismissed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem('cne-notif-dismissed') === '1';
+    try { return localStorage.getItem('cne-notif-dismissed') === '1'; } catch { return false; }
   });
   const [everSubscribed, setEverSubscribed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem('cne-notif-ever-subscribed') === '1';
+    try { return localStorage.getItem('cne-notif-ever-subscribed') === '1'; } catch { return false; }
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { isSupported, isSubscribed, permission, isLoading, error, subscribe, initialized } = usePushNotifications();
+  const { isSupported, isSubscribed, permission, requestPermission, subscribeToNotifications } = useNotifications();
 
-  // Once subscribed, remember it so the prompt never comes back on future visits
   useEffect(() => {
     if (isSubscribed) {
       setEverSubscribed(true);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('cne-notif-ever-subscribed', '1');
-      }
+      try { localStorage.setItem('cne-notif-ever-subscribed', '1'); } catch {}
     }
   }, [isSubscribed]);
 
-  // Don't show anything until we've finished the initial support/subscription check
-  if (!initialized) {
-    return null;
-  }
+  // On native, auto-request after a short delay on first open (no need for the card)
+  useEffect(() => {
+    if (!isNative) return;
+    if (everSubscribed || dismissed) return;
+    if (permission === 'native-granted') return;
+    if (permission === 'native-denied') return;
 
-  // Don't show if not supported, permission denied, already subscribed, or previously subscribed
-  if (!isSupported || permission === 'denied' || isSubscribed || everSubscribed) {
-    return null;
-  }
+    // Small delay so the app fully loads before the OS dialog appears
+    const t = setTimeout(async () => {
+      await requestPermission();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [isNative, permission, everSubscribed, dismissed]);
 
-  if (dismissed) {
-    return null;
-  }
+  // On web: show the in-app card prompt
+  if (isNative) return null; // native uses auto-request above, no card needed
+
+  if (!isSupported || isSubscribed || everSubscribed || dismissed) return null;
+  if (permission === 'denied') return null;
 
   const handleSubscribe = async () => {
+    setIsLoading(true);
     try {
-      await subscribe();
+      await subscribeToNotifications();
     } catch (err) {
       console.error('Failed to subscribe:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDismiss = () => {
     setDismissed(true);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('cne-notif-dismissed', '1');
-    }
+    try { localStorage.setItem('cne-notif-dismissed', '1'); } catch {}
   };
 
   return (
@@ -67,16 +73,10 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
           Stay Updated
         </CardTitle>
         <CardDescription className="text-xs text-[--ink-mid]">
-          Get notified about new announcements and when livestream starts
+          Get notified about new announcements and when the livestream starts
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
-        {error && (
-          <div className="flex items-center gap-2 mb-3 p-2 bg-[--terra-light] rounded text-[--terra] text-xs">
-            <AlertCircle className="h-3 w-3" />
-            <span>{error}</span>
-          </div>
-        )}
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -85,15 +85,9 @@ export const PushNotificationPrompt = ({ className }: PushNotificationPromptProp
             className="bg-[--sage] hover:bg-[--sage-mid] text-white"
           >
             {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Enabling...
-              </>
+              <><Loader2 className="h-4 w-4 animate-spin mr-2" />Enabling...</>
             ) : (
-              <>
-                <Bell className="h-4 w-4 mr-2" />
-                Enable Notifications
-              </>
+              <><Bell className="h-4 w-4 mr-2" />Enable Notifications</>
             )}
           </Button>
           <Button

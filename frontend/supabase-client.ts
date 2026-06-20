@@ -41,6 +41,16 @@ export interface SermonItem {
   description?: string;
 }
 
+export type RsvpFieldType = 'text' | 'number' | 'select' | 'boolean' | 'multiselect';
+
+export interface RsvpField {
+  key: string;
+  label: string;
+  type: RsvpFieldType;
+  required: boolean;
+  options: string[];
+}
+
 export interface Event {
   id: number;
   organization_id: string;
@@ -51,9 +61,11 @@ export interface Event {
   eventDate: string;
   location: string;
   maxAttendees: number | null;
+  imageUrl: string | null;
   createdAt: string;
   createdBy: string;
   rsvpCount: number;
+  rsvpFields: RsvpField[];
 }
 
 export interface Announcement {
@@ -178,7 +190,7 @@ export class ChurchApiService {
   async listEvents(params: { upcoming?: boolean }): Promise<{ events: Event[] }> {
     let query = this.client
       .from('events')
-      .select('*, event_rsvps(count)')
+      .select('*, event_rsvps(attendees)')
       .eq('organization_id', this.orgId);
     
     if (params.upcoming) {
@@ -199,9 +211,13 @@ export class ChurchApiService {
       eventDate: e.event_date,
       location: e.location,
       maxAttendees: e.max_attendees,
+      imageUrl: e.image_url ?? null,
       createdAt: e.created_at,
       createdBy: e.created_by,
-      rsvpCount: e.event_rsvps?.[0]?.count || 0
+      rsvpCount: Array.isArray(e.event_rsvps)
+        ? e.event_rsvps.reduce((sum: number, r: any) => sum + (r.attendees || 1), 0)
+        : 0,
+      rsvpFields: Array.isArray(e.rsvp_fields) ? e.rsvp_fields : []
     }));
     
     return { events };
@@ -605,10 +621,46 @@ export class ChurchApiService {
       eventDate: data.event_date,
       location: data.location,
       maxAttendees: data.max_attendees,
+      imageUrl: data.image_url ?? null,
       createdAt: data.created_at,
       createdBy: data.created_by,
       rsvpCount: 0,
+      rsvpFields: Array.isArray(data.rsvp_fields) ? data.rsvp_fields : [],
     };
+  }
+
+  async createRsvp(rsvp: {
+    eventId: number;
+    userName?: string | null;
+    userEmail?: string;
+    attendees?: number;
+    userId?: string | null;
+    responses?: Record<string, unknown>;
+  }): Promise<void> {
+    // Identify the participant. Callers may pass a stable id (e.g. a localStorage
+    // participant id); otherwise fall back to a per-session id so the same
+    // browser session can't duplicate-submit (the DB also enforces uniqueness).
+    let userId = rsvp.userId || null;
+    if (!userId) {
+      userId = sessionStorage.getItem('rsvp_user_id');
+      if (!userId) {
+        userId = crypto.randomUUID();
+        sessionStorage.setItem('rsvp_user_id', userId);
+      }
+    }
+
+    const { error } = await this.client
+      .from('event_rsvps')
+      .upsert({
+        event_id: rsvp.eventId,
+        user_id: userId,
+        user_name: rsvp.userName || null,
+        user_email: rsvp.userEmail || null,
+        attendees: rsvp.attendees && rsvp.attendees > 0 ? rsvp.attendees : 1,
+        responses: rsvp.responses && typeof rsvp.responses === 'object' ? rsvp.responses : {},
+      }, { onConflict: 'event_id,user_id' });
+
+    if (error) throw error;
   }
 
   async deleteEvent(id: number): Promise<void> {

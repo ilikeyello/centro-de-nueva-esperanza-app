@@ -2,3 +2,8 @@ node_modules/
 .env*
 *.log
 .DS_Store
+
+# Capacitor native builds
+ios/App/Pods/
+android/.gradle/
+android/app/build/

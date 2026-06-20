@@ -412,7 +412,7 @@ export function TriviaGamePage({ onNavigate }: { onNavigate?: (page: string) => 
                           startGame(level);
                           setSelectedLevelForConfirmation(null);
                         }}
-                        className="bg-[--sage] hover:bg-[--sage-mid]"
+                        className="bg-[--sage] hover:bg-[--sage-mid] text-white"
                       >
                         <Play className="h-4 w-4 mr-2" />
                         {t("Play Now", "Jugar Ahora")}

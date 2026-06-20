@@ -16,12 +16,18 @@ export default defineConfig({
   },
   plugins: [tailwindcss(), react()],
   build: {
-    minify: false,
+    outDir: 'dist',
+    minify: 'terser',
     rollupOptions: {
       output: {
         entryFileNames: `assets/[name]-[hash].js`,
         chunkFileNames: `assets/[name]-[hash].js`,
-        assetFileNames: `assets/[name]-[hash].[ext]`
+        assetFileNames: `assets/[name]-[hash].[ext]`,
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          query: ['@tanstack/react-query'],
+          supabase: ['@supabase/supabase-js'],
+        },
       }
     }
   }

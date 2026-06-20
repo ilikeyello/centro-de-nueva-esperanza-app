@@ -4,13 +4,13 @@ import { Calendar, MapPin, Users, Plus, X } from "lucide-react";
 import { useBackend } from "../../hooks/useBackend";
 import type { Event } from "../../hooks/useBackend";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { RsvpCustomFields, firstMissingRequired, type RsvpResponses } from "../RsvpCustomFields";
 
 export function Events() {
   const backend = useBackend();
@@ -20,6 +20,7 @@ export function Events() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showRsvpDialog, setShowRsvpDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [rsvpResponses, setRsvpResponses] = useState<RsvpResponses>({});
 
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
@@ -65,10 +66,9 @@ export function Events() {
     },
   });
 
-  // RSVP functionality not yet implemented in Supabase
   const rsvpMutation = useMutation({
-    mutationFn: async (data: { eventId: number; attendees: number }) => {
-      throw new Error("RSVP not yet implemented");
+    mutationFn: async (data: { eventId: number; userName: string; userEmail?: string; responses?: RsvpResponses }) => {
+      return backend.createRsvp(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
@@ -79,10 +79,12 @@ export function Events() {
       });
     },
     onError: (error) => {
-      console.error(error);
+      console.error("RSVP submission failed:", error);
+      const detail =
+        error instanceof Error ? error.message : String(error);
       toast({
         title: t("Error", "Error"),
-        description: t("Failed to submit RSVP", "Error al enviar RSVP"),
+        description: `${t("Failed to submit RSVP", "Error al enviar RSVP")}: ${detail}`,
         variant: "destructive",
       });
     },
@@ -107,9 +109,23 @@ export function Events() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     if (!selectedEvent) return;
+
+    const fields = selectedEvent.rsvpFields ?? [];
+    const missing = firstMissingRequired(fields, rsvpResponses);
+    if (missing) {
+      toast({
+        title: t("Missing information", "Falta información"),
+        description: t(`Please answer: ${missing}`, `Por favor responde: ${missing}`),
+        variant: "destructive",
+      });
+      return;
+    }
+
     rsvpMutation.mutate({
       eventId: selectedEvent.id,
-      attendees: parseInt(formData.get("attendees") as string) || 1,
+      userName: formData.get("userName") as string,
+      userEmail: (formData.get("userEmail") as string) || undefined,
+      responses: rsvpResponses,
     });
   };
 
@@ -233,13 +249,17 @@ export function Events() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {eventsData?.events.map((event: Event) => (
-          <Card key={event.id} className="border-[--border-color] bg-surface shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-[--ink-dark]">
+          <div
+            key={event.id}
+            className="warm-card rounded-2xl flex flex-col"
+            style={{ border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.07)" }}
+          >
+            <div className="px-5 pt-5 pb-3">
+              <p className="font-semibold text-[--ink-dark]">
                 {language === "en" ? event.titleEn : event.titleEs}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </p>
+            </div>
+            <div className="px-5 pb-4 flex-1 space-y-3">
               <p className="text-sm text-[--ink-mid]">
                 {language === "en" ? event.descriptionEn : event.descriptionEs}
               </p>
@@ -260,19 +280,20 @@ export function Events() {
                   </span>
                 </div>
               </div>
-            </CardContent>
-            <CardFooter className="pt-0">
+            </div>
+            <div className="px-5 pb-5">
               <Button
                 onClick={() => {
                   setSelectedEvent(event as any);
+                  setRsvpResponses({});
                   setShowRsvpDialog(true);
                 }}
                 className="w-full warm-button-primary border-2 border-[--sage] !text-white"
               >
                 {t("RSVP", "Confirmar Asistencia")}
               </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -285,21 +306,45 @@ export function Events() {
           </DialogHeader>
           <form onSubmit={handleRsvp} className="space-y-4">
             <div>
-              <Label htmlFor="attendees" className="text-[--ink-mid]">
-                {t("Number of Attendees", "Número de Asistentes")}
+              <Label htmlFor="userName" className="text-[--ink-mid]">
+                {t("Your Name", "Tu Nombre")}
               </Label>
               <Input
-                id="attendees"
-                name="attendees"
-                type="number"
-                min="1"
-                defaultValue="1"
+                id="userName"
+                name="userName"
+                type="text"
                 required
+                placeholder={t("Enter your name", "Ingresa tu nombre")}
                 className="border-[--border-color] bg-surface text-[--ink-dark]"
               />
             </div>
-            <Button type="submit" className="w-full warm-button-primary border-2 border-[--sage] !text-white">
-              {t("Confirm RSVP", "Confirmar Asistencia")}
+            <div>
+              <Label htmlFor="userEmail" className="text-[--ink-mid]">
+                {t("Email (optional)", "Correo electrónico (opcional)")}
+              </Label>
+              <Input
+                id="userEmail"
+                name="userEmail"
+                type="email"
+                placeholder={t("Enter your email", "Ingresa tu correo")}
+                className="border-[--border-color] bg-surface text-[--ink-dark]"
+              />
+            </div>
+            <RsvpCustomFields
+              fields={selectedEvent?.rsvpFields ?? []}
+              values={rsvpResponses}
+              onChange={(key, value) =>
+                setRsvpResponses((prev) => ({ ...prev, [key]: value }))
+              }
+            />
+            <Button
+              type="submit"
+              disabled={rsvpMutation.isPending}
+              className="w-full warm-button-primary border-2 border-[--sage] !text-white"
+            >
+              {rsvpMutation.isPending
+                ? t("Submitting...", "Enviando...")
+                : t("Confirm RSVP", "Confirmar Asistencia")}
             </Button>
           </form>
         </DialogContent>

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { useBackend } from "../../hooks/useBackend";
 import { cn } from "@/lib/utils";
+import { YouTubePlayer, extractYouTubeVideoId } from "../YouTubePlayer";
 
 // YouTube livestream detection
 let youtubeAPIReady = false;
@@ -73,14 +74,12 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     setLivestreamPipDismissed: setIsPipDismissed,
     isLivestreamPlaying,
     setIsLivestreamPlaying,
-    isLivestreamTransitioning,
-    setIsLivestreamTransitioning,
     shouldShowLivestreamPip,
   } = usePlayer();
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
   const [isStreamPlaying, setIsStreamPlaying] = useState(false);
   const [isActuallyLive, setIsActuallyLive] = useState(false);
-  const [manualLiveOverride, setManualLiveOverride] = useState(false);
+  const [manualLiveOverride] = useState(false);
   const playerRef = useRef<any | null>(null);
 
   useEffect(() => {
@@ -120,27 +119,17 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
     const checkIfLive = () => {
       if (!playerRef.current) return;
-      
+
       try {
         const player = playerRef.current;
         const duration = player.getDuration();
-        const playerState = player.getPlayerState();
         const videoData = player.getVideoData();
-        
-        console.log('Checking if live - duration:', duration, 'state:', playerState, 'videoData:', videoData);
-        
-        // Only consider it live if duration is 0 or NaN (the most reliable indicator)
-        // Duration > 0 means it's a regular video, not a livestream
+
+        // Only consider it live if duration is 0 or NaN (the most reliable indicator).
         const hasValidVideo = videoData && videoData.video_id;
         const isLiveDuration = duration === 0 || isNaN(duration);
-        
-        if (hasValidVideo && isLiveDuration) {
-          console.log('Stream detected as live (duration is 0 or NaN)');
-          setIsActuallyLive(true);
-        } else {
-          console.log('Stream not live (duration:', duration, ')');
-          setIsActuallyLive(false);
-        }
+
+        setIsActuallyLive(Boolean(hasValidVideo && isLiveDuration));
       } catch (error) {
         console.error('Error checking if live:', error);
         setIsActuallyLive(false);
@@ -151,9 +140,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       if (cancelled) return;
       if (!w.YT || !w.YT.Player) return;
 
-      // Destroy existing player if it exists
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
-        console.log('Destroying existing player');
         playerRef.current.destroy();
         playerRef.current = null;
       }
@@ -175,7 +162,6 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
         return;
       }
 
-      console.log('Creating new player for URL:', livestreamUrl, 'videoId:', videoId);
       playerRef.current = new w.YT.Player("cne-livestream-player", {
         videoId,
         playerVars: {
@@ -186,47 +172,40 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           origin: window.location.origin,
         },
         events: {
-          onReady: (event: any) => {
-            console.log('Livestream player ready');
+          onReady: () => {
             checkIfLive();
-            // Check periodically for live status
             if (checkInterval) clearInterval(checkInterval);
             checkInterval = setInterval(() => {
               checkIfLive();
-              
-              // Also sync playback state manually to avoid event flakiness
+
+              // Sync playback state manually to avoid event flakiness.
               if (playerRef.current && typeof playerRef.current.getPlayerState === "function") {
                 try {
                   const state = playerRef.current.getPlayerState();
                   const isPlayingState = state === (w.YT?.PlayerState?.PLAYING ?? 1);
                   if (isPlayingState !== isLivestreamPlaying) {
-                    console.log('Manually syncing playback state from polling:', isPlayingState);
                     setIsLivestreamPlaying(isPlayingState);
                     setIsStreamPlaying(isPlayingState);
                   }
-                } catch (e) {
-                  // Ignore player errors during polling
+                } catch {
+                  // Ignore player errors during polling.
                 }
               }
-            }, 5000); // Check status every 5 seconds
+            }, 5000);
           },
           onStateChange: (event: any) => {
             const YT = w.YT;
             if (!YT || !YT.PlayerState) return;
-            console.log('Player state changed:', event.data);
-            
+
             if (event.data === YT.PlayerState.PLAYING) {
               setIsStreamPlaying(true);
               setIsLivestreamPlaying(true);
               setIsActuallyLive(true);
               setHasInteractedWithLivestream(true);
             } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-              const now = Date.now();
-              const timeSincePageChange = now - lastPageChangeRef.current;
-              
-              // Only process pause state if it didn't happen right during/after a page transition (to avoid flicker)
+              const timeSincePageChange = Date.now() - lastPageChangeRef.current;
+              // Ignore pause blips right around a page transition.
               if (event.data === YT.PlayerState.PAUSED && timeSincePageChange < 1500) {
-                console.log('Ignoring pause event during page transition debounce');
                 return;
               }
 
@@ -237,7 +216,6 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                 setHasInteractedWithLivestream(false);
               }
             } else if (event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.CUED) {
-              // Check if it's actually live when buffering/cued
               checkIfLive();
             }
           },
@@ -270,14 +248,13 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
     return () => {
       cancelled = true;
-      if (checkInterval) {
-        clearInterval(checkInterval);
-      }
+      if (checkInterval) clearInterval(checkInterval);
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
         playerRef.current.destroy();
         playerRef.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [livestreamUrl]);
 
   const selectedSermon = useMemo(() => {
@@ -343,40 +320,34 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       }
       
       // Handle regular YouTube URLs
+      // Use youtube-nocookie.com and omit enablejsapi=1 to avoid embed error 153
+      // in WKWebView (capacitor://localhost is not a valid postMessage origin).
       if (u.hostname.includes('youtu.be')) {
         const id = u.pathname.replace('/', '');
-        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
+        const result = `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&controls=1&modestbranding=1&rel=0`;
         console.log('getEmbedUrl output (youtu.be):', result);
         return result;
       }
       if (u.searchParams.get('v')) {
         const id = u.searchParams.get('v');
-        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
+        const result = `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&controls=1&modestbranding=1&rel=0`;
         console.log('getEmbedUrl output (watch):', result);
         return result;
       }
       if (u.pathname.includes('/live/')) {
         const id = u.pathname.split('/live/')[1]?.split('?')[0];
-        const result = `https://www.youtube.com/embed/${id}?enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
+        const result = `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&controls=1&modestbranding=1&rel=0`;
         console.log('getEmbedUrl output (live):', result);
         return result;
       }
       if (u.pathname.includes('/embed/')) {
-        // Already in embed format, just add enablejsapi if missing
-        if (u.searchParams.has('enablejsapi')) {
-          u.searchParams.set('playsinline', '1');
-          u.searchParams.set('controls', '1');
-          u.searchParams.set('modestbranding', '1');
-          console.log('getEmbedUrl output (already embed):', u.toString());
-          return u.toString();
+        // Rewrite to nocookie host and strip enablejsapi to keep WKWebView happy.
+        const id = u.pathname.split('/embed/')[1]?.split('/')[0]?.split('?')[0];
+        if (id) {
+          const result = `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&controls=1&modestbranding=1&rel=0`;
+          console.log('getEmbedUrl output (embed):', result);
+          return result;
         }
-        u.searchParams.set('enablejsapi', '1');
-        u.searchParams.set('playsinline', '1');
-        u.searchParams.set('controls', '1');
-        u.searchParams.set('modestbranding', '1');
-        const result = u.toString();
-        console.log('getEmbedUrl output (embed with enablejsapi):', result);
-        return result;
       }
       
       console.log('getEmbedUrl output (fallback):', url);
@@ -391,7 +362,10 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
   // (Removed autoplay attempt tied to legacy window calculation)
 
-  // Track Mobile Nav Tabs offset to align PIP accurately above navbar
+  // Track Mobile Nav Tabs offset to align PIP accurately above navbar.
+  // A ResizeObserver keeps it in sync as the navbar grows/shrinks (expand,
+  // minimize/restore) so the floating iframe always sits exactly over the
+  // navbar placeholder — otherwise a stale offset reveals the grey placeholder.
   useEffect(() => {
     if (isDesktop || isMediaPage) return;
 
@@ -403,13 +377,26 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
          setMobilePipBottom(distFromBottom);
       }
     };
-    
-    // Initial and periodic (just in case layout shifts)
+
+    // Initial and a follow-up after layout settles.
     updatePosition();
-    setTimeout(updatePosition, 100);
+    const t = setTimeout(updatePosition, 100);
     window.addEventListener("resize", updatePosition);
-    return () => window.removeEventListener("resize", updatePosition);
-  }, [isDesktop, isMediaPage]);
+
+    // Observe the navbar (its container) so any height change re-aligns the PIP.
+    const nav = document.getElementById("mobile-nav-tabs")?.closest("nav") ?? null;
+    let ro: ResizeObserver | null = null;
+    if (nav && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(updatePosition);
+      ro.observe(nav);
+    }
+
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", updatePosition);
+      if (ro) ro.disconnect();
+    };
+  }, [isDesktop, isMediaPage, isPipMinimized]);
 
   // Create hidden div for YouTube player detection
   useEffect(() => {
@@ -551,12 +538,15 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           </div>
         </div>
         <div className={cn(
-          "relative bg-black transition-all h-full w-full", 
-          isMediaPage ? "aspect-video" : cn(
-            "w-full overflow-hidden",
+          "relative bg-black transition-all w-full gpu-layer",
+          isMediaPage ? "aspect-video h-full" : cn(
+            "overflow-hidden",
             isDesktop ? "aspect-video" : "h-40"
-          ), 
-          (!isMediaPage && isPipMinimized) && "h-0 border-0 overflow-hidden opacity-0 pointer-events-none"
+          ),
+          // Minimize by CLIPPING the box to zero height — never resize the iframe
+          // stage below. Resizing a YouTube iframe to 0 and back blanks it grey
+          // in WKWebView. The stage keeps its height so audio + video survive.
+          (!isMediaPage && isPipMinimized) && "!h-0 border-0 overflow-hidden opacity-0 pointer-events-none"
         )}>
           <div className={cn(
             "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
@@ -569,13 +559,17 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
             </p>
           </div>
-          <div 
-            id="cne-livestream-player" 
-            className={cn(
-               "h-full w-full",
-               (!livestreamIsLive && !manualLiveOverride && isMediaPage) && "invisible"
-            )}
-          />
+          {/* Stable-height stage: stays sized even while the box above clips to 0
+              on minimize, so the iframe is never resized (which would blank it). */}
+          <div className={cn("w-full gpu-layer", isMediaPage || isDesktop ? "h-full" : "h-40")}>
+            <div
+              id="cne-livestream-player"
+              className={cn(
+                 "h-full w-full",
+                 (!livestreamIsLive && !manualLiveOverride && isMediaPage) && "invisible"
+              )}
+            />
+          </div>
         </div>
       </div>
 
@@ -667,15 +661,21 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                     {t("Loading sermons...", "Cargando sermones...")}
                   </div>
                 )}
-                {!loadingSermons && effectiveSelectedSermon && (
-                  <iframe
-                    src={getEmbedUrl(effectiveSelectedSermon.youtubeUrl)}
-                    title={effectiveSelectedSermon.title}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                )}
+                {!loadingSermons && effectiveSelectedSermon && (() => {
+                  const videoId = extractYouTubeVideoId(effectiveSelectedSermon.youtubeUrl);
+                  return videoId ? (
+                    <YouTubePlayer
+                      key={videoId}
+                      videoId={videoId}
+                      title={effectiveSelectedSermon.title}
+                      className="absolute inset-0 h-full w-full"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-[--ink-light]">
+                      {t("Video unavailable.", "Video no disponible.")}
+                    </div>
+                  );
+                })()}
                 {!loadingSermons && !effectiveSelectedSermon && (
                   <div className="flex h-full items-center justify-center text-xs text-[--ink-light]">
                     {t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}
