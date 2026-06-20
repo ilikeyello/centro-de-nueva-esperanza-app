@@ -135,7 +135,7 @@ export function EventsPage() {
               <img
                 src={event.image_url}
                 alt={event.title_en || event.title_es}
-                className="max-h-64 w-full object-cover"
+                className="max-h-96 w-full object-contain"
               />
             )}
 

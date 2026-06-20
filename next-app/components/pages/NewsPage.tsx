@@ -511,7 +511,7 @@ export function NewsPage() {
                       <img
                         src={announcement.imageUrl}
                         alt={language === "en" ? announcement.titleEn : announcement.titleEs}
-                        className="max-h-64 w-full object-cover"
+                        className="max-h-96 w-full object-contain"
                       />
                     </div>
                   )}
@@ -600,7 +600,7 @@ export function NewsPage() {
                           <img
                             src={eventItem.imageUrl}
                             alt={language === "en" ? eventItem.titleEn : eventItem.titleEs}
-                            className="max-h-64 w-full object-cover"
+                            className="max-h-96 w-full object-contain"
                           />
                         </div>
                       )}
