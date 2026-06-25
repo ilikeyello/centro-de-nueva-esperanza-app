@@ -45,6 +45,8 @@ const config: CapacitorConfig = {
   server: {
     // Whitelist external domains the WebView is allowed to navigate to / load
     allowNavigation: [
+      '*.emanuelavina.com',
+      'emanuelavina.com',
       '*.youtube.com',
       '*.youtube-nocookie.com',
       '*.ytimg.com',

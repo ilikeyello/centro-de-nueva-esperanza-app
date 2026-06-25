@@ -420,7 +420,11 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
           width: navExpanded ? 'calc(100% - 24px)' : '230px',
           // Spring cubic-bezier: slight overshoot → bouncy/bubbly feel
           transition: 'width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease',
-        } : {}),
+        } : {
+          // iPad/desktop top bar sits at top:0. Drop its content below the
+          // status-bar safe-area inset so it isn't flush against the top edge.
+          paddingTop: 'env(safe-area-inset-top)',
+        }),
         backgroundColor: (isTransparent && isDesktop) ? "transparent" : "var(--surface)",
         borderColor: (isTransparent && isDesktop) ? "transparent" : "var(--border-color)",
       }}

@@ -66,11 +66,13 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   } = usePlayer();
   const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
 
-  // Build a static iframe URL for the livestream. We deliberately skip the
-  // YouTube IFrame JS API here: the API auto-injects `origin=<window.origin>`
-  // into the embed URL, and inside Capacitor that becomes `capacitor://localhost`,
-  // which YouTube rejects for *live* embeds with "Video unavailable. Watch on
-  // YouTube." A plain iframe on youtube-nocookie.com works in WKWebView.
+  // Build the livestream iframe URL via an https proxy page hosted on the main
+  // site. Inside Capacitor the WebView origin is `capacitor://localhost`, which
+  // YouTube rejects as a Referer for *live* embeds ("error 153"). Pointing a
+  // plain youtube-nocookie iframe directly there fails for the same reason. So
+  // we frame a small page on www.emanuelavina.com that embeds the player; YouTube
+  // then sees a valid https Referer and the live stream plays.
+  // See: emanuel-web-design/public/youtube-embed.html
   const livestreamEmbedSrc = useMemo(() => {
     if (!livestreamUrl) return "";
     try {
@@ -78,7 +80,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       const parts = u.pathname.split("/").filter(Boolean);
       const videoId = parts[0] === "embed" ? parts[1] : "";
       if (!videoId) return "";
-      return `https://www.youtube-nocookie.com/embed/${videoId}?playsinline=1&controls=1&modestbranding=1&rel=0`;
+      return `https://www.emanuelavina.com/youtube-embed.html?v=${encodeURIComponent(videoId)}`;
     } catch {
       return "";
     }
@@ -432,10 +434,10 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                   "h-full w-full border-0",
                   (!livestreamIsLive && isMediaPage) && "invisible"
                 )}
-                // Hide the `capacitor://localhost` referer from YouTube so the
-                // HTML5 player doesn't trip "error 153" (invalid embed origin)
-                // on live broadcasts in WKWebView.
-                referrerPolicy="no-referrer"
+                // YouTube (late-2025 policy) now REQUIRES a valid Referer on
+                // embeds and rejects a missing one with "error 153". Send a
+                // proper referrer instead of stripping it with `no-referrer`.
+                referrerPolicy="strict-origin-when-cross-origin"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
