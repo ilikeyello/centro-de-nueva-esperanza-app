@@ -129,7 +129,7 @@ class NotificationService {
             title: this.t('Livestream Live!', '¡Transmisión en Vivo!'),
             body: this.t('Join us for live worship', 'Únete a nosotros para adorar en vivo'),
             tag: 'livestream',
-            data: { type: 'livestream', url: active.url }
+            data: { type: 'livestream', playbackId: active.playbackId }
           });
           this.lastCheck[key] = now;
           this.saveLastCheck();

@@ -5,13 +5,13 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { 
-  getSermonsFromMainSite, 
-  getLivestreamFromMainSite, 
-  getMusicPlaylistFromMainSite,
+import {
+  getLivestreamFromMainSite,
+  getMusicTracksFromMainSite,
   getEventsFromMainSite,
   getAnnouncementsFromMainSite,
-  type LivestreamInfo
+  type LivestreamInfo,
+  type MusicTrack
 } from './lib/mainSiteData';
 
 // --- Environment Variables ---
@@ -36,9 +36,13 @@ export type Sermon = SermonItem;
 export interface SermonItem {
   id: number;
   title: string;
-  youtubeUrl: string;
+  /** Mux playback id used by <mux-player> in the app. */
+  muxPlaybackId: string | null;
+  muxStatus?: string | null;
   createdAt: string;
   description?: string;
+  /** @deprecated legacy YouTube field, no longer used for playback. */
+  youtubeUrl?: string;
 }
 
 export type RsvpFieldType = 'text' | 'number' | 'select' | 'boolean' | 'multiselect';
@@ -136,54 +140,36 @@ export class ChurchApiService {
   private client: SupabaseClient = supabase;
   private orgId: string = churchOrgId;
 
-  // Sermons - fetches from BOTH local sermons table AND main site's church_content
+  // Devotionals — video assets stored in the `sermons` table and streamed via Mux.
+  // Only assets that have finished processing (status "ready" with a playback id)
+  // are returned, so the app never tries to play an unavailable video.
   async listSermons(): Promise<{ sermons: SermonItem[] }> {
-    const mainSiteSermons = await getSermonsFromMainSite();
-    
-    const sermonsFromMainSite: SermonItem[] = mainSiteSermons.map((s) => ({
-      id: parseInt(s.id) || 0,
-      title: s.title,
-      youtubeUrl: s.youtubeUrl,
-      createdAt: s.createdAt,
-      description: s.description
-    }));
-
-    let localSermons: SermonItem[] = [];
     try {
       const { data, error } = await this.client
         .from('sermons')
-        .select('*')
+        .select('id, title, description, mux_playback_id, mux_status, created_at')
         .eq('organization_id', this.orgId)
+        .eq('mux_status', 'ready')
+        .not('mux_playback_id', 'is', null)
         .order('created_at', { ascending: false })
-        .limit(10);
-      
+        .limit(50);
+
       if (error) throw error;
 
-      if (data) {
-        localSermons = data.map((s: any) => ({
-          id: s.id,
-          title: s.title,
-          youtubeUrl: s.youtube_url,
-          createdAt: s.created_at,
-          description: s.description
-        }));
-      }
+      const sermons: SermonItem[] = (data || []).map((s: any) => ({
+        id: s.id,
+        title: s.title,
+        muxPlaybackId: s.mux_playback_id,
+        muxStatus: s.mux_status,
+        createdAt: s.created_at,
+        description: s.description,
+      }));
+
+      return { sermons };
     } catch (e) {
-      console.log('Local sermons table not available, using main site data only');
+      console.log('Could not load devotionals from Supabase:', e);
+      return { sermons: [] };
     }
-    
-    const allSermons = [...sermonsFromMainSite, ...localSermons];
-    
-    const seen = new Set<string>();
-    const uniqueSermons = allSermons
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .filter(s => {
-        if (seen.has(s.title)) return false;
-        seen.add(s.title);
-        return true;
-      });
-    
-    return { sermons: uniqueSermons };
   }
   
   // Events
@@ -364,8 +350,8 @@ export class ChurchApiService {
     return getLivestreamFromMainSite();
   }
   
-  async getMusicPlaylist(): Promise<string | null> {
-    return getMusicPlaylistFromMainSite();
+  async listMusicTracks(): Promise<MusicTrack[]> {
+    return getMusicTracksFromMainSite();
   }
 
   // --- Write Operations (User Generated Content) ---
@@ -727,13 +713,11 @@ export class ChurchApiService {
 export const churchApi = new ChurchApiService();
 
 // --- Re-export main site data functions for direct use ---
-export { 
-  getSermonsFromMainSite, 
-  getLivestreamFromMainSite, 
-  getMusicPlaylistFromMainSite,
-  getAllMusicPlaylistsFromMainSite,
+export {
+  getLivestreamFromMainSite,
+  getMusicTracksFromMainSite,
   getEventsFromMainSite,
-  getAnnouncementsFromMainSite 
+  getAnnouncementsFromMainSite
 } from './lib/mainSiteData';
 
-export type { MusicPlaylistFromMainSite } from './lib/mainSiteData';
+export type { MusicTrack } from './lib/mainSiteData';

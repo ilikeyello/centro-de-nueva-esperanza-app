@@ -47,10 +47,12 @@ const config: CapacitorConfig = {
     allowNavigation: [
       '*.emanuelavina.com',
       'emanuelavina.com',
-      '*.youtube.com',
-      '*.youtube-nocookie.com',
-      '*.ytimg.com',
-      '*.googlevideo.com',
+      // Mux video/audio/livestream playback + player assets
+      '*.mux.com',
+      'stream.mux.com',
+      'image.mux.com',
+      '*.litix.io',
+      'cdn.jsdelivr.net',
       '*.googleapis.com',
       '*.supabase.co',
       '*.stripe.com',

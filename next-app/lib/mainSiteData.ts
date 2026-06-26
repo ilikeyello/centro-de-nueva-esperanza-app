@@ -11,7 +11,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface LivestreamInfo {
-  url: string | null;
+  playbackId: string | null;
   isLive: boolean;
   title?: string | null;
   scheduledStart?: string | null;
@@ -19,22 +19,23 @@ export interface LivestreamInfo {
 
 export async function getLivestreamFromMainSite(): Promise<LivestreamInfo> {
   if (!churchOrgId) {
-    return { url: null, isLive: false };
+    return { playbackId: null, isLive: false };
   }
 
   try {
     const { data, error } = await supabase
       .from("livestreams")
-      .select("stream_url, is_live, organization_id, updated_at, title, scheduled_start")
+      .select("mux_playback_id, is_live, updated_at, title, scheduled_start")
       .eq("organization_id", churchOrgId)
+      .not("mux_playback_id", "is", null)
       .order("updated_at", { ascending: false })
       .limit(1);
 
     if (!error) {
       const row = data && data[0];
-      if (row && (row as any).stream_url) {
+      if (row && (row as any).mux_playback_id) {
         return {
-          url: (row as any).stream_url as string,
+          playbackId: (row as any).mux_playback_id as string,
           isLive: Boolean((row as any).is_live),
           title: (row as any).title ?? null,
           scheduledStart: (row as any).scheduled_start ?? null,
@@ -42,8 +43,41 @@ export async function getLivestreamFromMainSite(): Promise<LivestreamInfo> {
       }
     }
   } catch {
-    // ignore and fallback
+    // ignore
   }
 
-  return { url: null, isLive: false };
+  return { playbackId: null, isLive: false };
+}
+
+export interface MusicTrack {
+  id: string;
+  title: string;
+  artist: string | null;
+  playbackId: string;
+  duration: number | null;
+}
+
+export async function getMusicTracksFromMainSite(): Promise<MusicTrack[]> {
+  if (!churchOrgId) return [];
+  try {
+    const { data, error } = await supabase
+      .from("music_tracks")
+      .select("id, title, artist, mux_playback_id, mux_status, duration, sort_order, created_at")
+      .eq("organization_id", churchOrgId)
+      .eq("mux_status", "ready")
+      .not("mux_playback_id", "is", null)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+
+    if (error) return [];
+    return (data || []).map((t: any) => ({
+      id: String(t.id),
+      title: t.title || "Untitled",
+      artist: t.artist ?? null,
+      playbackId: t.mux_playback_id as string,
+      duration: t.duration ?? null,
+    }));
+  } catch {
+    return [];
+  }
 }

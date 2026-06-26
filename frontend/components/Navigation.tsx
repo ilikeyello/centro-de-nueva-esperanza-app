@@ -10,10 +10,15 @@ import {
   Maximize2,
   X,
   BookOpen,
+  Music,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
 import { cn } from "@/lib/utils";
+
+// <mux-player> web component is registered globally via the CDN script in index.html.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MuxPlayerEl = "mux-player" as any;
 
 interface NavigationProps {
   currentPage: string;
@@ -27,50 +32,39 @@ interface NavigationProps {
 export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipePageCount = 5, scrollContainer }: NavigationProps) {
   const { t } = useLanguage();
   const {
-    currentTrack: youtubeTrackUrl,
+    currentPlaybackId,
     currentTrackTitle,
     isPlaying,
     isMinimized,
     toggleMinimize,
-    closePlayer: closeYouTubePlayer,
+    closePlayer,
     pauseTrack,
     resumeTrack,
     playNextInQueue,
-    youtubePlayerRef,
-    setCurrentPlaylistVideoIds,
-    setCurrentPlaylistActiveIndex,
     isLivestreamPipMinimized,
     setLivestreamPipMinimized,
     setLivestreamPipDismissed,
     livestreamTitle,
-    hasInteractedWithLivestream,
     setHasInteractedWithLivestream,
     shouldShowLivestreamPip,
   } = usePlayer();
 
-  const playerRef = youtubePlayerRef;
+  // Persistent <mux-player> audio engine (hidden). Lives at the nav root so it
+  // stays mounted across page navigation and the music never stops.
+  const audioRef = useRef<HTMLElement | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerActuallyPlaying, setPlayerActuallyPlaying] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const lastLayoutIsDesktopRef = useRef<boolean | null>(null);
-  const lastPlaylistIdsRef = useRef<string>("");
-  // Captured at touchStart — lets onClick know whether the nav was compact when
-  // the finger came down, so we can block navigation and just expand instead.
   const wasExpandedAtTouchRef = useRef(true);
-  // Mirror of forceExpanded for the passive scroll handler (avoids stale closure).
-  // Initialized to false; the sync effect below keeps it current.
   const forceExpandedRef = useRef(false);
-  // Set true for a short window after page navigation so the programmatic
-  // scroll-to-saved-position doesn't trigger nav expansion.
   const justNavigatedRef = useRef(false);
 
   // ── Auto-hide nav: compact (icons only) vs expanded (icons + labels) ──────
   const [navExpanded, setNavExpanded] = useState(true);
   const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Music player is open AND not minimized → always keep nav expanded
-  const isMusicPlayerOpen = !!youtubeTrackUrl && !isMinimized;
+  const isMusicPlayerOpen = !!currentPlaybackId && !isMinimized;
   const isLivestreamOpen  = shouldShowLivestreamPip && !isLivestreamPipMinimized;
   const forceExpanded     = isMusicPlayerOpen || isLivestreamOpen;
 
@@ -86,7 +80,6 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
     scheduleCollapse();
   }, [scheduleCollapse]);
 
-  // Force expanded when player is open; schedule collapse when player is minimized/closed
   const prevForceExpandedRef = useRef(false);
   useEffect(() => {
     if (forceExpanded) {
@@ -94,33 +87,25 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
       if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
       prevForceExpandedRef.current = true;
     } else if (prevForceExpandedRef.current) {
-      // Player just minimized or closed — start the collapse countdown
       prevForceExpandedRef.current = false;
       scheduleCollapse();
     }
   }, [forceExpanded, scheduleCollapse]);
 
-  // Kick off the initial collapse timer on mount
   useEffect(() => {
     scheduleCollapse();
     return () => { if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep forceExpandedRef in sync so the passive scroll handler can read it.
   useEffect(() => { forceExpandedRef.current = forceExpanded; }, [forceExpanded]);
 
-  // After a page change, ignore scroll events for 400 ms so the programmatic
-  // scroll-to-saved-position doesn't expand the nav.
   useEffect(() => {
     justNavigatedRef.current = true;
     const t = setTimeout(() => { justNavigatedRef.current = false; }, 400);
     return () => clearTimeout(t);
   }, [currentPage]);
 
-  // Scroll-up → expand; scroll-down → collapse immediately.
-  // Listens to the active page's scroll container (per-page pager)
-  // or falls back to window scroll.
   useEffect(() => {
     if (isDesktop) return;
     const target = scrollContainer ?? null;
@@ -131,7 +116,6 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
       if (y < lastY - 4 && !justNavigatedRef.current) {
         expandNav();
       } else if (y > lastY + 8 && !forceExpandedRef.current) {
-        // Scrolling down — shrink right away, cancel any pending timer.
         if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
         setNavExpanded(false);
       }
@@ -149,31 +133,9 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
     startRight: number;
   } | null>(null);
 
-  const handlePlayClick = () => {
-    if (!playerRef.current) return;
-    const player = playerRef.current as any;
-    try {
-      if (typeof player.playVideo === "function") {
-        player.playVideo();
-      }
-    } catch {}
-    resumeTrack();
-  };
-
-  const handlePauseClick = () => {
-    if (!playerRef.current) return;
-    const player = playerRef.current as any;
-    try {
-      if (typeof player.pauseVideo === "function") {
-        player.pauseVideo();
-      }
-    } catch {}
-    pauseTrack();
-  };
-
-  const handleNextClick = () => {
-    playNextInQueue();
-  };
+  const handlePlayClick = () => resumeTrack();
+  const handlePauseClick = () => pauseTrack();
+  const handleNextClick = () => playNextInQueue();
 
   useEffect(() => {
     const target = scrollContainer ?? null;
@@ -215,136 +177,50 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
     };
   }, [dragState]);
 
-  // Create/destroy the global YouTube IFrame Player instance
+  // ── Mux audio engine: bind media events once ──────────────────────────────
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const w = window as any;
-    const prevIsDesktop = lastLayoutIsDesktopRef.current;
-    lastLayoutIsDesktopRef.current = isDesktop;
-    const layoutChanged = prevIsDesktop !== null && prevIsDesktop !== isDesktop;
-
-    if (!youtubeTrackUrl) {
-      if (playerRef.current && typeof playerRef.current.destroy === "function") {
-        try { playerRef.current.destroy(); } catch {}
-      }
-      playerRef.current = null;
-      setPlayerReady(false);
-      setPlayerActuallyPlaying(false);
-      lastPlaylistIdsRef.current = "";
-      return;
-    }
-    // Reset playing state when track URL changes
-    setPlayerActuallyPlaying(false);
-
-    if (layoutChanged && playerRef.current && typeof playerRef.current.destroy === "function") {
-      try { playerRef.current.destroy(); } catch {}
-      playerRef.current = null;
-      setPlayerReady(false);
-    }
-
-    const createPlayer = () => {
-      if (!w.YT || !w.YT.Player) return;
-      if (playerRef.current) return;
-      const container = document.getElementById("global-music-player");
-      if (!container) return;
-
-      playerRef.current = new w.YT.Player("global-music-player", {
-        host: "https://www.youtube-nocookie.com",
-        height: "100%",
-        width: "100%",
-        playerVars: {
-          autoplay: 1,
-          rel: 0,
-          modestbranding: 1,
-          playsinline: 1,
-        },
-        events: {
-          onReady: () => setPlayerReady(true),
-          onError: () => {
-            // Video unavailable / embedding disabled — skip to next automatically
-            playNextInQueue();
-            // Still mark as "playing" so overlay clears and doesn't get stuck
-            setPlayerActuallyPlaying(true);
-          },
-          onStateChange: (event: any) => {
-            const YT = w.YT;
-            if (!YT || !YT.PlayerState) return;
-            if (event.data === YT.PlayerState.PLAYING) {
-              setPlayerActuallyPlaying(true);
-            }
-            if (event.data === YT.PlayerState.ENDED) {
-              playNextInQueue();
-            }
-            // Capture playlist video IDs once the player starts playing
-            if (event.data === YT.PlayerState.PLAYING && event.target) {
-              try {
-                const playlist = event.target.getPlaylist?.();
-                if (Array.isArray(playlist) && playlist.length > 0) {
-                  const key = playlist.join(",");
-                  if (key !== lastPlaylistIdsRef.current) {
-                    lastPlaylistIdsRef.current = key;
-                    setCurrentPlaylistVideoIds(playlist);
-                  }
-                }
-                const idx = event.target.getPlaylistIndex?.();
-                if (typeof idx === "number" && idx >= 0) {
-                  setCurrentPlaylistActiveIndex(idx);
-                }
-              } catch {}
-            }
-          },
-        },
-      });
+    const el = audioRef.current;
+    if (!el) return;
+    const onEnded = () => playNextInQueue();
+    const onPlaying = () => { setPlayerActuallyPlaying(true); setPlayerReady(true); };
+    const onPause = () => setPlayerActuallyPlaying(false);
+    const onLoaded = () => setPlayerReady(true);
+    el.addEventListener("ended", onEnded);
+    el.addEventListener("playing", onPlaying);
+    el.addEventListener("pause", onPause);
+    el.addEventListener("loadedmetadata", onLoaded);
+    return () => {
+      el.removeEventListener("ended", onEnded);
+      el.removeEventListener("playing", onPlaying);
+      el.removeEventListener("pause", onPause);
+      el.removeEventListener("loadedmetadata", onLoaded);
     };
+  }, [playNextInQueue]);
 
-    if (w.YT && w.YT.Player) {
-      createPlayer();
-    } else {
-      const prevReady = w.onYouTubeIframeAPIReady;
-      w.onYouTubeIframeAPIReady = () => {
-        if (typeof prevReady === "function") prevReady();
-        createPlayer();
-      };
-      const existingScript = document.querySelector(
-        "script[src='https://www.youtube.com/iframe_api']"
-      );
-      if (!existingScript) {
-        const tag = document.createElement("script");
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.body.appendChild(tag);
+  // Load a new track when the playback id changes.
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const el = audioRef.current as any;
+    if (!el) return;
+    setPlayerReady(false);
+    setPlayerActuallyPlaying(false);
+    if (currentPlaybackId) {
+      el.playbackId = currentPlaybackId;
+      if (isPlaying) {
+        Promise.resolve(el.play?.()).catch(() => {});
       }
     }
-  }, [youtubeTrackUrl, playNextInQueue, isDesktop]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPlaybackId]);
 
+  // Reflect play/pause intent onto the engine.
   useEffect(() => {
-    if (!playerRef.current || !playerReady || !youtubeTrackUrl) return;
-
-    const player = playerRef.current as any;
-    try {
-      if (youtubeTrackUrl.includes("list=")) {
-        const listMatch = youtubeTrackUrl.match(/list=([^&]+)/);
-        if (listMatch && listMatch[1] && typeof player.loadPlaylist === "function") {
-          player.loadPlaylist({ list: listMatch[1], listType: "playlist" });
-          return;
-        }
-      }
-      if (typeof player.loadVideoById === "function") {
-        player.loadVideoById(youtubeTrackUrl);
-      }
-      if (typeof player.playVideo === "function") {
-        player.playVideo();
-      }
-    } catch {}
-  }, [youtubeTrackUrl, playerReady]);
-
-  useEffect(() => {
-    if (!playerRef.current || !playerReady || !youtubeTrackUrl || !isPlaying) return;
-    const player = playerRef.current as any;
-    try {
-      if (typeof player.playVideo === "function") player.playVideo();
-    } catch {}
-  }, [isPlaying, playerReady, youtubeTrackUrl]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const el = audioRef.current as any;
+    if (!el || !currentPlaybackId) return;
+    if (isPlaying) Promise.resolve(el.play?.()).catch(() => {});
+    else el.pause?.();
+  }, [isPlaying, currentPlaybackId]);
 
   const handleDesktopPlayerMouseDown = (event: React.MouseEvent) => {
     if (window.innerWidth < 768) return;
@@ -384,6 +260,21 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
     </div>
   ) : null;
 
+  // Album-art placeholder shown in place of the old video frame for audio tracks.
+  const albumArt = (
+    <div className="relative h-full w-full gpu-layer flex items-center justify-center bg-[#262626]">
+      {!playerActuallyPlaying && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#262626]">
+          <div className="h-6 w-6 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+        </div>
+      )}
+      <div className="flex flex-col items-center gap-2 text-white/70">
+        <Music className="h-10 w-10" />
+        <span className="px-4 text-center text-xs text-white/60 line-clamp-2">{currentTrackTitle}</span>
+      </div>
+    </div>
+  );
+
   const playerControlBtn = (onClick: () => void, label: string, icon: React.ReactNode, variant?: "close") => (
     <button
       type="button"
@@ -403,26 +294,18 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
   return (
     <nav
       onTouchStart={!isDesktop ? () => {
-        // Capture expanded state BEFORE expandNav() so button onClick can see it.
         wasExpandedAtTouchRef.current = navExpanded;
         expandNav();
       } : undefined}
       style={{
         ...(!isDesktop ? {
           bottom: "max(calc(env(safe-area-inset-bottom) + 8px), 12px)",
-          // Always centred — only width animates, so the spring easing is clean
           left: '50%',
           right: 'auto',
-          // translateZ(0) pre-promotes the nav to its own GPU compositor layer so that
-          // transforms applied to sibling <main> during swipe don't cause the YouTube
-          // iframe inside this fixed nav to go blank/grey (iOS Safari compositor bug).
           transform: 'translateX(-50%) translateZ(0)',
           width: navExpanded ? 'calc(100% - 24px)' : '230px',
-          // Spring cubic-bezier: slight overshoot → bouncy/bubbly feel
           transition: 'width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease',
         } : {
-          // iPad/desktop top bar sits at top:0. Drop its content below the
-          // status-bar safe-area inset so it isn't flush against the top edge.
           paddingTop: 'env(safe-area-inset-top)',
         }),
         backgroundColor: (isTransparent && isDesktop) ? "transparent" : "var(--surface)",
@@ -512,7 +395,7 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                       </button>
                     </div>
                   </div>
-                  {/* Expanded placeholder. Media.tsx iframe sits identically on top of this! */}
+                  {/* Expanded placeholder. Media.tsx player sits identically on top of this! */}
                   <div className="w-full h-40 rounded-b-2xl border-x border-b border-[--border-color] bg-[#262626] transition-all" />
                 </>
               )}
@@ -520,16 +403,11 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
           )}
 
           {/* ===== MOBILE MUSIC PLAYER (above nav tabs) ===== */}
-          {youtubeTrackUrl && !isDesktop && (
+          {currentPlaybackId && !isDesktop && (
             <div className={cn(
               "music-player-dark px-3 md:hidden",
-              // Top padding only when the bar UI is visible; when minimized + the
-              // nav is compact the bar is hidden and the clipped iframe is 0-height.
               (navExpanded || !isMinimized) && "pt-1.5"
             )}>
-              {/* Bar UI — hidden when minimized AND the nav is compact, leaving only
-                  the pulsing red dot on the Media icon. The iframe below stays
-                  mounted regardless so the music never stops. */}
               {(navExpanded || !isMinimized) && (isMinimized ? (
                 <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
                   <div className="min-w-0 flex-1 max-w-[60%]">
@@ -561,14 +439,11 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                     )}
                     {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-4 w-4" />)}
                     {playerControlBtn(toggleMinimize, t("Minimize", "Minimizar"), <Minimize2 className="h-4 w-4" />)}
-                    {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-4 w-4" />, "close")}
+                    {playerControlBtn(closePlayer, t("Close", "Cerrar"), <X className="h-4 w-4" />, "close")}
                   </div>
                 </div>
               ))}
-              {/* Player iframe — always in DOM so music keeps playing when minimized.
-                  Minimize CLIPS this box to 0; the stable-height stage inside keeps
-                  the iframe sized so it isn't resized (resize-to-0 blanks it grey in
-                  WKWebView). */}
+              {/* Album art frame — clipped to 0 when minimized. */}
               <div
                 className={cn(
                   "relative w-full overflow-hidden transition-all gpu-layer",
@@ -579,22 +454,19 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                 style={{ backgroundColor: isMinimized ? undefined : "#262626" }}
               >
                 <div className="relative h-40 w-full gpu-layer">
-                  {/* Loading overlay — shows only until the player is ready.
-                      Using playerReady (not playerActuallyPlaying) so the overlay clears
-                      once YouTube initializes, even if autoplay is blocked on iOS. */}
                   {!playerReady && (
                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#262626]">
                       <div className="h-6 w-6 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
                     </div>
                   )}
-                  <div id="global-music-player" className="h-full w-full" />
+                  {albumArt}
                 </div>
               </div>
             </div>
           )}
 
           {/* ===== DESKTOP MINIMIZED BAR (integrated in navbar) ===== */}
-          {youtubeTrackUrl && isDesktop && isMinimized && (
+          {currentPlaybackId && isDesktop && isMinimized && (
             <div className="music-player-dark hidden md:block px-3 py-1">
               <div className="flex items-center justify-center gap-3 rounded-xl bg-[--surface] px-4 py-1.5 shadow-sm">
                 <div className="min-w-0 max-w-[14rem]">
@@ -608,7 +480,7 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                   )}
                   {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-3.5 w-3.5" />)}
                   {playerControlBtn(toggleMinimize, t("Expand", "Expandir"), <Maximize2 className="h-3.5 w-3.5" />)}
-                  {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
+                  {playerControlBtn(closePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
                 </div>
               </div>
             </div>
@@ -661,10 +533,7 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
               transition: 'padding 0.25s ease',
             }}
           >
-            {/* Sliding active-tab background pill — animates between tabs */}
             {!isDesktop && swipePageIndex >= 0 && (() => {
-              // Horizontal padding of the tabs row changes between expanded/compact modes.
-              // The pill must sit inside the padding, not over it.
               const padH = navExpanded ? 12 : 4;
               return (
                 <div
@@ -687,10 +556,8 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                 <button
                   key={item.id}
                   onClick={() => {
-                    // If the nav was compact when this touch started, the tap's
-                    // purpose was to expand — don't also navigate.
                     if (!isDesktop && !wasExpandedAtTouchRef.current) {
-                      wasExpandedAtTouchRef.current = true; // reset for next tap
+                      wasExpandedAtTouchRef.current = true;
                       return;
                     }
                     onNavigate(item.id);
@@ -700,13 +567,10 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                     "md:flex-initial md:rounded-lg md:text-sm"
                   )}
                 >
-                  {/* Inner pill — this carries the active highlight so it stays tight around the icon */}
                   <div
                     className={cn(
                       "relative flex flex-col items-center justify-center rounded-xl transition-all duration-250",
                       "md:flex-row md:gap-2 md:px-4 md:py-2",
-                      // On mobile the sliding indicator div handles the background;
-                      // individual bg only needed on desktop
                       isActive
                         ? cn("text-sage", "md:bg-sage/15")
                         : cn("text-ink-mid", "md:hover:text-sage md:hover:bg-sage-light"),
@@ -721,9 +585,8 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                   >
                     <div className="relative">
                       <Icon className={cn("flex-shrink-0 transition-all duration-250", compact ? "h-[18px] w-[18px]" : "h-5 w-5")} />
-                      {/* Red dot on Media icon when miniplayer is active but hidden */}
                       {item.id === 'media' && compact && (
-                        (!!youtubeTrackUrl && isMinimized) ||
+                        (!!currentPlaybackId && isMinimized) ||
                         (shouldShowLivestreamPip && isLivestreamPipMinimized)
                       ) && (
                         <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_4px_rgba(239,68,68,0.9)]" />
@@ -741,15 +604,14 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                     </span>
                   </div>
                 </button>
-
               );
             })}
           </div>
         </div>
       </div>
 
-      {/* ===== DESKTOP FLOATING PLAYER — always in DOM so music persists when minimized ===== */}
-      {youtubeTrackUrl && isDesktop && (
+      {/* ===== DESKTOP FLOATING PLAYER ===== */}
+      {currentPlaybackId && isDesktop && (
         <div
           className={cn(
             "music-player-dark fixed z-[60] w-80 transition-all duration-200",
@@ -776,20 +638,24 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                 )}
                 {playerControlBtn(handleNextClick, t("Next", "Siguiente"), <SkipForward className="h-3.5 w-3.5" />)}
                 {playerControlBtn(toggleMinimize, t("Minimize", "Minimizar"), <Minimize2 className="h-3.5 w-3.5" />)}
-                {playerControlBtn(closeYouTubePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
+                {playerControlBtn(closePlayer, t("Close", "Cerrar"), <X className="h-3.5 w-3.5" />, "close")}
               </div>
             </div>
             <div className="mt-2 aspect-video w-full overflow-hidden relative gpu-layer">
-              {!playerActuallyPlaying && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#262626]">
-                  <div className="h-6 w-6 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                </div>
-              )}
-              <div id="global-music-player" className="h-full w-full" />
+              {albumArt}
             </div>
           </div>
         </div>
       )}
+
+      {/* ===== PERSISTENT HIDDEN MUX AUDIO ENGINE — never unmounts, so audio keeps playing ===== */}
+      <MuxPlayerEl
+        ref={audioRef}
+        audio=""
+        stream-type="on-demand"
+        style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+        aria-hidden="true"
+      />
     </nav>
   );
 }

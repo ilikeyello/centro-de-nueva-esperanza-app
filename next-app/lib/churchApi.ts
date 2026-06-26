@@ -22,7 +22,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export interface Sermon {
   id: number;
   title: string;
-  youtubeUrl: string;
+  muxPlaybackId: string | null;
+  description?: string | null;
   createdAt: string;
 }
 
@@ -125,30 +126,37 @@ class ChurchApiService {
 
   sermons = {
     list: async (): Promise<{ sermons: Sermon[] }> => {
-      let localSermons: Sermon[] = [];
       try {
         const { data, error } = await this.client
           .from("sermons")
-          .select("*")
+          .select("id, title, description, mux_playback_id, mux_status, created_at")
           .eq("organization_id", this.orgId)
+          .eq("mux_status", "ready")
+          .not("mux_playback_id", "is", null)
           .order("created_at", { ascending: false })
-          .limit(10);
+          .limit(50);
 
         if (error) throw error;
 
-        localSermons = (data ?? []).map((s: any) => ({
+        const sermons: Sermon[] = (data ?? []).map((s: any) => ({
           id: s.id,
           title: s.title,
-          youtubeUrl: s.youtube_url,
+          muxPlaybackId: s.mux_playback_id,
+          description: s.description,
           createdAt: s.created_at,
         }));
-      } catch {
-        localSermons = [];
-      }
 
-      return { sermons: localSermons };
+        return { sermons };
+      } catch {
+        return { sermons: [] };
+      }
     },
   };
+
+  async listMusicTracks() {
+    const { getMusicTracksFromMainSite } = await import("./mainSiteData");
+    return getMusicTracksFromMainSite();
+  }
 
   async listEvents(params: { upcoming?: boolean }): Promise<{ events: Event[] }> {
     return this.events.list(params);

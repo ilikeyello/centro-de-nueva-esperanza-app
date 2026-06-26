@@ -1,193 +1,20 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { usePlayer } from "../../contexts/PlayerContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TriviaAdminPanelFinal } from "../admin/TriviaAdminPanelFinal";
 import { WordSearchAdminPanel } from "../admin/WordSearchAdminPanel";
-import { Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
+/**
+ * In-app admin. Media (devotionals, livestream, worship music) is now managed
+ * through the Emanuel Web Design dashboard, where videos/audio are uploaded to
+ * Mux. This page keeps the in-app game admin (trivia + word search) only.
+ */
 export function AdminUpload() {
   const { t } = useLanguage();
-  const { playlistUrl, setPlaylistUrl, livestreamUrl, setLivestreamUrl } = usePlayer();
   const [uploadPasscode, setUploadPasscode] = useState("");
-  const [playlistStatus, setPlaylistStatus] = useState<string | null>(null);
-  const [sermons, setSermons] = useState<
-    { id: number; title: string; youtubeUrl: string; createdAt: string }[]
-  >([]);
-  const [loadingSermons, setLoadingSermons] = useState(false);
-  const [sermonTitle, setSermonTitle] = useState("");
-  const [sermonUrl, setSermonUrl] = useState("");
-  const [sermonStatus, setSermonStatus] = useState<string | null>(null);
-  const [livestreamStatus, setLivestreamStatus] = useState<string | null>(null);
-  const [openGameAdmin, setOpenGameAdmin] = useState<"trivia" | "wordSearch" | null>(null);
-  const [localLivestreamUrl, setLocalLivestreamUrl] = useState("");
 
-  // Initialize local livestream URL from context on mount
-  useEffect(() => {
-    setLocalLivestreamUrl(livestreamUrl || "");
-  }, []);
-
-  useEffect(() => {
-    document.title = t("Admin Upload", "Carga de Admin");
-  }, [t]);
-
-  useEffect(() => {
-    const loadSermons = async () => {
-      try {
-        setLoadingSermons(true);
-        const base = import.meta.env.DEV
-          ? "http://127.0.0.1:4000"
-          : "https://prod-cne-sh82.encr.app";
-        const res = await fetch(`${base}/sermons/recent`);
-        if (!res.ok) return;
-
-        const raw = (await res.json()) as any;
-        const rawSermons = raw?.sermons;
-        const list:
-          { id: number; title: string; youtubeUrl: string; createdAt: string }[] = Array.isArray(rawSermons)
-          ? rawSermons
-          : rawSermons && typeof rawSermons === "object"
-          ? Object.values(rawSermons)
-          : [];
-
-        setSermons(list);
-      } catch {
-        // ignore
-      } finally {
-        setLoadingSermons(false);
-      }
-    };
-
-    loadSermons();
-  }, []);
-
-  const handleSavePlaylist = async () => {
-    setPlaylistStatus(null);
-
-    const trimmedPasscode = uploadPasscode.trim();
-
-    if (!playlistUrl.trim()) {
-      setPlaylistStatus(
-        t(
-          "Enter a playlist URL before saving.",
-          "Ingresa una URL de lista de reproducción antes de guardar."
-        )
-      );
-      return;
-    }
-    if (!trimmedPasscode) {
-      setPlaylistStatus(
-        t(
-          "Enter the upload passcode before saving.",
-          "Ingresa el código de carga antes de guardar."
-        )
-      );
-      return;
-    }
-
-    try {
-      const base = import.meta.env.DEV
-        ? "http://127.0.0.1:4000"
-        : "https://prod-cne-sh82.encr.app";
-      const res = await fetch(`${base}/playlist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          passcode: trimmedPasscode,
-          url: playlistUrl.trim(),
-        }),
-      });
-
-      if (!res.ok) {
-        setPlaylistStatus(
-          t(
-            "Failed to save playlist URL. Check the passcode and URL.",
-            "No se pudo guardar la URL de la lista de reproducción. Verifica el código y la URL."
-          )
-        );
-        return;
-      }
-
-      setPlaylistStatus(
-        t(
-          "Playlist URL saved successfully.",
-          "URL de la lista de reproducción guardada correctamente."
-        )
-      );
-    } catch {
-      setPlaylistStatus(
-        t(
-          "An unexpected error occurred while saving the playlist URL.",
-          "Ocurrió un error inesperado al guardar la URL de la lista de reproducción."
-        )
-      );
-    }
-  };
-
-  const handleSaveLivestream = async () => {
-    setLivestreamStatus(null);
-
-    const trimmedPasscode = uploadPasscode.trim();
-
-    // Allow empty URLs (erasing) - don't require validation
-    if (!trimmedPasscode) {
-      setLivestreamStatus(
-        t(
-          "Enter the upload passcode before saving.",
-          "Ingresa el código de carga antes de guardar."
-        )
-      );
-      return;
-    }
-
-    try {
-      const base = import.meta.env.DEV
-        ? "http://127.0.0.1:4000"
-        : "https://prod-cne-sh82.encr.app";
-      console.log('Saving livestream URL:', localLivestreamUrl.trim(), 'to', base);
-      const res = await fetch(`${base}/livestream`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          passcode: trimmedPasscode,
-          url: localLivestreamUrl.trim(),
-        }),
-      });
-
-      console.log('Livestream save response status:', res.status, 'ok:', res.ok);
-      const responseText = await res.text();
-      console.log('Livestream save response body:', responseText);
-
-      if (!res.ok) {
-        setLivestreamStatus(
-          t(
-            "Failed to save livestream URL. Check the passcode and URL.",
-            "No se pudo guardar la URL de transmisión en vivo. Verifica el código y la URL."
-          )
-        );
-        return;
-      }
-
-      // Update the context with the saved URL
-      setLivestreamUrl(localLivestreamUrl.trim());
-
-      setLivestreamStatus(
-        t(
-          "Livestream URL saved successfully.",
-          "URL de transmisión en vivo guardada correctamente."
-        )
-      );
-    } catch (error) {
-      console.error('Error saving livestream:', error);
-      setLivestreamStatus(
-        t(
-          "An unexpected error occurred while saving the livestream URL.",
-          "Ocurrió un error inesperado al guardar la URL de transmisión en vivo."
-        )
-      );
-    }
-  };
+  const dashboardUrl = "https://www.emanuelavina.com/dashboard";
 
   return (
     <div className="container mx-auto max-w-3xl space-y-6 px-4 py-10">
@@ -196,394 +23,72 @@ export function AdminUpload() {
           {t("Admin", "Admin")}
         </p>
         <h1 className="text-2xl font-bold text-[--ink-dark]">
-          {t("Admin Media & Devotionals", "Admin Medios y Devocionales")}
+          {t("Admin", "Admin")}
         </h1>
         <p className="text-sm text-[--ink-light]">
           {t(
-            "Use this page to manage the YouTube music playlist and devotionals for the site.",
-            "Usa esta página para administrar la lista de reproducción de música de YouTube y los devocionales para el sitio."
+            "Manage in-app games here. Devotionals, livestream and worship music are managed in the web dashboard.",
+            "Administra los juegos de la app aquí. Los devocionales, la transmisión en vivo y la música se administran en el panel web."
           )}
         </p>
       </div>
 
+      {/* Media management moved to the web dashboard (Mux) */}
+      <div className="rounded-2xl border border-[--border-color] bg-[--surface]/40 p-5">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
+          {t("Media, Livestream & Music", "Medios, Transmisión y Música")}
+        </p>
+        <p className="mt-2 text-sm text-[--ink-mid]">
+          {t(
+            "Upload video devotionals, set up the Mux livestream, and add worship tracks from the church web dashboard. Content appears in the app automatically once it finishes processing.",
+            "Sube devocionales en video, configura la transmisión en vivo de Mux y agrega canciones de adoración desde el panel web de la iglesia. El contenido aparece en la app automáticamente cuando termina de procesarse."
+          )}
+        </p>
+        <a
+          href={dashboardUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-2 rounded-md bg-[--sage] px-3 py-1.5 text-[0.75rem] font-semibold text-white transition-colors hover:bg-[--sage-mid]"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          {t("Open Web Dashboard", "Abrir Panel Web")}
+        </a>
+      </div>
+
+      {/* In-app game admin */}
       <div className="rounded-2xl border border-[--border-color] bg-[--surface]/40 p-5 text-xs text-[--ink-mid]">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
           {t("Admin Code", "Código de Admin")}
         </p>
         <p className="mt-1 text-[--ink-light]">
           {t(
-            "Enter the secret admin code once. It will be used for devotionals.",
-            "Ingresa el código secreto de admin una sola vez. Se usará para devocionales."
+            "Enter the secret admin code to manage games.",
+            "Ingresa el código secreto de admin para administrar los juegos."
           )}
         </p>
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-          <input
-            type="password"
-            placeholder={t("Admin code", "Código de admin")}
-            value={uploadPasscode}
-            onChange={(e) => setUploadPasscode(e.target.value)}
-            className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage] sm:w-64"
-          />
-          <p className="text-[0.65rem] text-[--ink-light] sm:flex-1">
-            {t("Required for all actions on this page.", "Requerido para todas las acciones en esta página.")}
-          </p>
+        <input
+          type="password"
+          placeholder={t("Admin code", "Código de admin")}
+          value={uploadPasscode}
+          onChange={(e) => setUploadPasscode(e.target.value)}
+          className="mt-3 w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage] sm:w-64"
+        />
+
+        <div className="mt-5">
+          <Tabs defaultValue="trivia" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="trivia">{t("Trivia", "Trivia")}</TabsTrigger>
+              <TabsTrigger value="wordSearch">{t("Word Search", "Sopa de Letras")}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="trivia" className="mt-4">
+              <TriviaAdminPanelFinal passcode={uploadPasscode} />
+            </TabsContent>
+            <TabsContent value="wordSearch" className="mt-4">
+              <WordSearchAdminPanel passcode={uploadPasscode} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
-
-      <div className="rounded-2xl border border-[--border-color] bg-[--surface]/40 p-5 text-xs text-[--ink-mid]">
-        <Tabs defaultValue="media" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="media">{t("Music", "Música")}</TabsTrigger>
-            <TabsTrigger value="other">{t("Media", "Medios")}</TabsTrigger>
-            <TabsTrigger value="games">{t("Games", "Juegos")}</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="media" className="space-y-4 mt-4">
-            <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
-                {t("Music Playlist", "Lista de Música")}
-              </p>
-              <p className="mt-1 text-[--ink-light]">
-                {t(
-                  "Set the YouTube playlist used by the Music & Worship section.",
-                  "Configura la lista de reproducción de YouTube usada por la sección de Música y Adoración."
-                )}
-              </p>
-              <div className="mt-3 space-y-2 text-[0.75rem]">
-                <input
-                  type="text"
-                  value={playlistUrl}
-                  onChange={(e) => setPlaylistUrl(e.target.value)}
-                  className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage]"
-                  placeholder="https://youtube.com/playlist?list=..."
-                />
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    className="bg-[--sage] px-3 py-1 text-[0.75rem] font-semibold hover:bg-[--sage-mid]"
-                    onClick={handleSavePlaylist}
-                  >
-                    {t("Save Playlist", "Guardar Lista de Reproducción")}
-                  </Button>
-                </div>
-                {playlistStatus && (
-                  <p className="text-[0.7rem] text-[--ink-light]">{playlistStatus}</p>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="other" className="space-y-4 mt-4">
-            <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
-                {t("Livestream Link", "Enlace de Transmisión en Vivo")}
-              </p>
-              <p className="mt-1 text-[--ink-light]">
-                {t(
-            "Set the YouTube livestream link used by the Watch Live player on the Media page.",
-            "Configura el enlace de transmisión en vivo de YouTube usado por el reproductor Ver en Vivo en la página de Medios."
-          )}
-        </p>
-        <div className="mt-3 space-y-2 text-[0.75rem]">
-                <input
-                  type="text"
-                  value={localLivestreamUrl}
-                  onChange={(e) => setLocalLivestreamUrl(e.target.value)}
-                  className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage]"
-                  placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
-                />
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    className="bg-[--sage] px-3 py-1 text-[0.75rem] font-semibold hover:bg-[--sage-mid]"
-                    onClick={handleSaveLivestream}
-                  >
-                    {t("Save Livestream", "Guardar Transmisión en Vivo")}
-                  </Button>
-                </div>
-                {livestreamStatus && (
-                  <p className="text-[0.7rem] text-[--ink-light]">{livestreamStatus}</p>
-                )}
-                <p className="text-[0.7rem] text-[--ink-light]">
-                  {t(
-                    "Tip: You can paste a regular YouTube link; we will convert it to the correct embed format.",
-                    "Consejo: Puedes pegar un enlace normal de YouTube; lo convertiremos al formato de inserción correcto."
-                  )}
-                </p>
-              </div>
-            </div>
-            
-            <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[--ink-light]">
-                {t("Devotionals", "Devocionales")}
-              </p>
-              <p className="mt-1 text-[--ink-light]">
-                {t(
-                  "Add or remove YouTube devotional videos shown on the Media page.",
-                  "Agrega o elimina videos devocionales de YouTube que se muestran en la página de Medios."
-                )}
-              </p>
-
-              <form
-                className="mt-4 space-y-2 text-[0.75rem]"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  setSermonStatus(null);
-
-                  if (!sermonTitle.trim() || !sermonUrl.trim()) {
-                    setSermonStatus(
-                      t(
-                        "Enter a title and YouTube URL before saving.",
-                        "Ingresa un título y URL de YouTube antes de guardar."
-                )
-              );
-              return;
-            }
-            if (!uploadPasscode) {
-              setSermonStatus(
-                t(
-                  "Enter the upload passcode before saving.",
-                  "Ingresa el código de carga antes de guardar."
-                )
-              );
-              return;
-            }
-
-            try {
-              const base = import.meta.env.DEV
-                ? "http://127.0.0.1:4000"
-                : "https://prod-cne-sh82.encr.app";
-              const res = await fetch(`${base}/sermons`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  passcode: uploadPasscode,
-                  title: sermonTitle.trim(),
-                  youtubeUrl: sermonUrl.trim(),
-                }),
-              });
-
-              if (!res.ok) {
-                setSermonStatus(
-                  t(
-                    "Failed to save sermon. Check the passcode and URL.",
-                    "No se pudo guardar el sermón. Verifica el código y la URL."
-                  )
-                );
-                return;
-              }
-
-              const created: { id: number } = await res.json();
-              setSermons((prev) => {
-                const current = Array.isArray(prev) ? prev : [];
-                return [
-                  {
-                    id: created.id,
-                    title: sermonTitle.trim(),
-                    youtubeUrl: sermonUrl.trim(),
-                    createdAt: new Date().toISOString(),
-                  },
-                  ...current,
-                ];
-              });
-              setSermonTitle("");
-              setSermonUrl("");
-              setSermonStatus(
-                t(
-                  "Devotional saved. Reload the Media page to see it.",
-                  "Devocional guardado. Recarga la página de Medios para verlo."
-                )
-              );
-            } catch {
-              setSermonStatus(
-                t(
-                  "An unexpected error occurred while saving the sermon.",
-                  "Ocurrió un error inesperado al guardar el sermón."
-                )
-              );
-            }
-          }}
-        >
-          <input
-            type="text"
-            placeholder={t("Devotional title", "Título del devocional")}
-            value={sermonTitle}
-            onChange={(e) => setSermonTitle(e.target.value)}
-            className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage]"
-          />
-          <input
-            type="text"
-            placeholder="https://www.youtube.com/watch?v=..."
-            value={sermonUrl}
-            onChange={(e) => setSermonUrl(e.target.value)}
-            className="w-full rounded-md border border-[--border-color] bg-[--surface-mid] px-2 py-1 text-[0.7rem] text-[--ink-dark] placeholder:text-[--ink-light] focus:outline-none focus:ring-[--sage]"
-          />
-          <Button
-            type="submit"
-            className="mt-1 bg-[--sage] px-3 py-1 text-[0.75rem] font-semibold hover:bg-[--sage-mid]"
-          >
-            {t("Save Devotional", "Guardar Devocional")}
-          </Button>
-        </form>
-
-        {sermonStatus && (
-          <p className="mt-2 text-[0.7rem] text-[--ink-light]">{sermonStatus}</p>
-        )}
-
-        <div className="mt-4 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[--border-color] bg-[--surface-mid]/40 p-2">
-          {loadingSermons && (
-            <p className="text-[0.7rem] text-[--ink-light]">
-              {t("Loading devotionals...", "Cargando devocionales...")}
-            </p>
-          )}
-          {!loadingSermons && sermons.length === 0 && (
-            <p className="text-[0.7rem] text-[--ink-light]">
-              {t("No devotionals found.", "No se encontraron devocionales.")}
-            </p>
-          )}
-          {!loadingSermons && sermons.length > 0 && (
-            <ul className="space-y-1">
-              {sermons.map((sermon) => (
-                <li
-                  key={sermon.id}
-                  className="flex items-center justify-between rounded-md bg-[--surface]/80 px-2 py-1.5"
-                >
-                  <div className="min-w-0 flex-1 pr-2">
-                    <p className="truncate text-[0.8rem] font-medium text-[--ink-dark]">
-                      {sermon.title}
-                    </p>
-                    <p className="truncate text-[0.65rem] text-[--ink-light]">
-                      {sermon.youtubeUrl}
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="ml-2 bg-red-700 px-2 py-1 text-[0.7rem] hover:bg-red-800"
-                    onClick={async () => {
-                      if (!uploadPasscode) {
-                        setSermonStatus(
-                          t(
-                            "Enter the upload passcode before deleting.",
-                            "Ingresa el código de carga antes de eliminar."
-                          )
-                        );
-                        return;
-                      }
-
-                      const confirmDelete = window.confirm(
-                        t(
-                          "Are you sure you want to delete this devotional?",
-                          "¿Seguro que deseas eliminar este devocional?"
-                        )
-                      );
-                      if (!confirmDelete) return;
-
-                      try {
-                        const base = import.meta.env.DEV
-                          ? "http://127.0.0.1:4000"
-                          : "https://prod-cne-sh82.encr.app";
-                        const res = await fetch(`${base}/sermons/delete`, {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            id: sermon.id,
-                            passcode: uploadPasscode,
-                          }),
-                        });
-
-                        if (!res.ok) {
-                          setSermonStatus(
-                            t(
-                              "Delete failed: server returned an error.",
-                              "La eliminación falló: el servidor devolvió un error."
-                            )
-                          );
-                          return;
-                        }
-
-                        setSermons((prev) => {
-                          const current = Array.isArray(prev) ? prev : [];
-                          return current.filter((s) => s.id !== sermon.id);
-                        });
-                        setSermonStatus(
-                          t(
-                            "Devotional deleted.",
-                            "Devocional eliminado."
-                          )
-                        );
-                      } catch {
-                        setSermonStatus(
-                          t(
-                            "An unexpected error occurred while deleting.",
-                            "Ocurrió un error inesperado al eliminar."
-                          )
-                        );
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="games" className="space-y-3 mt-4">
-            <div className="space-y-3">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between rounded-lg border border-[--border-color] bg-[--surface]/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-[--ink-dark] hover:border-[--sage]"
-                onClick={() =>
-                  setOpenGameAdmin((prev) => (prev === "trivia" ? null : "trivia"))
-                }
-              >
-                <span>{t("Bible Trivia", "Trivia Bíblica")}</span>
-                {openGameAdmin === "trivia" ? (
-                  <ChevronDown className="h-4 w-4 text-[--ink-light]" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-[--ink-light]" />
-                )}
-              </button>
-              {openGameAdmin === "trivia" && (
-                <div className="rounded-lg border border-[--border-color] bg-[--surface-mid]/60 p-3">
-                  <TriviaAdminPanelFinal passcode={uploadPasscode} />
-                </div>
-              )}
-
-              <button
-                type="button"
-                className="mt-2 flex w-full items-center justify-between rounded-lg border border-[--border-color] bg-[--surface]/60 px-3 py-2 text-left text-[0.8rem] font-semibold text-[--ink-dark] hover:border-[--sage]"
-                onClick={() =>
-                  setOpenGameAdmin((prev) => (prev === "wordSearch" ? null : "wordSearch"))
-                }
-              >
-                <span>{t("Word Search", "Sopa de Letras")}</span>
-                {openGameAdmin === "wordSearch" ? (
-                  <ChevronDown className="h-4 w-4 text-[--ink-light]" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-[--ink-light]" />
-                )}
-              </button>
-              {openGameAdmin === "wordSearch" && (
-                <div className="rounded-lg border border-[--border-color] bg-[--surface-mid]/60 p-3">
-                  <WordSearchAdminPanel passcode={uploadPasscode} />
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      <p className="text-[0.7rem] text-[--ink-light]">
-        {t(
-          "Tip: Bookmark this URL. It is not linked from the main site.",
-          "Consejo: Guarda esta URL en favoritos. No está enlazada desde el sitio principal."
-        )}
-      </p>
     </div>
   );
 }

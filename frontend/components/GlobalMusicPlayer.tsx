@@ -1,26 +1,8 @@
-import { useLanguage } from "../contexts/LanguageContext";
-
-const playlistUrl =
-  "https://www.youtube-nocookie.com/embed/videoseries?si=g3eYWy0W6k0dxGAf&list=PLiMbwlK6tmAPdaksYbeLA1Ri11doloNiX&playsinline=1&controls=1&modestbranding=1&rel=0";
-
+/**
+ * Deprecated. Worship music now plays through the persistent Mux audio engine
+ * in Navigation.tsx. This component is kept only to avoid breaking any stale
+ * imports and renders nothing.
+ */
 export function GlobalMusicPlayer() {
-  const { t } = useLanguage();
-
-  return (
-    <div className="fixed bottom-16 right-4 z-40 hidden w-80 overflow-hidden rounded-xl border border-[--border-color] bg-[--surface]/90 shadow-2xl md:block">
-      <div className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[--ink-light]">
-        {t("Worship Playlist", "Lista de Adoración")}
-      </div>
-      <div className="aspect-video w-full">
-        <iframe
-          src={playlistUrl}
-          title={t("Global Worship Playlist", "Lista de Adoración Global")}
-          className="h-full w-full"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
-      </div>
-    </div>
-  );
+  return null;
 }

@@ -1,116 +1,45 @@
-import { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { getLivestreamFromMainSite, getAllMusicPlaylistsFromMainSite, type LivestreamInfo, type MusicPlaylistFromMainSite } from "../lib/mainSiteData";
-
-function normalizeLivestreamUrl(raw: string, fallback: string): string {
-  const trimmed = raw.trim();
-  if (!trimmed) return fallback;
-
-  try {
-    const url = new URL(trimmed);
-    const host = url.hostname.toLowerCase();
-
-    let videoId: string | null = null;
-
-    if (host.includes("youtu.be")) {
-      videoId = url.pathname.replace("/", "");
-    } else if (host.includes("youtube.com")) {
-      if (url.pathname.startsWith("/live/")) {
-        const parts = url.pathname.split("/").filter(Boolean);
-        videoId = parts[parts.length - 1] ?? null;
-      } else if (url.pathname.startsWith("/watch")) {
-        videoId = url.searchParams.get("v");
-      } else if (url.pathname.startsWith("/embed/")) {
-        const parts = url.pathname.split("/").filter(Boolean);
-        videoId = parts[parts.length - 1] ?? null;
-      }
-    }
-
-    if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
-    }
-
-    if (!trimmed.includes("enablejsapi=1")) {
-      const separator = trimmed.includes("?") ? "&" : "?";
-      return `${trimmed}${separator}enablejsapi=1&playsinline=1&controls=1&modestbranding=1`;
-    }
-
-    return trimmed;
-  } catch {
-    return fallback;
-  }
-}
-
-function normalizePlaylistUrl(raw: string): string {
-  const trimmed = raw.trim();
-  if (!trimmed) return "";
-
-  try {
-    const url = new URL(trimmed);
-    
-    // Check for list param
-    const listId = url.searchParams.get("list");
-    if (listId) {
-      return `https://www.youtube.com/embed/videoseries?list=${listId}`;
-    }
-
-    // If it's already an embed URL, return as is
-    if (url.pathname.includes("/embed/")) {
-      return trimmed;
-    }
-
-    // Fallback: return original if we can't parse a list ID
-    return trimmed;
-  } catch {
-    return trimmed;
-  }
-}
-
-export interface PlaylistVideoItem {
-  videoId: string;
-  title: string;
-  loading: boolean;
-}
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  getLivestreamFromMainSite,
+  getMusicTracksFromMainSite,
+  type LivestreamInfo,
+  type MusicTrack,
+} from "../lib/mainSiteData";
 
 interface PlayerContextType {
-  currentTrack: string | null;
+  // ── Worship music (Mux audio) ───────────────────────────────────────────
+  tracks: MusicTrack[];
+  queue: MusicTrack[];
+  queueIndex: number | null;
+  currentTrack: MusicTrack | null;
+  currentPlaybackId: string | null;
   currentTrackTitle: string | null;
   currentTrackArtist: string | null;
   isPlaying: boolean;
   isMinimized: boolean;
-  playlistUrl: string;
-  playlists: MusicPlaylistFromMainSite[];
-  isPlayingYouTubePlaylist: boolean;
-  currentPlaylistVideos: PlaylistVideoItem[];
-  currentPlaylistActiveIndex: number;
-  livestreamUrl: string;
+  playTrackList: (tracks: MusicTrack[], startIndex: number) => void;
+  playTrackById: (id: string) => void;
+  pauseTrack: () => void;
+  resumeTrack: () => void;
+  playNextInQueue: () => void;
+  playPrevInQueue: () => void;
+  toggleMinimize: () => void;
+  closePlayer: () => void;
+
+  // ── Livestream (Mux live) ───────────────────────────────────────────────
+  livestreamPlaybackId: string | null;
   livestreamTitle: string | null;
   livestreamScheduledStart: string | null;
   livestreamIsLive: boolean;
-  playlistIndex: number | null;
-  playlistShuffle: boolean;
-  queue: string[];
-  queueIndex: number | null;
-  queueMeta: { title: string; artist?: string }[];
-  youtubePlayerRef: React.MutableRefObject<any>;
-  playTrack: (url: string) => void;
-  playPlaylistByUrl: (url: string, title?: string) => void;
-  playPlaylistFromIndex: (index: number) => void;
-  playPlaylistShuffle: () => void;
-  playVideoAtIndex: (index: number) => void;
-  setCurrentPlaylistVideoIds: (ids: string[]) => void;
-  setCurrentPlaylistActiveIndex: (index: number) => void;
-  startQueue: (
-    urls: string[],
-    startIndex: number,
-    meta?: { title: string; artist?: string }[]
-  ) => void;
-  playNextInQueue: () => void;
-  pauseTrack: () => void;
-  resumeTrack: () => void;
-  toggleMinimize: () => void;
-  closePlayer: () => void;
-  setPlaylistUrl: (url: string) => void;
-  setLivestreamUrl: (url: string) => void;
+
+  // Picture-in-picture chrome state (shared between Media page and Navigation)
   isLivestreamPipMinimized: boolean;
   setLivestreamPipMinimized: (val: boolean) => void;
   hasInteractedWithLivestream: boolean;
@@ -125,368 +54,137 @@ interface PlayerContextType {
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  const [currentTrack, setCurrentTrack] = useState<string | null>(null);
-  const [currentTrackTitle, setCurrentTrackTitle] = useState<string | null>(null);
-  const [currentTrackArtist, setCurrentTrackArtist] = useState<string | null>(null);
+  // Worship music state
+  const [tracks, setTracks] = useState<MusicTrack[]>([]);
+  const [queue, setQueue] = useState<MusicTrack[]>([]);
+  const [queueIndex, setQueueIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [playlistIndex, setPlaylistIndex] = useState<number | null>(null);
-  const [playlistShuffle, setPlaylistShuffle] = useState(false);
-  const [queue, setQueue] = useState<string[]>([]);
-  const [queueIndex, setQueueIndex] = useState<number | null>(null);
-  const [queueMeta, setQueueMeta] = useState<{ title: string; artist?: string }[]>([]);
 
-  const defaultPlaylistUrl =
-    "https://www.youtube.com/embed/videoseries?si=dfPffkXPjZujh10p&list=PLN4iKuxWow6_WegcKkHFaYbj6xHDeA7fW&playsinline=1&controls=1&modestbranding=1";
-
-  const defaultLivestreamUrl =
-    "https://www.youtube.com/embed/HF7qrZR1rDA?enablejsapi=1&playsinline=1&controls=1&modestbranding=1";
-
-  const [playlists, setPlaylists] = useState<MusicPlaylistFromMainSite[]>([]);
-  const [isPlayingYouTubePlaylist, setIsPlayingYouTubePlaylist] = useState(false);
-  const [currentPlaylistVideos, setCurrentPlaylistVideos] = useState<PlaylistVideoItem[]>([]);
-  const [currentPlaylistActiveIndex, setCurrentPlaylistActiveIndex] = useState<number>(0);
-  const youtubePlayerRef = useRef<any>(null);
-  const titleFetchControllerRef = useRef<AbortController | null>(null);
-
-  const [playlistUrl, setPlaylistUrlState] = useState<string>(() => {
-    if (typeof window === "undefined") return defaultPlaylistUrl;
-    try {
-      const stored = window.localStorage.getItem("cne_music_playlist_url");
-      return stored && stored.trim().length > 0 ? stored : defaultPlaylistUrl;
-    } catch {
-      return defaultPlaylistUrl;
-    }
-  });
-
-  const [livestreamUrl, setLivestreamUrlState] = useState<string>("");
+  // Livestream state
+  const [livestreamPlaybackId, setLivestreamPlaybackId] = useState<string | null>(null);
   const [livestreamTitle, setLivestreamTitle] = useState<string | null>(null);
   const [livestreamScheduledStart, setLivestreamScheduledStart] = useState<string | null>(null);
   const [livestreamIsLive, setLivestreamIsLive] = useState<boolean>(false);
-  
-  const [isLivestreamPipMinimized, setLivestreamPipMinimized] = useState<boolean>(false);
-  const [hasInteractedWithLivestream, setHasInteractedWithLivestream] = useState<boolean>(false);
-  const [isLivestreamPipDismissed, setLivestreamPipDismissed] = useState<boolean>(false);
-  const [isLivestreamPlaying, setIsLivestreamPlaying] = useState<boolean>(false);
 
-  // Load livestream URL from main site Supabase on mount (only once)
+  const [isLivestreamPipMinimized, setLivestreamPipMinimized] = useState(false);
+  const [hasInteractedWithLivestream, setHasInteractedWithLivestream] = useState(false);
+  const [isLivestreamPipDismissed, setLivestreamPipDismissed] = useState(false);
+  const [isLivestreamPlaying, setIsLivestreamPlaying] = useState(false);
+
+  const currentTrack = queueIndex != null ? queue[queueIndex] ?? null : null;
+
+  // Load livestream info on mount and poll so "live" status stays fresh.
   useEffect(() => {
     let cancelled = false;
-
-    const applyInfo = (info: LivestreamInfo | null) => {
-      if (!info) return;
-      const urlVal = info.url || "";
-      const normalized = urlVal ? normalizeLivestreamUrl(urlVal, defaultLivestreamUrl) : "";
-      setLivestreamUrlState(normalized || defaultLivestreamUrl);
-      setLivestreamTitle(info.title ?? null);
-      setLivestreamScheduledStart(info.scheduledStart ?? null);
-      setLivestreamIsLive(Boolean(info.isLive));
-    };
-
-    const loadLivestreamUrl = async () => {
+    const load = async () => {
       try {
         const info: LivestreamInfo = await getLivestreamFromMainSite();
         if (cancelled) return;
-        if (info?.url) {
-          applyInfo(info);
-        } else {
-          console.warn("No livestream URL found for org; falling back to default");
-          applyInfo({ url: defaultLivestreamUrl, isLive: false });
-        }
+        setLivestreamPlaybackId(info.playbackId);
+        setLivestreamTitle(info.title ?? null);
+        setLivestreamScheduledStart(info.scheduledStart ?? null);
+        setLivestreamIsLive(Boolean(info.isLive));
       } catch {
-        // Ignore errors, fall back to localStorage/default
+        /* keep previous state */
       }
     };
-
-    loadLivestreamUrl();
-
-    const intervalId = window.setInterval(loadLivestreamUrl, 30000);
-
+    load();
+    const id = window.setInterval(load, 30000);
     return () => {
       cancelled = true;
-      window.clearInterval(intervalId);
+      window.clearInterval(id);
     };
   }, []);
 
-  // Load all playlists from backend on mount
+  // Load worship tracks on mount.
   useEffect(() => {
-    const loadPlaylists = async () => {
+    let cancelled = false;
+    (async () => {
       try {
-        const allPlaylists = await getAllMusicPlaylistsFromMainSite();
-        setPlaylists(allPlaylists);
-        if (allPlaylists.length > 0) {
-          const url = normalizePlaylistUrl(allPlaylists[0].url);
-          setPlaylistUrlState(url);
-          try {
-            if (typeof window !== "undefined") {
-              window.localStorage.setItem("cne_music_playlist_url", url);
-            }
-          } catch {
-            // ignore storage errors
-          }
-        }
+        const list = await getMusicTracksFromMainSite();
+        if (!cancelled) setTracks(list);
       } catch {
-        // Ignore errors, fall back to localStorage/default
+        /* ignore */
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-
-    loadPlaylists();
   }, []);
 
-  const playTrack = (url: string) => {
-    setCurrentTrack(url);
-    setCurrentTrackTitle(null);
-    setCurrentTrackArtist(null);
-    setPlaylistIndex(null);
-    setPlaylistShuffle(false);
-    setIsPlayingYouTubePlaylist(false);
-    setQueue([]);
-    setQueueIndex(null);
-    setQueueMeta([]);
+  const playTrackList = useCallback((list: MusicTrack[], startIndex: number) => {
+    if (!list.length) return;
+    const idx = Math.min(Math.max(0, startIndex), list.length - 1);
+    setQueue(list);
+    setQueueIndex(idx);
     setIsPlaying(true);
     setIsMinimized(false);
-  };
+  }, []);
 
-  const playPlaylistByUrl = (url: string, title?: string) => {
-    const normalized = normalizePlaylistUrl(url);
-    setPlaylistUrlState(normalized);
-    setCurrentTrack(normalized);
-    setCurrentTrackTitle(title || null);
-    setCurrentTrackArtist(null);
-    setPlaylistIndex(0);
-    setPlaylistShuffle(false);
-    setIsPlayingYouTubePlaylist(true);
-    setQueue([]);
-    setQueueIndex(null);
-    setQueueMeta([]);
-    setIsPlaying(true);
-    setIsMinimized(false);
-  };
-
-  const playPlaylistFromIndex = (index: number) => {
-    const safeIndex = Number.isFinite(index) && index >= 0 ? Math.floor(index) : 0;
-    setPlaylistShuffle(false);
-    setPlaylistIndex(safeIndex);
-    setCurrentTrack(playlistUrl);
-    setCurrentTrackTitle(null);
-    setCurrentTrackArtist(null);
-    setIsPlayingYouTubePlaylist(true);
-    setIsPlaying(true);
-    setIsMinimized(false);
-  };
-
-  const playPlaylistShuffle = () => {
-    setPlaylistShuffle(true);
-    setPlaylistIndex(0);
-    setCurrentTrack(playlistUrl);
-    setCurrentTrackTitle(null);
-    setCurrentTrackArtist(null);
-    setIsPlayingYouTubePlaylist(true);
-    setIsPlaying(true);
-    setIsMinimized(false);
-  };
-
-  const startQueue = (
-    urls: string[],
-    startIndex: number,
-    meta?: { title: string; artist?: string }[]
-  ) => {
-    const safeUrls = Array.isArray(urls) ? urls.filter((u) => typeof u === "string" && u.trim().length > 0) : [];
-    if (safeUrls.length === 0) {
-      return;
-    }
-
-    const maxIndex = safeUrls.length - 1;
-    const clampedIndex = Math.min(Math.max(0, Math.floor(startIndex || 0)), maxIndex);
-
-    const normalizedMeta: { title: string; artist?: string }[] = Array.isArray(meta) && meta.length
-      ? meta.map((m) => ({
-          title: typeof m.title === "string" ? m.title : "",
-          artist: typeof m.artist === "string" ? m.artist : "",
-        }))
-      : safeUrls.map(() => ({ title: "", artist: "" }));
-
-    setQueue(safeUrls);
-    setQueueMeta(normalizedMeta);
-    setQueueIndex(clampedIndex);
-    setPlaylistIndex(null);
-    setPlaylistShuffle(false);
-    setCurrentTrack(safeUrls[clampedIndex]);
-    const metaForTrack = normalizedMeta[clampedIndex];
-    setCurrentTrackTitle(metaForTrack?.title || null);
-    setCurrentTrackArtist(metaForTrack?.artist || null);
-    setIsPlaying(true);
-    setIsMinimized(false);
-  };
+  const playTrackById = useCallback(
+    (id: string) => {
+      const idx = tracks.findIndex((t) => t.id === id);
+      if (idx >= 0) playTrackList(tracks, idx);
+    },
+    [tracks, playTrackList]
+  );
 
   const playNextInQueue = useCallback(() => {
-    // If playing a YouTube playlist, use the YouTube player's nextVideo()
-    if (isPlayingYouTubePlaylist && youtubePlayerRef.current) {
-      try {
-        const player = youtubePlayerRef.current;
-        if (typeof player.nextVideo === "function") {
-          player.nextVideo();
-          return;
-        }
-      } catch {
-        // fall through to queue-based logic
-      }
-    }
-
-    if (!queue || queue.length === 0) return;
-    if (queueIndex == null) return;
-
-    const nextIndex = queueIndex + 1 >= queue.length ? 0 : queueIndex + 1;
-
-    setQueueIndex(nextIndex);
-    setCurrentTrack(queue[nextIndex]);
-    const metaForTrack = queueMeta[nextIndex];
-    setCurrentTrackTitle(metaForTrack?.title || null);
-    setCurrentTrackArtist(metaForTrack?.artist || null);
-    setIsPlaying(true);
-  }, [isPlayingYouTubePlaylist, queue, queueIndex, queueMeta]);
-
-  const pauseTrack = () => setIsPlaying(false);
-
-   const resumeTrack = () => {
-    if (!currentTrack) return;
-    setIsPlaying(true);
-  };
-
-  const toggleMinimize = () => setIsMinimized((prev) => !prev);
-
-  const playVideoAtIndex = useCallback((index: number) => {
-    if (!youtubePlayerRef.current) return;
-    const player = youtubePlayerRef.current;
-    try {
-      if (typeof player.playVideoAt === "function") {
-        player.playVideoAt(index);
-        setCurrentPlaylistActiveIndex(index);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const setCurrentPlaylistVideoIds = useCallback((ids: string[]) => {
-    if (titleFetchControllerRef.current) {
-      titleFetchControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    titleFetchControllerRef.current = controller;
-
-    const items: PlaylistVideoItem[] = ids.map((id) => ({
-      videoId: id,
-      title: "",
-      loading: true,
-    }));
-    setCurrentPlaylistVideos(items);
-
-    ids.forEach((videoId, idx) => {
-      fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`, {
-        signal: controller.signal,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (controller.signal.aborted) return;
-          setCurrentPlaylistVideos((prev) =>
-            prev.map((item, i) =>
-              i === idx ? { ...item, title: data.title || `Video ${idx + 1}`, loading: false } : item
-            )
-          );
-        })
-        .catch(() => {
-          if (controller.signal.aborted) return;
-          setCurrentPlaylistVideos((prev) =>
-            prev.map((item, i) =>
-              i === idx ? { ...item, title: `Video ${idx + 1}`, loading: false } : item
-            )
-          );
-        });
+    setQueueIndex((prev) => {
+      if (prev == null || queue.length === 0) return prev;
+      return prev + 1 >= queue.length ? 0 : prev + 1;
     });
-  }, []);
+    setIsPlaying(true);
+  }, [queue.length]);
 
-  const closePlayer = () => {
-    if (titleFetchControllerRef.current) {
-      titleFetchControllerRef.current.abort();
-    }
-    setCurrentTrack(null);
-    setCurrentTrackTitle(null);
-    setCurrentTrackArtist(null);
-    setPlaylistIndex(null);
-    setPlaylistShuffle(false);
-    setIsPlayingYouTubePlaylist(false);
-    setCurrentPlaylistVideos([]);
-    setCurrentPlaylistActiveIndex(0);
+  const playPrevInQueue = useCallback(() => {
+    setQueueIndex((prev) => {
+      if (prev == null || queue.length === 0) return prev;
+      return prev - 1 < 0 ? queue.length - 1 : prev - 1;
+    });
+    setIsPlaying(true);
+  }, [queue.length]);
+
+  const pauseTrack = useCallback(() => setIsPlaying(false), []);
+  const resumeTrack = useCallback(() => {
+    if (currentTrack) setIsPlaying(true);
+  }, [currentTrack]);
+  const toggleMinimize = useCallback(() => setIsMinimized((p) => !p), []);
+
+  const closePlayer = useCallback(() => {
     setQueue([]);
     setQueueIndex(null);
-    setQueueMeta([]);
     setIsPlaying(false);
     setIsMinimized(false);
-  };
+  }, []);
 
-  const setPlaylistUrl = (url: string) => {
-    const trimmed = url.trim();
-    // Allow empty URLs - don't fallback to default
-    setPlaylistUrlState(trimmed);
-    try {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("cne_music_playlist_url", trimmed);
-      }
-    } catch {
-      // ignore storage errors
-    }
-  };
-
-  const setLivestreamUrl = (url: string) => {
-    const trimmed = url.trim();
-    setLivestreamUrlState(trimmed);
-  };
-
-  // Derived state to determine if the livestream PIP container should be visible overall.
-  // Show PIP whenever the user has played the stream and hasn't dismissed it.
-  // We intentionally do NOT gate on isLivestreamPlaying because YouTube fires
-  // spurious PAUSED events when the iframe repositions during page transitions.
   const shouldShowLivestreamPip = hasInteractedWithLivestream && !isLivestreamPipDismissed;
 
   return (
     <PlayerContext.Provider
       value={{
+        tracks,
+        queue,
+        queueIndex,
         currentTrack,
-        currentTrackTitle,
-        currentTrackArtist,
+        currentPlaybackId: currentTrack?.playbackId ?? null,
+        currentTrackTitle: currentTrack?.title ?? null,
+        currentTrackArtist: currentTrack?.artist ?? null,
         isPlaying,
         isMinimized,
-        playlistUrl,
-        playlists,
-        isPlayingYouTubePlaylist,
-        currentPlaylistVideos,
-        currentPlaylistActiveIndex,
-        youtubePlayerRef,
-        livestreamUrl,
+        playTrackList,
+        playTrackById,
+        pauseTrack,
+        resumeTrack,
+        playNextInQueue,
+        playPrevInQueue,
+        toggleMinimize,
+        closePlayer,
+        livestreamPlaybackId,
         livestreamTitle,
         livestreamScheduledStart,
         livestreamIsLive,
-        playlistIndex,
-        playlistShuffle,
-        queue,
-        queueIndex,
-        queueMeta,
-        playTrack,
-        playPlaylistByUrl,
-        playPlaylistFromIndex,
-        playPlaylistShuffle,
-        playVideoAtIndex,
-        setCurrentPlaylistVideoIds,
-        setCurrentPlaylistActiveIndex,
-        startQueue,
-        playNextInQueue,
-        pauseTrack,
-        resumeTrack,
-        toggleMinimize,
-        closePlayer,
-        setPlaylistUrl,
-        setLivestreamUrl,
         isLivestreamPipMinimized,
         setLivestreamPipMinimized,
         hasInteractedWithLivestream,

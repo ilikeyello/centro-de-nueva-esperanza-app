@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AppShell } from "./AppShell";
@@ -22,6 +23,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="antialiased min-h-screen bg-neutral-950 text-foreground">
+        {/* Mux Player web component — powers all video/audio/livestream playback. */}
+        <Script src="https://cdn.jsdelivr.net/npm/@mux/mux-player@3" strategy="beforeInteractive" />
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

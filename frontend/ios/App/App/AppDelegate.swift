@@ -49,6 +49,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 // Custom bridge view controller — in AppDelegate.swift so Xcode includes it
 // without needing to manually add a separate file to the project.
+// @objc(MainViewController) keeps the class visible to the storyboard in
+// Release builds (otherwise dead-code stripping removes it → white screen).
+@objc(MainViewController)
 class MainViewController: CAPBridgeViewController {
 
     override func viewDidLoad() {

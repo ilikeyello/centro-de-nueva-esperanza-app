@@ -137,10 +137,11 @@ export async function getSermonsFromMainSite(): Promise<SermonFromMainSite[]> {
 }
 
 /**
- * Fetch the livestream URL uploaded via the main site admin
+ * Fetch the current livestream (Mux). Returns the Mux playback id used by the
+ * <mux-player> in the app, plus whether it's currently live.
  */
 export interface LivestreamInfo {
-  url: string | null;
+  playbackId: string | null;
   isLive: boolean;
   title?: string | null;
   scheduledStart?: string | null;
@@ -149,26 +150,25 @@ export interface LivestreamInfo {
 export async function getLivestreamFromMainSite(): Promise<LivestreamInfo> {
   if (!churchOrgId) {
     console.warn('No org id configured; cannot fetch livestream');
-    return { url: null, isLive: false };
+    return { playbackId: null, isLive: false };
   }
 
-  // Prefer the livestreams table (org-scoped)
   try {
     const { data, error } = await supabase
       .from('livestreams')
-      .select('stream_url, is_live, organization_id, updated_at, title, scheduled_start')
+      .select('mux_playback_id, is_live, updated_at, title, scheduled_start')
       .eq('organization_id', churchOrgId)
+      .not('mux_playback_id', 'is', null)
       .order('updated_at', { ascending: false })
       .limit(1);
 
     if (error) {
       console.error('Error fetching livestreams table:', error);
     } else {
-      console.log('Livestreams table rows:', data);
       const row = data && data[0];
-      if (row && row.stream_url) {
+      if (row && row.mux_playback_id) {
         return {
-          url: row.stream_url as string,
+          playbackId: row.mux_playback_id as string,
           isLive: Boolean(row.is_live),
           title: (row as any).title ?? null,
           scheduledStart: (row as any).scheduled_start ?? null,
@@ -179,44 +179,48 @@ export async function getLivestreamFromMainSite(): Promise<LivestreamInfo> {
     console.error('Unhandled error fetching livestreams table:', err);
   }
 
-  // Fallback to legacy church_content type if present
-  const content = await fetchContentByType('livestream');
-  console.log('Livestream rows (church_content fallback):', content);
-  const fallbackUrl = content[0]?.youtube_url || null;
-  return {
-    url: fallbackUrl,
-    isLive: Boolean(fallbackUrl),
-    title: content[0]?.title || null,
-    scheduledStart: null,
-  };
+  return { playbackId: null, isLive: false };
 }
 
-export interface MusicPlaylistFromMainSite {
+export interface MusicTrack {
   id: string;
   title: string;
-  url: string;
+  artist: string | null;
+  playbackId: string;
+  duration: number | null;
 }
 
 /**
- * Fetch all music playlists uploaded via the main site admin
+ * Fetch worship music tracks (Mux audio assets) uploaded via the admin
+ * dashboard. Only "ready" tracks with a playback id are returned.
  */
-export async function getAllMusicPlaylistsFromMainSite(): Promise<MusicPlaylistFromMainSite[]> {
-  const content = await fetchContentByType('music');
-  return content
-    .filter((item) => item.youtube_playlist_url)
-    .map((item) => ({
-      id: item.id,
-      title: item.title || 'Worship Playlist',
-      url: item.youtube_playlist_url!,
+export async function getMusicTracksFromMainSite(): Promise<MusicTrack[]> {
+  if (!churchOrgId) return [];
+  try {
+    const { data, error } = await supabase
+      .from('music_tracks')
+      .select('id, title, artist, mux_playback_id, mux_status, duration, sort_order, created_at')
+      .eq('organization_id', churchOrgId)
+      .eq('mux_status', 'ready')
+      .not('mux_playback_id', 'is', null)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching music_tracks:', error);
+      return [];
+    }
+    return (data || []).map((t: any) => ({
+      id: String(t.id),
+      title: t.title || 'Untitled',
+      artist: t.artist ?? null,
+      playbackId: t.mux_playback_id as string,
+      duration: t.duration ?? null,
     }));
-}
-
-/**
- * Fetch the first music playlist URL uploaded via the main site admin (legacy)
- */
-export async function getMusicPlaylistFromMainSite(): Promise<string | null> {
-  const content = await fetchContentByType('music');
-  return content[0]?.youtube_playlist_url || null;
+  } catch (err) {
+    console.error('Unhandled error fetching music_tracks:', err);
+    return [];
+  }
 }
 
 export interface EventFromMainSite {
@@ -269,10 +273,10 @@ export async function getAnnouncementsFromMainSite(): Promise<AnnouncementFromMa
  * Fetch all content from main site in one call
  */
 export async function getAllMainSiteContent() {
-  const [sermons, livestream, musicPlaylist, events, announcements] = await Promise.all([
+  const [sermons, livestream, musicTracks, events, announcements] = await Promise.all([
     getSermonsFromMainSite(),
     getLivestreamFromMainSite(),
-    getMusicPlaylistFromMainSite(),
+    getMusicTracksFromMainSite(),
     getEventsFromMainSite(),
     getAnnouncementsFromMainSite(),
   ]);
@@ -280,7 +284,7 @@ export async function getAllMainSiteContent() {
   return {
     sermons,
     livestream,
-    musicPlaylist,
+    musicTracks,
     events,
     announcements,
   };
