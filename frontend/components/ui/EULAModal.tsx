@@ -11,6 +11,7 @@ export function EULAModal({ children }: { children: React.ReactNode }) {
   const [hasAccepted, setHasAccepted] = useState(true); // Default true to prevent flash, then check in useEffect
   const [isChecking, setIsChecking] = useState(true);
   const [agreed, setAgreed] = useState(false);
+  const [showDialog, setShowDialog] = useState(true);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -27,7 +28,12 @@ export function EULAModal({ children }: { children: React.ReactNode }) {
     if (agreed) {
       window.localStorage.setItem(EULA_KEY, "true");
       setHasAccepted(true);
+      setShowDialog(false);
     }
+  };
+
+  const handleDecline = () => {
+    setShowDialog(false);
   };
 
   if (isChecking) {
@@ -39,11 +45,20 @@ export function EULAModal({ children }: { children: React.ReactNode }) {
       {hasAccepted ? (
         children
       ) : (
-        <div className="relative">
+        <div className="relative min-h-screen">
           <div className="pointer-events-none opacity-20 blur-sm">
             {children}
           </div>
-          <Dialog open={true}>
+          
+          {!showDialog && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+              <Button onClick={() => setShowDialog(true)} size="lg" className="shadow-lg">
+                {t("Review Age Submission", "Revisar Envío de Edad")}
+              </Button>
+            </div>
+          )}
+
+          <Dialog open={showDialog}>
             <DialogContent className="sm:max-w-[425px]" showCloseButton={false} onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
               <DialogHeader>
                 <DialogTitle>{t("End User License Agreement (EULA)", "Acuerdo de Licencia de Usuario Final (EULA)")}</DialogTitle>
@@ -85,8 +100,11 @@ export function EULAModal({ children }: { children: React.ReactNode }) {
                   </div>
                 </div>
               </div>
-              <DialogFooter>
-                <Button onClick={handleAccept} disabled={!agreed} className="w-full">
+              <DialogFooter className="flex-col space-y-2 sm:space-y-0 sm:space-x-2">
+                <Button variant="outline" onClick={handleDecline} className="w-full sm:w-auto mt-2 sm:mt-0">
+                  {t("Decline", "Rechazar")}
+                </Button>
+                <Button onClick={handleAccept} disabled={!agreed} className="w-full sm:w-auto">
                   {t("I Agree", "Acepto")}
                 </Button>
               </DialogFooter>

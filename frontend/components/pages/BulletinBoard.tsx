@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User, Heart, MessageCircle, Send, Mail, X, Flag, EyeOff, Ban } from "lucide-react";
+import { Plus, User, Heart, MessageCircle, Send, Mail, X, Flag, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -364,8 +364,13 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   const handleReport = (contentType: "bulletin_post" | "bulletin_comment" | "prayer_request", contentId: number) => {
     const key = `${contentType}-${contentId}`;
     if (reportedIds.has(key) || reportMutation.isPending) return;
-    if (typeof window !== "undefined" && !window.confirm(t("Report this as inappropriate?", "¿Reportar esto como inapropiado?"))) return;
+    if (typeof window !== "undefined" && !window.confirm(t("Report this as inappropriate? It will also be hidden from your feed.", "¿Reportar esto como inapropiado? También se ocultará de tu feed."))) return;
     reportMutation.mutate({ contentType, contentId });
+    if (contentType === "bulletin_post" || contentType === "prayer_request") {
+      handleHidePost(contentId);
+    } else if (contentType === "bulletin_comment") {
+      handleHideComment(contentId);
+    }
   };
 
   const handleHidePost = (postId: number) => {
@@ -547,9 +552,6 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                             {reportedIds.has(`bulletin_post-${post.id}`) ? t("Reported", "Reportado") : t("Report", "Reportar")}
                           </span>
                         </button>
-                        <button type="button" onClick={() => handleHidePost(post.id)} className="ml-3 flex items-center gap-1 text-sm text-[--ink-light] transition-colors hover:text-[--ink-dark]" title={t("Hide Post", "Ocultar Publicación")}>
-                          <EyeOff className="h-4 w-4" />
-                        </button>
                         {post.authorId && post.authorId !== userId && (
                           <button type="button" onClick={() => handleBlockUser(post.authorId)} className="ml-3 flex items-center gap-1 text-sm text-[--ink-light] transition-colors hover:text-[--ink-dark]" title={t("Block User", "Bloquear Usuario")}>
                             <Ban className="h-4 w-4" />
@@ -648,9 +650,6 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                                 {reportedIds.has(`bulletin_comment-${comment.id}`)
                                   ? t("Reported", "Reportado")
                                   : t("Report", "Reportar")}
-                              </button>
-                              <button type="button" onClick={() => handleHideComment(comment.id)} className="flex items-center gap-1 text-[0.65rem] text-[--ink-light] hover:text-[--ink-dark]" title={t("Hide Comment", "Ocultar Comentario")}>
-                                <EyeOff className="h-3 w-3" />
                               </button>
                             </div>
                           </div>
@@ -807,9 +806,6 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                           aria-label={t("Report", "Reportar")}
                         >
                           <Flag className="h-4 w-4" />
-                        </button>
-                        <button type="button" onClick={() => handleHidePost(prayer.id)} className="ml-1 flex shrink-0 items-center gap-1 text-[--ink-light] hover:text-[--ink-dark]" title={t("Hide Prayer", "Ocultar Oración")}>
-                          <EyeOff className="h-4 w-4" />
                         </button>
                       </div>
 
