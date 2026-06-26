@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User, Heart, MessageCircle, Send, Mail, X, Flag } from "lucide-react";
+import { Plus, User, Heart, MessageCircle, Send, Mail, X, Flag, EyeOff, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,12 +16,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
+import { EULAModal } from "../ui/EULAModal";
 
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
 const LIKED_POSTS_KEY = "cne-liked-post-ids";
 const USER_NAME_KEY = "cne-user-name";
 const USER_ID_KEY = "cne-user-id";
+const BLOCKED_USERS_KEY = "cne-blocked-users";
+const HIDDEN_POSTS_KEY = "cne-hidden-posts";
+const HIDDEN_COMMENTS_KEY = "cne-hidden-comments";
 
 interface BulletinComment {
   id: number;
@@ -135,6 +139,9 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   const [likedPostIds, setLikedPostIds] = useState<Set<number>>(() => new Set());
   const [activePrayerId, setActivePrayerId] = useState<number | null>(null);
   const [reportedIds, setReportedIds] = useState<Set<string>>(() => new Set());
+  const [blockedUsers, setBlockedUsers] = useState<Set<string>>(() => new Set());
+  const [hiddenPosts, setHiddenPosts] = useState<Set<number>>(() => new Set());
+  const [hiddenComments, setHiddenComments] = useState<Set<number>>(() => new Set());
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["bulletin-board"],
@@ -173,6 +180,21 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
     const storedLiked = window.localStorage.getItem(LIKED_POSTS_KEY);
     if (storedLiked) {
       try { setLikedPostIds(new Set(JSON.parse(storedLiked) as number[])); } catch { /* ignore */ }
+    }
+
+    const storedBlocked = window.localStorage.getItem(BLOCKED_USERS_KEY);
+    if (storedBlocked) {
+      try { setBlockedUsers(new Set(JSON.parse(storedBlocked) as string[])); } catch { /* ignore */ }
+    }
+
+    const storedHiddenPosts = window.localStorage.getItem(HIDDEN_POSTS_KEY);
+    if (storedHiddenPosts) {
+      try { setHiddenPosts(new Set(JSON.parse(storedHiddenPosts) as number[])); } catch { /* ignore */ }
+    }
+
+    const storedHiddenComments = window.localStorage.getItem(HIDDEN_COMMENTS_KEY);
+    if (storedHiddenComments) {
+      try { setHiddenComments(new Set(JSON.parse(storedHiddenComments) as number[])); } catch { /* ignore */ }
     }
   }, []);
 
@@ -346,8 +368,47 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
     reportMutation.mutate({ contentType, contentId });
   };
 
-  const prayers = useMemo(() => data?.prayers ?? [], [data]);
-  const posts = useMemo(() => data?.posts ?? [], [data]);
+  const handleHidePost = (postId: number) => {
+    setHiddenPosts(prev => {
+      const updated = new Set(prev).add(postId);
+      if (typeof window !== "undefined") window.localStorage.setItem(HIDDEN_POSTS_KEY, JSON.stringify(Array.from(updated)));
+      return updated;
+    });
+    toast({ title: t("Post Hidden", "Publicación Oculta"), description: t("This post has been removed from your feed.", "Esta publicación ha sido removida de tu feed.") });
+  };
+
+  const handleHideComment = (commentId: number) => {
+    setHiddenComments(prev => {
+      const updated = new Set(prev).add(commentId);
+      if (typeof window !== "undefined") window.localStorage.setItem(HIDDEN_COMMENTS_KEY, JSON.stringify(Array.from(updated)));
+      return updated;
+    });
+    toast({ title: t("Comment Hidden", "Comentario Oculto"), description: t("This comment has been removed.", "Este comentario ha sido removido.") });
+  };
+
+  const handleBlockUser = (authorId: string | null) => {
+    if (!authorId) return;
+    if (typeof window !== "undefined" && !window.confirm(t("Block this user? You will no longer see their posts.", "¿Bloquear a este usuario? Ya no verás sus publicaciones."))) return;
+    setBlockedUsers(prev => {
+      const updated = new Set(prev).add(authorId);
+      if (typeof window !== "undefined") window.localStorage.setItem(BLOCKED_USERS_KEY, JSON.stringify(Array.from(updated)));
+      return updated;
+    });
+    toast({ title: t("User Blocked", "Usuario Bloqueado"), description: t("You will no longer see content from this user.", "Ya no verás contenido de este usuario.") });
+  };
+
+  const prayers = useMemo(() => {
+    return (data?.prayers ?? []).filter(p => !hiddenPosts.has(p.id));
+  }, [data, hiddenPosts]);
+
+  const posts = useMemo(() => {
+    return (data?.posts ?? [])
+      .filter(p => !hiddenPosts.has(p.id) && (!p.authorId || !blockedUsers.has(p.authorId)))
+      .map(p => ({
+        ...p,
+        comments: p.comments.filter(c => !hiddenComments.has(c.id))
+      }));
+  }, [data, hiddenPosts, hiddenComments, blockedUsers]);
   const commentDialogPost = useMemo(() => posts.find(p => p.id === commentDialogPostId) ?? null, [posts, commentDialogPostId]);
 
   const handleSubmitPost = (event: React.FormEvent<HTMLFormElement>) => {
@@ -380,7 +441,8 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   };
 
   return (
-    <div className="container mx-auto space-y-8 px-4 py-8">
+    <EULAModal>
+      <div className="container mx-auto space-y-8 px-4 py-8">
       <div className="space-y-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -485,6 +547,14 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                             {reportedIds.has(`bulletin_post-${post.id}`) ? t("Reported", "Reportado") : t("Report", "Reportar")}
                           </span>
                         </button>
+                        <button type="button" onClick={() => handleHidePost(post.id)} className="ml-3 flex items-center gap-1 text-sm text-[--ink-light] transition-colors hover:text-[--ink-dark]" title={t("Hide Post", "Ocultar Publicación")}>
+                          <EyeOff className="h-4 w-4" />
+                        </button>
+                        {post.authorId && post.authorId !== userId && (
+                          <button type="button" onClick={() => handleBlockUser(post.authorId)} className="ml-3 flex items-center gap-1 text-sm text-[--ink-light] transition-colors hover:text-[--ink-dark]" title={t("Block User", "Bloquear Usuario")}>
+                            <Ban className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </article>
                   );
@@ -578,6 +648,9 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                                 {reportedIds.has(`bulletin_comment-${comment.id}`)
                                   ? t("Reported", "Reportado")
                                   : t("Report", "Reportar")}
+                              </button>
+                              <button type="button" onClick={() => handleHideComment(comment.id)} className="flex items-center gap-1 text-[0.65rem] text-[--ink-light] hover:text-[--ink-dark]" title={t("Hide Comment", "Ocultar Comentario")}>
+                                <EyeOff className="h-3 w-3" />
                               </button>
                             </div>
                           </div>
@@ -735,6 +808,9 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                         >
                           <Flag className="h-4 w-4" />
                         </button>
+                        <button type="button" onClick={() => handleHidePost(prayer.id)} className="ml-1 flex shrink-0 items-center gap-1 text-[--ink-light] hover:text-[--ink-dark]" title={t("Hide Prayer", "Ocultar Oración")}>
+                          <EyeOff className="h-4 w-4" />
+                        </button>
                       </div>
 
                       <div className="px-5 pt-2 pb-3">
@@ -810,6 +886,17 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
           </>
         )}
       </div>
+
+      <div className="mt-12 border-t border-[--border-color] pt-8 pb-12 text-center">
+        <p className="text-sm text-[--ink-mid]">
+          {t("Need help or want to report an issue?", "¿Necesita ayuda o quiere reportar un problema?")}
+        </p>
+        <a href="mailto:support@centrodenuevaesperanza.com" className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-[--sage] hover:underline">
+          <Mail className="h-4 w-4" />
+          {t("Contact Support", "Contactar Soporte")}
+        </a>
+      </div>
     </div>
+    </EULAModal>
   );
 }
