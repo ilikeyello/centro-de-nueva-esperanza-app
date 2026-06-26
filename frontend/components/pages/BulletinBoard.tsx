@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 import { EULAModal } from "../ui/EULAModal";
+import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
 
 const PRAYER_PARTICIPANT_ID_KEY = "cne-prayer-participant-id";
 const PRAYED_PRAYERS_KEY = "cne-prayed-prayer-ids";
@@ -142,6 +143,17 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(() => new Set());
   const [hiddenPosts, setHiddenPosts] = useState<Set<number>>(() => new Set());
   const [hiddenComments, setHiddenComments] = useState<Set<number>>(() => new Set());
+  const [supportEmail, setSupportEmail] = useState("support@centrodenuevaesperanza.com");
+
+  useEffect(() => {
+    async function fetchInfo() {
+      const info = await getChurchAdditionalInfo();
+      if (info && info.email) {
+        setSupportEmail(info.email);
+      }
+    }
+    fetchInfo();
+  }, []);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["bulletin-board"],
@@ -887,7 +899,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
         <p className="text-sm text-[--ink-mid]">
           {t("Need help or want to report an issue?", "¿Necesita ayuda o quiere reportar un problema?")}
         </p>
-        <a href="mailto:support@centrodenuevaesperanza.com" className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-[--sage] hover:underline">
+        <a href={`mailto:${supportEmail}`} className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-[--sage] hover:underline">
           <Mail className="h-4 w-4" />
           {t("Contact Support", "Contactar Soporte")}
         </a>
