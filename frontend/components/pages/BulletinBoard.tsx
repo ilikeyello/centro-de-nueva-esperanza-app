@@ -475,7 +475,10 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                           type="button"
                           onClick={() => handleReport("bulletin_post", post.id)}
                           disabled={reportedIds.has(`bulletin_post-${post.id}`)}
-                          className="ml-auto flex items-center gap-1.5 text-sm text-[--ink-light] transition-colors hover:text-red-500 disabled:text-[--ink-light]"
+                          className={cn(
+                            "ml-auto flex items-center gap-1.5 text-sm transition-colors hover:text-red-500",
+                            reportedIds.has(`bulletin_post-${post.id}`) ? "text-red-500" : "text-[--ink-light]"
+                          )}
                         >
                           <Flag className="h-4 w-4" />
                           <span className="hidden sm:inline">
@@ -566,7 +569,10 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                                 type="button"
                                 onClick={() => handleReport("bulletin_comment", comment.id)}
                                 disabled={reportedIds.has(`bulletin_comment-${comment.id}`)}
-                                className="flex items-center gap-1 text-[0.65rem] text-[--ink-light] hover:text-red-500 disabled:text-[--ink-light]"
+                                className={cn(
+                                  "flex items-center gap-1 text-[0.65rem] hover:text-red-500",
+                                  reportedIds.has(`bulletin_comment-${comment.id}`) ? "text-red-500" : "text-[--ink-light]"
+                                )}
                               >
                                 <Flag className="h-3 w-3" />
                                 {reportedIds.has(`bulletin_comment-${comment.id}`)
@@ -721,7 +727,10 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                           type="button"
                           onClick={() => handleReport("prayer_request", prayer.id)}
                           disabled={reportedIds.has(`prayer_request-${prayer.id}`)}
-                          className="flex shrink-0 items-center gap-1 text-[--ink-light] hover:text-red-500 disabled:text-[--ink-light]"
+                          className={cn(
+                            "flex shrink-0 items-center gap-1 hover:text-red-500",
+                            reportedIds.has(`prayer_request-${prayer.id}`) ? "text-red-500" : "text-[--ink-light]"
+                          )}
                           aria-label={t("Report", "Reportar")}
                         >
                           <Flag className="h-4 w-4" />

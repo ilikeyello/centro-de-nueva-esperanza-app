@@ -488,7 +488,10 @@ export function BulletinBoardPage() {
                       type="button"
                       onClick={() => handleReport("bulletin_post", post.id)}
                       disabled={reportedIds.has(`bulletin_post-${post.id}`)}
-                      className="flex shrink-0 items-center gap-1 text-neutral-500 hover:text-red-400 disabled:text-neutral-600"
+                      className={cn(
+                        "flex shrink-0 items-center gap-1 hover:text-red-400",
+                        reportedIds.has(`bulletin_post-${post.id}`) ? "text-red-400" : "text-neutral-500"
+                      )}
                       aria-label={t("Report", "Reportar")}
                     >
                       <Flag className="h-4 w-4" />
@@ -512,7 +515,10 @@ export function BulletinBoardPage() {
                                 type="button"
                                 onClick={() => handleReport("bulletin_comment", c.id)}
                                 disabled={reportedIds.has(`bulletin_comment-${c.id}`)}
-                                className="flex shrink-0 items-center gap-1 text-xs text-neutral-500 hover:text-red-400 disabled:text-neutral-600"
+                                className={cn(
+                                  "flex shrink-0 items-center gap-1 text-xs hover:text-red-400",
+                                  reportedIds.has(`bulletin_comment-${c.id}`) ? "text-red-400" : "text-neutral-500"
+                                )}
                               >
                                 <Flag className="h-3 w-3" />
                                 {reportedIds.has(`bulletin_comment-${c.id}`) ? t("Reported", "Reportado") : t("Report", "Reportar")}
@@ -581,7 +587,10 @@ export function BulletinBoardPage() {
                         type="button"
                         onClick={() => handleReport("prayer_request", prayer.id)}
                         disabled={reportedIds.has(`prayer_request-${prayer.id}`)}
-                        className="flex shrink-0 items-center gap-1 text-neutral-500 hover:text-red-400 disabled:text-neutral-600"
+                        className={cn(
+                          "flex shrink-0 items-center gap-1 hover:text-red-400",
+                          reportedIds.has(`prayer_request-${prayer.id}`) ? "text-red-400" : "text-neutral-500"
+                        )}
                         aria-label={t("Report", "Reportar")}
                       >
                         <Flag className="h-4 w-4" />
@@ -622,7 +631,10 @@ export function BulletinBoardPage() {
                                   type="button"
                                   onClick={() => handleReport("prayer_comment", c.id)}
                                   disabled={reportedIds.has(`prayer_comment-${c.id}`)}
-                                  className="flex shrink-0 items-center gap-1 text-xs text-neutral-500 hover:text-red-400 disabled:text-neutral-600"
+                                  className={cn(
+                                    "flex shrink-0 items-center gap-1 text-xs hover:text-red-400",
+                                    reportedIds.has(`prayer_comment-${c.id}`) ? "text-red-400" : "text-neutral-500"
+                                  )}
                                 >
                                   <Flag className="h-3 w-3" />
                                   {reportedIds.has(`prayer_comment-${c.id}`) ? t("Reported", "Reportado") : t("Report", "Reportar")}
