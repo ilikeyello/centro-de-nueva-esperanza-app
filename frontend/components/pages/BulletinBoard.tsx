@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User, Heart, MessageCircle, Send, Mail, X } from "lucide-react";
+import { Plus, User, Heart, MessageCircle, Send, Mail, X, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -134,6 +134,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   const [prayedPrayerIds, setPrayedPrayerIds] = useState<Set<number>>(() => new Set());
   const [likedPostIds, setLikedPostIds] = useState<Set<number>>(() => new Set());
   const [activePrayerId, setActivePrayerId] = useState<number | null>(null);
+  const [reportedIds, setReportedIds] = useState<Set<string>>(() => new Set());
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["bulletin-board"],
@@ -322,6 +323,28 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
     },
     onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
   });
+
+  const reportMutation = useMutation({
+    mutationFn: async (variables: { contentType: "bulletin_comment" | "prayer_request"; contentId: number }) => {
+      return backend.reportContent({
+        contentType: variables.contentType,
+        contentId: variables.contentId,
+        reporterId: userId,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      setReportedIds(prev => new Set(prev).add(`${variables.contentType}-${variables.contentId}`));
+      toast({ title: t("Reported", "Reportado"), description: t("Thanks — our team will review this.", "Gracias, nuestro equipo lo revisará.") });
+    },
+    onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
+  });
+
+  const handleReport = (contentType: "bulletin_comment" | "prayer_request", contentId: number) => {
+    const key = `${contentType}-${contentId}`;
+    if (reportedIds.has(key) || reportMutation.isPending) return;
+    if (typeof window !== "undefined" && !window.confirm(t("Report this as inappropriate?", "¿Reportar esto como inapropiado?"))) return;
+    reportMutation.mutate({ contentType, contentId });
+  };
 
   const prayers = useMemo(() => data?.prayers ?? [], [data]);
   const posts = useMemo(() => data?.posts ?? [], [data]);
@@ -525,7 +548,20 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                               <p className="text-xs font-semibold text-[--ink-dark]">{comment.authorName}</p>
                               <p className="text-sm text-[--ink-mid]">{comment.content}</p>
                             </div>
-                            <p className="mt-0.5 pl-3 text-[0.65rem] text-[--ink-light]">{formatDate(comment.createdAt)}</p>
+                            <div className="mt-0.5 flex items-center gap-2 pl-3">
+                              <p className="text-[0.65rem] text-[--ink-light]">{formatDate(comment.createdAt)}</p>
+                              <button
+                                type="button"
+                                onClick={() => handleReport("bulletin_comment", comment.id)}
+                                disabled={reportedIds.has(`bulletin_comment-${comment.id}`)}
+                                className="flex items-center gap-1 text-[0.65rem] text-[--ink-light] hover:text-red-500 disabled:text-[--ink-light]"
+                              >
+                                <Flag className="h-3 w-3" />
+                                {reportedIds.has(`bulletin_comment-${comment.id}`)
+                                  ? t("Reported", "Reportado")
+                                  : t("Report", "Reportar")}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -669,6 +705,15 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                         <span className="rounded-full bg-[--sage-light] px-3 py-1 text-xs font-semibold text-[--sage]">
                           🙏 {prayer.prayerCount}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => handleReport("prayer_request", prayer.id)}
+                          disabled={reportedIds.has(`prayer_request-${prayer.id}`)}
+                          className="flex shrink-0 items-center gap-1 text-[--ink-light] hover:text-red-500 disabled:text-[--ink-light]"
+                          aria-label={t("Report", "Reportar")}
+                        >
+                          <Flag className="h-4 w-4" />
+                        </button>
                       </div>
 
                       <div className="px-5 pt-2 pb-3">

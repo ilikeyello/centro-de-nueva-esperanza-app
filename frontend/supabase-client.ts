@@ -456,6 +456,25 @@ export class ChurchApiService {
     if (updateError) throw updateError;
   }
 
+  async reportContent(report: {
+    contentType: 'bulletin_post' | 'bulletin_comment' | 'prayer_request' | 'prayer_comment';
+    contentId: number;
+    reason?: string | null;
+    reporterId?: string | null;
+  }): Promise<void> {
+    const { error } = await this.client
+      .from('content_reports')
+      .insert({
+        organization_id: this.orgId,
+        content_type: report.contentType,
+        content_id: report.contentId,
+        reason: report.reason ?? null,
+        reporter_id: report.reporterId ?? null,
+      });
+
+    if (error) throw error;
+  }
+
   async incrementLikeCount(postId: number): Promise<void> {
     const { data: current, error: fetchError } = await this.client
       .from('bulletin_posts')
