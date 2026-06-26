@@ -325,7 +325,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
   });
 
   const reportMutation = useMutation({
-    mutationFn: async (variables: { contentType: "bulletin_comment" | "prayer_request"; contentId: number }) => {
+    mutationFn: async (variables: { contentType: "bulletin_post" | "bulletin_comment" | "prayer_request"; contentId: number }) => {
       return backend.reportContent({
         contentType: variables.contentType,
         contentId: variables.contentId,
@@ -339,7 +339,7 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
     onError: (err: Error) => { toast({ title: t("Error", "Error"), description: err.message, variant: "destructive" }); },
   });
 
-  const handleReport = (contentType: "bulletin_comment" | "prayer_request", contentId: number) => {
+  const handleReport = (contentType: "bulletin_post" | "bulletin_comment" | "prayer_request", contentId: number) => {
     const key = `${contentType}-${contentId}`;
     if (reportedIds.has(key) || reportMutation.isPending) return;
     if (typeof window !== "undefined" && !window.confirm(t("Report this as inappropriate?", "¿Reportar esto como inapropiado?"))) return;
@@ -469,6 +469,18 @@ export function BulletinBoard({ onNavigate }: { onNavigate?: (page: string) => v
                         >
                           <MessageCircle className="h-5 w-5" />
                           <span>{post.comments.length}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleReport("bulletin_post", post.id)}
+                          disabled={reportedIds.has(`bulletin_post-${post.id}`)}
+                          className="ml-auto flex items-center gap-1.5 text-sm text-[--ink-light] transition-colors hover:text-red-500 disabled:text-[--ink-light]"
+                        >
+                          <Flag className="h-4 w-4" />
+                          <span className="hidden sm:inline">
+                            {reportedIds.has(`bulletin_post-${post.id}`) ? t("Reported", "Reportado") : t("Report", "Reportar")}
+                          </span>
                         </button>
                       </div>
                     </article>

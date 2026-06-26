@@ -280,7 +280,7 @@ export function BulletinBoardPage() {
   });
 
   const reportMutation = useMutation({
-    mutationFn: async (variables: { contentType: "bulletin_comment" | "prayer_request" | "prayer_comment"; contentId: number }) => {
+    mutationFn: async (variables: { contentType: "bulletin_post" | "bulletin_comment" | "prayer_request" | "prayer_comment"; contentId: number }) => {
       return backend.reportContent({
         contentType: variables.contentType,
         contentId: variables.contentId,
@@ -296,7 +296,7 @@ export function BulletinBoardPage() {
     },
   });
 
-  const handleReport = (contentType: "bulletin_comment" | "prayer_request" | "prayer_comment", contentId: number) => {
+  const handleReport = (contentType: "bulletin_post" | "bulletin_comment" | "prayer_request" | "prayer_comment", contentId: number) => {
     const key = `${contentType}-${contentId}`;
     if (reportedIds.has(key) || reportMutation.isPending) return;
     if (typeof window !== "undefined" && !window.confirm(t("Report this as inappropriate?", "¿Reportar esto como inapropiado?"))) return;
@@ -482,7 +482,18 @@ export function BulletinBoardPage() {
             displayedPosts.map((post) => (
               <Card key={post.id} className="border-neutral-800 bg-neutral-900/50">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-white">{post.title}</CardTitle>
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-white">{post.title}</CardTitle>
+                    <button
+                      type="button"
+                      onClick={() => handleReport("bulletin_post", post.id)}
+                      disabled={reportedIds.has(`bulletin_post-${post.id}`)}
+                      className="flex shrink-0 items-center gap-1 text-neutral-500 hover:text-red-400 disabled:text-neutral-600"
+                      aria-label={t("Report", "Reportar")}
+                    >
+                      <Flag className="h-4 w-4" />
+                    </button>
+                  </div>
                   <p className="text-xs text-neutral-400">{post.authorName} • {formatDate(post.createdAt)}</p>
                 </CardHeader>
                 <CardContent className="space-y-4">
