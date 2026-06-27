@@ -310,7 +310,9 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
           // Collapsed width scales with the icon count (~46px each) so the mini bar
           // is no longer than it needs to be. Expands to near-full width when open.
           width: navExpanded ? 'calc(100% - 24px)' : `${navItems.length * 46}px`,
-          transition: 'width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease',
+          // Gentler overshoot (1.56 -> 1.25) so the mini bar still bounces but doesn't
+          // briefly shrink past its target and let the last icon poke outside.
+          transition: 'width 0.4s cubic-bezier(0.34, 1.25, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease',
         } : {
           paddingTop: 'env(safe-area-inset-top)',
         }),
