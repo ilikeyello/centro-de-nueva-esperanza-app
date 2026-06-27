@@ -307,7 +307,9 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
           left: '50%',
           right: 'auto',
           transform: 'translateX(-50%) translateZ(0)',
-          width: navExpanded ? 'calc(100% - 24px)' : '230px',
+          // Collapsed width scales with the icon count (~46px each) so the mini bar
+          // is no longer than it needs to be. Expands to near-full width when open.
+          width: navExpanded ? 'calc(100% - 24px)' : `${navItems.length * 46}px`,
           transition: 'width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease',
         } : {
           paddingTop: 'env(safe-area-inset-top)',
