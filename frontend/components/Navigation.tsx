@@ -11,10 +11,12 @@ import {
   X,
   BookOpen,
   Music,
+  Heart,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
 import { cn } from "@/lib/utils";
+import { UGC_ENABLED } from "@/lib/featureFlags";
 
 // <mux-player> web component is registered globally via the CDN script in index.html.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -241,7 +243,11 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
     { id: "bible", icon: BookOpen, labelEn: "Bible", labelEs: "Biblia" },
     { id: "media", icon: Play, labelEn: "Media", labelEs: "Medios" },
     { id: "news", icon: Megaphone, labelEn: "News", labelEs: "Noticias" },
-    { id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" },
+    // Bulletin (user-generated content) hidden while UGC is disabled. See featureFlags.ts.
+    ...(UGC_ENABLED
+      ? [{ id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" }]
+      : []),
+    { id: "donations", icon: Heart, labelEn: "Give", labelEs: "Dar" },
   ];
 
   const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
@@ -540,8 +546,10 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                   data-swipe-pill
                   className="pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full bg-sage/10"
                   style={{
-                    width: `calc((100% - ${padH * 2}px) / ${swipePageCount})`,
-                    left: `calc(${padH}px + ${swipePageIndex} * (100% - ${padH * 2}px) / ${swipePageCount})`,
+                    // Divide by the actual number of nav buttons so the pill stays aligned
+                    // even when tap-only items (e.g. Give) are present beyond the swipe pages.
+                    width: `calc((100% - ${padH * 2}px) / ${navItems.length})`,
+                    left: `calc(${padH}px + ${swipePageIndex} * (100% - ${padH * 2}px) / ${navItems.length})`,
                     height: 'calc(100% - 12px)',
                     transition: 'left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.25s ease',
                   }}

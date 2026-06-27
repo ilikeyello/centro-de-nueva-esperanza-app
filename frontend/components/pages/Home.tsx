@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
+import { UGC_ENABLED } from "@/lib/featureFlags";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -419,6 +420,7 @@ export function Home({ onNavigate }: HomeProps) {
         </section>
 
 
+        {UGC_ENABLED && (
         <section className="warm-card p-8">
           <h2 className="mb-6 serif-heading text-3xl font-bold text-[--ink-dark]">
             {t("Submit a Prayer Request", "Enviar una petición de oración")}
@@ -491,6 +493,7 @@ export function Home({ onNavigate }: HomeProps) {
             </Button>
           </form>
         </section>
+        )}
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ import { useNotificationChecker } from "../hooks/useNotificationChecker";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { UGC_ENABLED } from "@/lib/featureFlags";
 
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -41,7 +42,9 @@ type Page =
   | "notifications";
 
 /** Pages in the horizontal pager, in order. */
-const SWIPE_PAGES: Page[] = ["home", "bible", "media", "news", "bulletin"];
+// "bulletin" (user-generated content) is excluded while UGC is disabled. See featureFlags.ts.
+const SWIPE_PAGES: Page[] = (["home", "bible", "media", "news", "bulletin"] as Page[])
+  .filter((p) => UGC_ENABLED || p !== "bulletin");
 
 /** Index of the Media page — its wrapper holds the always-mounted livestream PIP iframe. */
 const MEDIA_INDEX = SWIPE_PAGES.indexOf("media");
@@ -586,7 +589,7 @@ export function AppInner() {
         if (hash) window.location.hash = hash;
         handleNavigate("news");
       } else if (hash === "#bulletin") {
-        handleNavigate("bulletin");
+        handleNavigate(UGC_ENABLED ? "bulletin" : "home");
       } else if (hash === "#home") {
         handleNavigate("home");
       } else if (hash === "#donations") {
@@ -629,7 +632,7 @@ export function AppInner() {
       } else if (hash === "#media") {
         handleNavigate("media");
       } else if (hash === "#bulletin") {
-        handleNavigate("bulletin");
+        handleNavigate(UGC_ENABLED ? "bulletin" : "home");
       } else if (hash === "#admin-upload") {
         handleNavigate("adminUpload");
       } else if (hash === "#home") {
@@ -738,7 +741,7 @@ export function AppInner() {
                   {page === "bible"    && <Bible onNavigate={handleNavigate} />}
                   {page === "media"    && null /* Media renders externally in mediaWrapperRef for PIP support */}
                   {page === "news"     && <News />}
-                  {page === "bulletin" && <BulletinBoard onNavigate={handleNavigate} />}
+                  {page === "bulletin" && UGC_ENABLED && <BulletinBoard onNavigate={handleNavigate} />}
                 </div>
               </div>
             ))}
