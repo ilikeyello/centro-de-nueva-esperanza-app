@@ -11,7 +11,6 @@ import {
   X,
   BookOpen,
   Music,
-  Heart,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
@@ -247,7 +246,6 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
     ...(UGC_ENABLED
       ? [{ id: "bulletin", icon: MessageCircle, labelEn: "Bulletin", labelEs: "Tablón" }]
       : []),
-    { id: "donations", icon: Heart, labelEn: "Give", labelEs: "Dar" },
   ];
 
   const shouldScrollTitle = !!currentTrackTitle && currentTrackTitle.length > 24;
