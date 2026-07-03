@@ -44,8 +44,8 @@ const getDeviceId = (): string => {
 const saveNativeTokenToSupabase = async (token: string, platform: string) => {
   try {
     const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
-    let language = 'en';
-    try { language = localStorage.getItem('cne_language') || 'en'; } catch {}
+    let language = 'es';
+    try { language = localStorage.getItem('cne_language') || 'es'; } catch {}
     const { error } = await supabase.from('device_push_tokens').upsert({
       org_id: orgId,
       token,
@@ -200,8 +200,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const p256dhKey = sub.getKey('p256dh');
       const authKey = sub.getKey('auth');
       const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
-      let language = 'en';
-      try { language = localStorage.getItem('cne_language') || 'en'; } catch {}
+      let language = 'es';
+      try { language = localStorage.getItem('cne_language') || 'es'; } catch {}
       let clientUserId: string | null = null;
       try { clientUserId = localStorage.getItem('cne-user-id'); } catch {}
       const { error } = await supabase.from('push_subscriptions').upsert({
