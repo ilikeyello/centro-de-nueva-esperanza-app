@@ -1,5 +1,8 @@
 ext {
-    minSdkVersion = 23
+    // 26 (Android 8.0) is required by @capacitor/inappbrowser for the
+    // isolated-process SFSafariViewController-equivalent (Custom Tabs) sheet
+    // used by the donation flow.
+    minSdkVersion = 26
     compileSdkVersion = 35
     targetSdkVersion = 35
     androidxActivityVersion = '1.9.2'

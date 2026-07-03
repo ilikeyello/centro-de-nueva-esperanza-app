@@ -1,38 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink, Heart } from "lucide-react";
-import { Browser } from "@capacitor/browser";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { getChurchAdditionalInfo, type ChurchAdditionalInfo } from "../../lib/mainSiteData";
+import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
+import { getDonationUrl, openDonationSheet } from "../../lib/donations";
 
 export interface DonationsProps {
   onNavigate?: (page: string) => void;
-}
-
-/**
- * Resolve the URL donors should be sent to.
- *
- * Apple Guideline 3.2.2(iv): donation flows may not be rendered inside an
- * embedded/native-looking view (e.g. an in-app iframe). They must open
- * outside the app's WebView via Safari or SFSafariViewController. We only
- * ever hand this URL to `Browser.open()` (never render it in an iframe) so
- * that on iOS it always launches in SFSafariViewController.
- */
-function getDonationUrl(
-  churchInfo: Pick<ChurchAdditionalInfo, "tithely_url" | "tithely_embed"> | null | undefined
-): string | null {
-  if (!churchInfo) return null;
-  if (churchInfo.tithely_url) return churchInfo.tithely_url;
-
-  if (churchInfo.tithely_embed) {
-    const formIdMatch = churchInfo.tithely_embed.match(/data-form=["']([^"']+)["']/);
-    if (formIdMatch?.[1]) {
-      return `https://give.tithe.ly/?formId=${formIdMatch[1]}`;
-    }
-  }
-
-  return null;
 }
 
 export function Donations({ onNavigate }: DonationsProps) {
@@ -47,9 +22,7 @@ export function Donations({ onNavigate }: DonationsProps) {
 
   const handleGive = async () => {
     if (!donationUrl) return;
-    // Browser.open() presents SFSafariViewController on iOS, Chrome Custom
-    // Tabs on Android, and a new tab on web — never an in-app embedded view.
-    await Browser.open({ url: donationUrl });
+    await openDonationSheet(donationUrl);
   };
 
   return (

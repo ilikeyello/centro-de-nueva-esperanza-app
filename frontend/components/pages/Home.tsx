@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
+import { getDonationUrl, openDonationSheet } from "../../lib/donations";
 import { UGC_ENABLED } from "@/lib/featureFlags";
 
 interface HomeProps {
@@ -66,6 +67,8 @@ export function Home({ onNavigate }: HomeProps) {
     queryKey: ["churchInfo"],
     queryFn: () => getChurchAdditionalInfo(),
   });
+
+  const donationUrl = getDonationUrl(churchInfo);
 
   const nextEvent = eventsData?.events?.[0];
   const formattedDate = nextEvent
@@ -370,7 +373,22 @@ export function Home({ onNavigate }: HomeProps) {
                 return (
                   <button
                     key={action.page}
-                    onClick={() => onNavigate(action.page)}
+                    onClick={() => {
+                      // "Support Our Ministry" pops the Tithe.ly page as a
+                      // sheet directly — no page navigation — via
+                      // SFSafariViewController (Apple Guideline 3.2.2(iv)).
+                      // Fall back to the Donations page if the URL hasn't
+                      // loaded yet.
+                      if (action.page === "donations") {
+                        if (donationUrl) {
+                          void openDonationSheet(donationUrl);
+                        } else {
+                          onNavigate("donations");
+                        }
+                        return;
+                      }
+                      onNavigate(action.page);
+                    }}
                     className="warm-card group p-6 text-left transition-all hover:scale-105"
                   >
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
