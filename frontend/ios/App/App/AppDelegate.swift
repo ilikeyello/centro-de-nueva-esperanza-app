@@ -1,6 +1,7 @@
 import UIKit
 import UserNotifications
 import Capacitor
+import SafariServices
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -88,5 +89,42 @@ class MainViewController: CAPBridgeViewController {
         webView?.scrollView.bounces = false
         webView?.scrollView.alwaysBounceVertical = false
         webView?.scrollView.alwaysBounceHorizontal = false
+
+        bridge?.registerPluginInstance(DonationPrewarmPlugin())
+    }
+}
+
+// Pure-Swift Capacitor plugin that prewarmsthe SFSafariViewController connection
+// to the donation URL so it loads instantly when the user taps "Give".
+// Registered directly in capacitorDidLoad — no ObjC .m bridge file needed.
+@objc(DonationPrewarmPlugin)
+public class DonationPrewarmPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "DonationPrewarmPlugin"
+    public let jsName = "DonationPrewarm"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "prewarm", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "invalidate", returnType: CAPPluginReturnPromise),
+    ]
+
+    private var prewarmToken: AnyObject?
+
+    @objc func prewarm(_ call: CAPPluginCall) {
+        guard let urlString = call.getString("url"), let url = URL(string: urlString) else {
+            call.reject("A valid url is required")
+            return
+        }
+        if #available(iOS 15.0, *) {
+            (prewarmToken as? SFSafariViewController.PrewarmingToken)?.invalidate()
+            prewarmToken = SFSafariViewController.prewarmConnections(to: [url])
+        }
+        call.resolve()
+    }
+
+    @objc func invalidate(_ call: CAPPluginCall) {
+        if #available(iOS 15.0, *) {
+            (prewarmToken as? SFSafariViewController.PrewarmingToken)?.invalidate()
+        }
+        prewarmToken = nil
+        call.resolve()
     }
 }
