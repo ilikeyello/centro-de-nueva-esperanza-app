@@ -1,10 +1,11 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
-import { getDonationUrl, openDonationSheet } from "../../lib/donations";
+import { getDonationUrl, invalidateDonationPrewarm, openDonationSheet, prewarmDonation } from "../../lib/donations";
 
 export interface DonationsProps {
   onNavigate?: (page: string) => void;
@@ -19,6 +20,16 @@ export function Donations({ onNavigate }: DonationsProps) {
   });
 
   const donationUrl = getDonationUrl(churchInfo);
+
+  // Reached via the #donations deep link (e.g. notifications) where Home's
+  // prewarm never ran — pre-open the connection as soon as we have the URL.
+  useEffect(() => {
+    if (!donationUrl) return;
+    void prewarmDonation(donationUrl);
+    return () => {
+      void invalidateDonationPrewarm();
+    };
+  }, [donationUrl]);
 
   const handleGive = async () => {
     if (!donationUrl) return;

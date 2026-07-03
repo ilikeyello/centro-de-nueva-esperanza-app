@@ -1,4 +1,6 @@
+import { Capacitor } from "@capacitor/core";
 import { AndroidViewStyle, DefaultSystemBrowserOptions, InAppBrowser, iOSViewStyle } from "@capacitor/inappbrowser";
+import DonationPrewarm from "./donationPrewarmPlugin";
 import type { ChurchAdditionalInfo } from "./mainSiteData";
 
 /**
@@ -47,4 +49,38 @@ export async function openDonationSheet(url: string): Promise<void> {
       },
     },
   });
+}
+
+let prewarmedUrl: string | null = null;
+
+/**
+ * Best-effort: pre-opens the network connection to `url` so the sheet
+ * opened by `openDonationSheet()` loads faster instead of connecting cold.
+ * Safe to call speculatively (e.g. as soon as the donation URL is known) —
+ * it never throws and is a no-op on web or if it's already prewarmed the
+ * same URL.
+ */
+export async function prewarmDonation(url: string): Promise<void> {
+  if (!Capacitor.isNativePlatform() || prewarmedUrl === url) return;
+  prewarmedUrl = url;
+  try {
+    await DonationPrewarm.prewarm({ url });
+  } catch {
+    // Prewarming is an optimization, never a requirement — ignore failures
+    // (e.g. plugin not yet synced into the native project).
+  }
+}
+
+/**
+ * Tears down a prewarmed connection/session. Safe to call even if nothing
+ * was prewarmed, or on web.
+ */
+export async function invalidateDonationPrewarm(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
+  prewarmedUrl = null;
+  try {
+    await DonationPrewarm.invalidate();
+  } catch {
+    // no-op
+  }
 }

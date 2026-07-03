@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Calendar, Gamepad2, Heart, MapPin, Megaphone, Languages, Clock, Users } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
-import { getDonationUrl, openDonationSheet } from "../../lib/donations";
+import { getDonationUrl, invalidateDonationPrewarm, openDonationSheet, prewarmDonation } from "../../lib/donations";
 import { UGC_ENABLED } from "@/lib/featureFlags";
 
 interface HomeProps {
@@ -69,6 +69,16 @@ export function Home({ onNavigate }: HomeProps) {
   });
 
   const donationUrl = getDonationUrl(churchInfo);
+
+  // Pre-open the connection to Tithe.ly as soon as we know the URL so the
+  // "Support Our Ministry" sheet loads fast instead of connecting cold.
+  useEffect(() => {
+    if (!donationUrl) return;
+    void prewarmDonation(donationUrl);
+    return () => {
+      void invalidateDonationPrewarm();
+    };
+  }, [donationUrl]);
 
   const nextEvent = eventsData?.events?.[0];
   const formattedDate = nextEvent
