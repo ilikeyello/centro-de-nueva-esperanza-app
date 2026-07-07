@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TriviaAdminPanelFinal } from "../admin/TriviaAdminPanelFinal";
 import { WordSearchAdminPanel } from "../admin/WordSearchAdminPanel";
 import { ExternalLink } from "lucide-react";
+import { openSheetBrowser } from "../../lib/systemBrowser";
 
 /**
  * In-app admin. Media (devotionals, livestream, worship music) is now managed
@@ -44,15 +45,14 @@ export function AdminUpload() {
             "Sube devocionales en video, configura la transmisión en vivo de Mux y agrega canciones de adoración desde el panel web de la iglesia. El contenido aparece en la app automáticamente cuando termina de procesarse."
           )}
         </p>
-        <a
-          href={dashboardUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => void openSheetBrowser(dashboardUrl)}
           className="mt-3 inline-flex items-center gap-2 rounded-md bg-[--sage] px-3 py-1.5 text-[0.75rem] font-semibold text-white transition-colors hover:bg-[--sage-mid]"
         >
           <ExternalLink className="h-3.5 w-3.5" />
           {t("Open Web Dashboard", "Abrir Panel Web")}
-        </a>
+        </button>
       </div>
 
       {/* In-app game admin */}

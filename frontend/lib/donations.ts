@@ -1,6 +1,6 @@
 import { Capacitor } from "@capacitor/core";
-import { AndroidViewStyle, DefaultSystemBrowserOptions, InAppBrowser, iOSViewStyle } from "@capacitor/inappbrowser";
 import DonationPrewarm from "./donationPrewarmPlugin";
+import { openSheetBrowser } from "./systemBrowser";
 import type { ChurchAdditionalInfo } from "./mainSiteData";
 
 /**
@@ -35,20 +35,7 @@ export function getDonationUrl(
  * full-screen takeover.
  */
 export async function openDonationSheet(url: string): Promise<void> {
-  await InAppBrowser.openInSystemBrowser({
-    url,
-    options: {
-      ...DefaultSystemBrowserOptions,
-      iOS: {
-        ...DefaultSystemBrowserOptions.iOS,
-        viewStyle: iOSViewStyle.PAGE_SHEET,
-      },
-      android: {
-        ...DefaultSystemBrowserOptions.android,
-        viewStyle: AndroidViewStyle.BOTTOM_SHEET,
-      },
-    },
-  });
+  await openSheetBrowser(url);
 }
 
 let prewarmedUrl: string | null = null;
