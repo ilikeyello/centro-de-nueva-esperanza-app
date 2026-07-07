@@ -11,6 +11,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { useBackend } from "../../hooks/useBackend";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
 import { getDonationUrl, invalidateDonationPrewarm, openDonationSheet, prewarmDonation } from "../../lib/donations";
+import { openSheetBrowser } from "../../lib/systemBrowser";
 import { UGC_ENABLED } from "@/lib/featureFlags";
 
 interface HomeProps {
@@ -357,11 +358,10 @@ export function Home({ onNavigate }: HomeProps) {
 
                 if (action.isExternal) {
                   return (
-                    <a
+                    <button
                       key={action.page}
-                      href={action.page}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      type="button"
+                      onClick={() => void openSheetBrowser(action.page)}
                       className="warm-card group p-6 text-left transition-all hover:scale-105"
                     >
                       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[--sage]/10 group-hover:bg-[--sage]/20">
@@ -376,7 +376,7 @@ export function Home({ onNavigate }: HomeProps) {
                           "Acceder al panel de administración de la iglesia"
                         )}
                       </p>
-                    </a>
+                    </button>
                   );
                 }
 
