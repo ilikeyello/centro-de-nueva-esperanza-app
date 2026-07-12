@@ -16,6 +16,11 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
 import { cn } from "@/lib/utils";
 import { UGC_ENABLED } from "@/lib/featureFlags";
+import { Capacitor } from "@capacitor/core";
+
+// Web big-screen builds drop the custom livestream mini-player (mux-player has
+// its own native picture-in-picture). Never affects the native app or mobile web.
+const IS_WEB = Capacitor.getPlatform() === "web";
 
 // <mux-player> web component is registered globally via the CDN script in index.html.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,7 +71,7 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
   const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isMusicPlayerOpen = !!currentPlaybackId && !isMinimized;
-  const isLivestreamOpen  = shouldShowLivestreamPip && !isLivestreamPipMinimized;
+  const isLivestreamOpen  = shouldShowLivestreamPip && !isLivestreamPipMinimized && !(IS_WEB && isDesktop);
   const forceExpanded     = isMusicPlayerOpen || isLivestreamOpen;
 
   const scheduleCollapse = useCallback(() => {
@@ -495,7 +500,8 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
           )}
 
           {/* ===== DESKTOP MINIMIZED LIVESTREAM BAR (integrated in navbar) ===== */}
-          {currentPage !== "media" && isDesktop && isLivestreamPipMinimized && shouldShowLivestreamPip && (
+          {/* Suppressed on web big screens — mux-player provides native PIP there. */}
+          {currentPage !== "media" && isDesktop && !IS_WEB && isLivestreamPipMinimized && shouldShowLivestreamPip && (
             <div className="music-player-dark hidden md:block px-3 py-1 ml-auto">
               <div className="flex items-center justify-center gap-3 rounded-xl bg-[--surface] px-4 py-1.5 shadow-sm border border-[--border-color]">
                 <div className="flex items-center gap-2">

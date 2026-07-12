@@ -30,6 +30,14 @@
     <!-- PWA Manifest for Android -->
     <link rel="manifest" href="/manifest.json" />
     
+    <!-- iOS Smart App Banner: in mobile Safari this shows "OPEN" when the CNE
+         app is installed, otherwise sends the user to the App Store. It renders
+         ONLY in iOS Safari — inert on Android, desktop, and inside the native
+         app's WebView, so it never affects the iOS/Android app builds.
+         TODO: replace 0000000000 with the real App Store app ID once the app is
+         published (optionally add app-argument=<deep-link-url>). -->
+    <meta name="apple-itunes-app" content="app-id=0000000000" />
+
     <!-- Mobile Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -7,6 +7,7 @@ import { usePlayer } from "../../contexts/PlayerContext";
 import { useBackend } from "../../hooks/useBackend";
 import { cn } from "@/lib/utils";
 import { MuxPlayer } from "../MuxPlayer";
+import { Capacitor } from "@capacitor/core";
 
 interface SermonItem {
   id: number;
@@ -156,15 +157,27 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
   const showLivePlayer = Boolean(livestreamIsLive && livestreamPlaybackId);
 
+  // Web-only, big-screen behavior (never affects the native iOS/Android app or
+  // mobile web). On desktop web we (1) size the Media-page livestream a little
+  // smaller and lower it off the navbar, and (2) drop the custom floating
+  // mini-player entirely — mux-player exposes its own native picture-in-picture,
+  // so the livestream only renders on the Media page and unmounts when you leave.
+  const isWeb = Capacitor.getPlatform() === "web";
+  const isWebDesktop = isWeb && isDesktop;
+  const showLivestreamPip = shouldShowLivestreamPip && !isWebDesktop;
+  const renderLivePlayer = showLivePlayer && (isMediaPage || !isWebDesktop);
+
   return (
     <div className={cn(
-      isMediaPage ? "mx-auto py-8 container px-4 space-y-10 relative" : "fixed inset-0 pointer-events-none z-[60]"
+      isMediaPage ? "mx-auto py-8 container px-4 space-y-10 relative" : "fixed inset-0 pointer-events-none z-[60]",
+      // Lower the Media page below the fixed desktop navbar (web big screens only).
+      isMediaPage && isWebDesktop && "!pt-24"
     )}>
       {/* 1. PERSISTENT LIVESTREAM BOX (doubles as floating PIP off the Media page) */}
       <div
         className={cn(
           "transform",
-          (isMediaPage || shouldShowLivestreamPip) && "transition-all duration-300",
+          (isMediaPage || showLivestreamPip) && "transition-all duration-300",
           isMediaPage
             ? "overflow-hidden rounded-2xl border border-[--border-color] bg-[--surface] shadow-xl relative aspect-video"
             : cn(
@@ -173,7 +186,9 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                   ? "bottom-24 right-4 rounded-xl origin-bottom-right shadow-2xl border border-[--border-color]"
                   : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
               ),
-          (!isMediaPage && !shouldShowLivestreamPip) && "opacity-0 pointer-events-none invisible"
+          (!isMediaPage && !showLivestreamPip) && "opacity-0 pointer-events-none invisible",
+          // Shrink & center the livestream on the Media page (web big screens only).
+          isMediaPage && isWebDesktop && "max-w-4xl mx-auto"
         )}
         style={isMediaPage ? {} : {
           transform: isDesktop && (desktopPipPosition.x !== 0 || desktopPipPosition.y !== 0) ? `translate(${desktopPipPosition.x}px, ${desktopPipPosition.y}px)` : undefined,
@@ -238,7 +253,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
             </p>
           </div>
-          {showLivePlayer && (
+          {renderLivePlayer && (
             <div className="h-full w-full">
               <MuxPlayer
                 playbackId={livestreamPlaybackId!}
