@@ -74,7 +74,7 @@ export function HomePage() {
       icon: DollarSign,
       labelEn: "Give Now",
       labelEs: "Dar Ahora",
-      page: "news",
+      page: "donations",
       color: "bg-green-600 hover:bg-green-700",
     },
   ];

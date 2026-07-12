@@ -114,6 +114,8 @@ export interface ChurchInfo {
   facebookPageUrl: string | null;
   latitude: number | null;
   longitude: number | null;
+  tithelyUrl: string | null;
+  tithelyEmbed: string | null;
 }
 
 class ChurchApiService {
@@ -561,6 +563,8 @@ class ChurchApiService {
       facebookPageUrl: data.facebook_page_url,
       latitude: data.latitude,
       longitude: data.longitude,
+      tithelyUrl: data.tithely_url ?? null,
+      tithelyEmbed: data.tithely_embed ?? null,
     };
   }
 

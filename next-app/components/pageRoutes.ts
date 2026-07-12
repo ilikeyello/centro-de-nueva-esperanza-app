@@ -1,4 +1,4 @@
-export type AppPage = "home" | "bible" | "media" | "news" | "bulletin" | "games";
+export type AppPage = "home" | "bible" | "media" | "news" | "bulletin" | "games" | "donations";
 
 export function pathFromPage(page: string): string {
   switch (page) {
@@ -14,6 +14,8 @@ export function pathFromPage(page: string): string {
       return "/bulletin";
     case "games":
       return "/games";
+    case "donations":
+      return "/donations";
     default:
       return "/";
   }
