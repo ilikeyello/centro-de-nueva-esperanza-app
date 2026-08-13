@@ -112,15 +112,19 @@ export function VerseOfTheDayDialog({ verse }: { verse: DailyVerse | null }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      {/* bg-[var(--surface)], not bg-[--surface]: Tailwind v4 compiles the
+          latter to `background-color: --surface`, which is invalid, leaving the
+          dialog transparent over the page. */}
       <DialogContent
-        className="max-w-md border-[--border-color] bg-[--surface] p-0 [&>button]:hidden"
+        showCloseButton={false}
+        className="max-w-md border-[var(--border-color)] bg-[var(--surface)] p-0 shadow-2xl"
         aria-describedby={undefined}
       >
         <div className="relative p-6">
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="absolute right-4 top-4 rounded-full p-1 text-[--ink-mid] transition-colors hover:bg-[--surface-mid] hover:text-[--ink-dark]"
+            className="absolute right-4 top-4 rounded-full p-1 text-[--ink-mid] transition-colors hover:bg-[var(--surface-mid)] hover:text-[--ink-dark]"
             aria-label={t("Close", "Cerrar")}
           >
             <X className="h-4 w-4" />
@@ -135,7 +139,7 @@ export function VerseOfTheDayDialog({ verse }: { verse: DailyVerse | null }) {
             <VerseBody verse={verse} />
           </div>
           <Button onClick={() => setOpen(false)} className="warm-button-primary mt-6 w-full px-4 py-2">
-            {t("Amen", "Amén")}
+            {t("Continue", "Continuar")}
           </Button>
         </div>
       </DialogContent>
