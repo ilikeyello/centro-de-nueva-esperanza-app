@@ -15,6 +15,9 @@ interface SermonItem {
   muxPlaybackId: string | null;
   createdAt: string;
   description?: string;
+  /** 'livestream' = auto-saved broadcast recording, 'upload' = admin devotional. */
+  source?: "upload" | "livestream" | null;
+  sermonDate?: string | null;
 }
 
 interface MediaProps {
@@ -71,6 +74,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           muxPlaybackId: s.muxPlaybackId ?? null,
           createdAt: s.createdAt,
           description: s.description,
+          source: s.source ?? null,
+          sermonDate: s.sermonDate ?? null,
         }));
         setSermons(transformed);
         if (transformed.length > 0) setSelectedSermonId(transformed[0].id);
@@ -88,6 +93,26 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     if (selectedSermonId == null) return sermons[0];
     return sermons.find((s) => s.id === selectedSermonId) ?? sermons[0];
   }, [sermons, selectedSermonId]);
+
+  // Sermons come from two places; the subheading tells them apart at a glance.
+  const sourceLabel = (source?: string | null) =>
+    source === "livestream"
+      ? t("Livestream", "Transmisión en Vivo")
+      : t("Devotional", "Devocional");
+
+  /** A 'YYYY-MM-DD' sermon_date parses as UTC and can shift a day back, so build it locally. */
+  const sermonDate = (sermon: SermonItem) => {
+    const raw = sermon.sermonDate ?? sermon.createdAt;
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    return ymd ? new Date(+ymd[1], +ymd[2] - 1, +ymd[3]) : new Date(raw);
+  };
+
+  const formatSermonDate = (sermon: SermonItem) =>
+    sermonDate(sermon).toLocaleDateString(language === "en" ? "en-US" : "es-MX", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
 
   // ── PIP positioning (mobile) ──────────────────────────────────────────────
   useEffect(() => {
@@ -320,16 +345,16 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
         </div>
       </section>
 
-      {/* 3. DEVOTIONALS */}
+      {/* 3. SERMONS — livestream recordings (auto-saved) + uploaded devotionals */}
       <section className={cn("space-y-6", !isMediaPage && "hidden")}>
         <div>
           <h2 className="text-2xl font-bold text-[--ink-dark]">
-            {t("Devotionals", "Devocionales")}
+            {t("Sermons", "Sermones")}
           </h2>
           <p className="text-[--ink-mid]">
             {t(
-              "Catch up on previous devotionals and share them with friends.",
-              "Ponte al día con los devocionales anteriores y compártelos con amigos."
+              "Catch up on past services and devotionals, and share them with friends.",
+              "Ponte al día con los servicios y devocionales anteriores y compártelos con amigos."
             )}
           </p>
         </div>
@@ -337,10 +362,19 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="border-none bg-transparent shadow-none md:col-span-2">
             <CardHeader>
+              {!loadingSermons && selectedSermon && (
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[--sage]">
+                  {sourceLabel(selectedSermon.source)}
+                  <span className="mx-2 text-[--ink-light]">·</span>
+                  <span className="font-medium normal-case tracking-normal text-[--ink-mid]">
+                    {formatSermonDate(selectedSermon)}
+                  </span>
+                </p>
+              )}
               <CardTitle className="text-[--ink-dark]">
                 {selectedSermon
                   ? selectedSermon.title
-                  : t("No devotional selected", "Ningún devocional seleccionado")}
+                  : t("No sermon selected", "Ningún sermón seleccionado")}
               </CardTitle>
               {!loadingSermons && selectedSermon?.description && (
                 <p className="text-sm text-[--ink-mid] leading-relaxed mt-2">
@@ -352,7 +386,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
                 {loadingSermons && (
                   <div className="flex h-full items-center justify-center text-xs text-[--ink-light]">
-                    {t("Loading devotionals...", "Cargando devocionales...")}
+                    {t("Loading sermons...", "Cargando sermones...")}
                   </div>
                 )}
                 {!loadingSermons && selectedSermon?.muxPlaybackId && (
@@ -366,7 +400,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                 )}
                 {!loadingSermons && !selectedSermon && (
                   <div className="flex h-full items-center justify-center text-xs text-[--ink-light]">
-                    {t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}
+                    {t("No sermons available yet.", "Todavía no hay sermones disponibles.")}
                   </div>
                 )}
               </div>
@@ -376,7 +410,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           <Card className="border-[--border-color] bg-[--surface]">
             <CardHeader>
               <CardTitle className="text-sm font-semibold text-[--ink-dark]">
-                {t("All Devotionals", "Todos los Devocionales")}
+                {t("All Sermons", "Todos los Sermones")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -386,7 +420,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                 )}
                 {!loadingSermons && sermons.length === 0 && (
                   <p className="text-[--ink-light]">
-                    {t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}
+                    {t("No sermons available yet.", "Todavía no hay sermones disponibles.")}
                   </p>
                 )}
                 {!loadingSermons && sermons.length > 0 && (
@@ -409,11 +443,11 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                             }}
                           >
                             <span className="truncate text-[0.8rem] font-medium">{sermon.title}</span>
-                            <span className={`mt-0.5 text-[0.65rem] ${isActive ? "opacity-70" : "text-[--ink-mid]"}`}>
-                              {new Date(sermon.createdAt).toLocaleDateString(
-                                language === "en" ? "en-US" : "es-MX",
-                                { month: "short", day: "numeric", year: "numeric" }
-                              )}
+                            <span className={`mt-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] ${isActive ? "opacity-80" : "text-[--sage]"}`}>
+                              {sourceLabel(sermon.source)}
+                            </span>
+                            <span className={`text-[0.65rem] ${isActive ? "opacity-70" : "text-[--ink-mid]"}`}>
+                              {formatSermonDate(sermon)}
                             </span>
                           </button>
                         </li>

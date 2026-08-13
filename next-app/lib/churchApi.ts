@@ -25,6 +25,13 @@ export interface Sermon {
   muxPlaybackId: string | null;
   description?: string | null;
   createdAt: string;
+  /**
+   * How the sermon got here: 'livestream' = auto-saved recording of a broadcast,
+   * 'upload' = devotional the admin uploaded by hand. Drives the badge in the UI.
+   */
+  source?: 'upload' | 'livestream' | null;
+  /** Date of the service/devotional, which can differ from when the row was created. */
+  sermonDate?: string | null;
 }
 
 export interface Event {
@@ -131,10 +138,12 @@ class ChurchApiService {
       try {
         const { data, error } = await this.client
           .from("sermons")
-          .select("id, title, description, mux_playback_id, mux_status, created_at")
+          .select("id, title, description, mux_playback_id, mux_status, created_at, source, sermon_date")
           .eq("organization_id", this.orgId)
           .eq("mux_status", "ready")
           .not("mux_playback_id", "is", null)
+          .not("published", "is", false)
+          .order("sermon_date", { ascending: false, nullsFirst: false })
           .order("created_at", { ascending: false })
           .limit(50);
 
@@ -146,6 +155,8 @@ class ChurchApiService {
           muxPlaybackId: s.mux_playback_id,
           description: s.description,
           createdAt: s.created_at,
+          source: s.source ?? null,
+          sermonDate: s.sermon_date ?? null,
         }));
 
         return { sermons };

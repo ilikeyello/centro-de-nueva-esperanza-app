@@ -41,6 +41,13 @@ export interface SermonItem {
   muxStatus?: string | null;
   createdAt: string;
   description?: string;
+  /**
+   * How the sermon got here: 'livestream' = auto-saved recording of a broadcast,
+   * 'upload' = devotional the admin uploaded by hand. Drives the badge in the UI.
+   */
+  source?: 'upload' | 'livestream' | null;
+  /** Date of the service/devotional, which can differ from when the row was created. */
+  sermonDate?: string | null;
   /** @deprecated legacy YouTube field, no longer used for playback. */
   youtubeUrl?: string;
 }
@@ -140,17 +147,22 @@ export class ChurchApiService {
   private client: SupabaseClient = supabase;
   private orgId: string = churchOrgId;
 
-  // Devotionals — video assets stored in the `sermons` table and streamed via Mux.
-  // Only assets that have finished processing (status "ready" with a playback id)
-  // are returned, so the app never tries to play an unavailable video.
+  // Sermons — video assets stored in the `sermons` table and streamed via Mux.
+  // Two kinds land here: recordings Mux saves automatically when a livestream
+  // ends (source = 'livestream') and devotionals the admin uploads by hand
+  // (source = 'upload'). Only assets that have finished processing (status
+  // "ready" with a playback id) and are published are returned, so the app never
+  // tries to play an unavailable or hidden video.
   async listSermons(): Promise<{ sermons: SermonItem[] }> {
     try {
       const { data, error } = await this.client
         .from('sermons')
-        .select('id, title, description, mux_playback_id, mux_status, created_at')
+        .select('id, title, description, mux_playback_id, mux_status, created_at, source, sermon_date')
         .eq('organization_id', this.orgId)
         .eq('mux_status', 'ready')
         .not('mux_playback_id', 'is', null)
+        .not('published', 'is', false)
+        .order('sermon_date', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -163,11 +175,13 @@ export class ChurchApiService {
         muxStatus: s.mux_status,
         createdAt: s.created_at,
         description: s.description,
+        source: s.source ?? null,
+        sermonDate: s.sermon_date ?? null,
       }));
 
       return { sermons };
     } catch (e) {
-      console.log('Could not load devotionals from Supabase:', e);
+      console.log('Could not load sermons from Supabase:', e);
       return { sermons: [] };
     }
   }

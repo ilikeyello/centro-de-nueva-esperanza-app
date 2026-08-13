@@ -15,6 +15,9 @@ interface SermonItem {
   muxPlaybackId: string | null;
   description?: string | null;
   createdAt: string;
+  /** 'livestream' = auto-saved broadcast recording, 'upload' = admin devotional. */
+  source?: "upload" | "livestream" | null;
+  sermonDate?: string | null;
 }
 
 export function MediaPage() {
@@ -44,6 +47,8 @@ export function MediaPage() {
           muxPlaybackId: s.muxPlaybackId ?? null,
           description: s.description ?? null,
           createdAt: s.createdAt,
+          source: s.source ?? null,
+          sermonDate: s.sermonDate ?? null,
         }));
         setSermons(transformed);
         if (transformed.length > 0) setSelectedSermonId(transformed[0].id);
@@ -61,6 +66,22 @@ export function MediaPage() {
     if (selectedSermonId == null) return sermons[0];
     return sermons.find((s) => s.id === selectedSermonId) ?? sermons[0];
   }, [sermons, selectedSermonId]);
+
+  // Sermons come from two places; the subheading tells them apart at a glance.
+  const sourceLabel = (source?: string | null) =>
+    source === "livestream" ? t("Livestream", "Transmisión en Vivo") : t("Devotional", "Devocional");
+
+  /** A 'YYYY-MM-DD' sermon_date parses as UTC and can shift a day back, so build it locally. */
+  const formatSermonDate = (sermon: SermonItem) => {
+    const raw = sermon.sermonDate ?? sermon.createdAt;
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    const date = ymd ? new Date(+ymd[1], +ymd[2] - 1, +ymd[3]) : new Date(raw);
+    return date.toLocaleDateString(language === "en" ? "en-US" : "es-MX", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   const showLivePlayer = Boolean(livestreamIsLive && livestreamPlaybackId);
 
@@ -120,19 +141,26 @@ export function MediaPage() {
 
       <section className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white">{t("Devotionals", "Devocionales")}</h2>
-          <p className="text-neutral-400">{t("Catch up on previous devotionals and share them with friends.", "Ponte al día con los devocionales anteriores y compártelos con amigos.")}</p>
+          <h2 className="text-2xl font-bold text-white">{t("Sermons", "Sermones")}</h2>
+          <p className="text-neutral-400">{t("Catch up on past services and devotionals, and share them with friends.", "Ponte al día con los servicios y devocionales anteriores y compártelos con amigos.")}</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="border-none bg-transparent shadow-none md:col-span-2">
             <CardHeader>
-              <CardTitle className="text-white">{selectedSermon ? selectedSermon.title : t("No devotional selected", "Ningún devocional seleccionado")}</CardTitle>
+              {!loadingSermons && selectedSermon && (
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">
+                  {sourceLabel(selectedSermon.source)}
+                  <span className="mx-2 text-neutral-600">·</span>
+                  <span className="font-medium normal-case tracking-normal text-neutral-400">{formatSermonDate(selectedSermon)}</span>
+                </p>
+              )}
+              <CardTitle className="text-white">{selectedSermon ? selectedSermon.title : t("No sermon selected", "Ningún sermón seleccionado")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
                 {loadingSermons && (
-                  <div className="flex h-full items-center justify-center text-xs text-neutral-500">{t("Loading devotionals...", "Cargando devocionales...")}</div>
+                  <div className="flex h-full items-center justify-center text-xs text-neutral-500">{t("Loading sermons...", "Cargando sermones...")}</div>
                 )}
                 {!loadingSermons && selectedSermon?.muxPlaybackId && (
                   <MuxPlayer
@@ -144,7 +172,7 @@ export function MediaPage() {
                   />
                 )}
                 {!loadingSermons && !selectedSermon && (
-                  <div className="flex h-full items-center justify-center text-xs text-neutral-500">{t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}</div>
+                  <div className="flex h-full items-center justify-center text-xs text-neutral-500">{t("No sermons available yet.", "Todavía no hay sermones disponibles.")}</div>
                 )}
               </div>
             </CardContent>
@@ -152,12 +180,12 @@ export function MediaPage() {
 
           <Card className="border-neutral-800 bg-neutral-900/60">
             <CardHeader>
-              <CardTitle className="text-sm font-semibold text-white">{t("All Devotionals", "Todos los Devocionales")}</CardTitle>
+              <CardTitle className="text-sm font-semibold text-white">{t("All Sermons", "Todos los Sermones")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-80 space-y-1 overflow-y-auto text-xs">
                 {loadingSermons && <p className="text-neutral-500">{t("Loading...", "Cargando...")}</p>}
-                {!loadingSermons && sermons.length === 0 && <p className="text-neutral-500">{t("No devotionals available yet.", "Todavía no hay devocionales disponibles.")}</p>}
+                {!loadingSermons && sermons.length === 0 && <p className="text-neutral-500">{t("No sermons available yet.", "Todavía no hay sermones disponibles.")}</p>}
                 {!loadingSermons && sermons.length > 0 && (
                   <ul className="space-y-1">
                     {sermons.map((sermon) => {
@@ -174,11 +202,10 @@ export function MediaPage() {
                             }`}
                           >
                             <span className="truncate text-[0.8rem] font-medium">{sermon.title}</span>
-                            <span className="mt-0.5 text-[0.65rem] text-neutral-400">
-                              {new Date(sermon.createdAt).toLocaleDateString(language === "en" ? "en-US" : "es-MX", {
-                                month: "short", day: "numeric", year: "numeric",
-                              })}
+                            <span className={`mt-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] ${isActive ? "text-red-200" : "text-red-400"}`}>
+                              {sourceLabel(sermon.source)}
                             </span>
+                            <span className="text-[0.65rem] text-neutral-400">{formatSermonDate(sermon)}</span>
                           </button>
                         </li>
                       );
