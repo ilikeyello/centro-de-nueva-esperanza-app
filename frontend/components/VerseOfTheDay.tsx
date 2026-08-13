@@ -111,12 +111,13 @@ export function VerseOfTheDayDialog({ verse }: { verse: DailyVerse | null }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* bg-[var(--surface)], not bg-[--surface]: Tailwind v4 compiles the
-          latter to `background-color: --surface`, which is invalid, leaving the
-          dialog transparent over the page. */}
+      {/* Width overrides matter here: shadcn's DialogContent ships
+          w-full max-w-[calc(100%-2rem)] sm:max-w-lg, which spans nearly the
+          whole screen on a phone. The .verse-dialog class supplies the
+          translucent background (see index.css). */}
       <DialogContent
         showCloseButton={false}
-        className="max-w-md border-[var(--border-color)] bg-[var(--surface)] p-0 shadow-2xl"
+        className="verse-dialog w-[86%] max-w-xs border-[var(--border-color)] p-0 shadow-2xl sm:max-w-sm"
         aria-describedby={undefined}
         // Radix focuses the first focusable child on open, which drew a focus
         // ring around the close button the moment the popup appeared.

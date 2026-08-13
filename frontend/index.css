@@ -398,6 +398,20 @@
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
+/* Verse of the Day popup. Literal rgba rather than a var() with alpha: the
+   surface tokens are plain hex, and color-mix() needs Safari 16.2 while the app
+   still targets iOS 15.6 — an unsupported color would leave it fully see-through. */
+.verse-dialog {
+  background-color: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.dark .verse-dialog {
+  /* var(--surface) in dark mode is #162411. */
+  background-color: rgba(22, 36, 17, 0.9);
+}
+
 /* Button styles */
 .warm-button-primary {
   background: var(--sage) !important;

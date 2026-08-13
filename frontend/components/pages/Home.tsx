@@ -21,6 +21,28 @@ interface HomeProps {
 
 const NEWS_DEFAULT_TAB_KEY = "cne-news-default-tab";
 
+/**
+ * Announcement bodies are rich text from the dashboard editor, so they arrive
+ * as HTML. The News page renders that markup; here we only want a short teaser,
+ * so flatten it to plain text instead — otherwise the card literally shows
+ * "<p>" and friends.
+ *
+ * DOMParser is used rather than assigning innerHTML: it never executes scripts
+ * or fetches resources, so admin-authored markup can't do anything unexpected.
+ */
+function htmlToPlainText(html: string): string {
+  if (!html) return "";
+  try {
+    // Turn block boundaries into spaces first, or words run together.
+    const spaced = html.replace(/<\/(p|div|h[1-6]|li|tr)>|<br\s*\/?>/gi, " ");
+    const text = new DOMParser().parseFromString(spaced, "text/html").body.textContent ?? "";
+    return text.replace(/\s+/g, " ").trim();
+  } catch {
+    // Very old WebViews without DOMParser: strip tags crudely rather than fail.
+    return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  }
+}
+
 export function Home({ onNavigate }: HomeProps) {
   const { t, language, toggleLanguage } = useLanguage();
   const backend = useBackend();
@@ -473,10 +495,14 @@ export function Home({ onNavigate }: HomeProps) {
                   </div>
                 )}
                 <h3 className="mt-3 serif-heading text-xl font-bold text-[--ink-dark]">
-                  {t(latestAnnouncement.titleEn, latestAnnouncement.titleEs)}
+                  {htmlToPlainText(
+                    t(latestAnnouncement.titleEn, latestAnnouncement.titleEs)
+                  )}
                 </h3>
-                <p className="mt-2 whitespace-pre-wrap text-[--ink-mid]">
-                  {t(latestAnnouncement.contentEn, latestAnnouncement.contentEs)}
+                <p className="mt-2 line-clamp-4 text-[--ink-mid]">
+                  {htmlToPlainText(
+                    t(latestAnnouncement.contentEn, latestAnnouncement.contentEs)
+                  )}
                 </p>
                 <div className="mt-4 flex items-center justify-between gap-4">
                   <span className="text-xs text-[--ink-light]">
