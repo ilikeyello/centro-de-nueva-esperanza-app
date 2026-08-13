@@ -35,6 +35,10 @@ const API_BASE = "/bible";
 
 const BIBLE_STORAGE_KEY = "cne:bible:selection";
 
+// The app opens in Spanish, so a Spanish translation is the sensible starting
+// point. Readers who pick another version have it remembered from then on.
+const DEFAULT_VERSION = "spnbes";
+
 // Common Bible versions that work with the API
 const FALLBACK_BIBLE_VERSIONS: BibleVersion[] = [
   { id: "kjv", name: "King James Version", abbreviation: "KJV" },
@@ -196,14 +200,14 @@ export function Bible({ onNavigate }: BibleProps) {
 
   const [selectedVersion, setSelectedVersion] = useState<string>(() => {
     try {
-      if (typeof window === "undefined") return "kjv";
+      if (typeof window === "undefined") return DEFAULT_VERSION;
       const raw = localStorage.getItem(BIBLE_STORAGE_KEY);
-      if (!raw) return "kjv";
+      if (!raw) return DEFAULT_VERSION;
       const parsed = JSON.parse(raw);
-      const version = typeof parsed?.version === "string" ? parsed.version : "kjv";
-      return version || "kjv";
+      const version = typeof parsed?.version === "string" ? parsed.version : DEFAULT_VERSION;
+      return version || DEFAULT_VERSION;
     } catch {
-      return "kjv";
+      return DEFAULT_VERSION;
     }
   });
 

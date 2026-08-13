@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { BookOpen, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { useLanguage } from "../contexts/LanguageContext";
 import { getVerseOfTheDay, type DailyVerse } from "../lib/verseOfTheDay";
 
@@ -119,12 +118,15 @@ export function VerseOfTheDayDialog({ verse }: { verse: DailyVerse | null }) {
         showCloseButton={false}
         className="max-w-md border-[var(--border-color)] bg-[var(--surface)] p-0 shadow-2xl"
         aria-describedby={undefined}
+        // Radix focuses the first focusable child on open, which drew a focus
+        // ring around the close button the moment the popup appeared.
+        onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <div className="relative p-6">
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="absolute right-4 top-4 rounded-full p-1 text-[--ink-mid] transition-colors hover:bg-[var(--surface-mid)] hover:text-[--ink-dark]"
+            className="absolute right-4 top-4 rounded-full p-1 text-[--ink-mid] outline-none ring-0 transition-colors [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none hover:bg-[var(--surface-mid)] hover:text-[--ink-dark]"
             aria-label={t("Close", "Cerrar")}
           >
             <X className="h-4 w-4" />
@@ -138,9 +140,6 @@ export function VerseOfTheDayDialog({ verse }: { verse: DailyVerse | null }) {
           <div className="mt-4">
             <VerseBody verse={verse} />
           </div>
-          <Button onClick={() => setOpen(false)} className="warm-button-primary mt-6 w-full px-4 py-2">
-            {t("Continue", "Continuar")}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -18,7 +18,8 @@ import { BOOK_NAMES, YEARLY_VERSES } from "./verseData";
 /** Same key the Bible page writes, so the two stay in sync automatically. */
 const BIBLE_STORAGE_KEY = "cne:bible:selection";
 
-const DEFAULT_VERSION = "kjv";
+// Matches the Bible page's default — the app opens in Spanish.
+const DEFAULT_VERSION = "spnbes";
 const VALID_VERSIONS = ["kjv", "rv1909", "spnbes"] as const;
 export type BibleVersionId = (typeof VALID_VERSIONS)[number];
 
