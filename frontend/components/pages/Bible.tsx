@@ -378,6 +378,12 @@ export function Bible({ onNavigate }: BibleProps) {
           chapter: selectedChapter,
         })
       );
+      // The home page's Verse of the Day reads this same key. localStorage
+      // writes don't fire a storage event in the tab that made them, so tell
+      // it directly to re-resolve the verse in the newly picked version.
+      window.dispatchEvent(
+        new CustomEvent("cne-bible-version-changed", { detail: selectedVersion })
+      );
     } catch {
       // ignore
     }

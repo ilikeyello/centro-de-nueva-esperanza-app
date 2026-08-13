@@ -17,7 +17,7 @@ import {
 // --- Environment Variables ---
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const churchOrgId = import.meta.env.VITE_CHURCH_ORG_ID;
+export const churchOrgId = import.meta.env.VITE_CHURCH_ORG_ID;
 
 // --- Validate Environment Variables ---
 if (!supabaseUrl || !supabaseAnonKey) {
@@ -90,6 +90,8 @@ export interface Announcement {
   createdAt: string;
   createdBy: string;
   imageUrl: string | null;
+  /** Null means it never expires. */
+  expiresAt: string | null;
 }
 
 export interface PrayerRequest {
@@ -245,7 +247,8 @@ export class ChurchApiService {
       priority: a.priority ?? "normal",
       createdAt: a.created_at,
       createdBy: a.created_by ?? "",
-      imageUrl: a.image_url ?? null
+      imageUrl: a.image_url ?? null,
+      expiresAt: a.expires_at ?? null
     }));
     
     return { announcements };
@@ -573,6 +576,7 @@ export class ChurchApiService {
       createdAt: data.created_at,
       createdBy: data.created_by ?? "",
       imageUrl: data.image_url ?? null,
+      expiresAt: data.expires_at ?? null,
     };
   }
 

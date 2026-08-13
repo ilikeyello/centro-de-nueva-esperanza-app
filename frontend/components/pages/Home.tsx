@@ -13,6 +13,7 @@ import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
 import { getDonationUrl, invalidateDonationPrewarm, openDonationSheet, prewarmDonation } from "../../lib/donations";
 import { openSheetBrowser } from "../../lib/systemBrowser";
 import { UGC_ENABLED } from "@/lib/featureFlags";
+import { VerseOfTheDayCard, VerseOfTheDayDialog, useVerseOfTheDay } from "../VerseOfTheDay";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -68,6 +69,23 @@ export function Home({ onNavigate }: HomeProps) {
     queryKey: ["churchInfo"],
     queryFn: () => getChurchAdditionalInfo(),
   });
+
+  const { verse } = useVerseOfTheDay();
+
+  const { data: announcementsData } = useQuery({
+    queryKey: ["announcements", "latest"],
+    queryFn: () => backend.listAnnouncements({ limit: 5 }),
+  });
+
+  // listAnnouncements sorts by priority then recency, so the newest is not
+  // necessarily first — sort by date here and drop anything already expired.
+  const latestAnnouncement = (announcementsData?.announcements ?? [])
+    .filter((a: any) => !a.expiresAt || new Date(a.expiresAt).getTime() > Date.now())
+    .slice()
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )[0];
 
   const donationUrl = getDonationUrl(churchInfo);
 
@@ -164,6 +182,8 @@ export function Home({ onNavigate }: HomeProps) {
 
   return (
     <div className="pb-10">
+      {/* Pops once per new verse — i.e. the first time the app is opened today. */}
+      <VerseOfTheDayDialog verse={verse} />
       <section className="relative -mt-20 md:-mt-16">
         <img
           src={heroImageUrl}
@@ -347,6 +367,14 @@ export function Home({ onNavigate }: HomeProps) {
             )}
           </section>
 
+          {/* Verse of the Day — sits between Upcoming Event and Quick Actions in
+              DOM order (so it lands between them when the grid stacks on
+              mobile); full-width band under the row on desktop, where the two
+              cards are side by side. */}
+          <div className="lg:col-span-3 lg:col-start-1 lg:row-start-2">
+            <VerseOfTheDayCard verse={verse} />
+          </div>
+
           {/* Quick Actions — cols 1–2 on desktop, second on mobile */}
           <div className="space-y-6 lg:col-start-1 lg:col-span-2 lg:row-start-1">
             <h2 className="serif-heading text-3xl font-bold text-[--ink-dark]">
@@ -425,6 +453,56 @@ export function Home({ onNavigate }: HomeProps) {
                 );
               })}
             </div>
+
+            {/* Latest announcement, directly under the Quick Action buttons. */}
+            {latestAnnouncement && (
+              <section className="warm-card p-6">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="h-4 w-4 text-[--sage]" />
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage]">
+                    {t("Latest Announcement", "Último Anuncio")}
+                  </p>
+                </div>
+                {latestAnnouncement.imageUrl && (
+                  <div className="mt-4 aspect-video overflow-hidden rounded-xl bg-[--surface-mid]">
+                    <img
+                      src={latestAnnouncement.imageUrl}
+                      alt={t(latestAnnouncement.titleEn, latestAnnouncement.titleEs)}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                )}
+                <h3 className="mt-3 serif-heading text-xl font-bold text-[--ink-dark]">
+                  {t(latestAnnouncement.titleEn, latestAnnouncement.titleEs)}
+                </h3>
+                <p className="mt-2 whitespace-pre-wrap text-[--ink-mid]">
+                  {t(latestAnnouncement.contentEn, latestAnnouncement.contentEs)}
+                </p>
+                <div className="mt-4 flex items-center justify-between gap-4">
+                  <span className="text-xs text-[--ink-light]">
+                    {new Date(latestAnnouncement.createdAt).toLocaleDateString(
+                      language === "en" ? "en-US" : "es-ES",
+                      { month: "long", day: "numeric", year: "numeric" }
+                    )}
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.localStorage.setItem(NEWS_DEFAULT_TAB_KEY, "announcements");
+                        window.dispatchEvent(
+                          new CustomEvent("cne-set-news-tab", { detail: "announcements" })
+                        );
+                      }
+                      onNavigate("news");
+                    }}
+                    className="border-[--border-color] px-4 py-2 text-[--ink-dark]"
+                  >
+                    {t("See All", "Ver Todos")}
+                  </Button>
+                </div>
+              </section>
+            )}
           </div>
 
         </div>
