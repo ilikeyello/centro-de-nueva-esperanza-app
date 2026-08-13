@@ -1,6 +1,9 @@
 require_relative '../../../node_modules/.bun/@capacitor+ios@7.6.6+2d6e333445ff1eef/node_modules/@capacitor/ios/scripts/pods_helpers'
 
-platform :ios, '14.0'
+# Must match the App target's IPHONEOS_DEPLOYMENT_TARGET (15.6). When this was
+# 14.0, pods built for 14.0 while the app built for 15.6, which is what broke
+# the Xcode build.
+platform :ios, '15.6'
 use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
@@ -23,8 +26,26 @@ target 'App' do
   # Add your Pods here
 end
 
+# CocoaPods only honors one post_install hook — a second block would silently
+# replace this one, so everything lives here.
 post_install do |installer|
   assertDeploymentTarget(installer)
+
+  # Capacitor's assertDeploymentTarget only raises pods to 14.0. Pull anything
+  # still below 15.6 up to match the app, at both the target and project level.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.6
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.6'
+      end
+    end
+  end
+
+  installer.pods_project.build_configurations.each do |config|
+    if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.6
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.6'
+    end
+  end
 
   # Silence "[CP] Embed Pods Frameworks will be run during every build" warning
   # caused by `:disable_input_output_paths => true` above. Marking the script
