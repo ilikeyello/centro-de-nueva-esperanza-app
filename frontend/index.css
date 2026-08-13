@@ -398,18 +398,30 @@
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* Verse of the Day popup. Literal rgba rather than a var() with alpha: the
-   surface tokens are plain hex, and color-mix() needs Safari 16.2 while the app
-   still targets iOS 15.6 — an unsupported color would leave it fully see-through. */
+/* Verse of the Day popup — a full-screen takeover with the home page showing
+   softly through. Literal rgba rather than a var() with alpha: the surface
+   tokens are plain hex, and color-mix() needs Safari 16.2 while the app still
+   targets iOS 15.6 — an unsupported color would leave it fully see-through. */
 .verse-dialog {
-  background-color: rgba(255, 255, 255, 0.9);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  background-color: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(28px) saturate(140%);
 }
 
 .dark .verse-dialog {
   /* var(--surface) in dark mode is #162411. */
-  background-color: rgba(22, 36, 17, 0.9);
+  background-color: rgba(22, 36, 17, 0.72);
+}
+
+/* Without backdrop-filter the page behind stays sharp and the text is hard to
+   read, so lean opaque instead. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .verse-dialog {
+    background-color: rgba(255, 255, 255, 0.96);
+  }
+  .dark .verse-dialog {
+    background-color: rgba(22, 36, 17, 0.96);
+  }
 }
 
 /* Button styles */

@@ -37,16 +37,22 @@ export function useVerseOfTheDay() {
   return { verse, loading };
 }
 
-function VerseBody({ verse }: { verse: DailyVerse }) {
+function VerseBody({ verse, large = false }: { verse: DailyVerse; large?: boolean }) {
   const { t, language } = useLanguage();
   const note = language === "en" ? verse.noteEn : verse.noteEs;
 
   return (
     <>
-      <blockquote className="serif-heading text-lg leading-relaxed text-[--ink-dark] sm:text-xl">
+      <blockquote
+        className={
+          large
+            ? "serif-heading text-2xl leading-relaxed text-[--ink-dark] sm:text-3xl"
+            : "serif-heading text-lg leading-relaxed text-[--ink-dark] sm:text-xl"
+        }
+      >
         &ldquo;{verse.text}&rdquo;
       </blockquote>
-      <p className="mt-3 text-sm font-semibold text-[--sage]">
+      <p className={`font-semibold text-[--sage] ${large ? "mt-5 text-base" : "mt-3 text-sm"}`}>
         {language === "en" ? verse.referenceEn : verse.referenceEs}
         <span className="ml-2 font-normal uppercase tracking-wider text-[--ink-light]">
           {verse.version.toUpperCase()}
@@ -111,35 +117,37 @@ export function VerseOfTheDayDialog({ verse }: { verse: DailyVerse | null }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* Width overrides matter here: shadcn's DialogContent ships
-          w-full max-w-[calc(100%-2rem)] sm:max-w-lg, which spans nearly the
-          whole screen on a phone. The .verse-dialog class supplies the
-          translucent background (see index.css). */}
+      {/* Full-screen takeover. shadcn's DialogContent is a centered, sized card
+          (fixed top-1/2 left-1/2 with -50% translates, max-width, rounded
+          border), so every one of those has to be unwound to fill the screen.
+          The frosted background comes from .verse-dialog in index.css. */}
       <DialogContent
         showCloseButton={false}
-        className="verse-dialog w-[86%] max-w-xs border-[var(--border-color)] p-0 shadow-2xl sm:max-w-sm"
+        className="verse-dialog fixed inset-0 top-0 left-0 flex h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 flex-col items-center justify-center gap-0 rounded-none border-0 p-0 shadow-none"
         aria-describedby={undefined}
         // Radix focuses the first focusable child on open, which drew a focus
         // ring around the close button the moment the popup appeared.
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <div className="relative p-6">
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="absolute right-4 top-4 rounded-full p-1 text-[--ink-mid] outline-none ring-0 transition-colors [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none hover:bg-[var(--surface-mid)] hover:text-[--ink-dark]"
-            aria-label={t("Close", "Cerrar")}
-          >
-            <X className="h-4 w-4" />
-          </button>
-          <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          // Offset by the safe-area inset so it clears the notch / status bar.
+          className="absolute right-5 top-[calc(env(safe-area-inset-top)+1.25rem)] rounded-full p-2 text-[--ink-mid] outline-none ring-0 transition-colors [-webkit-tap-highlight-color:transparent] focus:outline-none focus-visible:outline-none hover:bg-[var(--surface-mid)] hover:text-[--ink-dark]"
+          aria-label={t("Close", "Cerrar")}
+        >
+          <X className="h-6 w-6" />
+        </button>
+
+        <div className="w-full max-w-md px-8 text-center">
+          <div className="flex items-center justify-center gap-2">
             <BookOpen className="h-4 w-4 text-[--sage]" />
             <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage]">
               {t("Verse of the Day", "Versículo del Día")}
             </h2>
           </div>
-          <div className="mt-4">
-            <VerseBody verse={verse} />
+          <div className="mt-6">
+            <VerseBody verse={verse} large />
           </div>
         </div>
       </DialogContent>
