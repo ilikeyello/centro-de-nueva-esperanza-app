@@ -156,15 +156,25 @@ self.addEventListener('notificationclick', event => {
 
   const data = (event.notification && event.notification.data) || {};
 
-  let hash = '';
-  switch (data.type) {
-    case 'announcement': hash = '#news-announcements'; break;
-    case 'event':        hash = '#news-events';        break;
-    case 'livestream':   hash = '#media';              break;
-    case 'bulletin':     hash = '#bulletin';           break;
-    default:             hash = '';                    break;
+  // Prefer the route the server sent; fall back to deriving it from the type
+  // so notifications queued by an older build still land somewhere sensible.
+  let hash = typeof data.url === 'string' ? data.url : '';
+  if (hash.startsWith('/')) hash = hash.slice(1);
+  if (!hash) {
+    switch (data.type) {
+      case 'announcement': hash = '#news-announcements'; break;
+      case 'event':        hash = '#news-events';        break;
+      case 'livestream':   hash = '#media';              break;
+      case 'devotional':   hash = '#media';              break;
+      case 'verse':        hash = '#verse';              break;
+      case 'bulletin':     hash = '#bulletin';           break;
+      default:             hash = '';                    break;
+    }
   }
 
+  const itemId = data.itemId === undefined || data.itemId === null || data.itemId === ''
+    ? null
+    : data.itemId;
   const targetUrl = self.location.origin + '/' + hash;
 
   event.waitUntil((async () => {
@@ -175,9 +185,10 @@ self.addEventListener('notificationclick', event => {
     if (hash) {
       try {
         const cache = await caches.open('cne-nav-intent');
-        await cache.put('/notification-nav', new Response(hash, {
-          headers: { 'Content-Type': 'text/plain' }
-        }));
+        await cache.put('/notification-nav', new Response(
+          JSON.stringify({ hash, itemId, type: data.type || null }),
+          { headers: { 'Content-Type': 'application/json' } }
+        ));
       } catch (e) {
         console.warn('Could not write nav intent to cache:', e);
       }
@@ -187,7 +198,7 @@ self.addEventListener('notificationclick', event => {
     for (const client of clientList) {
       if (client.url.startsWith(self.location.origin) && 'focus' in client) {
         // App is already open — message it directly and bring it to focus
-        client.postMessage({ type: 'NAVIGATE', hash });
+        client.postMessage({ type: 'NAVIGATE', hash, itemId, itemType: data.type || null });
         return client.focus();
       }
     }

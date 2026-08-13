@@ -116,6 +116,46 @@ export function News() {
     return () => window.removeEventListener("cne-set-news-tab", handleSetTab);
   }, []);
 
+  // Tapping an announcement or event notification should land on that item,
+  // not just the list it lives in. AppInner switches the page and then fires
+  // cne-focus-item; we scroll it into view and glow it briefly so it's obvious
+  // which one the notification was about.
+  const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
+  useEffect(() => {
+    const handleFocusItem: EventListener = (event) => {
+      const detail = (event as CustomEvent<{ kind: string; id: string }>).detail;
+      if (!detail?.id) return;
+      if (detail.kind !== "announcement" && detail.kind !== "event") return;
+
+      setActiveTab(detail.kind === "event" ? "events" : "announcements");
+      setFocusedItemId(detail.id);
+
+      // The list is fetched, so the row may not be in the DOM yet. Retry on a
+      // few frames rather than assuming it's already painted.
+      let attempts = 0;
+      const scroll = () => {
+        const element = document.getElementById(`${detail.kind}-${detail.id}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+        if (attempts++ < 20) window.setTimeout(scroll, 150);
+      };
+      window.setTimeout(scroll, 100);
+    };
+
+    window.addEventListener("cne-focus-item", handleFocusItem);
+    return () => window.removeEventListener("cne-focus-item", handleFocusItem);
+  }, []);
+
+  // Let the highlight fade on its own so it reads as "here it is", not a
+  // permanent selection state.
+  useEffect(() => {
+    if (!focusedItemId) return;
+    const timer = window.setTimeout(() => setFocusedItemId(null), 3000);
+    return () => window.clearTimeout(timer);
+  }, [focusedItemId]);
+
   const ensureParticipantId = () => {
     if (rsvpParticipantId) return rsvpParticipantId;
     if (typeof window === "undefined") return null;
@@ -480,7 +520,13 @@ export function News() {
           <>
             <div className="space-y-6">
               {announcementsData?.announcements.map((announcement: Announcement) => (
-                <div key={announcement.id} className="relative group">
+                <div
+                  key={announcement.id}
+                  id={`announcement-${announcement.id}`}
+                  className={`relative group scroll-mt-24 transition-shadow duration-500 ${
+                    focusedItemId === String(announcement.id) ? "cne-notification-focus" : ""
+                  }`}
+                >
                   <BlogPost
                     id={announcement.id}
                     titleEn={announcement.titleEn}
@@ -561,7 +607,13 @@ export function News() {
           <>
             <div className="space-y-6">
               {upcomingEvents.map((eventItem) => (
-                <div key={eventItem.id} className="relative group">
+                <div
+                  key={eventItem.id}
+                  id={`event-${eventItem.id}`}
+                  className={`relative group scroll-mt-24 transition-shadow duration-500 ${
+                    focusedItemId === String(eventItem.id) ? "cne-notification-focus" : ""
+                  }`}
+                >
                   <BlogPost
                     id={eventItem.id}
                     titleEn={eventItem.titleEn}

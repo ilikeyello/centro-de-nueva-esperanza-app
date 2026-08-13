@@ -113,6 +113,15 @@ export function VerseOfTheDayDialog({ verse }: { verse: DailyVerse | null }) {
     }
   }, [verse]);
 
+  // Tapping the daily verse notification should show the verse even when the
+  // popup has already been dismissed today — that tap *is* the request to see
+  // it, so the once-a-day rule above doesn't apply.
+  useEffect(() => {
+    const openOnRequest = () => setOpen(true);
+    window.addEventListener("cne-open-verse", openOnRequest);
+    return () => window.removeEventListener("cne-open-verse", openOnRequest);
+  }, []);
+
   if (!verse) return null;
 
   return (

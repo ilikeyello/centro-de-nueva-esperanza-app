@@ -575,19 +575,42 @@ export function AppInner() {
   useNotificationChecker(5);
 
   // ── Hash / deep-link navigation ───────────────────────────────────────────
+  // Both the cold-start path (intent read out of the cache on mount) and the
+  // warm path (a NAVIGATE message while the app is already running) funnel
+  // through goToIntent, so a notification tap lands in the same place either
+  // way. `itemId` is what makes the tap open the specific announcement or
+  // event rather than dropping the user on the list.
   useEffect(() => {
-    const applyHash = (raw: string) => {
+    const goToIntent = ({ hash: raw, itemId }: { hash: string; itemId?: string | number | null }) => {
       const hash = raw.startsWith("/") ? raw.slice(1) : raw;
       const path = window.location.pathname;
+
+      // Announce the target item after the page switch, so whichever page
+      // renders it can scroll to and highlight the right row.
+      const focusItem = (kind: "announcement" | "event" | "livestream") => {
+        if (itemId === null || itemId === undefined || itemId === "") return;
+        window.dispatchEvent(new CustomEvent("cne-focus-item", { detail: { kind, id: String(itemId) } }));
+      };
+
       if (hash === "#admin-upload") {
         handleNavigate("adminUpload");
       } else if (path === "/trivia-game" || hash === "#trivia-game") {
         handleNavigate("triviaGame");
+      } else if (hash === "#verse") {
+        handleNavigate("home");
+        // The verse popup normally shows once a day; a tap on the verse
+        // notification should reopen it even if it's already been seen.
+        window.dispatchEvent(new CustomEvent("cne-open-verse"));
       } else if (hash === "#media") {
         handleNavigate("media");
+        focusItem("livestream");
       } else if (hash === "#news" || hash === "#news-announcements" || hash === "#news-events") {
-        if (hash) window.location.hash = hash;
+        window.location.hash = hash;
+        window.dispatchEvent(new CustomEvent("cne-set-news-tab", {
+          detail: hash === "#news-events" ? "events" : "announcements",
+        }));
         handleNavigate("news");
+        focusItem(hash === "#news-events" ? "event" : "announcement");
       } else if (hash === "#bulletin") {
         handleNavigate(UGC_ENABLED ? "bulletin" : "home");
       } else if (hash === "#home") {
@@ -597,66 +620,58 @@ export function AppInner() {
       }
     };
 
+    const clearStoredIntent = () => {
+      if (!("caches" in window)) return;
+      caches.open("cne-nav-intent")
+        .then((cache) => cache.delete("/notification-nav"))
+        .catch(() => {});
+    };
+
+    // ── Cold start: the tap happened before this component existed ──────────
     const init = async () => {
       if ("caches" in window) {
         try {
           const cache = await caches.open("cne-nav-intent");
           const response = await cache.match("/notification-nav");
           if (response) {
-            const hash = (await response.text()).trim();
+            const body = (await response.text()).trim();
             await cache.delete("/notification-nav");
-            if (hash) { applyHash(hash); return; }
+            if (body) {
+              // Older builds stored a bare hash string; newer ones store JSON.
+              let intent: { hash: string; itemId?: string | number | null };
+              try {
+                const parsed = JSON.parse(body);
+                intent = typeof parsed === "string" ? { hash: parsed } : parsed;
+              } catch {
+                intent = { hash: body };
+              }
+              if (intent?.hash) { goToIntent(intent); return; }
+            }
           }
         } catch { /* cache unavailable */ }
       }
       const hash = window.location.hash;
-      if (hash) applyHash(hash);
+      if (hash) goToIntent({ hash });
     };
 
     void init();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  // ── Service worker / window messages ──────────────────────────────────────
-  useEffect(() => {
-    const navigate = (raw: string) => {
-      const hash = raw.startsWith("/") ? raw.slice(1) : raw;
-      if ("caches" in window) {
-        caches.open("cne-nav-intent")
-          .then(cache => cache.delete("/notification-nav"))
-          .catch(() => {});
-      }
-      if (hash === "#news-announcements" || hash === "#news" || hash === "#news-events") {
-        window.location.hash = hash;
-        handleNavigate("news");
-      } else if (hash === "#media") {
-        handleNavigate("media");
-      } else if (hash === "#bulletin") {
-        handleNavigate(UGC_ENABLED ? "bulletin" : "home");
-      } else if (hash === "#admin-upload") {
-        handleNavigate("adminUpload");
-      } else if (hash === "#home") {
-        handleNavigate("home");
-      } else if (hash === "#donations") {
-        handleNavigate("donations");
-      }
+    // ── Warm start: notification tap / service worker message ───────────────
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type !== "NAVIGATE") return;
+      clearStoredIntent();
+      goToIntent({ hash: event.data.hash ?? "", itemId: event.data.itemId ?? null });
     };
 
-    const handleSWMessage = (event: MessageEvent) => {
-      if (event.data?.type === "NAVIGATE") navigate(event.data.hash ?? "");
-    };
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.addEventListener("message", handleSWMessage);
+      navigator.serviceWorker.addEventListener("message", handleMessage);
     }
-    const handleWindowMessage = (event: MessageEvent) => {
-      if (event.data?.type === "NAVIGATE") navigate(event.data.hash ?? "");
-    };
-    window.addEventListener("message", handleWindowMessage);
+    window.addEventListener("message", handleMessage);
     return () => {
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.removeEventListener("message", handleSWMessage);
+        navigator.serviceWorker.removeEventListener("message", handleMessage);
       }
-      window.removeEventListener("message", handleWindowMessage);
+      window.removeEventListener("message", handleMessage);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

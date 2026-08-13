@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { App } from '@capacitor/app';
 import { supabase } from '../supabase-client';
+import { useLanguage } from './LanguageContext';
 
 const VAPID_PUBLIC_KEY = 'BPN5mWTGsO6cIeUR5lFxRceFRXE_4eTu3U7qqGvq-OZN9crDCIA8yCVaP8IuLiEuly8qkEW5w07ru2T1JRmNsRs';
 
@@ -41,11 +42,35 @@ const getDeviceId = (): string => {
   } catch { return 'unknown'; }
 };
 
-const saveNativeTokenToSupabase = async (token: string, platform: string) => {
+/**
+ * The hash route + item the last tapped notification pointed at, stashed where
+ * it survives the web view being torn down. A tap on a cold-start launch fires
+ * before the app has a router, so the intent has to outlive the event.
+ */
+const NAV_INTENT_CACHE = 'cne-nav-intent';
+const NAV_INTENT_KEY = '/notification-nav';
+
+export interface NavIntent {
+  /** Hash route, e.g. "#news-announcements". */
+  hash: string;
+  /** Row id of the announcement / event / livestream this points at. */
+  itemId?: string | number | null;
+  type?: string | null;
+}
+
+const storeNavIntent = async (intent: NavIntent) => {
+  if (!('caches' in window)) return;
   try {
-    const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
-    let language = 'es';
-    try { language = localStorage.getItem('cne_language') || 'es'; } catch {}
+    const cache = await caches.open(NAV_INTENT_CACHE);
+    await cache.put(NAV_INTENT_KEY, new Response(JSON.stringify(intent)));
+  } catch {
+    // Cache unavailable — the in-memory dispatch below still covers warm starts.
+  }
+};
+
+const saveNativeTokenToSupabase = async (token: string, platform: string, language: string) => {
+  try {
+    const orgId = (import.meta.env.VITE_CHURCH_ORG_ID || '').trim();
     const { error } = await supabase.from('device_push_tokens').upsert({
       org_id: orgId,
       token,
@@ -62,10 +87,16 @@ const saveNativeTokenToSupabase = async (token: string, platform: string) => {
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isNative = Capacitor.isNativePlatform();
+  const { language } = useLanguage();
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<any>('default');
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
+
+  // Read inside the listener rather than closed over, so a token that arrives
+  // after the user has switched languages is still filed correctly.
+  const languageRef = useRef(language);
+  languageRef.current = language;
 
   // ── NATIVE (iOS / Android) ──────────────────────────────────────────────────
   useEffect(() => {
@@ -85,7 +116,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     PushNotifications.addListener('registration', async (token) => {
       const platform = Capacitor.getPlatform();
-      await saveNativeTokenToSupabase(token.value, platform);
+      await saveNativeTokenToSupabase(token.value, platform, languageRef.current);
       setIsSubscribed(true);
       setPermission('native-granted');
     });
@@ -98,17 +129,27 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       console.log('Push notification received (foreground):', notification.title);
     });
 
-    // Handle notification tap → navigate to correct page
+    // Handle notification tap → navigate to whatever the notification was about
     PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      const url = action.notification.data?.url || action.notification.data?.link;
-      if (url) {
-        if ('caches' in window) {
-          caches.open('cne-nav-intent').then(cache => {
-            cache.put('/notification-nav', new Response(url));
-          });
-        }
-        window.dispatchEvent(new MessageEvent('message', { data: { type: 'NAVIGATE', hash: url } }));
-      }
+      const data: any = action.notification.data ?? {};
+      const hash: string | undefined = data.url || data.link;
+      if (!hash) return;
+
+      const intent: NavIntent = {
+        hash,
+        // APNs stringifies custom payload values, so "12" has to come back as 12
+        // for the id comparison against the row to match.
+        itemId: data.itemId === undefined || data.itemId === null || data.itemId === ''
+          ? null
+          : data.itemId,
+        type: data.type ?? null,
+      };
+
+      // Persist first for the cold-start path, then hand it to the running app.
+      void storeNavIntent(intent);
+      window.dispatchEvent(new MessageEvent('message', {
+        data: { type: 'NAVIGATE', ...intent },
+      }));
     });
 
     setupNativePush();
@@ -125,6 +166,27 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     return () => { PushNotifications.removeAllListeners(); };
   }, [isNative]);
+
+  // Notifications are composed server-side from the language stored alongside
+  // the token, so switching language in the app has to follow the token to the
+  // database — otherwise someone who switches to English keeps getting Spanish
+  // pushes (and vice versa) until they reinstall.
+  useEffect(() => {
+    if (!isNative || !isSubscribed) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { error } = await supabase
+          .from('device_push_tokens')
+          .update({ language, updated_at: new Date().toISOString() })
+          .eq('device_id', getDeviceId());
+        if (error && !cancelled) console.error('Error syncing notification language:', error);
+      } catch (error) {
+        if (!cancelled) console.error('Error syncing notification language:', error);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isNative, isSubscribed, language]);
 
   // ── WEB (browser) ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -199,9 +261,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       const p256dhKey = sub.getKey('p256dh');
       const authKey = sub.getKey('auth');
-      const orgId = import.meta.env.VITE_CHURCH_ORG_ID || '';
-      let language = 'es';
-      try { language = localStorage.getItem('cne_language') || 'es'; } catch {}
+      const orgId = (import.meta.env.VITE_CHURCH_ORG_ID || '').trim();
       let clientUserId: string | null = null;
       try { clientUserId = localStorage.getItem('cne-user-id'); } catch {}
       const { error } = await supabase.from('push_subscriptions').upsert({

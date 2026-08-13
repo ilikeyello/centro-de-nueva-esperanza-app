@@ -806,3 +806,11 @@
 .bg-surface {
   background-color: var(--surface);
 }
+
+/* Brief glow on the announcement or event a notification tap pointed at, so
+   the user can see which item they were brought here for. Fades out via the
+   transition on the element; the class is removed after ~3s. */
+.cne-notification-focus {
+  border-radius: 1rem;
+  box-shadow: 0 0 0 3px var(--sage), 0 8px 24px rgb(0 0 0 / 0.12);
+}
