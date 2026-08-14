@@ -27,6 +27,19 @@ if (!churchOrgId) {
   throw new Error('Missing church organization ID. Please set VITE_CHURCH_ORG_ID.');
 }
 
+/**
+ * Posts store their photos in `image_urls`. Anything created before galleries
+ * existed only has the single `image_url`, so fall back to it and hand callers
+ * one shape either way.
+ */
+function normalizeImageUrls(imageUrls: unknown, imageUrl: unknown): string[] {
+  const list = Array.isArray(imageUrls)
+    ? imageUrls.filter((url): url is string => typeof url === 'string' && url.length > 0)
+    : [];
+  if (list.length > 0) return list;
+  return typeof imageUrl === 'string' && imageUrl.length > 0 ? [imageUrl] : [];
+}
+
 // --- Create a single, public Supabase client ---
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -73,6 +86,8 @@ export interface Event {
   location: string;
   maxAttendees: number | null;
   imageUrl: string | null;
+  /** Full photo set, in display order. First entry matches `imageUrl`. */
+  imageUrls: string[];
   createdAt: string;
   createdBy: string;
   rsvpCount: number;
@@ -90,6 +105,8 @@ export interface Announcement {
   createdAt: string;
   createdBy: string;
   imageUrl: string | null;
+  /** Full photo set, in display order. First entry matches `imageUrl`. */
+  imageUrls: string[];
   /** Null means it never expires. */
   expiresAt: string | null;
 }
@@ -214,6 +231,7 @@ export class ChurchApiService {
       location: e.location,
       maxAttendees: e.max_attendees,
       imageUrl: e.image_url ?? null,
+      imageUrls: normalizeImageUrls(e.image_urls, e.image_url),
       createdAt: e.created_at,
       createdBy: e.created_by,
       rsvpCount: Array.isArray(e.event_rsvps)
@@ -248,6 +266,7 @@ export class ChurchApiService {
       createdAt: a.created_at,
       createdBy: a.created_by ?? "",
       imageUrl: a.image_url ?? null,
+      imageUrls: normalizeImageUrls(a.image_urls, a.image_url),
       expiresAt: a.expires_at ?? null
     }));
     
@@ -576,6 +595,7 @@ export class ChurchApiService {
       createdAt: data.created_at,
       createdBy: data.created_by ?? "",
       imageUrl: data.image_url ?? null,
+      imageUrls: normalizeImageUrls(data.image_urls, data.image_url),
       expiresAt: data.expires_at ?? null,
     };
   }
@@ -645,6 +665,7 @@ export class ChurchApiService {
       location: data.location,
       maxAttendees: data.max_attendees,
       imageUrl: data.image_url ?? null,
+      imageUrls: normalizeImageUrls(data.image_urls, data.image_url),
       createdAt: data.created_at,
       createdBy: data.created_by,
       rsvpCount: 0,

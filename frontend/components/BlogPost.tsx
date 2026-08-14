@@ -1,5 +1,6 @@
 import { Calendar, MapPin, Clock, User, Users } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { PostImageCarousel } from './PostImageCarousel';
 
 // Rich-text editors (and pasted content from Word/Docs) inject inline `color`
 // on body text — e.g. a near-black `rgba(33,41,50,…)` or a dark brand color
@@ -48,6 +49,8 @@ interface BlogPostProps {
   contentEn: string;
   contentEs: string;
   imageUrl?: string | null;
+  /** Full photo set. `imageUrl` is the first of these; kept for older data. */
+  imageUrls?: string[] | null;
   date: string;
   author?: string;
   location?: string;
@@ -66,6 +69,7 @@ export function BlogPost({
   contentEn,
   contentEs,
   imageUrl,
+  imageUrls,
   date,
   author,
   location,
@@ -77,9 +81,18 @@ export function BlogPost({
   actions,
 }: BlogPostProps) {
   const { language, t } = useLanguage();
-  
+
   const title = language === 'en' ? titleEn : titleEs;
   const content = language === 'en' ? contentEn : contentEs;
+
+  // Posts created before galleries existed only have `imageUrl`; posts created
+  // since have the full set. Fall back so both render the same way.
+  const photos = (imageUrls && imageUrls.length > 0
+    ? imageUrls
+    : imageUrl
+      ? [imageUrl]
+      : []
+  ).filter(Boolean);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -113,16 +126,8 @@ export function BlogPost({
         <div className="h-1 w-full" style={{ backgroundColor: "var(--terra)" }} />
       )}
 
-      {/* Header Image */}
-      {imageUrl && (
-        <div className="aspect-video overflow-hidden bg-[--surface-mid]">
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-contain"
-          />
-        </div>
-      )}
+      {/* Header photo(s) — full card width, sized to the photo's own shape */}
+      {photos.length > 0 && <PostImageCarousel images={photos} alt={title} />}
 
       {/* Content */}
       <div className="p-6 md:p-8">

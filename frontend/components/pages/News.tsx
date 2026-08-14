@@ -534,6 +534,7 @@ export function News() {
                     contentEn={announcement.contentEn}
                     contentEs={announcement.contentEs}
                     imageUrl={announcement.imageUrl}
+                    imageUrls={announcement.imageUrls}
                     date={announcement.createdAt}
                     type="announcement"
                     priority={announcement.priority}
@@ -621,6 +622,7 @@ export function News() {
                     contentEn={eventItem.descriptionEn || ''}
                     contentEs={eventItem.descriptionEs || ''}
                     imageUrl={eventItem.imageUrl}
+                    imageUrls={eventItem.imageUrls}
                     date={eventItem.createdAt}
                     location={eventItem.location}
                     type="event"

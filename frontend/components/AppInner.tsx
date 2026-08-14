@@ -353,6 +353,12 @@ export function AppInner() {
     const onStart = (e: TouchEvent) => {
       if (settling) return; // Don't interrupt a settling animation
 
+      // Some children own their horizontal drags — a photo carousel inside a
+      // post, for one. Without this, swiping to the next photo would also
+      // throw the user onto the next page. They opt out with data-swipe-lock.
+      const target = e.target as Element | null;
+      if (target?.closest?.("[data-swipe-lock]")) return;
+
       // If the touch target is inside mediaWrapper, but we are not on the media page, ignore it.
       const isTouchInsideMedia = mediaWrapperRef.current?.contains(e.target as Node);
       if (isTouchInsideMedia && swipeIndexRef.current !== 2) {
