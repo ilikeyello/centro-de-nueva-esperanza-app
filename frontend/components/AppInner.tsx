@@ -16,6 +16,7 @@ import { Bible } from "./pages/Bible";
 import { NotificationSettings } from "./notifications/NotificationSettings";
 import { PushNotificationPrompt } from "./PushNotificationPrompt";
 import { InstallPrompt } from "./InstallPrompt";
+import { AppStoreBanner } from "./AppStoreBanner";
 import { useNotificationChecker } from "../hooks/useNotificationChecker";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../contexts/ThemeContext";
@@ -797,6 +798,7 @@ export function AppInner() {
         )}
 
         <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-[60] flex flex-col gap-2">
+          <AppStoreBanner />
           <InstallPrompt />
           <PushNotificationPrompt />
         </div>
