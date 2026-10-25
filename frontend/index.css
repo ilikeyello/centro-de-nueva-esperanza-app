@@ -1441,18 +1441,22 @@ nav.liquid-glass.nav-mini {
 
 /* Media page on iPad / web: the video band runs edge to edge in black
    ("theater mode") and is the same size on Live and Sermons; the video sits
-   centered with black walls on the sides. Everything else stays centered. */
+   centered with black walls on the sides. It doesn't pin on big screens.
+   Everything else stays centered. */
 @media (min-width: 768px) {
   .media-theater {
+    /* Big screens: the video scrolls with the page instead of pinning. */
+    position: relative !important;
+    top: auto !important;
     aspect-ratio: auto !important;
-    height: min(56.25vw, 70vh) !important;
+    height: min(45vw, 55vh) !important;
     border-radius: 0 !important;
   }
   /* The "offline" card fills only the 16:9 video area, with black walls. */
   .media-theater .media-theater-frame {
     left: 50% !important;
     right: auto !important;
-    width: min(100%, calc(min(56.25vw, 70vh) * 16 / 9));
+    width: min(100%, calc(min(45vw, 55vh) * 16 / 9));
     transform: translateX(-50%);
   }
   .media-inner {

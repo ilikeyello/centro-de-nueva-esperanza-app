@@ -240,6 +240,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   const calibratedRef = useRef(false);
   useEffect(() => {
     if (!isMediaPage || isWebDesktop || tab === "music") return;
+    // Big screens (iPad / web) don't pin the video, so nothing to calibrate.
+    if (window.matchMedia?.("(min-width: 768px)").matches) return;
     const root = rootRef.current;
     const box = root?.querySelector<HTMLElement>(
       tab === "live" ? "[data-live-box]" : '[data-media-panel="sermons"] [data-sticky-player]'
