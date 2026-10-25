@@ -33,6 +33,8 @@
 	<string>Camera access is not required for this app.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone access is not required for this app.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Guarda imágenes de versículos en tus Fotos. / Save verse images to your Photos.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

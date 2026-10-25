@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Images } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { PhotoViewer } from "./PhotoViewer";
 
 /**
  * The photo (or photos) at the top of an announcement or event.
@@ -51,6 +53,9 @@ export function PostImageCarousel({ images, alt }: PostImageCarouselProps) {
   const { t } = useLanguage();
   const [index, setIndex] = useState(0);
   const [aspect, setAspect] = useState<number | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  /** Set right after a sideways swipe, so the tap that ends it doesn't open the viewer. */
+  const justSwipedRef = useRef(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -192,6 +197,9 @@ export function PostImageCarousel({ images, alt }: PostImageCarouselProps) {
 
       if (locked !== "h") return;
 
+      justSwipedRef.current = true;
+      window.setTimeout(() => { justSwipedRef.current = false; }, 350);
+
       const current = indexRef.current;
       const last = countRef.current - 1;
       let next = current;
@@ -243,7 +251,11 @@ export function PostImageCarousel({ images, alt }: PostImageCarouselProps) {
       // Read by AppInner's pager: a touch that starts in here must not also
       // swipe the app between pages.
       data-swipe-lock="true"
-      className="relative w-full overflow-hidden bg-[--surface-mid] select-none"
+      className="relative w-full cursor-zoom-in overflow-hidden bg-[--surface-mid] select-none"
+      // Tap a photo to see it full screen.
+      onClick={() => { if (!justSwipedRef.current) setViewerOpen(true); }}
+      role="button"
+      aria-label={t("Open photo full screen", "Ver foto en pantalla completa")}
       style={{
         aspectRatio: String(frameAspect),
         maxHeight: "80vh",
@@ -274,8 +286,11 @@ export function PostImageCarousel({ images, alt }: PostImageCarouselProps) {
         <>
           {/* Position dots. Tappable, with a hit area bigger than the dot. */}
           <div
-            className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 pb-3 pt-8
+            className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-1.5 pb-3 pt-8
                        bg-gradient-to-t from-black/35 to-transparent"
+            // Own compositing layer: without it iOS can drop these overlays
+            // behind the moving photo track (and the card's glass blur).
+            style={{ transform: "translateZ(0)" }}
             role="tablist"
             aria-label={t("Photos", "Fotos")}
           >
@@ -286,7 +301,7 @@ export function PostImageCarousel({ images, alt }: PostImageCarouselProps) {
                 role="tab"
                 aria-selected={i === index}
                 aria-label={t(`Photo ${i + 1} of ${count}`, `Foto ${i + 1} de ${count}`)}
-                onClick={() => setIndex(i)}
+                onClick={(e) => { e.stopPropagation(); setIndex(i); }}
                 className="p-1.5 [-webkit-tap-highlight-color:transparent]"
               >
                 <span
@@ -299,15 +314,29 @@ export function PostImageCarousel({ images, alt }: PostImageCarouselProps) {
             ))}
           </div>
 
-          {/* Counter, so the set's size is obvious before swiping. */}
+          {/* Counter, so the set's size is obvious before swiping. Its own
+              layer + z-index keeps iOS from dropping it behind the photo track. */}
           <div
-            className="absolute right-3 top-3 rounded-full px-2 py-0.5 text-xs font-medium text-white"
-            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+            className="pointer-events-none absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white"
+            style={{ backgroundColor: "rgba(0,0,0,0.55)", transform: "translateZ(0)" }}
             aria-hidden="true"
           >
+            <Images className="h-3.5 w-3.5" />
             {index + 1}/{count}
           </div>
         </>
+      )}
+
+      {viewerOpen && (
+        <PhotoViewer
+          images={images}
+          alt={alt}
+          startIndex={index}
+          onClose={(last) => {
+            setViewerOpen(false);
+            if (last !== indexRef.current) setIndex(last);
+          }}
+        />
       )}
     </div>
   );

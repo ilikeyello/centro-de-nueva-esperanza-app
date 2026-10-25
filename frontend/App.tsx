@@ -7,6 +7,7 @@ import { AppInner } from "./components/AppInner";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
+import { playSplashToHome } from "./utils/splashTransition";
 
 const queryClient = new QueryClient();
 
@@ -22,13 +23,13 @@ export default function App() {
     }
 
     const dismiss = () => {
-      // Hide splash only after React has mounted — prevents black screen gap
-      if (Capacitor.isNativePlatform()) {
-        SplashScreen.hide({ fadeOutDuration: 300 });
-      }
-      // Remove the static HTML splash (web fallback)
-      const staticSplash = document.getElementById("static-splash");
-      if (staticSplash) staticSplash.remove();
+      // The HTML splash underneath is pixel-matched to the native one, so hide
+      // the native one instantly (no visible change), then animate the HTML
+      // copy's logo into the home page.
+      const hideNative = Capacitor.isNativePlatform()
+        ? SplashScreen.hide({ fadeOutDuration: 0 }).catch(() => {})
+        : Promise.resolve();
+      hideNative.finally(() => requestAnimationFrame(playSplashToHome));
     };
 
     const timer = setTimeout(dismiss, MIN_SPLASH_VISIBLE_MS);

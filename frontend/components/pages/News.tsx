@@ -49,25 +49,6 @@ export function News() {
   const [rsvpedEventIds, setRsvpedEventIds] = useState<Set<number>>(() => new Set());
   const [rsvpName, setRsvpName] = useState("");
   const [rsvpResponses, setRsvpResponses] = useState<RsvpResponses>({});
-  const [activeTab, setActiveTab] = useState<"announcements" | "events">(() => {
-    if (typeof window !== "undefined") {
-      const hash = window.location.hash;
-
-      // Allow deep links from notifications to control the default tab
-      if (hash === "#news-events") {
-        return "events";
-      }
-      if (hash === "#news-announcements" || hash === "#news") {
-        return "announcements";
-      }
-
-      const stored = window.localStorage.getItem(NEWS_DEFAULT_TAB_KEY);
-      if (stored === "announcements" || stored === "events") {
-        return stored;
-      }
-    }
-    return "announcements";
-  });
 
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements"],
@@ -108,13 +89,35 @@ export function News() {
   useEffect(() => {
     const handleSetTab: EventListener = (event) => {
       const detail = (event as unknown as CustomEvent<string>).detail;
-      if (detail === "events" || detail === "announcements") {
-        setActiveTab(detail);
+      // There are no tabs anymore; "events" means "show me the next event".
+      if (detail === "events") {
+        let attempts = 0;
+        const go = () => {
+          const first = document.querySelector<HTMLElement>('[id^="event-"]');
+          if (first) return scrollToItem(first);
+          if (attempts++ < 20) window.setTimeout(go, 150);
+        };
+        window.setTimeout(go, 400);
       }
     };
     window.addEventListener("cne-set-news-tab", handleSetTab);
     return () => window.removeEventListener("cne-set-news-tab", handleSetTab);
   }, []);
+
+  // Scroll only this page's own scroll container. scrollIntoView() can also
+  // scroll the app's horizontal pager while this page is sliding in.
+  const scrollToItem = (element: HTMLElement) => {
+    let container: HTMLElement | null = element.parentElement;
+    while (container) {
+      const oy = getComputedStyle(container).overflowY;
+      if ((oy === "auto" || oy === "scroll") && container.scrollHeight > container.clientHeight) break;
+      container = container.parentElement;
+    }
+    if (!container) return;
+    const top =
+      element.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop - 16;
+    container.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  };
 
   // Tapping an announcement or event notification should land on that item,
   // not just the list it lives in. AppInner switches the page and then fires
@@ -127,8 +130,7 @@ export function News() {
       if (!detail?.id) return;
       if (detail.kind !== "announcement" && detail.kind !== "event") return;
 
-      setActiveTab(detail.kind === "event" ? "events" : "announcements");
-      setFocusedItemId(detail.id);
+      setFocusedItemId(`${detail.kind}-${detail.id}`);
 
       // The list is fetched, so the row may not be in the DOM yet. Retry on a
       // few frames rather than assuming it's already painted.
@@ -136,7 +138,7 @@ export function News() {
       const scroll = () => {
         const element = document.getElementById(`${detail.kind}-${detail.id}`);
         if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "start" });
+          scrollToItem(element);
           return;
         }
         if (attempts++ < 20) window.setTimeout(scroll, 150);
@@ -212,6 +214,31 @@ export function News() {
       .filter((eventItem) => new Date(eventItem.eventDate).getTime() >= now)
       .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
   }, [eventsData]);
+
+  // One feed for announcements and upcoming events: urgent announcements
+  // pinned on top, then everything newest-posted first.
+  const feed = useMemo(() => {
+    type FeedItem =
+      | { kind: "announcement"; key: string; posted: number; urgent: boolean; data: Announcement }
+      | { kind: "event"; key: string; posted: number; urgent: boolean; data: Event };
+    const items: FeedItem[] = [
+      ...(announcementsData?.announcements ?? []).map((a: Announcement): FeedItem => ({
+        kind: "announcement",
+        key: `announcement-${a.id}`,
+        posted: new Date(a.createdAt).getTime(),
+        urgent: a.priority === "urgent",
+        data: a,
+      })),
+      ...upcomingEvents.map((e): FeedItem => ({
+        kind: "event",
+        key: `event-${e.id}`,
+        posted: new Date(e.createdAt).getTime(),
+        urgent: false,
+        data: e,
+      })),
+    ];
+    return items.sort((x, y) => Number(y.urgent) - Number(x.urgent) || y.posted - x.posted);
+  }, [announcementsData, upcomingEvents]);
 
   const createAnnouncement = useMutation({
     mutationFn: async (data: {
@@ -479,69 +506,94 @@ export function News() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[--ink-dark]">
-              {activeTab === "announcements"
-                ? t("News & Announcements", "Noticias y Anuncios")
-                : t("Upcoming Events", "Próximos Eventos")}
+              {t("News & Events", "Noticias y Eventos")}
             </h1>
-          </div>
-          <div className="flex flex-col items-stretch gap-4 md:flex-row md:items-center">
-            <div className="flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 border-[--border-color] bg-surface p-1 md:w-auto">
-              <button
-                type="button"
-                onClick={() => setActiveTab("announcements")}
-                style={activeTab === "announcements" ? { backgroundColor: "var(--sage)", color: "white", borderBottomColor: "var(--sage)" } : {}}
-                className={cn(
-                  "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
-                  activeTab === "announcements"
-                    ? "shadow-md"
-                    : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--background] border-b-transparent"
-                )}
-              >
-                {t("Announcements", "Anuncios")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("events")}
-                style={activeTab === "events" ? { backgroundColor: "var(--sage)", color: "white", borderBottomColor: "var(--sage)" } : {}}
-                className={cn(
-                  "flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-all text-center md:flex-none border-b-4",
-                  activeTab === "events"
-                    ? "shadow-md"
-                    : "text-[--ink-mid] hover:text-[--sage] hover:bg-[--background] border-b-transparent"
-                )}
-              >
-                {t("Events", "Eventos")}
-              </button>
-            </div>
           </div>
         </div>
 
-        {activeTab === "announcements" ? (
-          <>
-            <div className="space-y-6">
-              {announcementsData?.announcements.map((announcement: Announcement) => (
+        {/* Announcements and events together in one feed */}
+        <div className="space-y-6">
+          {feed.map((item) => {
+            if (item.kind === "announcement") {
+              const announcement = item.data;
+              return (
+                  <div
+                    key={announcement.id}
+                    id={`announcement-${announcement.id}`}
+                    className={`relative group scroll-mt-24 transition-shadow duration-500 ${
+                      focusedItemId === `announcement-${announcement.id}` ? "cne-notification-focus" : ""
+                    }`}
+                  >
+                    <BlogPost
+                      id={announcement.id}
+                      titleEn={announcement.titleEn}
+                      titleEs={announcement.titleEs}
+                      contentEn={announcement.contentEn}
+                      contentEs={announcement.contentEs}
+                      imageUrl={announcement.imageUrl}
+                      imageUrls={announcement.imageUrls}
+                      date={announcement.createdAt}
+                      type="announcement"
+                      priority={announcement.priority}
+                      forceExpanded={focusedItemId === `announcement-${announcement.id}`}
+                    />
+                  </div>);
+            }
+            const eventItem = item.data;
+            return (
                 <div
-                  key={announcement.id}
-                  id={`announcement-${announcement.id}`}
+                  key={eventItem.id}
+                  id={`event-${eventItem.id}`}
                   className={`relative group scroll-mt-24 transition-shadow duration-500 ${
-                    focusedItemId === String(announcement.id) ? "cne-notification-focus" : ""
+                    focusedItemId === `event-${eventItem.id}` ? "cne-notification-focus" : ""
                   }`}
                 >
                   <BlogPost
-                    id={announcement.id}
-                    titleEn={announcement.titleEn}
-                    titleEs={announcement.titleEs}
-                    contentEn={announcement.contentEn}
-                    contentEs={announcement.contentEs}
-                    imageUrl={announcement.imageUrl}
-                    imageUrls={announcement.imageUrls}
-                    date={announcement.createdAt}
-                    type="announcement"
-                    priority={announcement.priority}
+                    id={eventItem.id}
+                    titleEn={eventItem.titleEn}
+                    titleEs={eventItem.titleEs}
+                    contentEn={eventItem.descriptionEn || ''}
+                    contentEs={eventItem.descriptionEs || ''}
+                    imageUrl={eventItem.imageUrl}
+                    imageUrls={eventItem.imageUrls}
+                    date={eventItem.createdAt}
+                    location={eventItem.location}
+                    type="event"
+                    eventDate={eventItem.eventDate}
+                    maxAttendees={eventItem.maxAttendees || 0}
+                    rsvpCount={eventItem.rsvpCount || 0}
+                    forceExpanded={focusedItemId === `event-${eventItem.id}`}
+                    actions={
+                      <>
+                        <Button
+                          onClick={() => {
+                            setSelectedEvent(eventItem as any);
+                            setRsvpResponses({});
+                            setRsvpDialogOpen(true);
+                          }}
+                          disabled={rsvpedEventIds.has(eventItem.id)}
+                          className={cn(
+                            rsvpedEventIds.has(eventItem.id)
+                              ? "bg-[--surface-mid] text-[--ink-mid] hover:bg-[--surface-mid] border-2 border-[--surface-mid]"
+                              : "warm-button-primary border-2 border-[--sage]"
+                          )}
+                        >
+                          {rsvpedEventIds.has(eventItem.id)
+                            ? t("You're attending", "Ya confirmaste")
+                            : t("RSVP", "Confirmar Asistencia")}
+                        </Button>
+                      </>
+                    }
                   />
-                </div>
-              ))}
-            </div>
+                </div>);
+          })}
+        </div>
+
+        {feed.length === 0 && (
+          <p className="text-sm text-[--ink-light]">
+            {t("No news or upcoming events yet.", "Aún no hay noticias ni eventos próximos.")}
+          </p>
+        )}
 
             <Dialog
               open={deleteDialogOpen}
@@ -603,63 +655,6 @@ export function News() {
                 </form>
               </DialogContent>
             </Dialog>
-          </>
-        ) : (
-          <>
-            <div className="space-y-6">
-              {upcomingEvents.map((eventItem) => (
-                <div
-                  key={eventItem.id}
-                  id={`event-${eventItem.id}`}
-                  className={`relative group scroll-mt-24 transition-shadow duration-500 ${
-                    focusedItemId === String(eventItem.id) ? "cne-notification-focus" : ""
-                  }`}
-                >
-                  <BlogPost
-                    id={eventItem.id}
-                    titleEn={eventItem.titleEn}
-                    titleEs={eventItem.titleEs}
-                    contentEn={eventItem.descriptionEn || ''}
-                    contentEs={eventItem.descriptionEs || ''}
-                    imageUrl={eventItem.imageUrl}
-                    imageUrls={eventItem.imageUrls}
-                    date={eventItem.createdAt}
-                    location={eventItem.location}
-                    type="event"
-                    eventDate={eventItem.eventDate}
-                    maxAttendees={eventItem.maxAttendees || 0}
-                    rsvpCount={eventItem.rsvpCount || 0}
-                    actions={
-                      <>
-                        <Button
-                          onClick={() => {
-                            setSelectedEvent(eventItem as any);
-                            setRsvpResponses({});
-                            setRsvpDialogOpen(true);
-                          }}
-                          disabled={rsvpedEventIds.has(eventItem.id)}
-                          className={cn(
-                            rsvpedEventIds.has(eventItem.id)
-                              ? "bg-[--surface-mid] text-[--ink-mid] hover:bg-[--surface-mid] border-2 border-[--surface-mid]"
-                              : "warm-button-primary border-2 border-[--sage] !text-white"
-                          )}
-                        >
-                          {rsvpedEventIds.has(eventItem.id)
-                            ? t("You're attending", "Ya confirmaste")
-                            : t("RSVP", "Confirmar Asistencia")}
-                        </Button>
-                      </>
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-
-            {upcomingEvents.length === 0 && (
-              <p className="text-sm text-[--ink-light]">
-                {t("No upcoming events yet. Create one to get started!", "No hay eventos próximos. ¡Crea uno para comenzar!")}
-              </p>
-            )}
 
             <Dialog open={rsvpDialogOpen} onOpenChange={setRsvpDialogOpen}>
               <DialogContent className="border-[--border-color] bg-surface">
@@ -708,8 +703,6 @@ export function News() {
                 </form>
               </DialogContent>
             </Dialog>
-          </>
-        )}
       </div>
 
       <Dialog

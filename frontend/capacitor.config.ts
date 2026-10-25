@@ -20,7 +20,7 @@ const config: CapacitorConfig = {
       // never used as an actual auto-hide timer.
       launchShowDuration: 3000,
       launchAutoHide: false,
-      backgroundColor: '#EAF3DE',
+      backgroundColor: '#F3E6D2',
       androidSplashResourceName: 'splash',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,

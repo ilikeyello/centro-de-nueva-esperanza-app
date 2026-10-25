@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
-import { Search, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { Search, ChevronLeft, ChevronRight, BookOpen, X, Share } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
+import { showVersesPopup } from "../VerseOfTheDay";
 
 interface BibleVersion {
   id: string;
@@ -191,10 +193,15 @@ const FALLBACK_BIBLE_BOOKS: BibleBook[] = [
 ];
 
 interface BibleProps {
-  onNavigate: (page: string) => void;
+  onNavigate?: (page: string) => void;
+  /**
+   * Mini version (used under the livestream on the Media page): no title and
+   * no search bar — just the passage picker with its arrows and the verses.
+   */
+  compact?: boolean;
 }
 
-export function Bible({ onNavigate }: BibleProps) {
+export function Bible({ onNavigate, compact = false }: BibleProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
 
@@ -255,6 +262,48 @@ export function Bible({ onNavigate }: BibleProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectorsOpen, setSelectorsOpen] = useState<boolean>(false);
   const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
+  /** Bumped on every outside "open this verse" request so it re-scrolls even to the same verse. */
+  const [jumpNonce, setJumpNonce] = useState(0);
+
+  // ── Share: tap verses to select them, then Share opens the verse popup ──
+  const [selectedVerses, setSelectedVerses] = useState<number[]>([]);
+  // Callback ref: the page's root element can be swapped (loading states), so
+  // re-attach the observer whenever it changes.
+  const [rootEl, setRootEl] = useState<HTMLDivElement | null>(null);
+  /** The Share bar is portaled to <body>, so only show it while this page is on screen. */
+  const [pageVisible, setPageVisible] = useState(false);
+
+  useEffect(() => {
+    const el = rootEl;
+    if (!el || !("IntersectionObserver" in window)) return;
+    // The page is much taller than the screen, so ask "is any of it showing" —
+    // off-screen pager pages sit fully outside the viewport.
+    const io = new IntersectionObserver(([entry]) => setPageVisible(entry.isIntersecting), { threshold: 0, rootMargin: "0px -24px 0px -24px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [rootEl]);
+
+  useEffect(() => {
+    setSelectedVerses([]);
+  }, [selectedBook, selectedChapter, selectedVersion]);
+
+  const toggleVerse = (n: number) =>
+    setSelectedVerses((cur) => (cur.includes(n) ? cur.filter((v) => v !== n) : [...cur, n].sort((a, b) => a - b)));
+
+  /** [16,17,18,20] -> "16-18, 20" */
+  const formatVerseRanges = (nums: number[]) => {
+    const parts: string[] = [];
+    let start = nums[0];
+    let prev = nums[0];
+    for (let i = 1; i <= nums.length; i++) {
+      const n = nums[i];
+      if (n === prev + 1) { prev = n; continue; }
+      parts.push(start === prev ? String(start) : `${start}-${prev}`);
+      start = n;
+      prev = n;
+    }
+    return parts.join(", ");
+  };
   const [pendingVersion, setPendingVersion] = useState<string>(selectedVersion);
   const [pendingBook, setPendingBook] = useState<string>(selectedBook);
   const [pendingChapter, setPendingChapter] = useState<number>(selectedChapter);
@@ -368,8 +417,42 @@ export function Bible({ onNavigate }: BibleProps) {
     if (!chapter || highlightedVerse == null) return;
     const el = document.getElementById(`verse-${highlightedVerse}`);
     if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [chapter, highlightedVerse]);
+    // Scroll only the Bible page's own scroll container. scrollIntoView()
+    // would also scroll the app's horizontal pager (overflow:hidden is still
+    // scrollable from code) when this page is off to the side — e.g. when the
+    // home page's "Read in Bible" opens it — knocking every page out of line.
+    let container: HTMLElement | null = el.parentElement;
+    while (container) {
+      const oy = getComputedStyle(container).overflowY;
+      if ((oy === "auto" || oy === "scroll") && container.scrollHeight > container.clientHeight) break;
+      container = container.parentElement;
+    }
+    if (!container) return;
+    const elRect = el.getBoundingClientRect();
+    const boxRect = container.getBoundingClientRect();
+    const top = elRect.top - boxRect.top + container.scrollTop - container.clientHeight / 2 + elRect.height / 2;
+    container.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  }, [chapter, highlightedVerse, jumpNonce]);
+
+  // Other pages (e.g. the home page's Verse of the Day "Read in Bible" button)
+  // ask the Bible to open a passage. The Bible page is always mounted, so
+  // listening here is enough.
+  useEffect(() => {
+    // Only the main Bible page answers "open this verse"; the mini one stays put.
+    if (compact) return;
+    const onOpenVerse = (event: Event) => {
+      const detail = (event as CustomEvent<{ book: string; chapter: number; verse?: number | null; version?: string }>).detail;
+      if (!detail?.book || !detail.chapter) return;
+      if (detail.version) setSelectedVersion(detail.version);
+      setSelectedBook(detail.book);
+      setSelectedChapter(detail.chapter);
+      setHighlightedVerse(detail.verse ?? null);
+      setSelectorsOpen(false);
+      setJumpNonce((n) => n + 1);
+    };
+    window.addEventListener("cne-open-bible-verse", onOpenVerse);
+    return () => window.removeEventListener("cne-open-bible-verse", onOpenVerse);
+  }, [compact]);
 
   useEffect(() => {
     try {
@@ -656,6 +739,7 @@ export function Bible({ onNavigate }: BibleProps) {
       setSelectedBook(passage.bookId);
       setSelectedChapter(passage.chapter);
       setSelectorsOpen(false);
+      setJumpNonce((n) => n + 1);
       return;
     }
 
@@ -669,8 +753,62 @@ export function Bible({ onNavigate }: BibleProps) {
     });
   };
 
+  const shareSelected = () => {
+    if (!chapter || selectedVerses.length === 0) return;
+    const verses = chapter.verses
+      .filter((v) => selectedVerses.includes(v.number))
+      .map((v) => ({ number: v.number, text: v.text }));
+    const bookName = getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0]);
+    showVersesPopup({
+      verses,
+      reference: `${bookName} ${selectedChapter}:${formatVerseRanges(selectedVerses)}`,
+      version: selectedVersion,
+      bookName,
+      chapter: selectedChapter,
+    });
+    setSelectedVerses([]);
+  };
+
+  const shareBar =
+    selectedVerses.length > 0 && pageVisible
+      ? createPortal(
+          <div
+            className="fixed inset-x-0 top-0 z-[75] px-3"
+            style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+          >
+            <div className="liquid-glass relative mx-auto flex max-w-md items-center justify-between gap-2 rounded-full border py-1.5 pl-2 pr-1.5">
+              <button
+                type="button"
+                onClick={() => setSelectedVerses([])}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-[--ink-dark] [-webkit-tap-highlight-color:transparent]"
+                aria-label={t("Clear selection", "Quitar selección")}
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <span className="text-sm font-semibold text-[--ink-dark]">
+                {selectedVerses.length === 1
+                  ? t("1 verse selected", "1 versículo seleccionado")
+                  : t(`${selectedVerses.length} verses selected`, `${selectedVerses.length} versículos seleccionados`)}
+              </span>
+              <button
+                type="button"
+                onClick={shareSelected}
+                className="warm-button-primary flex items-center gap-1.5 px-4 py-2 text-sm"
+                style={{ borderRadius: 9999 }}
+              >
+                <Share className="h-4 w-4" />
+                {t("Share", "Compartir")}
+              </button>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-20">
+    <div ref={setRootEl} className={compact ? "px-4 pb-28 pt-2 md:pb-20" : "container mx-auto px-4 py-8 pb-24 md:pb-20"}>
+      {shareBar}
+      {!compact && (
       <div className="mb-8">
         <h1 className="serif-heading text-3xl font-bold text-[--ink-dark] mb-2">
           {t("Bible", "Biblia")}
@@ -680,7 +818,10 @@ export function Bible({ onNavigate }: BibleProps) {
         </p>
       </div>
 
+      )}
+
       {/* Controls */}
+      {!compact && (
       <div className="mb-6 space-y-4">
         {/* Search */}
         <div className="flex gap-2">
@@ -696,6 +837,7 @@ export function Bible({ onNavigate }: BibleProps) {
           </Button>
         </div>
       </div>
+      )}
 
       {/* Chapter Navigation */}
       <div className="mb-6 flex items-center justify-between">
@@ -704,7 +846,7 @@ export function Bible({ onNavigate }: BibleProps) {
           disabled={selectedChapter <= 1 || loading}
           variant="outline"
           size="icon"
-          className="warm-button-secondary border-[--border-color] text-[--ink-mid] hover:text-white hover:border-[--sage] hover:bg-[--sage]"
+          className="warm-button-secondary text-[--ink-dark]"
           aria-label={t("Previous chapter", "Capítulo anterior")}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -715,7 +857,7 @@ export function Bible({ onNavigate }: BibleProps) {
             <button
               type="button"
               disabled={loading}
-              className="text-center px-3 py-2 rounded-md bg-surface border border-border-color hover:bg-surface-mid transition-colors disabled:opacity-50"
+              className="glass-btn min-w-[13rem] px-10 py-3 text-center transition-colors disabled:opacity-50"
             >
               <h2 className="serif-heading text-xl font-semibold text-[--ink-dark]">
                 {getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0])} {selectedChapter}
@@ -825,7 +967,7 @@ export function Bible({ onNavigate }: BibleProps) {
           disabled={!currentBook || selectedChapter >= currentBook.chapters || loading}
           variant="outline"
           size="icon"
-          className="warm-button-secondary border-[--border-color] text-[--ink-mid] hover:text-white hover:border-[--sage] hover:bg-[--sage]"
+          className="warm-button-secondary text-[--ink-dark]"
           aria-label={t("Next chapter", "Siguiente capítulo")}
         >
           <ChevronRight className="h-4 w-4" />
@@ -849,9 +991,18 @@ export function Bible({ onNavigate }: BibleProps) {
               <div
                 key={verse.number}
                 id={`verse-${verse.number}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={selectedVerses.includes(verse.number)}
+                onClick={() => toggleVerse(verse.number)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleVerse(verse.number); } }}
                 className={
-                  `flex items-start gap-3 rounded-md px-2 py-1 transition-colors ` +
-                  (highlightedVerse === verse.number ? "bg-[--sage]/10 ring-1 ring-[--sage]/30" : "hover:bg-[--surface-mid]")
+                  `flex cursor-pointer items-start gap-3 rounded-md px-2 py-1 transition-colors [-webkit-tap-highlight-color:transparent] ` +
+                  (selectedVerses.includes(verse.number)
+                    ? "verse-selected"
+                    : highlightedVerse === verse.number
+                      ? "verse-highlight"
+                      : "hover:bg-[--surface-mid]")
                 }
               >
                 <span className="text-[--sage] font-semibold min-w-[2rem] text-sm mt-1 select-none">

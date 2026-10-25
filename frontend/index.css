@@ -102,13 +102,15 @@
   --surface: #FFFFFF;
   --card-bg: #FFFFFF;
   --card-fg: #1C1C1A;
-  --card-border: rgba(234, 243, 222, 0.5);
+  --card-border: rgba(243, 230, 210, 0.5);
 
   /* ── Primary Greens (Sage) ── */
-  --sage: #3B6D11;
-  --sage-mid: #639922;
-  --sage-light: #EAF3DE;
-  --sage-light-50: rgba(234, 243, 222, 0.5);
+  /* Desert clay accent (was sage green). Still named "sage" so every
+     existing class keeps working. */
+  --sage: #A35A2C;
+  --sage-mid: #B86E3A;
+  --sage-light: #F3E6D2;
+  --sage-light-50: rgba(243, 230, 210, 0.5);
 
   /* ── Secondary Accent (Terracotta) ── */
   --terra: #993C1D;
@@ -171,39 +173,41 @@
 }
 
 .dark {
-  /* ── Backgrounds & Surfaces — Forest Night ── */
-  --background: #0E1A0B;
-  --surface: #162411;
-  --card-bg: #1C2D16;
-  --card-fg: #E8E4D8;
-  --card-border: rgba(58, 80, 42, 0.6);
+  /* ── Backgrounds & Surfaces — Desert Night ──
+     Warm sand and dusk tones from the home-page canyon photo. */
+  --background: #1C1813;
+  --surface: #262019;
+  --card-bg: #2E271F;
+  --card-fg: #F3EBDD;
+  --card-border: rgba(214, 186, 145, 0.18);
 
-  /* ── Primary Greens — moonlit ── */
-  --sage: #7EC850;
-  --sage-mid: #5A9A2E;
-  --sage-light: #1E3016;
-  --sage-light-50: rgba(30, 48, 22, 0.5);
+  /* ── Accent — desert sand (text, icons, active tabs) ──
+     Still named "sage" so every existing class keeps working. */
+  --sage: #E6C08F;
+  --sage-mid: #D4A86E;
+  --sage-light: #3A3227;
+  --sage-light-50: rgba(58, 50, 39, 0.5);
 
-  /* ── Secondary Accent — ember glow ── */
-  --terra: #D4703F;
-  --terra-light: #2C1A10;
+  /* ── Secondary Accent — clay ── */
+  --terra: #E08A5E;
+  --terra-light: #3A2A20;
 
-  /* ── Typography — moonlight tones ── */
-  --ink-dark: #E8E4D8;
-  --ink-mid: #9A9890;
-  --ink-light: #5A5852;
-  --ink-light-60: rgba(90, 88, 82, 0.6);
+  /* ── Typography — sandstone tones ── */
+  --ink-dark: #F3EBDD;
+  --ink-mid: #BDB09C;
+  --ink-light: #857A6A;
+  --ink-light-60: rgba(133, 122, 106, 0.6);
 
   /* ── UI ── */
-  --border-color: #2A3D20;
+  --border-color: #3D352A;
   --overlay: rgba(0, 0, 0, 0.6);
 
   /* ── Surfaces ── */
-  --surface-mid: #1C2D16;
+  --surface-mid: #2E271F;
 
   /* ── Tab Bar ── */
-  --tab-bar: #162411;
-  --tab-bar-border: #2A3D22;
+  --tab-bar: #262019;
+  --tab-bar-border: #3D352A;
 
   /* ── shadcn/ui remapped ── */
   --foreground: var(--ink-dark);
@@ -211,14 +215,14 @@
   --card-foreground: var(--card-fg);
   --popover: var(--surface);
   --popover-foreground: var(--ink-dark);
-  --primary: var(--sage);
-  --primary-foreground: #FFFFFF;
-  --secondary: #1E3016;
+  --primary: #E2C190;
+  --primary-foreground: #231B12;
+  --secondary: #3A3227;
   --secondary-foreground: var(--ink-dark);
-  --muted: #1E3016;
+  --muted: #3A3227;
   --muted-foreground: var(--ink-mid);
-  --accent: var(--sage);
-  --accent-foreground: #FFFFFF;
+  --accent: #E2C190;
+  --accent-foreground: #231B12;
   --destructive: var(--terra);
   --border: var(--border-color);
   --input: rgba(255, 255, 255, 0.1);
@@ -230,9 +234,9 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: var(--surface);
   --sidebar-foreground: var(--ink-dark);
-  --sidebar-primary: var(--sage);
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1E3016;
+  --sidebar-primary: #E2C190;
+  --sidebar-primary-foreground: #231B12;
+  --sidebar-accent: #3A3227;
   --sidebar-accent-foreground: var(--ink-dark);
   --sidebar-border: var(--border-color);
   --sidebar-ring: var(--ink-light);
@@ -261,15 +265,16 @@
 
 /* Hero gradient blend */
 .hero-gradient-blend {
+  /* Fade only the bottom ~38% so more of the photo shows. */
   background: linear-gradient(to top, 
     var(--background) 0%, 
-    color-mix(in srgb, var(--background) 95%, transparent) 12%,
-    color-mix(in srgb, var(--background) 85%, transparent) 20%,
-    color-mix(in srgb, var(--background) 70%, transparent) 28%,
-    color-mix(in srgb, var(--background) 50%, transparent) 36%,
-    color-mix(in srgb, var(--background) 30%, transparent) 44%,
-    color-mix(in srgb, var(--background) 15%, transparent) 52%,
-    transparent 60%
+    color-mix(in srgb, var(--background) 95%, transparent) 7%,
+    color-mix(in srgb, var(--background) 85%, transparent) 12%,
+    color-mix(in srgb, var(--background) 70%, transparent) 17%,
+    color-mix(in srgb, var(--background) 50%, transparent) 22%,
+    color-mix(in srgb, var(--background) 30%, transparent) 27%,
+    color-mix(in srgb, var(--background) 15%, transparent) 32%,
+    transparent 38%
   );
 }
 
@@ -358,7 +363,7 @@
   
   @media (max-width: 768px) {
     .hero-image {
-      height: 90vh !important;
+      height: 100vh !important;
     }
   }
   
@@ -383,7 +388,9 @@
 
 /* Warm background gradients */
 .warm-gradient {
-  background: linear-gradient(135deg, var(--background) 0%, color-mix(in srgb, var(--background) 95%, var(--sage-light)) 50%, var(--sage-light) 100%);
+  /* Plain base. The color lives in <DesertBackdrop> (soft desert light
+     shapes that sway on scroll) so the glass cards have something to frost. */
+  background: var(--background);
 }
 
 /* Card styles for sections */
@@ -403,26 +410,44 @@
    tokens are plain hex, and color-mix() needs Safari 16.2 while the app still
    targets iOS 15.6 — an unsupported color would leave it fully see-through. */
 .verse-dialog {
-  background-color: rgba(255, 255, 255, 0.72);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
-  backdrop-filter: blur(28px) saturate(140%);
+  background: #6F8FB8 !important;
 }
-
-.dark .verse-dialog {
-  /* var(--surface) in dark mode is #162411. */
-  background-color: rgba(22, 36, 17, 0.72);
+/* Blurred canyon photo behind the popup — same photo as the splash */
+.verse-dialog-photo {
+  position: absolute;
+  inset: -60px;
+  background: url('/hero-home.jpg') center / cover no-repeat;
+  filter: blur(26px) saturate(140%) brightness(1.04);
 }
-
-/* Without backdrop-filter the page behind stays sharp and the text is hard to
-   read, so lean opaque instead. */
-@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .verse-dialog {
-    background-color: rgba(255, 255, 255, 0.96);
-  }
-  .dark .verse-dialog {
-    background-color: rgba(22, 36, 17, 0.96);
-  }
+/* Milky glass tint + a soft diagonal light sheen */
+.verse-dialog-tint {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0.04) 38%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.10) 100%),
+    linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)),
+    linear-gradient(rgba(20, 28, 42, 0.14), rgba(20, 28, 42, 0.14));
 }
+.dark .verse-dialog-tint {
+  background:
+    linear-gradient(135deg, rgba(255, 245, 230, 0.14) 0%, rgba(255, 245, 230, 0.02) 38%, rgba(255, 245, 230, 0) 60%, rgba(255, 245, 230, 0.05) 100%),
+    linear-gradient(rgba(30, 24, 18, 0.48), rgba(30, 24, 18, 0.48));
+}
+/* Fine frosted grain, so it reads as glass rather than just a blur */
+.verse-dialog-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+  pointer-events: none;
+}
+.verse-dialog-close,
+.verse-dialog-text {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 2px 14px rgba(0, 0, 0, 0.25);
+}
+.verse-dialog-close svg { filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45)); }
 
 /* Button styles */
 .warm-button-primary {
@@ -437,7 +462,7 @@
   .warm-button-primary:hover {
     background: var(--sage-mid) !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 109, 17, 0.3);
+    box-shadow: 0 4px 12px rgba(163, 90, 44, 0.3);
   }
 }
 
@@ -537,12 +562,12 @@
   }
 
   .hover\:bg-warm-red\/5:hover {
-    background-color: rgba(59, 109, 17, 0.05) !important;
+    background-color: rgba(163, 90, 44, 0.05) !important;
   }
 }
 
 .dark .hover\:bg-warm-red\/5:hover {
-  background-color: rgba(126, 200, 80, 0.08) !important;
+  background-color: rgba(230, 192, 143, 0.08) !important;
 }
 
 /* Active tab style */
@@ -556,7 +581,7 @@
 
 @media screen and (max-width: 390px) {
   .hero-image {
-    height: 85vh !important;
+    height: 100vh !important;
   }
   
   .hero-title {
@@ -813,4 +838,590 @@
 .cne-notification-focus {
   border-radius: 1rem;
   box-shadow: 0 0 0 3px var(--sage), 0 8px 24px rgb(0 0 0 / 0.12);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Liquid glass navbar — styled after the Apple Music tab bar
+   (neutral frosted capsule, gray selection bubble, SF type).
+   Only the look lives here; size, position, swipe and the mini
+   bar stay in Navigation.tsx. Literal rgba (no color-mix) because
+   the app still targets iOS 15.6, same as .verse-dialog above.
+   ═══════════════════════════════════════════════════════════════ */
+.liquid-glass {
+  background-color: rgba(250, 250, 250, 0.62);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  backdrop-filter: blur(24px) saturate(190%);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+}
+
+/* Thin light-catching edge, like Apple's glass */
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 65%,
+    rgba(255, 255, 255, 0.35) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+.dark .liquid-glass {
+  background-color: rgba(46, 39, 31, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark .liquid-glass::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 65%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+}
+
+/* Tab labels: small, semibold, like the Apple Music tabs */
+@media (max-width: 767px) {
+  .liquid-glass .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* Desktop: the nav is a full-width top bar, so drop the floating
+   shadow and the rim, keep a hairline along the bottom edge. */
+@media (min-width: 768px) {
+  .liquid-glass {
+    box-shadow:
+      0 1px 12px rgba(0, 0, 0, 0.06),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.4);
+  }
+  .dark .liquid-glass {
+    box-shadow:
+      0 1px 12px rgba(0, 0, 0, 0.3),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  }
+  .liquid-glass::before {
+    display: none;
+  }
+}
+
+/* The sliding "you are here" bubble — a soft gray capsule */
+.liquid-glass-pill {
+  background-color: rgba(118, 118, 128, 0.14);
+}
+
+.dark .liquid-glass-pill {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* No blur available, or the user asked for less transparency:
+   go nearly solid so the icons stay easy to read. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .liquid-glass { background-color: rgba(250, 250, 250, 0.96); }
+  .dark .liquid-glass { background-color: rgba(46, 39, 31, 0.96); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-glass { background-color: rgba(250, 250, 250, 0.97); }
+  .dark .liquid-glass { background-color: rgba(46, 39, 31, 0.97); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Home photo fade — the image itself fades to see-through, so it
+   melts into the background at any scroll position.
+   ═══════════════════════════════════════════════════════════════ */
+.hero-fade-mask {
+  -webkit-mask-image: linear-gradient(to bottom,
+    #000 0%, #000 76%,
+    rgba(0, 0, 0, 0.85) 82%,
+    rgba(0, 0, 0, 0.6) 88%,
+    rgba(0, 0, 0, 0.3) 94%,
+    rgba(0, 0, 0, 0.1) 97%,
+    transparent 100%);
+  mask-image: linear-gradient(to bottom,
+    #000 0%, #000 76%,
+    rgba(0, 0, 0, 0.85) 82%,
+    rgba(0, 0, 0, 0.6) 88%,
+    rgba(0, 0, 0, 0.3) 94%,
+    rgba(0, 0, 0, 0.1) 97%,
+    transparent 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Desert backdrop — the app's color, behind everything
+   ═══════════════════════════════════════════════════════════════ */
+.desert-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+.desert-backdrop--fixed { position: fixed; }
+
+.desert-blob {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.desert-blob--sun  { background: radial-gradient(circle, rgba(243, 204, 140, 0.80) 0%, rgba(243, 204, 140, 0) 65%); }
+.desert-blob--sky  { background: radial-gradient(circle, rgba(140, 180, 224, 0.50) 0%, rgba(140, 180, 224, 0) 65%); }
+.desert-blob--clay { background: radial-gradient(circle, rgba(226, 146, 100, 0.45) 0%, rgba(226, 146, 100, 0) 65%); }
+.desert-blob--dune { background: radial-gradient(circle, rgba(222, 190, 140, 0.65) 0%, rgba(222, 190, 140, 0) 65%); }
+.desert-blob--sage { background: radial-gradient(circle, rgba(170, 200, 140, 0.40) 0%, rgba(170, 200, 140, 0) 65%); }
+
+.dark .desert-blob--sun  { background: radial-gradient(circle, rgba(222, 176, 110, 0.32) 0%, rgba(222, 176, 110, 0) 65%); }
+.dark .desert-blob--sky  { background: radial-gradient(circle, rgba(84, 112, 156, 0.38) 0%, rgba(84, 112, 156, 0) 65%); }
+.dark .desert-blob--clay { background: radial-gradient(circle, rgba(196, 116, 74, 0.30) 0%, rgba(196, 116, 74, 0) 65%); }
+.dark .desert-blob--dune { background: radial-gradient(circle, rgba(190, 160, 115, 0.24) 0%, rgba(190, 160, 115, 0) 65%); }
+.dark .desert-blob--sage { background: radial-gradient(circle, rgba(120, 150, 100, 0.16) 0%, rgba(120, 150, 100, 0) 65%); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Frosted glass cards — same family as the navbar. Covers the
+   .warm-card sections, every shadcn <Card>, and .glass-card.
+   Inputs, dropdowns and dialogs stay solid for readability.
+   ═══════════════════════════════════════════════════════════════ */
+.warm-card,
+[data-slot="card"],
+.glass-card {
+  background-color: rgba(255, 255, 255, 0.36) !important;
+  background-image: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.04) 100%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow:
+    0 8px 32px rgba(120, 80, 40, 0.12),
+    0 1px 3px rgba(120, 80, 40, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+.dark .warm-card,
+.dark [data-slot="card"],
+.dark .glass-card {
+  background-color: rgba(46, 39, 31, 0.34) !important;
+  background-image: linear-gradient(135deg,
+    rgba(255, 245, 230, 0.10) 0%,
+    rgba(255, 245, 230, 0.03) 45%,
+    rgba(255, 245, 230, 0) 100%);
+  border-color: rgba(255, 240, 220, 0.12) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .warm-card, [data-slot="card"], .glass-card { background-color: rgba(255, 255, 255, 0.92) !important; }
+  .dark .warm-card, .dark [data-slot="card"], .dark .glass-card { background-color: rgba(46, 39, 31, 0.92) !important; }
+}
+
+/* Cards float up and fade in the first time they come into view
+   (added by hooks/useGlassReveal.ts). */
+.glass-reveal {
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  transition: opacity 0.55s ease, transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+.glass-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Desert sand buttons
+   ═══════════════════════════════════════════════════════════════ */
+/* Dark mode: solid buttons are sand with dark text. */
+.dark .warm-button-primary,
+.dark .warm-tab-active {
+  background: #E2C190 !important;
+  color: #231B12 !important;
+  border-bottom-color: #E2C190 !important;
+}
+@media (hover: hover) {
+  .dark .warm-button-primary:hover {
+    background: #EACFA4 !important;
+    box-shadow: 0 4px 12px rgba(226, 193, 144, 0.3);
+  }
+}
+
+
+@keyframes photo-viewer-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Home "Watch Live" pill — frosted glass over the photo */
+.hero-live-btn {
+  background-color: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+.hero-live-btn:active { transform: scale(0.97); }
+@media (hover: hover) {
+  .hero-live-btn:hover { background-color: rgba(255, 255, 255, 0.28); }
+}
+
+/* Live state: a warm red glow so it reads as "on air" */
+.hero-live-btn.is-live {
+  background-color: rgba(220, 38, 38, 0.28);
+  border-color: rgba(255, 180, 180, 0.6);
+  box-shadow: 0 6px 24px rgba(220, 38, 38, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Verse on the home photo: legible white text over the sky */
+.hero-verse {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45), 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* News & events: the full post eases in when "Read more" opens it */
+@keyframes blogpost-expand {
+  from { opacity: 0.4; transform: translateY(-4px); }
+  to   { opacity: 1;   transform: none; }
+}
+.blogpost-expand { animation: blogpost-expand 0.3s ease-out; }
+
+/* Bible: the verse you jumped to (Read in Bible / search) — a sand
+   highlighter stripe with a short glow when it arrives. */
+.verse-highlight {
+  background-color: rgba(233, 196, 106, 0.32);
+  box-shadow: inset 3px 0 0 var(--sage);
+  animation: verse-highlight-in 1.4s ease-out;
+}
+.dark .verse-highlight {
+  background-color: rgba(230, 192, 143, 0.18);
+}
+@keyframes verse-highlight-in {
+  0%   { background-color: rgba(233, 196, 106, 0.75); }
+  100% { background-color: rgba(233, 196, 106, 0.32); }
+}
+.dark .verse-highlight { animation-name: verse-highlight-in-dark; }
+@keyframes verse-highlight-in-dark {
+  0%   { background-color: rgba(230, 192, 143, 0.45); }
+  100% { background-color: rgba(230, 192, 143, 0.18); }
+}
+
+/* Bible: verses picked for sharing */
+.verse-selected {
+  background-color: rgba(233, 196, 106, 0.28);
+  box-shadow: inset 3px 0 0 var(--sage);
+}
+.dark .verse-selected { background-color: rgba(230, 192, 143, 0.16); }
+.verse-selected p {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--sage);
+  text-underline-offset: 5px;
+}
+
+/* All buttons are pill-shaped, like the home page's Read in Bible / View
+   Media buttons. Card-style buttons (quick actions etc.) keep their corners. */
+button:not(.warm-card):not(.glass-card):not([data-slot="card"]):not(.trivia-answer):not(.ws-cell),
+[data-slot="button"],
+.warm-button-primary,
+.warm-button-secondary,
+.cta-button {
+  border-radius: 9999px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Frosted-glass buttons — same family as the navbar and cards.
+   Colored (primary) buttons keep their color as tinted glass; plain
+   buttons are clear glass. Nav tabs, carousel dots, close X's, card
+   tiles and rows are left alone.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tinted glass: primary / solid buttons */
+.warm-button-primary,
+[data-slot="button"][data-variant="default"],
+[data-slot="button"][data-variant="destructive"] {
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 14px rgba(60, 40, 20, 0.14) !important;
+}
+.warm-button-primary,
+[data-slot="button"][data-variant="default"] {
+  background: rgba(163, 90, 44, 0.80) !important;
+  color: #FFFFFF !important;
+}
+.dark .warm-button-primary,
+.dark [data-slot="button"][data-variant="default"] {
+  background: rgba(226, 193, 144, 0.80) !important;
+  color: #231B12 !important;
+  border-color: rgba(255, 245, 230, 0.35) !important;
+}
+[data-slot="button"][data-variant="destructive"] {
+  background: rgba(200, 60, 40, 0.80) !important;
+  color: #FFFFFF !important;
+}
+@media (hover: hover) {
+  .warm-button-primary:hover,
+  [data-slot="button"][data-variant="default"]:hover { background: rgba(163, 90, 44, 0.92) !important; }
+  .dark .warm-button-primary:hover,
+  .dark [data-slot="button"][data-variant="default"]:hover { background: rgba(226, 193, 144, 0.92) !important; }
+}
+
+/* Clear glass: outline / secondary / ghost / plain surface buttons */
+.glass-btn,
+.warm-button-secondary,
+[data-slot="button"][data-variant="outline"]:not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]),
+[data-slot="button"][data-variant="secondary"]:not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]),
+[data-slot="button"][data-variant="ghost"]:not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]),
+[data-slot="select-trigger"],
+button[class*="bg-surface"]:not(nav *):not(.warm-card):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]),
+button[class*="bg-[--surface]"]:not(nav *):not(.warm-card):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]) {
+  background-color: rgba(255, 255, 255, 0.45) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.05) 60%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 2px 10px rgba(60, 40, 20, 0.08) !important;
+  color: var(--ink-dark);
+}
+.dark .glass-btn,
+.dark .warm-button-secondary,
+.dark [data-slot="button"][data-variant="outline"]:not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]),
+.dark [data-slot="button"][data-variant="secondary"]:not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]),
+.dark [data-slot="button"][data-variant="ghost"]:not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]),
+.dark [data-slot="select-trigger"],
+.dark button[class*="bg-surface"]:not(nav *):not(.warm-card):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]),
+.dark button[class*="bg-[--surface]"]:not(nav *):not(.warm-card):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]) {
+  background-color: rgba(46, 39, 31, 0.45) !important;
+  background-image: linear-gradient(135deg, rgba(255, 245, 230, 0.10) 0%, rgba(255, 245, 230, 0) 60%) !important;
+  border-color: rgba(255, 240, 220, 0.14) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 2px 10px rgba(0, 0, 0, 0.25) !important;
+}
+/* Game answers etc. color themselves (correct / wrong / selected), so
+   those keep their own colors (excluded above). On glass, keep hover
+   text readable instead of turning white. */
+.glass-btn:hover,
+[data-slot="button"][data-variant="outline"]:not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-yellow"]):not([class*=" bg-[--sage]"]):not([class^="bg-[--sage]"]):hover,
+.warm-button-secondary:hover { color: var(--ink-dark) !important; }
+
+@media (hover: hover) {
+  .glass-btn:hover,
+  .warm-button-secondary:hover,
+  [data-slot="button"][data-variant="outline"]:hover,
+  [data-slot="button"][data-variant="ghost"]:hover { background-color: rgba(255, 255, 255, 0.62) !important; }
+}
+
+/* Room for the text inside the pill shape */
+[data-slot="select-trigger"] { padding-left: 1rem !important; padding-right: 0.875rem !important; }
+[data-slot="button"][data-size="sm"] { padding-left: 0.875rem !important; padding-right: 0.875rem !important; }
+[data-slot="button"][data-size="default"]:not(:has(> svg:only-child)) { padding-left: 1.125rem !important; padding-right: 1.125rem !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Media page: pinned frosted header + glass tab lens
+   ═══════════════════════════════════════════════════════════════ */
+.media-statusbar-cover {
+  background-color: rgba(250, 249, 246, 0.78);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+}
+.dark .media-statusbar-cover { background-color: rgba(28, 24, 19, 0.78); }
+
+/* The tab bar itself is a floating glass pill, not a full-width bar */
+.glass-tabs.liquid-glass { box-shadow: 0 4px 18px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
+.dark .glass-tabs.liquid-glass { box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+@media (min-width: 768px) {
+  .glass-tabs.liquid-glass::before { display: block; }
+}
+
+/* The sliding frosted lens over the selected icon */
+.glass-tabs-lens {
+  background-color: rgba(255, 255, 255, 0.6);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.15) 55%, rgba(255, 255, 255, 0.3) 100%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  backdrop-filter: blur(10px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 10px rgba(60, 40, 20, 0.14), inset 0 1px 0 rgba(255, 255, 255, 1);
+  will-change: transform;
+}
+.dark .glass-tabs-lens {
+  background-color: rgba(255, 245, 230, 0.14);
+  background-image: linear-gradient(135deg, rgba(255, 245, 230, 0.18) 0%, rgba(255, 245, 230, 0.03) 55%, rgba(255, 245, 230, 0.08) 100%);
+  border-color: rgba(255, 245, 230, 0.22);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+/* Tabs are icons + labels, not pills — keep them out of the global button styles */
+.glass-tabs-item { border-radius: 9999px !important; background: none !important; border: 0 !important; box-shadow: none !important; }
+
+/* Sermon cards are thumbnails + text, not pill buttons */
+.sermon-card { border-radius: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
+
+/* Navbar lens: same frosted lens as the Media tabs */
+.nav-lens { will-change: left, scale; }
+
+/* Navbar glass: lighter than the other glass so the page shows through,
+   and lighter still in the mini (icons-only) bar. */
+nav.liquid-glass {
+  background-color: rgba(250, 250, 250, 0.40);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  backdrop-filter: blur(20px) saturate(190%);
+}
+.dark nav.liquid-glass { background-color: rgba(46, 39, 31, 0.34); }
+nav.liquid-glass.nav-mini {
+  background-color: rgba(250, 250, 250, 0.20);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  backdrop-filter: blur(14px) saturate(180%);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.dark nav.liquid-glass.nav-mini {
+  background-color: rgba(46, 39, 31, 0.18);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Games: shared menu cards, trivia answers, word search cells
+   ═══════════════════════════════════════════════════════════════ */
+.game-icon-bubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: var(--sage);
+  background: rgba(163, 90, 44, 0.12);
+  border: 1px solid rgba(163, 90, 44, 0.22);
+}
+.dark .game-icon-bubble {
+  background: rgba(230, 192, 143, 0.12);
+  border-color: rgba(230, 192, 143, 0.22);
+}
+.game-play-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--sage);
+  color: #FFFFFF;
+}
+.dark .game-play-chip { color: #231B12; }
+.game-option-card {
+  transition: transform 0.18s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.game-option-card:active:not(:disabled) { transform: scale(0.98); }
+
+.trivia-answer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-radius: 1rem;
+  color: var(--ink-dark);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 10px rgba(60, 40, 20, 0.08);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.dark .trivia-answer {
+  background: rgba(46, 39, 31, 0.5);
+  border-color: rgba(255, 240, 220, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.trivia-answer:active:not(:disabled) { transform: scale(0.985); }
+.trivia-answer-letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--sage);
+  background: rgba(163, 90, 44, 0.12);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.dark .trivia-answer-letter { background: rgba(230, 192, 143, 0.14); }
+
+.trivia-answer.is-selected {
+  background: rgba(163, 90, 44, 0.16);
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px rgba(163, 90, 44, 0.22);
+}
+.dark .trivia-answer.is-selected {
+  background: rgba(230, 192, 143, 0.18);
+  box-shadow: 0 0 0 3px rgba(230, 192, 143, 0.25);
+}
+.trivia-answer.is-selected .trivia-answer-letter { background: var(--sage); color: #FFFFFF; }
+.dark .trivia-answer.is-selected .trivia-answer-letter { color: #231B12; }
+
+.trivia-answer.is-correct {
+  background: rgba(34, 160, 90, 0.18);
+  border-color: #22A05A;
+}
+.trivia-answer.is-correct .trivia-answer-letter { background: #22A05A; color: #FFFFFF; }
+.trivia-answer.is-wrong {
+  background: rgba(214, 64, 52, 0.16);
+  border-color: #D64034;
+}
+.trivia-answer.is-wrong .trivia-answer-letter { background: #D64034; color: #FFFFFF; }
+.trivia-answer.is-dim { opacity: 0.5; }
+
+.ws-cell {
+  border-radius: 0.375rem;
+  color: var(--ink-dark);
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+.ws-cell.is-start {
+  background: rgba(163, 90, 44, 0.22);
+  box-shadow: inset 0 0 0 1.5px var(--sage);
+}
+.dark .ws-cell.is-start { background: rgba(230, 192, 143, 0.22); }
+.ws-word-found { background: rgba(34, 160, 90, 0.16); }
+
+/* Keep the menu title on its own layer so iOS always repaints it when the
+   screen swaps back from a finished game (next to blurred glass cards). */
+.game-menu-header {
+  position: relative;
+  z-index: 1;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }

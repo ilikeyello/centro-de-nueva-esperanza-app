@@ -18,6 +18,8 @@ import { PushNotificationPrompt } from "./PushNotificationPrompt";
 import { InstallPrompt } from "./InstallPrompt";
 import { AppStoreBanner } from "./AppStoreBanner";
 import { useNotificationChecker } from "../hooks/useNotificationChecker";
+import { useGlassReveal } from "../hooks/useGlassReveal";
+import { DesertBackdrop } from "./DesertBackdrop";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -101,10 +103,25 @@ function getPillMetrics(navTabs: HTMLElement) {
  * Always resets width so any stretch collapses to normal.
  * Does NOT clear styles afterwards — React's re-render overwrites them naturally.
  */
-function setPillToIndex(targetIdx: number, transition = "") {
+function setPillToIndex(targetIdx: number, transition = "", fromIdx?: number) {
   const { navTabs, pill } = getPillElements();
   if (!navTabs || !pill) return;
   const { padH, tabW } = getPillMetrics(navTabs);
+  // On a nav tap React has already moved the pill to the new tab before this
+  // runs (and reading layout above commits that jump). Put it back on the tab
+  // it came from first, so the transition has somewhere to slide from.
+  // A lens drag on the navbar already carried the pill to the new tab — let it
+  // finish its own spring instead of restarting from the old tab.
+  if (pill.dataset.dragged) {
+    delete pill.dataset.dragged;
+    return;
+  }
+  if (fromIdx != null && fromIdx !== targetIdx) {
+    pill.style.transition = "none";
+    pill.style.left = `${padH + fromIdx * tabW}px`;
+    pill.style.width = `${tabW}px`;
+    void pill.offsetWidth;
+  }
   pill.style.transition = transition || "none";
   pill.style.left  = `${padH + targetIdx * tabW}px`;
   pill.style.width = `${tabW}px`;
@@ -176,6 +193,7 @@ function snapPillBack(currentIdx: number) {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function AppInner() {
+  useGlassReveal();
   // ── State ─────────────────────────────────────────────────────────────────
   /** Index into SWIPE_PAGES for the currently visible swipe page. */
   const [swipeIndex, setSwipeIndex] = useState(0);
@@ -188,6 +206,21 @@ export function AppInner() {
   // ── Refs ──────────────────────────────────────────────────────────────────
   const rootRef         = useRef<HTMLDivElement>(null);
   const viewportRef     = useRef<HTMLDivElement>(null);
+
+  // The pager moves pages with a CSS transform only; its own scroll position
+  // must stay at 0. Browser calls like scrollIntoView() inside an off-screen
+  // page can still scroll it (overflow:hidden is scrollable from code), which
+  // shifts every page out of line — so snap it back if that ever happens.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const reset = () => {
+      if (viewport.scrollLeft !== 0) viewport.scrollLeft = 0;
+      if (viewport.scrollTop !== 0) viewport.scrollTop = 0;
+    };
+    viewport.addEventListener("scroll", reset, { passive: true });
+    return () => viewport.removeEventListener("scroll", reset);
+  }, []);
   const trackRef        = useRef<HTMLDivElement>(null);
   const pageRefs        = useRef<(HTMLDivElement | null)[]>([]);
   const mediaWrapperRef = useRef<HTMLDivElement>(null);
@@ -283,7 +316,11 @@ export function AppInner() {
     }
 
     // Animate pill for nav taps
-    setPillToIndex(swipeIndex, `left 380ms ${easing}, width 380ms ${easing}`);
+    setPillToIndex(
+      swipeIndex,
+      `left 380ms cubic-bezier(0.34, 1.3, 0.64, 1), width 380ms ${easing}`,
+      prevSwipeIndexRef.current
+    );
 
     const cleanup = () => {
       if (trackRef.current) trackRef.current.style.transition = "";
@@ -698,6 +735,7 @@ export function AppInner() {
           paddingRight: "env(safe-area-inset-right)",
         }}
       >
+        <DesertBackdrop scrollEl={activeScrollEl} />
         <Navigation
           currentPage={currentPage}
           onNavigate={handleNavigate}
@@ -775,6 +813,7 @@ export function AppInner() {
             underneath (at the last swipe index) so returning is instant. */}
         {overlayPage && (
           <div
+            data-overlay-scroll
             className="fixed inset-0 z-40 overflow-y-auto warm-gradient overscroll-y-none"
             style={{
               paddingTop:   "env(safe-area-inset-top)",
@@ -783,6 +822,7 @@ export function AppInner() {
               WebkitOverflowScrolling: "touch" as any,
             }}
           >
+            <DesertBackdrop fixed />
             <div className="pb-24 md:pb-20 md:pt-20">
               {overlayPage === "donations"          && <Donations onNavigate={handleNavigate} />}
               {overlayPage === "adminUpload"         && <AdminUpload />}

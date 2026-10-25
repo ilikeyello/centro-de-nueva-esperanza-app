@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { Calendar, Gamepad2, Heart, MapPin, Megaphone, Languages, Clock, Users } from "lucide-react";
+import { Calendar, Gamepad2, Heart, MapPin, Megaphone, Languages, Clock, Users, Play, BookOpen } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { usePlayer } from "../../contexts/PlayerContext";
 import { useBackend } from "../../hooks/useBackend";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
 import { getDonationUrl, invalidateDonationPrewarm, openDonationSheet, prewarmDonation } from "../../lib/donations";
 import { openSheetBrowser } from "../../lib/systemBrowser";
 import { UGC_ENABLED } from "@/lib/featureFlags";
-import { VerseOfTheDayCard, VerseOfTheDayDialog, useVerseOfTheDay } from "../VerseOfTheDay";
+import { VerseOfTheDayDialog, VerseOfTheDayHero, useVerseOfTheDay } from "../VerseOfTheDay";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -45,6 +46,7 @@ function htmlToPlainText(html: string): string {
 
 export function Home({ onNavigate }: HomeProps) {
   const { t, language, toggleLanguage } = useLanguage();
+  const { livestreamIsLive } = usePlayer();
   const backend = useBackend();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -53,8 +55,8 @@ export function Home({ onNavigate }: HomeProps) {
   const [prayerDescription, setPrayerDescription] = useState("");
   const [prayerName, setPrayerName] = useState("");
 
-  const heroImageUrl =
-    "https://images.unsplash.com/photo-1536063766742-b514ee70707f?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+  // Bundled with the app (public/hero-home.jpg) so it loads instantly and works offline.
+  const heroImageUrl = "/hero-home.jpg";
 
   const serviceTimes = {
     en: {
@@ -92,7 +94,7 @@ export function Home({ onNavigate }: HomeProps) {
     queryFn: () => getChurchAdditionalInfo(),
   });
 
-  const { verse } = useVerseOfTheDay();
+  const { verse, loading: verseLoading } = useVerseOfTheDay();
 
   const { data: announcementsData } = useQuery({
     queryKey: ["announcements", "latest"],
@@ -205,15 +207,16 @@ export function Home({ onNavigate }: HomeProps) {
   return (
     <div className="pb-10">
       {/* Pops once per new verse — i.e. the first time the app is opened today. */}
-      <VerseOfTheDayDialog verse={verse} />
+      <VerseOfTheDayDialog verse={verse} loading={verseLoading} />
       <section className="relative -mt-20 md:-mt-16">
         <img
           src={heroImageUrl}
           alt={t("Church congregation worshiping together", "Congregación adorando juntos")}
-          className="hero-image w-full object-cover h-[90vh] md:h-[40rem] object-[center_55%]"
+          className="hero-image hero-fade-mask w-full object-cover h-[100vh] md:h-[40rem] object-[33%_55%] md:object-[60%_55%]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[--sage]/10 via-transparent to-transparent" />
-        <div className="absolute inset-0 hero-gradient-blend md:bg-gradient-to-b md:from-black/20 md:via-black/40 md:to-black/60" />
+        {/* The photo fades itself out (.hero-fade-mask), so it blends into
+            whatever background is behind it — no hard edge at the top of the page. */}
         <div className="absolute top-[calc(env(safe-area-inset-top)+56px)] right-4 md:top-24 z-20">
             <button
               type="button"
@@ -226,35 +229,63 @@ export function Home({ onNavigate }: HomeProps) {
             </button>
           </div>
           
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center sm:px-10 safe-area-padding translate-y-0 md:translate-y-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white drop-shadow-lg">
-            {t("Welcome to", "Bienvenidos a")}
-          </p>
-          <h2 className="mt-2 serif-heading hero-title text-4xl font-bold text-white sm:text-5xl md:text-6xl drop-shadow-2xl">
-            {t("Center of New Hope", "Centro de Nueva Esperanza")}
-          </h2>
-          <p className="mt-6 max-w-3xl hero-subtitle text-lg text-white/90 md:text-xl drop-shadow-lg">
-            {t(
-              "A welcoming family of believers seeking Jesus together, serving our neighbors, and sharing His hope in practical ways.",
-              "Una familia acogedora de creyentes buscando a Jesús juntos, sirviendo a nuestros vecinos y compartiendo Su esperanza de manera práctica."
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 pt-[6vh] text-center safe-area-padding md:pt-0 md:translate-y-8">
+            <img
+              data-hero-logo
+              src="/cne_logo_white.png"
+              alt="Centro de Nueva Esperanza"
+              width={1000}
+              height={598}
+              // The soft shadow is baked into the PNG (with transparent padding,
+              // hence the larger width): CSS drop-shadow drew a dark box
+              // around the logo on iPhone, especially while it animates.
+              className="-my-5 h-auto w-[200px] sm:-my-6 sm:w-[240px] md:-my-7 md:w-[280px]"
+            />
+            <VerseOfTheDayHero verse={verse} />
+            {/* Opens today's verse in the app's Bible page, scrolled to and highlighted. */}
+            {verse && (
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(
+                    new CustomEvent("cne-open-bible-verse", {
+                      detail: { book: verse.book, chapter: verse.chapter, verse: verse.verse, version: verse.version },
+                    })
+                  );
+                  onNavigate("bible");
+                }}
+                className="hero-live-btn mt-5 flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                <BookOpen className="h-4 w-4" />
+                {t("Read in Bible", "Leer en la Biblia")}
+              </button>
             )}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button
-              onClick={() => onNavigate("newHere")}
-              className="warm-button-primary cta-button px-8 py-4 text-lg"
+            {/* "View Media" — becomes "Live Now" with a pulsing red dot while
+                the livestream is on. */}
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("cne-media-tab", { detail: "live" }));
+                onNavigate("media");
+              }}
+              className={`hero-live-btn mt-4 flex items-center gap-2.5 rounded-full px-6 py-3 text-base font-semibold text-white${livestreamIsLive ? " is-live" : ""}`}
             >
-              {t("Plan a Visit", "Planifica una Visita")}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => onNavigate("media")}
-              className="border-white/30 bg-black/40 backdrop-blur-sm px-8 py-4 text-lg text-white hover:bg-black/60 hover:text-white shadow-md"
-            >
-              {t("Watch Live", "Ver en Vivo")}
-            </Button>
+              {livestreamIsLive ? (
+                <>
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                  </span>
+                  {t("Live Now", "En Vivo Ahora")}
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 fill-current" />
+                  {t("View Media", "Ver Medios")}
+                </>
+              )}
+            </button>
           </div>
-        </div>
       </section>
       <div className="container mx-auto space-y-10 px-4 -mt-16 relative z-10">
         {/* Top row: Upcoming Event first in DOM (top on mobile), right column on desktop */}
@@ -388,14 +419,6 @@ export function Home({ onNavigate }: HomeProps) {
               </div>
             )}
           </section>
-
-          {/* Verse of the Day — sits between Upcoming Event and Quick Actions in
-              DOM order (so it lands between them when the grid stacks on
-              mobile); full-width band under the row on desktop, where the two
-              cards are side by side. */}
-          <div className="lg:col-span-3 lg:col-start-1 lg:row-start-2">
-            <VerseOfTheDayCard verse={verse} />
-          </div>
 
           {/* Quick Actions — cols 1–2 on desktop, second on mobile */}
           <div className="space-y-6 lg:col-start-1 lg:col-span-2 lg:row-start-1">

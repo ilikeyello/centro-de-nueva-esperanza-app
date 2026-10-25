@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Sparkles, Grid3X3, ArrowLeft, Play } from "lucide-react";
+import { Sparkles, Grid3X3, ArrowLeft } from "lucide-react";
 import { supabase, churchOrgId } from "../../lib/mainSiteData";
+import { GameMenuScreen, GameOptionCard, GameMenuNote } from "../games/GameMenu";
 
 interface WordSearchLevel {
   id: string;
@@ -366,76 +366,39 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
   };
 
   const renderLevelList = () => (
-    <div className="container mx-auto space-y-8 px-4 py-8">
-      <Button
-        onClick={() => onNavigate?.("games")}
-        variant="outline"
-        className="bg-[--surface] text-[--ink-dark] hover:bg-[--sage] hover:text-white border border-[--border-color] mb-4"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        {t("Back to Games", "Volver a Juegos")}
-      </Button>
-
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Grid3X3 className="h-8 w-8 text-[--sage]" />
-          <div>
-            <h1 className="text-3xl font-bold text-[--ink-dark]">
-              {language === "es" ? "Sopa de Letras Bíblica" : "Bible Word Search"}
-            </h1>
-            <p className="text-[--ink-light] max-w-2xl mt-1 text-sm">
-              {language === "es"
-                ? "Encuentra palabras bíblicas escondidas en la cuadrícula. Cada nivel tiene un conjunto diferente de palabras."
-                : "Find hidden Bible words in the grid. Each level has its own set of themed words."}
-            </p>
-          </div>
-        </div>
-
-        {error && <p className="text-sm text-[--sage]">{error}</p>}
-
-        <div className="grid gap-4 max-w-4xl">
-          {loadingLevels ? (
-            <p className="text-[--ink-light] text-sm">
-              {t("Loading levels...", "Cargando niveles...")}
-            </p>
-          ) : levels.length === 0 ? (
-            <p className="text-[--ink-light] text-sm">
-              {t("No word search levels yet.", "Aún no hay niveles de sopa de letras.")}
-            </p>
-          ) : (
-            levels.map((level) => (
-              <Card
-                key={level.id}
-                className="warm-card hover:border-[--sage] transition-all cursor-pointer"
-              >
-                <CardContent className="p-5 flex flex-row items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-[--ink-dark]">{language === 'es' ? level.name_es : level.name_en}</h3>
-                    {(level.description_en || level.description_es) && (
-                      <p className="text-xs text-[--ink-light] max-w-xl">
-                        {language === 'es' ? level.description_es : level.description_en}
-                      </p>
-                    )}
-                    <p className="text-[0.75rem] text-[--ink-light]">
-                      {level.rows}x{level.cols} - {level.words?.length || 0}{" "}
-                      {t("words", "palabras")}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => handleSelectLevel(level.id)}
-                    className="flex-shrink-0"
-                    disabled={loadingPuzzle}
-                  >
-                    <Play className="h-4 w-4" />
-                    {t("Play", "Jugar")}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
+    <GameMenuScreen
+      onBack={() => onNavigate?.("games")}
+      backLabel={t("Games", "Juegos")}
+      icon={<Grid3X3 />}
+      eyebrow={t("Choose a level", "Elige un nivel")}
+      title={t("Word Search", "Sopa de Letras")}
+      subtitle={t(
+        "Find hidden Bible words in the grid. Each level has its own set of themed words.",
+        "Encuentra palabras bíblicas escondidas en la cuadrícula. Cada nivel tiene un conjunto diferente de palabras."
+      )}
+    >
+      {error && <GameMenuNote>{error}</GameMenuNote>}
+      {loadingLevels ? (
+        <GameMenuNote>{t("Loading levels...", "Cargando niveles...")}</GameMenuNote>
+      ) : levels.length === 0 ? (
+        <GameMenuNote>{t("No word search levels yet.", "Aún no hay niveles de sopa de letras.")}</GameMenuNote>
+      ) : (
+        levels.map((level, i) => (
+          <GameOptionCard
+            key={level.id}
+            icon={<span className="text-lg font-bold">{i + 1}</span>}
+            title={language === 'es' ? level.name_es : level.name_en}
+            description={language === 'es' ? level.description_es : level.description_en}
+            meta={[
+              <><Grid3X3 />{level.rows}×{level.cols}</>,
+              <><Sparkles />{level.words?.length || 0} {t("words", "palabras")}</>,
+            ]}
+            onClick={() => handleSelectLevel(level.id)}
+            disabled={loadingPuzzle}
+          />
+        ))
+      )}
+    </GameMenuScreen>
   );
 
   if (!puzzle || !puzzle.level) {
@@ -449,18 +412,14 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
 
   return (
-    <div className="h-[calc(100vh-64px)] w-full flex flex-col bg-[--background] overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="w-full flex flex-col overflow-hidden pt-2" style={{ height: 'calc(100vh - env(safe-area-inset-top) - 6rem)' }}>
       {/* Header - Condensed - Moved higher */}
-      <div className="flex-shrink-0 px-3 pt-0 mt-[-4px] flex items-center justify-between gap-2">
-        <Button
-          onClick={resetPuzzleState}
-          variant="outline"
-          className="bg-[--surface] text-[--ink-dark] hover:bg-[--sage] hover:text-white border border-[--border-color] h-8 text-xs"
-        >
-          <ArrowLeft className="h-3 w-3 mr-1" />
+      <div className="flex-shrink-0 px-3 flex items-center justify-between gap-2">
+        <Button onClick={resetPuzzleState} variant="outline" size="sm">
+          <ArrowLeft className="h-4 w-4" />
           {t("Levels", "Niveles")}
         </Button>
-        <div className="flex items-center gap-2 text-[10px] text-[--ink-light] uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-[11px] text-[--ink-mid] uppercase tracking-wider">
           <Sparkles className="h-3 w-3 text-[--sage]" />
           <span>
             {foundWords.size}/{puzzle.words.length} {t("found", "encontradas")}
@@ -474,7 +433,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
           {puzzle.level.name}
         </h1>
         {allFound && (
-          <p className="text-xs text-green-400 font-bold animate-pulse">
+          <p className="text-xs text-green-600 dark:text-green-400 font-bold animate-pulse">
             {language === "es" ? "¡Completado!" : "Completed!"}
           </p>
         )}
@@ -484,7 +443,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
         {/* Grid Area */}
         <div className="flex-[2] flex items-center justify-center min-h-0 relative min-w-0 shrink">
           <div className="relative w-full aspect-square mx-auto max-w-[min(100%,70vh)] max-h-[100%]">
-            <div className="absolute inset-0 aspect-square">
+            <div className="glass-card absolute inset-0 aspect-square rounded-2xl">
               <div
                 className="absolute inset-0 grid rounded-lg z-10 p-1"
                 style={{
@@ -508,10 +467,7 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
                         key={key}
                         type="button"
                         onClick={() => toggleCellSelection(r, c)}
-                        className={`relative flex w-full h-full items-center justify-center font-bold transition-colors overflow-hidden ${isSelectedStart
-                            ? "border border-green-600 rounded-sm text-white bg-green-100"
-                            : "text-[--ink-mid] bg-transparent hover:bg-black/5 rounded-sm"
-                          }`}
+                        className={`ws-cell relative flex w-full h-full items-center justify-center font-bold transition-colors overflow-hidden ${isSelectedStart ? "is-start" : ""}`}
                         style={{ fontSize: `min(${100 / Math.max(puzzle.level.cols, puzzle.level.rows)}cqw, 20px)` }}
                       >
                         <span className="relative z-10 w-full text-center leading-none" style={{ fontSize: `clamp(8px, ${60 / Math.max(puzzle.level.cols, puzzle.level.rows)}vw, 24px)` }}>{ch}</span>
@@ -550,26 +506,26 @@ export function WordSearchGamePage({ onNavigate }: WordSearchGamePageProps) {
 
         {/* Word List Area */}
         <div className="flex-[1] md:w-48 flex flex-col min-h-[min(25vh,200px)] min-h-0 mt-0">
-          <h2 className="text-[10px] font-semibold text-[--ink-light] flex items-center gap-2 mb-0.5 uppercase tracking-widest flex-shrink-0">
+          <h2 className="text-[11px] font-semibold text-[--ink-mid] flex items-center gap-2 mb-0.5 uppercase tracking-widest flex-shrink-0">
             <Sparkles className="h-3 w-3" />
             {t("Words", "Palabras")}
           </h2>
-          <div className="flex-1 rounded-lg border border-[--border-color] bg-[--surface] p-2 overflow-y-auto custom-scrollbar">
-            <div className="grid grid-cols-3 md:grid-cols-1 gap-1 text-[10px]">
+          <div className="glass-card flex-1 rounded-2xl p-2 overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-3 md:grid-cols-1 gap-1 text-[11px]">
               {puzzle.words.map((w) => {
                 const upper = w.toUpperCase();
                 const isFound = foundWords.has(upper);
                 return (
                   <div
                     key={upper}
-                    className={`flex items-center gap-1.5 p-1 rounded transition-colors ${isFound ? "bg-green-100 text-green-800" : "text-[--ink-mid]"
+                    className={`flex items-center gap-1.5 p-1 rounded transition-colors ${isFound ? "ws-word-found text-[--ink-dark]" : "text-[--ink-dark]"
                       }`}
                   >
                     <div
-                      className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isFound ? "bg-green-600" : "bg-[--ink-light]"
+                      className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${isFound ? "bg-green-600 dark:bg-green-400" : "bg-[--sage]"
                         }`}
                     />
-                    <span className={`truncate tracking-tight ${isFound ? "line-through opacity-50" : ""}`}>{upper}</span>
+                    <span className={`truncate tracking-tight ${isFound ? "line-through opacity-60" : ""}`}>{upper}</span>
                   </div>
                 );
               })}

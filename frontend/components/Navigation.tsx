@@ -16,11 +16,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { usePlayer } from "../contexts/PlayerContext";
 import { cn } from "@/lib/utils";
 import { UGC_ENABLED } from "@/lib/featureFlags";
-import { Capacitor } from "@capacitor/core";
 
-// Web big-screen builds drop the custom livestream mini-player (mux-player has
-// its own native picture-in-picture). Never affects the native app or mobile web.
-const IS_WEB = Capacitor.getPlatform() === "web";
 
 // <mux-player> web component is registered globally via the CDN script in index.html.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,12 +43,6 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
     pauseTrack,
     resumeTrack,
     playNextInQueue,
-    isLivestreamPipMinimized,
-    setLivestreamPipMinimized,
-    setLivestreamPipDismissed,
-    livestreamTitle,
-    setHasInteractedWithLivestream,
-    shouldShowLivestreamPip,
   } = usePlayer();
 
   // Persistent <mux-player> audio engine (hidden). Lives at the nav root so it
@@ -71,8 +61,9 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
   const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isMusicPlayerOpen = !!currentPlaybackId && !isMinimized;
-  const isLivestreamOpen  = shouldShowLivestreamPip && !isLivestreamPipMinimized && !(IS_WEB && isDesktop);
-  const forceExpanded     = isMusicPlayerOpen || isLivestreamOpen;
+  // The livestream no longer has a navbar mini-player (it lives on the
+  // Media page's Live tab); only the music player keeps the bar expanded.
+  const forceExpanded     = isMusicPlayerOpen;
 
   const scheduleCollapse = useCallback(() => {
     if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
@@ -300,6 +291,97 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
     </button>
   );
 
+  // ── Glass lens on the tab bar: press it and slide it across the icons ──
+  // Same feel as the Media page tabs: lifts on press, follows the finger 1:1,
+  // stretches with speed, springs onto the nearest icon on release. Taps on
+  // icons still go through the buttons below; page swipes still drive the
+  // lens from AppInner.
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const lensDrag = useRef<{
+    startX: number; startLeft: number; lastX: number; lastT: number; velocity: number;
+    left: number; moved: boolean; pointerId: number; padH: number; tabW: number;
+  } | null>(null);
+  const suppressClickRef = useRef(false);
+  const [lensHover, setLensHover] = useState<number | null>(null);
+  const LENS_SPRING = "left 0.4s cubic-bezier(0.25, 1.35, 0.45, 1), width 0.3s ease, scale 0.4s cubic-bezier(0.25, 1.35, 0.45, 1)";
+
+  const getLens = () => tabsRef.current?.querySelector<HTMLElement>("[data-swipe-pill]") ?? null;
+
+  const onTabsPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isDesktop || !navExpanded || swipePageIndex < 0) return;
+    const lens = getLens();
+    const tabs = tabsRef.current;
+    if (!lens || !tabs) return;
+    const r = lens.getBoundingClientRect();
+    // Only a press that starts on the lens picks it up; anywhere else is a tap.
+    if (event.clientX < r.left || event.clientX > r.right) return;
+    const padH = 12;
+    const tabW = (tabs.offsetWidth - padH * 2) / navItems.length;
+    lensDrag.current = {
+      startX: event.clientX, startLeft: lens.offsetLeft, lastX: event.clientX, lastT: performance.now(),
+      velocity: 0, left: lens.offsetLeft, moved: false, pointerId: event.pointerId, padH, tabW,
+    };
+    lens.style.transition = LENS_SPRING;
+    lens.style.scale = "1.1";
+  };
+
+  const onTabsPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const g = lensDrag.current;
+    const lens = getLens();
+    if (!g || !lens) return;
+    const dx = event.clientX - g.startX;
+    if (!g.moved) {
+      if (Math.abs(dx) < 5) return;
+      g.moved = true;
+      try { event.currentTarget.setPointerCapture(g.pointerId); } catch { /* ignore */ }
+    }
+    const now = performance.now();
+    g.velocity = g.velocity * 0.7 + ((event.clientX - g.lastX) / Math.max(1, now - g.lastT)) * 0.3;
+    g.lastX = event.clientX;
+    g.lastT = now;
+    const min = g.padH;
+    const max = g.padH + g.tabW * (navItems.length - 1);
+    let left = g.startLeft + dx;
+    if (left < min) left = min + (left - min) * 0.3;
+    if (left > max) left = max + (left - max) * 0.3;
+    g.left = left;
+    const stretch = Math.min(Math.abs(g.velocity) * 0.18, 0.28);
+    lens.style.transition = "none";
+    lens.style.left = `${left}px`;
+    lens.style.scale = `${1.1 + stretch} ${1.1 - stretch * 0.35}`;
+    const over = Math.max(0, Math.min(navItems.length - 1, Math.round((left - g.padH) / g.tabW)));
+    setLensHover((cur) => (cur === over ? cur : over));
+  };
+
+  const onTabsPointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    const g = lensDrag.current;
+    lensDrag.current = null;
+    setLensHover(null);
+    const lens = getLens();
+    if (!g || !lens) return;
+    try { event.currentTarget.releasePointerCapture(g.pointerId); } catch { /* ignore */ }
+    if (!g.moved) {
+      // Just a press on the current tab: settle back down.
+      lens.style.transition = LENS_SPRING;
+      lens.style.scale = "1";
+      return;
+    }
+    const projected = g.left + g.velocity * 80;
+    const target = Math.max(0, Math.min(navItems.length - 1, Math.round((projected - g.padH) / g.tabW)));
+    lens.style.transition = LENS_SPRING;
+    lens.style.left = `${g.padH + target * g.tabW}px`;
+    lens.style.width = `${g.tabW}px`;
+    lens.style.scale = "1";
+    // Tell AppInner the lens is already on its way (don't restart it from the old tab).
+    lens.dataset.dragged = "1";
+    // The pointer-up would also "click" whatever icon is under the finger.
+    suppressClickRef.current = true;
+    window.setTimeout(() => { suppressClickRef.current = false; }, 50);
+    const item = navItems[target];
+    if (item && item.id !== currentPage) onNavigate(item.id);
+    else window.setTimeout(() => { delete lens.dataset.dragged; }, 600);
+  };
+
   return (
     <nav
       onTouchStart={!isDesktop ? () => {
@@ -321,12 +403,16 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
         } : {
           paddingTop: 'env(safe-area-inset-top)',
         }),
-        backgroundColor: (isTransparent && isDesktop) ? "transparent" : "var(--surface)",
-        borderColor: (isTransparent && isDesktop) ? "transparent" : "var(--border-color)",
+        // Glass tint and edge come from .liquid-glass (index.css). Only the
+        // desktop home-hero state needs an inline override to go clear.
+        ...(isTransparent && isDesktop ? { backgroundColor: "transparent", borderColor: "transparent" } : {}),
       }}
       className={cn(
         "fixed bottom-0 z-50",
-        "rounded-[2rem] border shadow-[0_8px_40px_rgba(0,0,0,0.30),0_2px_12px_rgba(0,0,0,0.15)]",
+        "rounded-[2rem] border",
+        !(isTransparent && isDesktop) && "liquid-glass",
+        // Mini (icons-only) bar: extra see-through so it stays out of the way.
+        !isDesktop && !navExpanded && "nav-mini",
         "md:left-0 md:right-0 md:mx-0 md:rounded-none md:bottom-auto md:top-0 md:w-full md:transition-all md:duration-300",
         isTransparent
           ? "md:border-t-0 md:border-x-0 md:border-b-transparent md:shadow-none"
@@ -338,82 +424,6 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
         style={!isDesktop && !navExpanded ? { paddingLeft: 0, paddingRight: 0 } : undefined}
       >
         <div className="flex w-full flex-col gap-1 md:flex-col-reverse">
-
-          {/* ===== MOBILE LIVESTREAM PIP (above nav tabs) ===== */}
-          {currentPage !== "media" && !isDesktop && shouldShowLivestreamPip && (navExpanded || isLivestreamOpen) && (
-            <div className="music-player-dark px-3 pt-1.5 md:hidden">
-              {isLivestreamPipMinimized ? (
-                <div className="flex w-full items-center justify-between rounded-2xl bg-[--surface] px-3 py-1.5 shadow-md">
-                  <div className="flex items-center gap-2 mr-2">
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                    <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
-                      {t("Live", "En Vivo")}
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1 truncate text-xs font-medium text-[--ink-dark]">
-                    {livestreamTitle || t("CNE Live Stream", "Transmisión CNE")}
-                  </div>
-                  <div className="ml-2 flex flex-shrink-0 items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setLivestreamPipMinimized(false)}
-                      className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-[--ink-mid] transition-all hover:bg-[--surface-mid] hover:text-[--ink-dark] shadow-sm"
-                      aria-label={t("Expand", "Expandir")}
-                    >
-                      <Maximize2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLivestreamPipDismissed(true);
-                        setHasInteractedWithLivestream(false);
-                      }}
-                      className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-red-500 transition-all hover:bg-red-500/10 shadow-sm"
-                      aria-label={t("Close", "Cerrar")}
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between rounded-t-2xl bg-[--surface] px-3 py-1.5 shadow-inner">
-                    <div className="min-w-0 flex-1 pr-2">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                        <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
-                          {t("Live Now", "En Vivo")}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-shrink-0 items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setLivestreamPipMinimized(true)}
-                        className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
-                        aria-label={t("Minimize", "Minimizar")}
-                      >
-                        <Minimize2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setLivestreamPipDismissed(true);
-                          setHasInteractedWithLivestream(false);
-                        }}
-                        className="rounded hover:bg-[--surface-mid] p-1 text-[--ink-mid] transition-colors hover:text-white"
-                        aria-label={t("Close", "Cerrar")}
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                  {/* Expanded placeholder. Media.tsx player sits identically on top of this! */}
-                  <div className="w-full h-40 rounded-b-2xl border-x border-b border-[--border-color] bg-[#262626] transition-all" />
-                </>
-              )}
-            </div>
-          )}
 
           {/* ===== MOBILE MUSIC PLAYER (above nav tabs) ===== */}
           {currentPlaybackId && !isDesktop && (
@@ -499,48 +509,14 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
             </div>
           )}
 
-          {/* ===== DESKTOP MINIMIZED LIVESTREAM BAR (integrated in navbar) ===== */}
-          {/* Suppressed on web big screens — mux-player provides native PIP there. */}
-          {currentPage !== "media" && isDesktop && !IS_WEB && isLivestreamPipMinimized && shouldShowLivestreamPip && (
-            <div className="music-player-dark hidden md:block px-3 py-1 ml-auto">
-              <div className="flex items-center justify-center gap-3 rounded-xl bg-[--surface] px-4 py-1.5 shadow-sm border border-[--border-color]">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[--ink-light]">
-                    {t("Live Now", "En Vivo")}
-                  </span>
-                </div>
-                <div className="min-w-0 max-w-[14rem] truncate text-xs font-medium text-[--ink-dark]">
-                  {livestreamTitle || t("CNE Live Stream", "Transmisión CNE")}
-                </div>
-                <div className="flex items-center gap-1.5 border-l border-[--border-color] pl-3 ml-1">
-                  <button
-                    type="button"
-                    onClick={() => setLivestreamPipMinimized(false)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-[--ink-mid] transition-all hover:bg-[--surface-mid] hover:text-[--ink-dark] shadow-sm"
-                    aria-label={t("Expand", "Expandir")}
-                  >
-                    <Maximize2 className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLivestreamPipDismissed(true);
-                      setHasInteractedWithLivestream(false);
-                    }}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-[--surface] text-red-500 transition-all hover:bg-red-500/10 shadow-sm"
-                    aria-label={t("Close", "Cerrar")}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ===== NAV TABS ===== */}
           <div
             id="mobile-nav-tabs"
+            ref={tabsRef}
+            onPointerDown={onTabsPointerDown}
+            onPointerMove={onTabsPointerMove}
+            onPointerUp={onTabsPointerEnd}
+            onPointerCancel={onTabsPointerEnd}
             className="relative flex w-full items-center justify-between md:justify-center md:gap-2 md:py-2"
             style={{
               padding: isDesktop ? undefined : navExpanded ? '8px 12px' : '5px 4px',
@@ -552,13 +528,13 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
               return (
                 <div
                   data-swipe-pill
-                  className="pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full bg-sage/10"
+                  className="glass-tabs-lens nav-lens pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full"
                   style={{
                     // Divide by the actual number of nav buttons so the pill stays aligned
                     // even when tap-only items (e.g. Give) are present beyond the swipe pages.
                     width: `calc((100% - ${padH * 2}px) / ${navItems.length})`,
                     left: `calc(${padH}px + ${swipePageIndex} * (100% - ${padH * 2}px) / ${navItems.length})`,
-                    height: 'calc(100% - 12px)',
+                    height: 'calc(100% - 8px)',
                     transition: 'left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.25s ease',
                   }}
                 />
@@ -566,12 +542,13 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
             })()}
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentPage === item.id;
+              const isActive = lensHover != null ? navItems[lensHover]?.id === item.id : currentPage === item.id;
               const compact = !isDesktop && !navExpanded;
               return (
                 <button
                   key={item.id}
                   onClick={() => {
+                    if (suppressClickRef.current) return;
                     if (!isDesktop && !wasExpandedAtTouchRef.current) {
                       wasExpandedAtTouchRef.current = true;
                       return;
@@ -589,7 +566,7 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                       "md:flex-row md:gap-2 md:px-4 md:py-2",
                       isActive
                         ? cn("text-sage", "md:bg-sage/15")
-                        : cn("text-ink-mid", "md:hover:text-sage md:hover:bg-sage-light"),
+                        : cn("text-[--ink-dark] md:text-ink-mid", "md:hover:text-sage md:hover:bg-sage-light"),
                       isTransparent && isActive && "md:text-white md:bg-white/20",
                       isTransparent && !isActive && "md:text-white/80"
                     )}
@@ -600,16 +577,15 @@ export function Navigation({ currentPage, onNavigate, swipePageIndex = -1, swipe
                     }}
                   >
                     <div className="relative">
-                      <Icon className={cn("flex-shrink-0 transition-all duration-250", compact ? "h-[18px] w-[18px]" : "h-5 w-5")} />
+                      <Icon strokeWidth={isActive ? 2.3 : 2} className={cn("flex-shrink-0 transition-all duration-250", compact ? "h-[18px] w-[18px]" : "h-[22px] w-[22px]")} />
                       {item.id === 'media' && compact && (
-                        (!!currentPlaybackId && isMinimized) ||
-                        (shouldShowLivestreamPip && isLivestreamPipMinimized)
+                        !!currentPlaybackId && isMinimized
                       ) && (
                         <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_4px_rgba(239,68,68,0.9)]" />
                       )}
                     </div>
                     <span
-                      className="text-xs font-medium whitespace-nowrap overflow-hidden transition-all duration-250"
+                      className="nav-label text-xs font-medium whitespace-nowrap overflow-hidden transition-all duration-250"
                       style={{
                         maxHeight: compact ? '0px' : '20px',
                         maxWidth: compact ? '0px' : '80px',

@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>CNE</title>
     <meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0E1A0B" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#1C1813" media="(prefers-color-scheme: dark)" />
     <meta name="msapplication-TileColor" content="#dc2626" />
     <meta name="msapplication-config" content="/browserconfig.xml" />
     
@@ -76,7 +76,7 @@
       /* Dark mode body - matches .dark --background */
       @media (prefers-color-scheme: dark) {
         html, body {
-          background-color: #0E1A0B;
+          background-color: #1C1813;
         }
       }
 
@@ -100,52 +100,41 @@
     </script>
   </head>
   <body>
-    <div id="root">
-      <!-- Static splash shown instantly while JS loads -->
+    <div id="root"></div>
+      <!-- Static splash shown instantly while JS loads. Lives OUTSIDE #root so
+           React mounting doesn't wipe it; App.tsx animates it away. -->
       <div id="static-splash">
-        <img src="/cne_logo_transparent.png" alt="Centro de Nueva Esperanza" />
-        <div class="spinner"></div>
+        <div class="splash-bg"></div>
+        <img src="/cne_logo_white.png" alt="Centro de Nueva Esperanza" />
       </div>
       <style>
+        /* Pixel-matched to the native iOS launch screen (Splash.imageset):
+           same photo, aspect-filled and centered; logo centered at
+           540/2732 of the longer screen side. utils/splashTransition.ts
+           then glides this logo into the home page. */
         #static-splash {
           position: fixed;
           inset: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 1.5rem;
-          background-color: #FFFFFF;
           z-index: 9999;
         }
+        #static-splash .splash-bg {
+          position: absolute;
+          inset: 0;
+          background: #6F8FB8 url('/hero-home.jpg') center / cover no-repeat;
+        }
         #static-splash img {
-          width: 180px;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          /* 19.77vmax of fish (matches the native splash) x 1.25 for the
+             shadow padding baked into the PNG */
+          width: 24.71vmax;
           height: auto;
-          max-width: 80%;
-        }
-        #static-splash .spinner {
-          width: 2.5rem;
-          height: 2.5rem;
-          border-radius: 9999px;
-          border: 2.5px solid rgba(0, 0, 0, 0.05);
-          border-top-color: #3B6D11;
-          animation: splash-spin .9s linear infinite;
-        }
-        @keyframes splash-spin {
-          to { transform: rotate(360deg); }
-        }
-        .dark #static-splash {
-          background-color: #0E1A0B;
-        }
-        .dark #static-splash img {
-          filter: brightness(0) invert(1);
-        }
-        .dark #static-splash .spinner {
-          border: 2.5px solid rgba(255, 255, 255, 0.1);
-          border-top-color: #7EC850;
+          transform: translate(-50%, -50%);
+          transform-origin: center center;
+          will-change: transform;
         }
       </style>
-    </div>
     <script>
       // Safety: remove static splash after 5s even if React fails to mount
       setTimeout(function(){var s=document.getElementById('static-splash');if(s)s.remove();},5000);

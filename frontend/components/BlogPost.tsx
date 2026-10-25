@@ -1,4 +1,5 @@
-import { Calendar, MapPin, Clock, User, Users } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Calendar, MapPin, Clock, User, Users, ChevronDown, ChevronUp, Images } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PostImageCarousel } from './PostImageCarousel';
 
@@ -60,6 +61,8 @@ interface BlogPostProps {
   maxAttendees?: number;
   rsvpCount?: number;
   actions?: React.ReactNode;
+  /** Open the full view (e.g. when a notification points at this post). */
+  forceExpanded?: boolean;
 }
 
 export function BlogPost({
@@ -79,8 +82,29 @@ export function BlogPost({
   maxAttendees,
   rsvpCount,
   actions,
+  forceExpanded = false,
 }: BlogPostProps) {
   const { language, t } = useLanguage();
+  // Posts start as a compact row (photo + title) so long lists don't need
+  // much scrolling; "Read more" / "More details" opens the full post.
+  const [expanded, setExpanded] = useState(forceExpanded);
+  const articleRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (forceExpanded) setExpanded(true);
+  }, [forceExpanded]);
+
+  const collapse = () => {
+    setExpanded(false);
+    // If the top of the post is above the screen after shrinking, bring it
+    // back into view so the reader doesn't lose their place.
+    requestAnimationFrame(() => {
+      const el = articleRef.current;
+      if (el && el.getBoundingClientRect().top < 0) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  };
 
   const title = language === 'en' ? titleEn : titleEs;
   const content = language === 'en' ? contentEn : contentEs;
@@ -109,6 +133,15 @@ export function BlogPost({
     );
   };
 
+  const formatShortDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString(language === 'en' ? 'en-US' : 'es-ES', {
+      weekday: eventDate ? 'short' : undefined,
+      month: 'short',
+      day: 'numeric',
+      hour: eventDate ? 'numeric' : undefined,
+      minute: eventDate ? '2-digit' : undefined,
+    });
+
   const getTypeLabel = () => {
     if (type === 'event') {
       return t('Event', 'Evento');
@@ -116,9 +149,60 @@ export function BlogPost({
     return t('Announcement', 'Anuncio');
   };
 
+  const moreLabel = type === 'event' ? t('More details', 'Más detalles') : t('Read more', 'Leer más');
+
+  // ── Compact view ──────────────────────────────────────────────────────────
+  if (!expanded) {
+    return (
+      <article ref={articleRef} className="warm-card rounded-2xl overflow-hidden scroll-mt-24">
+        {priority === 'urgent' && (
+          <div className="h-1 w-full" style={{ backgroundColor: "var(--terra)" }} />
+        )}
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="flex w-full items-center gap-4 p-3 text-left [-webkit-tap-highlight-color:transparent]"
+          aria-expanded={false}
+        >
+          {photos.length > 0 && (
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[--surface-mid]">
+              <img src={photos[0]} alt="" className="h-full w-full object-cover" loading="lazy" draggable={false} />
+              {photos.length > 1 && (
+                <span className="absolute bottom-1 right-1 flex items-center gap-0.5 rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  <Images className="h-2.5 w-2.5" />
+                  {photos.length}
+                </span>
+              )}
+            </div>
+          )}
+          <div className={`min-w-0 flex-1 ${photos.length > 0 ? '' : 'px-2 py-1'}`}>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[--ink-mid]">
+              <span className="rounded-full bg-[--sage-light] px-2 py-0.5 font-medium text-[--sage]">
+                {getTypeLabel()}
+              </span>
+              <span className="inline-flex items-center gap-1">
+                {eventDate ? <Calendar className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                {formatShortDate(eventDate || date)}
+              </span>
+            </div>
+            <h2 className="mt-1.5 line-clamp-2 serif-heading text-lg font-bold leading-snug text-[--ink-dark]">
+              {title}
+            </h2>
+            <span className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[--sage]">
+              {moreLabel}
+              <ChevronDown className="h-4 w-4" />
+            </span>
+          </div>
+        </button>
+      </article>
+    );
+  }
+
+  // ── Full view ─────────────────────────────────────────────────────────────
   return (
     <article
-      className="warm-card rounded-2xl overflow-hidden transition-all hover:shadow-lg"
+      ref={articleRef}
+      className="warm-card blogpost-expand rounded-2xl overflow-hidden scroll-mt-24 transition-all hover:shadow-lg"
       style={{ border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.07)" }}
     >
       {/* Urgent accent bar */}
@@ -193,6 +277,18 @@ export function BlogPost({
             {actions}
           </div>
         )}
+
+        <div className="mt-6 flex justify-center">
+          <button
+            type="button"
+            onClick={collapse}
+            aria-expanded={true}
+            className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-[--sage] hover:bg-[--sage-light] [-webkit-tap-highlight-color:transparent]"
+          >
+            {t('Show less', 'Mostrar menos')}
+            <ChevronUp className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </article>
   );
