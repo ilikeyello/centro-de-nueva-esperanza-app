@@ -317,7 +317,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     <div
       ref={rootRef}
       className={cn(
-        isMediaPage ? "relative mx-auto pb-8 md:container md:px-4" : "fixed inset-0 pointer-events-none z-[60]",
+        isMediaPage ? "relative w-full pb-8" : "fixed inset-0 pointer-events-none z-[60]",
         // Clear the fixed desktop navbar (web big screens only).
         isMediaPage && isWebDesktop && "pt-20"
       )}
@@ -335,7 +335,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
       {/* Tab selector — scrolls away with the page. */}
         {isMediaPage && (
-          <div className="px-4 pb-3 pt-1">
+          <div className="media-inner px-4 pb-3 pt-1">
             <GlassTabs tabs={mediaTabs} value={tab} onChange={selectTab} />
           </div>
         )}
@@ -351,8 +351,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
             (isMediaPage || showLivestreamPip) && "transition-all duration-300",
             isMediaPage
               ? cn(
-                  // Full width on phones; a framed player on big screens.
-                  "relative aspect-video w-full overflow-hidden bg-black md:rounded-2xl md:border md:border-[--border-color] md:shadow-xl",
+                  // Full width on phones; theater mode (black side walls) on big screens.
+                  "media-theater relative aspect-video w-full overflow-hidden bg-black",
                   tab !== "live" && "hidden"
                 )
               : cn(
@@ -362,8 +362,6 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                     : "left-3 right-3 rounded-b-2xl origin-bottom shadow-none border-none"
                 ),
             (!isMediaPage && !showLivestreamPip) && "opacity-0 pointer-events-none invisible",
-            // Shrink & center the livestream on the Media page (web big screens only).
-            isMediaPage && isWebDesktop && "max-w-4xl mx-auto"
           )}
           style={isMediaPage ? {
           // The video scrolls up with the tab selector, then stays pinned at
@@ -428,7 +426,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           )}>
             {/* Offline placeholder */}
             <div className={cn(
-              "absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
+              "media-theater-frame absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
               (!showLivePlayer && isMediaPage) ? "" : "hidden"
             )}>
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
@@ -459,7 +457,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       {isMediaPage && (
         <>
           {/* LIVE — title under the stream, then a mini Bible to follow along */}
-          <div data-media-panel="live" className={cn(tab !== "live" && "hidden")}>
+          <div data-media-panel="live" className={cn("media-inner", tab !== "live" && "hidden")}>
             <div className="px-4 pb-2 pt-4 md:px-0">
               <h1 className="text-2xl font-bold text-[--ink-dark]">
                 {livestreamTitle || t("CNE Livestream", "Transmisión CNE")}
@@ -491,7 +489,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
             <div data-sticky-sentinel aria-hidden="true" />
             <div
               data-sticky-player
-              className="relative aspect-video w-full overflow-hidden bg-black md:rounded-2xl md:border md:border-[--border-color] md:shadow-xl"
+              className="media-theater relative aspect-video w-full overflow-hidden bg-black"
               style={{ position: "sticky", top: isWebDesktop ? "5rem" : stickyTop, zIndex: 30 }}
             >
               {loadingSermons && (
@@ -518,7 +516,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
             {/* Now playing */}
             {!loadingSermons && selectedSermon && (
-              <div className="px-4 pt-4 md:px-0">
+              <div className="media-inner px-4 pt-4 md:px-0">
                 <h1 className="text-xl font-bold leading-snug text-[--ink-dark]">{selectedSermon.title}</h1>
                 <p className="mt-1 text-sm text-[--ink-mid]">
                   <span className="font-semibold text-[--sage]">{sourceLabel(selectedSermon.source)}</span>
@@ -533,7 +531,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
             {/* All sermons */}
             {!loadingSermons && sermons.length > 0 && (
-              <div className="px-4 pt-6 md:px-0">
+              <div className="media-inner px-4 pt-6 md:px-0">
                 <h2 className="mb-3 text-lg font-bold text-[--ink-dark]">{t("All Sermons", "Todos los Sermones")}</h2>
                 <div className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
                   {sermons.map((sermon) => {
@@ -608,7 +606,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           </section>
 
           {/* MUSIC & WORSHIP */}
-          <section id="music" data-media-panel="music" className={cn("space-y-6 px-4 pb-24 pt-4 md:px-0", tab !== "music" && "hidden")}>
+          <section id="music" data-media-panel="music" className={cn("media-inner space-y-6 px-4 pb-24 pt-4 md:px-0", tab !== "music" && "hidden")}>
         <div>
           <h2 className="text-2xl font-bold text-[--ink-dark]">
             {t("Music & Worship", "Música y Adoración")}

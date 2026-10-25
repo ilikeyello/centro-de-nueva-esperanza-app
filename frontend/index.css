@@ -1438,3 +1438,28 @@ nav.liquid-glass.nav-mini {
 .dark [data-sticky-player].is-stuck {
   box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.7), 0 4px 10px rgba(0, 0, 0, 0.4) !important;
 }
+
+/* Media page on iPad / web: the video band runs edge to edge in black
+   ("theater mode") and is the same size on Live and Sermons; the video sits
+   centered with black walls on the sides. Everything else stays centered. */
+@media (min-width: 768px) {
+  .media-theater {
+    aspect-ratio: auto !important;
+    height: min(56.25vw, 70vh) !important;
+    border-radius: 0 !important;
+  }
+  /* The "offline" card fills only the 16:9 video area, with black walls. */
+  .media-theater .media-theater-frame {
+    left: 50% !important;
+    right: auto !important;
+    width: min(100%, calc(min(56.25vw, 70vh) * 16 / 9));
+    transform: translateX(-50%);
+  }
+  .media-inner {
+    max-width: 72rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
