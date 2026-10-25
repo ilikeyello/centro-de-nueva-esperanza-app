@@ -1425,3 +1425,16 @@ nav.liquid-glass.nav-mini {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
+
+/* Media page: pinned video gets a shadow once content scrolls under it. */
+[data-sticky-player] {
+  transition: box-shadow 0.25s ease;
+}
+[data-live-box].is-stuck,
+[data-sticky-player].is-stuck {
+  box-shadow: 0 12px 28px -6px rgba(40, 25, 10, 0.45), 0 4px 10px rgba(40, 25, 10, 0.18) !important;
+}
+.dark [data-live-box].is-stuck,
+.dark [data-sticky-player].is-stuck {
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.7), 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+}

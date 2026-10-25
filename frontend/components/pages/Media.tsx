@@ -267,6 +267,32 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     return () => scroller!.removeEventListener("scroll", onScroll);
   }, [isMediaPage, isWebDesktop, tab, stickyTop]);
 
+  // Once the video is pinned and content slides under it, give it a drop
+  // shadow so it looks like it's sitting on top.
+  useEffect(() => {
+    if (!isMediaPage || tab === "music") return;
+    const root = rootRef.current;
+    if (!root) return;
+    let scroller: HTMLElement | null = root.parentElement;
+    while (scroller) {
+      const oy = getComputedStyle(scroller).overflowY;
+      if (oy === "auto" || oy === "scroll") break;
+      scroller = scroller.parentElement;
+    }
+    const target: HTMLElement | Window = scroller ?? window;
+    const update = () => {
+      root.querySelectorAll<HTMLElement>("[data-live-box], [data-sticky-player]").forEach((box) => {
+        const sentinel = box.previousElementSibling as HTMLElement | null;
+        if (!sentinel?.hasAttribute("data-sticky-sentinel")) return;
+        const stuck = box.getBoundingClientRect().top - sentinel.getBoundingClientRect().top > 1;
+        box.classList.toggle("is-stuck", stuck);
+      });
+    };
+    update();
+    target.addEventListener("scroll", update, { passive: true });
+    return () => target.removeEventListener("scroll", update);
+  }, [isMediaPage, tab]);
+
   // Leaving the Media page: pause the livestream and any sermon video so
   // nothing keeps playing out of sight. (Music has its own player and keeps going.)
   useEffect(() => {
@@ -313,6 +339,9 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
             <GlassTabs tabs={mediaTabs} value={tab} onChange={selectTab} />
           </div>
         )}
+
+        {/* Marks where the livestream would sit if it weren't pinned. */}
+        {isMediaPage && <div data-sticky-sentinel aria-hidden="true" />}
 
         {/* 1. PERSISTENT LIVESTREAM BOX (doubles as floating PIP off the Media page) */}
         <div
@@ -459,6 +488,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
             data-media-panel="sermons"
             className={cn("pb-28 md:pb-20", tab !== "sermons" && "hidden")}
           >
+            <div data-sticky-sentinel aria-hidden="true" />
             <div
               data-sticky-player
               className="relative aspect-video w-full overflow-hidden bg-black md:rounded-2xl md:border md:border-[--border-color] md:shadow-xl"
