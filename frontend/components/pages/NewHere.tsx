@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Sparkles, Users, Coffee, Clock, MapPin, Facebook, Youtube } from "lucide-react";
+import { ArrowLeft, Sparkles, Users, HandHeart, Clock, MapPin, Facebook, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
@@ -19,24 +19,24 @@ export function NewHere({ onNavigate }: NewHereProps) {
   const highlights = [
     {
       icon: Sparkles,
-      titleEn: "Warm Worship",
-      titleEs: "Adoración Viva",
-      descriptionEn: "Experience heartfelt worship and encouraging messages each week.",
-      descriptionEs: "Experimenta adoración sincera y mensajes alentadores cada semana.",
+      titleEn: "Heartfelt Worship",
+      titleEs: "Alabanza de Corazón",
+      descriptionEn: "Sing, pray, and hear a message of hope every week.",
+      descriptionEs: "Canta, ora y escucha un mensaje de esperanza cada semana.",
     },
     {
       icon: Users,
-      titleEn: "Authentic Community",
-      titleEs: "Comunidad Auténtica",
-      descriptionEn: "Connect with small groups and ministries for every age and season.",
-      descriptionEs: "Conéctate con grupos pequeños y ministerios para cada edad y etapa.",
+      titleEn: "A Church Family",
+      titleEs: "Una Familia de Fe",
+      descriptionEn: "Everyone is welcome here, no matter your age or your story.",
+      descriptionEs: "Aquí todos son bienvenidos, sin importar tu edad o tu historia.",
     },
     {
-      icon: Coffee,
+      icon: HandHeart,
       titleEn: "Come Say Hello",
-      titleEs: "Ven a Saludar",
-      descriptionEn: "Stop by our welcome table after service—we would love to meet you.",
-      descriptionEs: "Visita nuestra mesa de bienvenida después del servicio—nos encantaría conocerte.",
+      titleEs: "Ven a Saludarnos",
+      descriptionEn: "After the service, stay and say hi. We'd love to meet you!",
+      descriptionEs: "Después del servicio, quédate a saludarnos. ¡Nos encantaría conocerte!",
     },
   ];
 
@@ -55,15 +55,15 @@ export function NewHere({ onNavigate }: NewHereProps) {
         )}
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[--sage]">
-            {t("Plan Your Visit", "Planifica Tu Visita")}
+            {t("Plan Your Visit", "Planea Tu Visita")}
           </p>
           <h1 className="mt-2 serif-heading text-3xl font-bold text-[--ink-dark] sm:text-4xl">
-            {t("New Here?", "¿Eres Nuevo?")}
+            {t("New Here?", "¿Primera Vez Aquí?")}
           </h1>
           <p className="mt-3 max-w-2xl text-[--ink-mid] whitespace-pre-wrap">
             {churchInfo?.description || t(
-              "We can't wait to welcome you. Here's what you can expect when you join us for worship and community.",
-              "Estamos emocionados de darte la bienvenida. Esto es lo que puedes esperar cuando te unas a nosotros para adorar y hacer comunidad."
+              "We're so glad you're here! Here's what to expect when you visit.",
+              "¡Qué bueno que estás aquí! Esto es lo que puedes esperar cuando nos visites."
             )}
           </p>
           {(churchInfo?.facebook_page_url || churchInfo?.youtube_url) && (
@@ -179,8 +179,8 @@ export function NewHere({ onNavigate }: NewHereProps) {
         </h2>
         <p className="mt-2 text-[--ink-mid]">
           {t(
-            "Reach out anytime and our team will help you plan your first visit, answer questions about ministries, or get connected.",
-            "Comunícate en cualquier momento y nuestro equipo te ayudará a planificar tu primera visita, responder preguntas sobre los ministerios o conectarte."
+            "Send us a message anytime. We're happy to help with your first visit.",
+            "Escríbenos cuando quieras. Con gusto te ayudamos con tu primera visita."
           )}
         </p>
         <Button

@@ -322,15 +322,29 @@ export function AppInner() {
       prevSwipeIndexRef.current
     );
 
+    const landedOnMedia = swipeIndex === MEDIA_INDEX;
+    let cleanedUp = false;
     const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      track.removeEventListener("transitionend", onTrackTransitionEnd);
       if (trackRef.current) trackRef.current.style.transition = "";
-      if (mediaWrapperRef.current) {
+      // Leaving Media: keep the wrapper parked off-screen. Clearing its
+      // transform now would snap the full Media page back into view for a
+      // frame before it switches to PIP mode (the "blink"). The
+      // renderedSwipeIndex layout effect below clears it in the same commit
+      // that hides the full page.
+      if (mediaWrapperRef.current && landedOnMedia) {
         mediaWrapperRef.current.style.transition = "";
         mediaWrapperRef.current.style.transform  = "";
       }
       clearPillTransition();
     };
-    track.addEventListener("transitionend", cleanup, { once: true });
+    // transitionend bubbles — ignore ones from buttons/cards inside the pages.
+    const onTrackTransitionEnd = (e: TransitionEvent) => {
+      if (e.target === track) cleanup();
+    };
+    track.addEventListener("transitionend", onTrackTransitionEnd);
     // Fallback in case transitionend doesn't fire (e.g. transition cancelled)
     const fallback = setTimeout(cleanup, 420);
 
@@ -338,9 +352,18 @@ export function AppInner() {
 
     return () => {
       clearTimeout(fallback);
-      track.removeEventListener("transitionend", cleanup);
+      track.removeEventListener("transitionend", onTrackTransitionEnd);
     };
   }, [swipeIndex]);
+
+  // Once the full Media page is hidden (PIP mode), bring the wrapper back to
+  // rest. Runs before paint in the same commit, so there's no flash.
+  useLayoutEffect(() => {
+    const wrapper = mediaWrapperRef.current;
+    if (!wrapper || renderedSwipeIndex === MEDIA_INDEX) return;
+    wrapper.style.transition = "none";
+    wrapper.style.transform  = "";
+  }, [renderedSwipeIndex]);
 
   // ── Resize handling ───────────────────────────────────────────────────────
   // Snap the track to the correct offset when the window resizes (rotation, etc.).
@@ -561,8 +584,10 @@ export function AppInner() {
         clearPillTransition();
         if (trackRef.current) trackRef.current.style.transition = "";
         
-        // Reset media wrapper transform
-        if (mediaWrapperRef.current) {
+        // Reset media wrapper transform only when we landed on Media.
+        // If we swiped away from Media, the renderedSwipeIndex layout effect
+        // resets it after the full page is hidden (prevents a one-frame flash).
+        if (mediaWrapperRef.current && targetIndex === MEDIA_INDEX) {
           mediaWrapperRef.current.style.transition = "";
           mediaWrapperRef.current.style.transform  = "";
         }
