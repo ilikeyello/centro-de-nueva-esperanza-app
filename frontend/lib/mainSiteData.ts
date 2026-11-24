@@ -321,6 +321,8 @@ export interface ChurchAdditionalInfo {
   youtube_url: string | null;
   tithely_url?: string | null;
   tithely_embed?: string | null;
+  /** Picture for the livestream box when not live (set in the dashboard's Livestream tab). */
+  livestream_offline_image_url?: string | null;
 }
 
 /**

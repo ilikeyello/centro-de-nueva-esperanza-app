@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { BookOpen, Calendar, ChevronDown, ChevronUp, Clapperboard, Heart, Music, Pause, Play, Radio, X } from "lucide-react";
+import { Calendar, ChevronDown, ChevronUp, Clapperboard, Music, Pause, Play, Radio, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { useBackend } from "../../hooks/useBackend";
@@ -203,6 +203,31 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
 
   const showLivePlayer = Boolean(livestreamIsLive && livestreamPlaybackId);
 
+  // After the video leaves fullscreen, iOS WebKit can drop the frosted
+  // status-bar strip (backdrop blur) until it is drawn again. Redraw it.
+  const [statusCoverKey, setStatusCoverKey] = useState(0);
+  useEffect(() => {
+    const redraw = () => {
+      // Twice: once right away, once after the exit animation settles.
+      setStatusCoverKey((k) => k + 1);
+      window.setTimeout(() => setStatusCoverKey((k) => k + 1), 600);
+    };
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) redraw();
+    };
+    // webkitendfullscreen (iOS native video player) doesn't bubble, so catch it on the way down.
+    document.addEventListener("webkitendfullscreen", redraw, true);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+    window.addEventListener("orientationchange", redraw);
+    return () => {
+      document.removeEventListener("webkitendfullscreen", redraw, true);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", onFullscreenChange);
+      window.removeEventListener("orientationchange", redraw);
+    };
+  }, []);
+
   // ── Live button under the player, driven by OBS ───────────────────────────
   // Worship → song title, offering/announcements → Give, sermon → Go to Verse.
   // Dev builds only: add ?livetest to the URL to see the button while the
@@ -214,6 +239,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     queryFn: () => getChurchAdditionalInfo(),
   });
   const donationUrl = getDonationUrl(churchInfo);
+  const offlineImageUrl = churchInfo?.livestream_offline_image_url || null;
 
   /** "Juan 3:16-17" / "John 3:16-17" */
   const verseLabel = (v: LiveVerse) => {
@@ -237,8 +263,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     if (liveService.mode === "worship") {
       return {
         key: `worship|${liveService.songTitle ?? ""}`,
-        icon: Music,
-        eyebrow: liveService.songTitle ? t("Now Playing", "Ahora Suena") : null,
+        eyebrow: liveService.songTitle ? t("Now Playing", "Canción") : null,
         label: liveService.songTitle || t("Worship", "Alabanza"),
         onClick: null as (() => void) | null,
       };
@@ -246,9 +271,8 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     if (liveService.mode === "offering" && donationUrl) {
       return {
         key: "offering",
-        icon: Heart,
         eyebrow: null,
-        label: t("Give", "Dar"),
+        label: t("Support the Ministry", "Apoyar el Ministerio"),
         onClick: () => void openDonationSheet(donationUrl),
       };
     }
@@ -258,7 +282,6 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
       if (!label) return null;
       return {
         key: `sermon|${label}`,
-        icon: BookOpen,
         eyebrow: t("Go to Verse", "Ir al Versículo"),
         label,
         onClick: () => goToLiveVerse(verse),
@@ -426,6 +449,7 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           through behind the clock. The Music tab has nothing pinned. */}
       {isMediaPage && !isWebDesktop && tab !== "music" && (
         <div
+          key={statusCoverKey}
           aria-hidden="true"
           className="media-statusbar-cover pointer-events-none fixed inset-x-0 top-0 z-40"
           style={{ height: "env(safe-area-inset-top)" }}
@@ -528,12 +552,24 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
               "media-theater-frame absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[--surface] px-6 text-center",
               (!showLivePlayer && isMediaPage) ? "" : "hidden"
             )}>
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
-                {livestreamTitle || t("Livestream", "Transmisión en vivo")}
-              </p>
-              <p className="text-2xl font-bold text-[--ink-dark] sm:text-3xl">
-                {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
-              </p>
+              {offlineImageUrl ? (
+                // Picture uploaded in the dashboard (Livestream tab) for when we're not live.
+                <img
+                  src={offlineImageUrl}
+                  alt={livestreamTitle || t("Livestream", "Transmisión en vivo")}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  decoding="async"
+                />
+              ) : (
+                <>
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-[--sage]">
+                    {livestreamTitle || t("Livestream", "Transmisión en vivo")}
+                  </p>
+                  <p className="text-2xl font-bold text-[--ink-dark] sm:text-3xl">
+                    {t("Tune in Sundays at 3:00 PM", "Conéctate los domingos a las 3:00 PM")}
+                  </p>
+                </>
+              )}
             </div>
             {renderLivePlayer && (
               <div className="h-full w-full">
@@ -557,53 +593,6 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
         <>
           {/* LIVE — title under the stream, then a mini Bible to follow along */}
           <div data-media-panel="live" className={cn("media-inner", tab !== "live" && "hidden")}>
-            {/* Live button — changes with what OBS is showing (see lib/liveService.ts). */}
-            {liveAction && (
-              <div className="px-4 pt-3 md:px-0">
-                {(() => {
-                  const Icon = liveAction.icon;
-                  const body = (
-                    <>
-                      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/20">
-                        <Icon className={cn("h-[18px] w-[18px]", liveAction.key.startsWith("worship") && "live-action-note")} />
-                      </span>
-                      <span className="min-w-0 flex-1 text-left">
-                        {liveAction.eyebrow && (
-                          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] opacity-80">
-                            {liveAction.eyebrow}
-                          </span>
-                        )}
-                        <span className="block truncate text-base font-semibold leading-tight">{liveAction.label}</span>
-                      </span>
-                      {liveAction.onClick && <ChevronDown className="h-4 w-4 -rotate-90 opacity-80" />}
-                    </>
-                  );
-                  const className =
-                    "live-action flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-white shadow-md [-webkit-tap-highlight-color:transparent]";
-                  return liveAction.onClick ? (
-                    <button
-                      key={liveAction.key}
-                      type="button"
-                      onClick={liveAction.onClick}
-                      className={cn(className, "transition-transform active:scale-[0.98]")}
-                      style={{ backgroundColor: "var(--sage)" }}
-                    >
-                      {body}
-                    </button>
-                  ) : (
-                    <div
-                      key={liveAction.key}
-                      role="status"
-                      aria-live="polite"
-                      className={className}
-                      style={{ backgroundColor: "var(--sage)" }}
-                    >
-                      {body}
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
             <div className="px-4 pb-2 pt-4 md:px-0">
               <h1 className="text-2xl font-bold text-[--ink-dark]">
                 {livestreamTitle || t("CNE Livestream", "Transmisión CNE")}
@@ -622,6 +611,45 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
                 )}
               </p>
             </div>
+            {/* Live button — changes with what OBS is showing (see lib/liveService.ts). */}
+            {liveAction && (
+              <div className="flex justify-center px-4 pb-2 pt-1 md:px-0">
+                {(() => {
+                  const body = (
+                    <>
+                      {liveAction.eyebrow && (
+                        <span className="flex-shrink-0 text-sm font-semibold text-[--sage]">
+                          {liveAction.eyebrow}
+                        </span>
+                      )}
+                      <span className="min-w-0 truncate text-sm font-semibold text-[--ink-dark]">{liveAction.label}</span>
+                    </>
+                  );
+                  // Small pill that sizes to its text, not a full-width bar.
+                  const className =
+                    "live-action glass-btn inline-flex max-w-full items-center gap-1.5 rounded-full px-4 py-1.5 [-webkit-tap-highlight-color:transparent]";
+                  return liveAction.onClick ? (
+                    <button
+                      key={liveAction.key}
+                      type="button"
+                      onClick={liveAction.onClick}
+                      className={cn(className, "transition-transform active:scale-[0.98]")}
+                    >
+                      {body}
+                    </button>
+                  ) : (
+                    <div
+                      key={liveAction.key}
+                      role="status"
+                      aria-live="polite"
+                      className={className}
+                    >
+                      {body}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
             <Bible compact />
           </div>
 

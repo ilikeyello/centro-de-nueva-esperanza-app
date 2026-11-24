@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
 import { showVersesPopup } from "../VerseOfTheDay";
+import { cn } from "@/lib/utils";
 
 interface BibleVersion {
   id: string;
@@ -869,14 +870,14 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
       </div>
       )}
 
-      {/* Chapter Navigation */}
-      <div className="mb-6 flex items-center justify-between">
+      {/* Chapter Navigation (smaller under the livestream) */}
+      <div className={cn("flex items-center justify-between", compact ? "mb-4" : "mb-6")}>
         <Button
           onClick={handlePreviousChapter}
           disabled={selectedChapter <= 1 || loading}
           variant="outline"
           size="icon"
-          className="warm-button-secondary text-[--ink-dark]"
+          className={cn("warm-button-secondary text-[--ink-dark]", compact && "h-8 w-8")}
           aria-label={t("Previous chapter", "Capítulo anterior")}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -887,19 +888,24 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
             <button
               type="button"
               disabled={loading}
-              className="glass-btn min-w-[13rem] px-10 py-3 text-center transition-colors disabled:opacity-50"
+              className={cn(
+                "glass-btn text-center transition-colors disabled:opacity-50",
+                compact ? "min-w-[10rem] px-6 py-1.5" : "min-w-[13rem] px-10 py-3"
+              )}
             >
-              <h2 className="serif-heading text-xl font-semibold text-[--ink-dark]">
+              <h2 className={cn("serif-heading font-semibold text-[--ink-dark]", compact ? "text-base leading-tight" : "text-xl")}>
                 {getLocalizedName(currentBook || FALLBACK_BIBLE_BOOKS[0])} {selectedChapter}
               </h2>
               {chapter && (
-                <p className="text-sm text-[--ink-mid]">
+                <p className={cn("text-[--ink-mid]", compact ? "text-xs" : "text-sm")}>
                   {chapter.verses.length} {t("verses", "versículos")}
                 </p>
               )}
-              <p className="text-xs text-[--ink-light] mt-1">
-                {t("Tap to change", "Toca para cambiar")}
-              </p>
+              {!compact && (
+                <p className="text-xs text-[--ink-light] mt-1">
+                  {t("Tap to change", "Toca para cambiar")}
+                </p>
+              )}
             </button>
           </DialogTrigger>
           <DialogContent className="border-border-color bg-surface text-[--ink-dark]">
@@ -998,7 +1004,7 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
           disabled={!currentBook || selectedChapter >= currentBook.chapters || loading}
           variant="outline"
           size="icon"
-          className="warm-button-secondary text-[--ink-dark]"
+          className={cn("warm-button-secondary text-[--ink-dark]", compact && "h-8 w-8")}
           aria-label={t("Next chapter", "Siguiente capítulo")}
         >
           <ChevronRight className="h-4 w-4" />
