@@ -16,7 +16,7 @@ interface BibleVersion {
   attribution?: string;
 }
 
-interface BibleBook {
+export interface BibleBook {
   id: string;
   name: string;
   testament: "OT" | "NT";
@@ -49,7 +49,7 @@ const FALLBACK_BIBLE_VERSIONS: BibleVersion[] = [
 ];
 
 // Spanish book names mapping
-const SPANISH_BOOK_NAMES: Record<string, string> = {
+export const SPANISH_BOOK_NAMES: Record<string, string> = {
   // Old Testament
   genesis: "Génesis",
   exodus: "Éxodo",
@@ -121,7 +121,7 @@ const SPANISH_BOOK_NAMES: Record<string, string> = {
 };
 
 // Books of the Bible - fallback while API loads
-const FALLBACK_BIBLE_BOOKS: BibleBook[] = [
+export const FALLBACK_BIBLE_BOOKS: BibleBook[] = [
   // Old Testament
   { id: "genesis", name: "Genesis", testament: "OT", chapters: 50 },
   { id: "exodus", name: "Exodus", testament: "OT", chapters: 40 },
@@ -262,6 +262,8 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectorsOpen, setSelectorsOpen] = useState<boolean>(false);
   const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
+  /** Last verse of a highlighted range (e.g. John 3:16-18). Only the livestream sets this. */
+  const [highlightedEnd, setHighlightedEnd] = useState<number | null>(null);
   /** Bumped on every outside "open this verse" request so it re-scrolls even to the same verse. */
   const [jumpNonce, setJumpNonce] = useState(0);
 
@@ -415,7 +417,11 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
 
   useEffect(() => {
     if (!chapter || highlightedVerse == null) return;
-    const el = document.getElementById(`verse-${highlightedVerse}`);
+    // The main Bible page and the mini one under the livestream are both
+    // mounted, so verse ids repeat — look inside this Bible first.
+    const el =
+      rootEl?.querySelector<HTMLElement>(`[id="verse-${highlightedVerse}"]`) ??
+      document.getElementById(`verse-${highlightedVerse}`);
     if (!el) return;
     // Scroll only the Bible page's own scroll container. scrollIntoView()
     // would also scroll the app's horizontal pager (overflow:hidden is still
@@ -432,7 +438,7 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
     const boxRect = container.getBoundingClientRect();
     const top = elRect.top - boxRect.top + container.scrollTop - container.clientHeight / 2 + elRect.height / 2;
     container.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-  }, [chapter, highlightedVerse, jumpNonce]);
+  }, [chapter, highlightedVerse, jumpNonce, rootEl]);
 
   // Other pages (e.g. the home page's Verse of the Day "Read in Bible" button)
   // ask the Bible to open a passage. The Bible page is always mounted, so
@@ -447,11 +453,32 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
       setSelectedBook(detail.book);
       setSelectedChapter(detail.chapter);
       setHighlightedVerse(detail.verse ?? null);
+      setHighlightedEnd(null);
       setSelectorsOpen(false);
       setJumpNonce((n) => n + 1);
     };
     window.addEventListener("cne-open-bible-verse", onOpenVerse);
     return () => window.removeEventListener("cne-open-bible-verse", onOpenVerse);
+  }, [compact]);
+
+  // The livestream's "Go to Verse" button opens the passage in the mini Bible
+  // under the video. It keeps the reader's own version (English or Spanish).
+  useEffect(() => {
+    if (!compact) return;
+    const onLiveVerse = (event: Event) => {
+      const detail = (event as CustomEvent<{ book: string; chapter: number; verse?: number | null; endVerse?: number | null }>).detail;
+      if (!detail?.book || !detail.chapter) return;
+      const book = FALLBACK_BIBLE_BOOKS.find((b) => b.id === detail.book);
+      if (!book) return;
+      setSelectedBook(book.id);
+      setSelectedChapter(Math.min(Math.max(detail.chapter, 1), book.chapters));
+      setHighlightedVerse(detail.verse ?? null);
+      setHighlightedEnd(detail.verse != null ? detail.endVerse ?? null : null);
+      setSelectorsOpen(false);
+      setJumpNonce((n) => n + 1);
+    };
+    window.addEventListener("cne-live-bible-verse", onLiveVerse);
+    return () => window.removeEventListener("cne-live-bible-verse", onLiveVerse);
   }, [compact]);
 
   useEffect(() => {
@@ -479,6 +506,7 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
   const handlePreviousChapter = () => {
     if (selectedChapter > 1) {
       setHighlightedVerse(null);
+      setHighlightedEnd(null);
       setSelectedChapter(selectedChapter - 1);
     }
   };
@@ -486,6 +514,7 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
   const handleNextChapter = () => {
     if (currentBook && selectedChapter < currentBook.chapters) {
       setHighlightedVerse(null);
+      setHighlightedEnd(null);
       setSelectedChapter(selectedChapter + 1);
     }
   };
@@ -736,6 +765,7 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
     const passage = tryParsePassageQuery(searchQuery);
     if (passage) {
       setHighlightedVerse(passage.verse ?? null);
+      setHighlightedEnd(null);
       setSelectedBook(passage.bookId);
       setSelectedChapter(passage.chapter);
       setSelectorsOpen(false);
@@ -948,6 +978,7 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
                 <Button
                   onClick={() => {
                     setHighlightedVerse(null);
+                    setHighlightedEnd(null);
                     setSelectedVersion(pendingVersion);
                     setSelectedBook(pendingBook);
                     setSelectedChapter(pendingChapter);
@@ -1000,7 +1031,9 @@ export function Bible({ onNavigate, compact = false }: BibleProps) {
                   `flex cursor-pointer items-start gap-3 rounded-md px-2 py-1 transition-colors [-webkit-tap-highlight-color:transparent] ` +
                   (selectedVerses.includes(verse.number)
                     ? "verse-selected"
-                    : highlightedVerse === verse.number
+                    : highlightedVerse != null &&
+                        verse.number >= highlightedVerse &&
+                        verse.number <= (highlightedEnd ?? highlightedVerse)
                       ? "verse-highlight"
                       : "hover:bg-[--surface-mid]")
                 }

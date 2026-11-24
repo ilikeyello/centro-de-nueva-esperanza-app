@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Calendar, ChevronDown, ChevronUp, Clapperboard, Music, Pause, Play, Radio, X } from "lucide-react";
+import { BookOpen, Calendar, ChevronDown, ChevronUp, Clapperboard, Heart, Music, Pause, Play, Radio, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { useBackend } from "../../hooks/useBackend";
@@ -9,7 +9,11 @@ import { MuxPlayer } from "../MuxPlayer";
 import { muxPoster } from "../../lib/mux";
 import { Capacitor } from "@capacitor/core";
 import { GlassTabs } from "../GlassTabs";
-import { Bible } from "./Bible";
+import { Bible, FALLBACK_BIBLE_BOOKS, SPANISH_BOOK_NAMES } from "./Bible";
+import { useQuery } from "@tanstack/react-query";
+import { getChurchAdditionalInfo } from "../../lib/mainSiteData";
+import { getDonationUrl, openDonationSheet } from "../../lib/donations";
+import { useLiveServiceState, type LiveVerse } from "../../lib/liveService";
 
 type MediaTab = "live" | "sermons" | "music";
 
@@ -37,6 +41,9 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   const sermonsRef = useRef<HTMLElement>(null);
   const [sermons, setSermons] = useState<SermonItem[]>([]);
   const [selectedSermonId, setSelectedSermonId] = useState<number | null>(null);
+  // A sermon asked for (home-screen widget) before the list finished loading.
+  const pendingSermonIdRef = useRef<number | null>(null);
+  const loadedSermonIdsRef = useRef<number[] | null>(null);
   const [loadingSermons, setLoadingSermons] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [mobilePipBottom, setMobilePipBottom] = useState(96);
@@ -85,7 +92,14 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
           sermonDate: s.sermonDate ?? null,
         }));
         setSermons(transformed);
-        if (transformed.length > 0) setSelectedSermonId(transformed[0].id);
+        loadedSermonIdsRef.current = transformed.map((s) => s.id);
+        const pending = pendingSermonIdRef.current;
+        pendingSermonIdRef.current = null;
+        if (pending != null && transformed.some((s) => s.id === pending)) {
+          setSelectedSermonId(pending);
+        } else if (transformed.length > 0) {
+          setSelectedSermonId(transformed[0].id);
+        }
       } catch {
         // ignore, show empty state
       } finally {
@@ -188,6 +202,70 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
   }, [isMediaPage, setIsPipDismissed]);
 
   const showLivePlayer = Boolean(livestreamIsLive && livestreamPlaybackId);
+
+  // ── Live button under the player, driven by OBS ───────────────────────────
+  // Worship → song title, offering/announcements → Give, sermon → Go to Verse.
+  // Dev builds only: add ?livetest to the URL to see the button while the
+  // stream is off (going live for real sends everyone a notification).
+  const liveTest = import.meta.env.DEV && new URLSearchParams(window.location.search).has("livetest");
+  const liveService = useLiveServiceState(showLivePlayer || liveTest);
+  const { data: churchInfo } = useQuery({
+    queryKey: ["churchInfo"],
+    queryFn: () => getChurchAdditionalInfo(),
+  });
+  const donationUrl = getDonationUrl(churchInfo);
+
+  /** "Juan 3:16-17" / "John 3:16-17" */
+  const verseLabel = (v: LiveVerse) => {
+    const book = FALLBACK_BIBLE_BOOKS.find((b) => b.id === v.book);
+    const name = language === "es" ? SPANISH_BOOK_NAMES[v.book] ?? book?.name : book?.name;
+    if (!name) return null;
+    if (v.verse == null) return `${name} ${v.chapter}`;
+    return `${name} ${v.chapter}:${v.verse}${v.endVerse ? `-${v.endVerse}` : ""}`;
+  };
+
+  const goToLiveVerse = (v: LiveVerse) => {
+    window.dispatchEvent(
+      new CustomEvent("cne-live-bible-verse", {
+        detail: { book: v.book, chapter: v.chapter, verse: v.verse, endVerse: v.endVerse },
+      })
+    );
+  };
+
+  const liveAction = (() => {
+    if (!showLivePlayer && !liveTest) return null;
+    if (liveService.mode === "worship") {
+      return {
+        key: `worship|${liveService.songTitle ?? ""}`,
+        icon: Music,
+        eyebrow: liveService.songTitle ? t("Now Playing", "Ahora Suena") : null,
+        label: liveService.songTitle || t("Worship", "Alabanza"),
+        onClick: null as (() => void) | null,
+      };
+    }
+    if (liveService.mode === "offering" && donationUrl) {
+      return {
+        key: "offering",
+        icon: Heart,
+        eyebrow: null,
+        label: t("Give", "Dar"),
+        onClick: () => void openDonationSheet(donationUrl),
+      };
+    }
+    if (liveService.mode === "sermon" && liveService.verse) {
+      const verse = liveService.verse;
+      const label = verseLabel(verse);
+      if (!label) return null;
+      return {
+        key: `sermon|${label}`,
+        icon: BookOpen,
+        eyebrow: t("Go to Verse", "Ir al Versículo"),
+        label,
+        onClick: () => goToLiveVerse(verse),
+      };
+    }
+    return null;
+  })();
 
   // Web-only, big-screen behavior (never affects the native iOS/Android app or
   // mobile web). On desktop web we (1) size the Media-page livestream a little
@@ -313,6 +391,25 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
     };
     window.addEventListener("cne-media-tab", onSetTab);
     return () => window.removeEventListener("cne-media-tab", onSetTab);
+  }, []);
+
+  // The "latest sermon" widget opens the app on a specific sermon.
+  useEffect(() => {
+    const onFocusItem = (event: Event) => {
+      const detail = (event as CustomEvent<{ kind: string; id: string }>).detail;
+      if (detail?.kind !== "sermon") return;
+      const id = Number(detail.id);
+      if (!Number.isFinite(id)) return;
+      setTab("sermons");
+      const loadedIds = loadedSermonIdsRef.current;
+      if (loadedIds === null) {
+        pendingSermonIdRef.current = id; // picked up when the list loads
+      } else if (loadedIds.includes(id)) {
+        setSelectedSermonId(id);
+      }
+    };
+    window.addEventListener("cne-focus-item", onFocusItem);
+    return () => window.removeEventListener("cne-focus-item", onFocusItem);
   }, []);
 
   return (
@@ -460,6 +557,53 @@ export function Media({ onStartMusic, isMediaPage = true }: MediaProps) {
         <>
           {/* LIVE — title under the stream, then a mini Bible to follow along */}
           <div data-media-panel="live" className={cn("media-inner", tab !== "live" && "hidden")}>
+            {/* Live button — changes with what OBS is showing (see lib/liveService.ts). */}
+            {liveAction && (
+              <div className="px-4 pt-3 md:px-0">
+                {(() => {
+                  const Icon = liveAction.icon;
+                  const body = (
+                    <>
+                      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/20">
+                        <Icon className={cn("h-[18px] w-[18px]", liveAction.key.startsWith("worship") && "live-action-note")} />
+                      </span>
+                      <span className="min-w-0 flex-1 text-left">
+                        {liveAction.eyebrow && (
+                          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.18em] opacity-80">
+                            {liveAction.eyebrow}
+                          </span>
+                        )}
+                        <span className="block truncate text-base font-semibold leading-tight">{liveAction.label}</span>
+                      </span>
+                      {liveAction.onClick && <ChevronDown className="h-4 w-4 -rotate-90 opacity-80" />}
+                    </>
+                  );
+                  const className =
+                    "live-action flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-white shadow-md [-webkit-tap-highlight-color:transparent]";
+                  return liveAction.onClick ? (
+                    <button
+                      key={liveAction.key}
+                      type="button"
+                      onClick={liveAction.onClick}
+                      className={cn(className, "transition-transform active:scale-[0.98]")}
+                      style={{ backgroundColor: "var(--sage)" }}
+                    >
+                      {body}
+                    </button>
+                  ) : (
+                    <div
+                      key={liveAction.key}
+                      role="status"
+                      aria-live="polite"
+                      className={className}
+                      style={{ backgroundColor: "var(--sage)" }}
+                    >
+                      {body}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
             <div className="px-4 pb-2 pt-4 md:px-0">
               <h1 className="text-2xl font-bold text-[--ink-dark]">
                 {livestreamTitle || t("CNE Livestream", "Transmisión CNE")}

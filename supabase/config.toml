@@ -9,3 +9,10 @@ entrypoint = "./functions/send-web-push/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/send-web-push/*.html" ]
+
+[functions.obs-live-control]
+enabled = true
+# The OBS dock has no Supabase login; the function checks the church's key itself.
+verify_jwt = false
+import_map = "./functions/obs-live-control/deno.json"
+entrypoint = "./functions/obs-live-control/index.ts"
