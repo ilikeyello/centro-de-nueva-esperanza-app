@@ -46,22 +46,25 @@ function toState(row: LiveServiceRow | null | undefined): LiveServiceState {
   return { mode, songTitle: row.song_title ?? null, verse: row.verse ?? null };
 }
 
-/** Listens only while `enabled` (the stream is live), so idle screens keep no connection open. */
-export function useLiveServiceState(enabled: boolean): LiveServiceState {
+/**
+ * Starts listening as soon as the page loads (not when the stream goes live),
+ * so the button is ready the moment the video is. While live it also re-checks
+ * every 10s, in case the phone's realtime connection dropped.
+ */
+export function useLiveServiceState(isLive: boolean): LiveServiceState {
   const [state, setState] = useState<LiveServiceState>(OFF);
   const timerRef = useRef<number | null>(null);
   const latestRef = useRef<string>("");
+  const loadRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
-    if (!enabled || !churchOrgId) {
-      setState(OFF);
-      return;
-    }
+    if (!churchOrgId) return;
     let cancelled = false;
 
     const apply = (row: LiveServiceRow | null) => {
       if (cancelled) return;
       const key = row ? `${row.show_at}|${row.mode}|${row.song_title}|${JSON.stringify(row.verse)}` : "";
+      if (key === latestRef.current) return;
       latestRef.current = key;
       if (timerRef.current != null) window.clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -106,15 +109,25 @@ export function useLiveServiceState(enabled: boolean): LiveServiceState {
       if (document.visibilityState === "visible") void load();
     };
     document.addEventListener("visibilitychange", onVisible);
+    loadRef.current = load;
 
     return () => {
       cancelled = true;
       if (timerRef.current != null) window.clearTimeout(timerRef.current);
       timerRef.current = null;
       document.removeEventListener("visibilitychange", onVisible);
+      loadRef.current = null;
       void supabase.removeChannel(channel);
     };
-  }, [enabled]);
+  }, []);
+
+  // Backup check while live; also catch up right when the stream goes live.
+  useEffect(() => {
+    if (!isLive) return;
+    void loadRef.current?.();
+    const id = window.setInterval(() => void loadRef.current?.(), 10_000);
+    return () => window.clearInterval(id);
+  }, [isLive]);
 
   return state;
 }

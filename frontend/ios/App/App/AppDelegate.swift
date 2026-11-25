@@ -1,6 +1,7 @@
 import UIKit
 import UserNotifications
 import Capacitor
+import WebKit
 import SafariServices
 
 @UIApplicationMain
@@ -54,6 +55,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 // Release builds (otherwise dead-code stripping removes it → white screen).
 @objc(MainViewController)
 class MainViewController: CAPBridgeViewController {
+
+    // Capacitor turns on web "element fullscreen", which shows the
+    // "capacitor://localhost is in full screen" banner and lets the round
+    // screen corners cut off the video controls. With it off, the fullscreen
+    // button opens iOS's own video player instead (like Safari on iPhone).
+    override func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {
+        let config = super.webViewConfiguration(for: instanceConfiguration)
+        if #available(iOS 15.4, *) {
+            config.preferences.isElementFullscreenEnabled = false
+        }
+        return config
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()

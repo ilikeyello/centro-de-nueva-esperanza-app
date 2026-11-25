@@ -7,3 +7,6 @@ node_modules/
 ios/App/Pods/
 android/.gradle/
 android/app/build/
+
+# Widget settings generated from .env.local (scripts/build-widget-data.mjs)
+ios/App/CNEWidgets/WidgetSecrets.swift

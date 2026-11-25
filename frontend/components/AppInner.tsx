@@ -24,6 +24,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { UGC_ENABLED } from "@/lib/featureFlags";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -656,7 +658,7 @@ export function AppInner() {
 
       // Announce the target item after the page switch, so whichever page
       // renders it can scroll to and highlight the right row.
-      const focusItem = (kind: "announcement" | "event" | "livestream") => {
+      const focusItem = (kind: "announcement" | "event" | "livestream" | "sermon") => {
         if (itemId === null || itemId === undefined || itemId === "") return;
         window.dispatchEvent(new CustomEvent("cne-focus-item", { detail: { kind, id: String(itemId) } }));
       };
@@ -673,6 +675,16 @@ export function AppInner() {
       } else if (hash === "#media") {
         handleNavigate("media");
         focusItem("livestream");
+      } else if (hash === "#live") {
+        // Home-screen widget: livestream countdown.
+        handleNavigate("media");
+        window.dispatchEvent(new CustomEvent("cne-media-tab", { detail: "live" }));
+        focusItem("livestream");
+      } else if (hash === "#sermons") {
+        // Home-screen widget: latest sermon. Media selects it once loaded.
+        handleNavigate("media");
+        window.dispatchEvent(new CustomEvent("cne-media-tab", { detail: "sermons" }));
+        focusItem("sermon");
       } else if (hash === "#news" || hash === "#news-announcements" || hash === "#news-events") {
         window.location.hash = hash;
         window.dispatchEvent(new CustomEvent("cne-set-news-tab", {
@@ -736,7 +748,50 @@ export function AppInner() {
       navigator.serviceWorker.addEventListener("message", handleMessage);
     }
     window.addEventListener("message", handleMessage);
+
+    // ── Home-screen widget taps: cneapp://open/<page>?id=<row id> ───────────
+    // getLaunchUrl covers a tap that launched the app; appUrlOpen covers one
+    // while it's running. Both can report the same tap, so skip repeats.
+    const widgetPages: Record<string, string> = {
+      verse: "#verse",
+      event: "#news-events",
+      live: "#live",
+      sermon: "#sermons",
+      home: "#home",
+    };
+    let lastWidgetUrl = "";
+    let lastWidgetAt = 0;
+    const openWidgetUrl = (url: string | undefined) => {
+      if (!url || !url.startsWith("cneapp://")) return;
+      const now = Date.now();
+      if (url === lastWidgetUrl && now - lastWidgetAt < 3000) return;
+      lastWidgetUrl = url;
+      lastWidgetAt = now;
+      try {
+        const parsed = new URL(url);
+        const page = parsed.pathname.replace(/^\/+/, "") || parsed.hostname;
+        const hash = widgetPages[page];
+        if (hash) goToIntent({ hash, itemId: parsed.searchParams.get("id") });
+      } catch { /* malformed link — ignore */ }
+    };
+
+    let removeUrlListener: (() => void) | undefined;
+    let unmounted = false;
+    if (Capacitor.isNativePlatform()) {
+      CapacitorApp.addListener("appUrlOpen", ({ url }) => openWidgetUrl(url))
+        .then((handle) => {
+          if (unmounted) handle.remove();
+          else removeUrlListener = () => { void handle.remove(); };
+        })
+        .catch(() => {});
+      CapacitorApp.getLaunchUrl()
+        .then((result) => openWidgetUrl(result?.url))
+        .catch(() => {});
+    }
+
     return () => {
+      unmounted = true;
+      removeUrlListener?.();
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.removeEventListener("message", handleMessage);
       }

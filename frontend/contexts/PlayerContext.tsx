@@ -90,7 +90,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       }
     };
     load();
-    const id = window.setInterval(load, 30000);
+    const id = window.setInterval(load, 15000);
     return () => {
       cancelled = true;
       window.clearInterval(id);

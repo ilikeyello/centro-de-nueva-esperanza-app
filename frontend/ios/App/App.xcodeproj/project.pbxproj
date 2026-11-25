@@ -14,10 +14,46 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		7551509620608FFCAA0EC343 /* WidgetVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 04B1DD6087742B1F5CFA94C6 /* WidgetVerses.json */; };
+		8EAC13C22986C09208D00A84 /* CNEWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D47A6B187B6AFD332903150 /* CNEWidgetsBundle.swift */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
+		A4C6A60A956F8C0A17532FE8 /* WidgetSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF6CD6184515B13C8874A97 /* WidgetSecrets.swift */; };
+		B7D8B179745A730BB6141F81 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5724FEF0B42A4CCCE7AD5BD0 /* WidgetViews.swift */; };
+		C0621BB290C33F37D647D2FF /* WidgetConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D670EB05C5CC40F96B4597C /* WidgetConfig.swift */; };
+		D9458D233027373D00EE5811 /* CNEWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D878BFDDB5C3593F78F63DC4 /* CNEWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D9AADB05A0467AC4CEF3387A /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C7B32A9DE7BA25F8473D32A /* WidgetData.swift */; };
+		E67F57411B8302013F026EC1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 164876DD16658AC620CD6F4D /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		0C92FDA50283F7ACC2D9D0ED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 91F1833C9697863F2FF2E3B7;
+			remoteInfo = CNEWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		882A9662E19DE17B75548679 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D9458D233027373D00EE5811 /* CNEWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		04B1DD6087742B1F5CFA94C6 /* WidgetVerses.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = WidgetVerses.json; sourceTree = "<group>"; };
+		12797EC8919D733E9BDB7397 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		164876DD16658AC620CD6F4D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2D47A6B187B6AFD332903150 /* CNEWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNEWidgetsBundle.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* centro de nueva esperanza.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "centro de nueva esperanza.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -27,13 +63,25 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		5724FEF0B42A4CCCE7AD5BD0 /* WidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
+		5BF6CD6184515B13C8874A97 /* WidgetSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSecrets.swift; sourceTree = "<group>"; };
+		7C7B32A9DE7BA25F8473D32A /* WidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetData.swift; sourceTree = "<group>"; };
 		8847746E2FD6A4CB005DBBB9 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		8D670EB05C5CC40F96B4597C /* WidgetConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfig.swift; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
+		D878BFDDB5C3593F78F63DC4 /* CNEWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CNEWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1B525BF82A11AF23640AFF24 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3011FED79650016851F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -57,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3061FED79650016851F /* App */,
+				53819766C636AC61E213B0B1 /* CNEWidgets */,
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
@@ -67,6 +116,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* centro de nueva esperanza.app */,
+				D878BFDDB5C3593F78F63DC4 /* CNEWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -85,6 +135,21 @@
 				50B271D01FEDC1A000F3C39B /* public */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		53819766C636AC61E213B0B1 /* CNEWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				2D47A6B187B6AFD332903150 /* CNEWidgetsBundle.swift */,
+				8D670EB05C5CC40F96B4597C /* WidgetConfig.swift */,
+				7C7B32A9DE7BA25F8473D32A /* WidgetData.swift */,
+				5724FEF0B42A4CCCE7AD5BD0 /* WidgetViews.swift */,
+				5BF6CD6184515B13C8874A97 /* WidgetSecrets.swift */,
+				04B1DD6087742B1F5CFA94C6 /* WidgetVerses.json */,
+				164876DD16658AC620CD6F4D /* Assets.xcassets */,
+				12797EC8919D733E9BDB7397 /* Info.plist */,
+			);
+			path = CNEWidgets;
 			sourceTree = "<group>";
 		};
 		7F8756D8B27F46E3366F6CEA /* Pods */ = {
@@ -107,16 +172,35 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				882A9662E19DE17B75548679 /* Embed Foundation Extensions */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				69D7F5C2690A64929F7A059B /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* centro de nueva esperanza.app */;
 			productType = "com.apple.product-type.application";
+		};
+		91F1833C9697863F2FF2E3B7 /* CNEWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94FD710E3F37CE2080F367F9 /* Build configuration list for PBXNativeTarget "CNEWidgets" */;
+			buildPhases = (
+				A04F1B50970AC078EDFB3BDB /* Sources */,
+				1B525BF82A11AF23640AFF24 /* Frameworks */,
+				2F2F3F050FA4B1485BE66CA2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CNEWidgets;
+			productName = CNEWidgets;
+			productReference = D878BFDDB5C3593F78F63DC4 /* CNEWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -130,6 +214,10 @@
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1100;
+						ProvisioningStyle = Automatic;
+					};
+					91F1833C9697863F2FF2E3B7 = {
+						CreatedOnToolsVersion = 16.0;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -148,11 +236,21 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				91F1833C9697863F2FF2E3B7 /* CNEWidgets */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2F2F3F050FA4B1485BE66CA2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7551509620608FFCAA0EC343 /* WidgetVerses.json in Resources */,
+				E67F57411B8302013F026EC1 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3021FED79650016851F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -215,7 +313,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A04F1B50970AC078EDFB3BDB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8EAC13C22986C09208D00A84 /* CNEWidgetsBundle.swift in Sources */,
+				C0621BB290C33F37D647D2FF /* WidgetConfig.swift in Sources */,
+				D9AADB05A0467AC4CEF3387A /* WidgetData.swift in Sources */,
+				B7D8B179745A730BB6141F81 /* WidgetViews.swift in Sources */,
+				A4C6A60A956F8C0A17532FE8 /* WidgetSecrets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		69D7F5C2690A64929F7A059B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 91F1833C9697863F2FF2E3B7 /* CNEWidgets */;
+			targetProxy = 0C92FDA50283F7ACC2D9D0ED /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -237,6 +355,33 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		4FADA8636859CB4F1F20B526 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R3CKF9NS34;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CNEWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CNE;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.centronuevaesperanza.app.CNEWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -352,7 +497,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.1;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R3CKF9NS34;
 				INFOPLIST_FILE = App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = cne;
@@ -362,7 +507,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.3;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = com.centronuevaesperanza.app;
 				PRODUCT_NAME = "centro de nueva esperanza";
@@ -379,7 +524,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.1;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R3CKF9NS34;
 				INFOPLIST_FILE = App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = cne;
@@ -389,7 +534,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.centronuevaesperanza.app;
 				PRODUCT_NAME = "centro de nueva esperanza";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
@@ -397,6 +542,33 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		};
+		FCE0027BD6DEE19B00D84CC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R3CKF9NS34;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CNEWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CNE;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.centronuevaesperanza.app.CNEWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
@@ -415,6 +587,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		94FD710E3F37CE2080F367F9 /* Build configuration list for PBXNativeTarget "CNEWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FCE0027BD6DEE19B00D84CC0 /* Debug */,
+				4FADA8636859CB4F1F20B526 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
